@@ -1,0 +1,199 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-fraunces), Georgia, serif;
+    letter-spacing: -0.02em;
+  }
+  ::selection {
+    background: #FDF2CD;
+    color: #0F2A4A;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Focus ring uniforme (accessibilité) */
+  .focus-ring {
+    @apply outline-none ring-offset-2 ring-offset-ivory focus-visible:ring-2 focus-visible:ring-navy-600;
+  }
+
+  /* Eyebrow : petit label ALL CAPS au-dessus des titres */
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.14em] text-navy-600;
+  }
+
+  /* Prose pour le contenu pédagogique */
+  .prose-lesson {
+    @apply text-slate-700 leading-relaxed;
+  }
+  .prose-lesson h2 {
+    @apply text-2xl md:text-3xl font-display font-semibold mt-10 mb-4 text-navy-900;
+    letter-spacing: -0.02em;
+  }
+  .prose-lesson h3 {
+    @apply text-xl font-display font-semibold mt-8 mb-3 text-navy-800;
+  }
+  .prose-lesson p {
+    @apply my-4 text-[17px] leading-[1.7];
+    max-width: 68ch;
+  }
+  .prose-lesson ul {
+    @apply list-disc pl-6 space-y-2 my-4;
+  }
+  .prose-lesson ol {
+    @apply list-decimal pl-6 space-y-2 my-4;
+  }
+  .prose-lesson strong {
+    @apply font-semibold text-navy-900;
+  }
+  .prose-lesson blockquote {
+    @apply my-6 border-l-2 border-gold-500 pl-5 py-1 italic text-navy-800 font-display text-lg;
+  }
+  .prose-lesson table {
+    @apply my-6 w-full text-sm border border-navy-100 rounded-xl overflow-hidden;
+  }
+  .prose-lesson thead {
+    @apply bg-navy-50;
+  }
+  .prose-lesson code {
+    @apply font-mono text-[0.85em] px-1.5 py-0.5 rounded bg-navy-50 text-navy-800 border border-navy-100;
+  }
+
+  /* Prose pour pages légales (CGU, CGV, mentions, etc.) */
+  .prose-legal { @apply text-[15px]; }
+  .prose-legal p { @apply my-3 leading-relaxed text-slate-700; }
+  .prose-legal ul { @apply my-3 pl-5 list-disc space-y-1.5 text-slate-700; }
+  .prose-legal ol { @apply my-3 pl-5 list-decimal space-y-1.5 text-slate-700; }
+  .prose-legal a { @apply text-navy-900 underline hover:text-gold-700; }
+  .prose-legal strong { @apply font-semibold text-navy-900; }
+  .prose-legal h3 { @apply font-display text-lg font-semibold text-navy-900 mt-5 mb-2; }
+  .prose-legal code { @apply px-1 py-0.5 rounded bg-navy-50 text-navy-900 text-sm font-mono; }
+
+  /* Bruit / texture subtile pour surfaces premium */
+  .noise {
+    position: relative;
+  }
+  .noise::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ============ Dark mode — charte MA FORMATION TRANSPORT ============ */
+  .dark body { background: #0B0F24 !important; color: #E5EAF3 !important; }
+  .dark .bg-ivory, .dark .bg-white { background: #121A2C !important; }
+  .dark .bg-navy-50 { background: #1A2040 !important; }
+  .dark .bg-navy-100 { background: #22264F !important; }
+  .dark .bg-navy-900, .dark .bg-navy-950 { background: #060912 !important; }
+  .dark .border-navy-100, .dark .border-navy-200 { border-color: #283057 !important; }
+  .dark .border-navy-50 { border-color: #1A2040 !important; }
+  .dark .text-navy-900, .dark .text-navy-950, .dark .text-navy-800, .dark .text-navy-700 { color: #E8EEF9 !important; }
+  .dark .text-slate-500, .dark .text-slate-600, .dark .text-slate-700 { color: #A4B1CC !important; }
+  .dark .text-slate-400 { color: #8694B5 !important; }
+  /* Accent vert lime (signal) — tinte douce en dark */
+  .dark .bg-gold-50 { background: rgba(159, 226, 32, 0.08) !important; }
+  .dark .bg-gold-100 { background: rgba(159, 226, 32, 0.14) !important; }
+  .dark .from-gold-50 { --tw-gradient-from: rgba(159,226,32,0.08) var(--tw-gradient-from-position) !important; }
+  .dark .to-white { --tw-gradient-to: #121A2C var(--tw-gradient-to-position) !important; }
+  .dark .bg-gold-500, .dark .bg-gold-600 { /* accent vert conservé */ }
+  /* Or chaud authentique pour les badges Qualiopi (palette `amber`) */
+  .dark .bg-amber-50 { background: rgba(245, 158, 11, 0.08) !important; }
+  .dark .bg-amber-100 { background: rgba(245, 158, 11, 0.14) !important; }
+  .dark input, .dark textarea, .dark select {
+    background: #121A2C !important;
+    color: #E8EEF9 !important;
+    border-color: #233253 !important;
+  }
+  .dark input::placeholder, .dark textarea::placeholder { color: #7386A8 !important; }
+  .dark .divide-navy-50 > * + * { border-color: #1A2640 !important; }
+  .dark .shadow-soft, .dark .shadow-raised, .dark .shadow-float {
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.25) !important;
+  }
+
+  /* ============ Accessibilité (Point #12) ============ */
+  .a11y-dyslexia, .a11y-dyslexia body, .a11y-dyslexia * {
+    font-family: "OpenDyslexic", "Atkinson Hyperlegible", "Verdana", sans-serif !important;
+    letter-spacing: 0.02em !important;
+    word-spacing: 0.08em !important;
+    line-height: 1.75 !important;
+  }
+  .a11y-contrast {
+    --a11y-bg: #ffffff;
+    --a11y-fg: #000000;
+  }
+  .a11y-contrast body { background: #ffffff !important; color: #000000 !important; }
+  .a11y-contrast a, .a11y-contrast button, .a11y-contrast [role="button"] {
+    text-decoration: underline;
+  }
+  .a11y-contrast .text-slate-500,
+  .a11y-contrast .text-slate-600,
+  .a11y-contrast .text-slate-700,
+  .a11y-contrast .text-white\/70,
+  .a11y-contrast .text-white\/65 {
+    color: #000 !important;
+  }
+  .a11y-contrast .bg-ivory,
+  .a11y-contrast .bg-white,
+  .a11y-contrast .bg-navy-50 {
+    background: #ffffff !important;
+  }
+  .a11y-contrast .border-navy-100,
+  .a11y-contrast .border-navy-200 {
+    border-color: #000 !important;
+  }
+  .a11y-motion *, .a11y-motion *::before, .a11y-motion *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .a11y-underline a { text-decoration: underline !important; }
+
+  /* Focus visible renforcé */
+  *:focus-visible {
+    outline: 2px solid #F5B100 !important;
+    outline-offset: 2px !important;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0);
+    white-space: nowrap; border: 0;
+  }
+  .focus\:not-sr-only:focus {
+    position: static;
+    width: auto; height: auto;
+    margin: 0; overflow: visible;
+    clip: auto; white-space: normal;
+  }
+
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { scrollbar-width: none; }
+
+  /* Shimmer pour skeleton loaders */
+  .skeleton {
+    background: linear-gradient(90deg, #F3F4EE 0%, #FAFAF7 50%, #F3F4EE 100%);
+    background-size: 200% 100%;
+    @apply animate-shimmer;
+  }
+}

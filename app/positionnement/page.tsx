@@ -1,0 +1,157 @@
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import { Card, CardBody } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ProgressBar } from "@/components/ui/progress";
+import { PlacementWizard } from "./placement-wizard";
+import { Target, Sparkles, ArrowRight, RefreshCw, Trophy } from "lucide-react";
+
+export const dynamic = "force-dynamic";
+
+function levelLabel(level?: string) {
+  return level === "avance"
+    ? "Avancé"
+    : level === "intermediaire"
+    ? "Intermédiaire"
+    : "Débutant";
+}
+function levelTone(level?: string): "success" | "gold" | "navy" {
+  return level === "avance" ? "success" : level === "intermediaire" ? "gold" : "navy";
+}
+
+export default async function PositionnementPage({
+  searchParams,
+}: {
+  searchParams?: { retake?: string };
+}) {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const retake = searchParams?.retake === "1";
+
+  const [{ data: result }, { data: blocs }] = await Promise.all([
+    supabase.from("placement_results").select("*").eq("user_id", user.id).maybeSingle(),
+    supabase.from("blocs").select("id, code, title, description").order("order"),
+  ]);
+
+  // Si déjà passé et pas en mode retake → page résultat
+  if (result && !retake) {
+    const recommended = blocs?.find((b: any) => b.id === result.recommended_bloc_id);
+    return (
+      <div className="max-w-4xl mx-auto space-y-8">
+        <header>
+          <div className="flex items-center gap-2">
+            <Trophy className="h-4 w-4 text-gold-700" />
+            <span className="eyebrow text-gold-700">Votre positionnement</span>
+          </div>
+          <h1 className="mt-2 font-display text-3xl font-semibold text-navy-950 tracking-tight">
+            Profil de compétences
+          </h1>
+          <p className="mt-2 text-slate-600 text-sm">
+            Passé le {new Date(result.taken_at).toLocaleDateString("fr-FR")}
+          </p>
+        </header>
+
+        <Card variant="gold">
+          <CardBody>
+            <div className="flex items-center gap-2">
+              <Target className="h-4 w-4 text-gold-700" />
+              <span className="eyebrow text-gold-800">Recommandation</span>
+            </div>
+            <h2 className="mt-2 font-display text-xl font-semibold text-navy-900">
+              {recommended
+                ? `Commencez par ${recommended.code} — ${recommended.title}`
+                : "Aucune recommandation particulière"}
+            </h2>
+            {recommended?.description && (
+              <p className="mt-2 text-sm text-slate-700">{recommended.description}</p>
+            )}
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link href="/modules">
+                <Button variant="gold" size="md">
+                  Voir les modules <ArrowRight className="h-3.5 w-3.5" />
+                </Button>
+              </Link>
+              <Link href="/positionnement?retake=1">
+                <Button variant="secondary" size="md">
+                  <RefreshCw className="h-3.5 w-3.5" /> Repasser le test
+                </Button>
+              </Link>
+            </div>
+          </CardBody>
+        </Card>
+
+        <section className="grid md:grid-cols-3 gap-4">
+          {blocs?.map((b: any) => {
+            const pct = (result.scores as any)?.[b.code] ?? 0;
+            const lvl = (result.level_per_bloc as any)?.[b.code] ?? "debutant";
+            return (
+              <Card key={b.id}>
+                <CardBody>
+                  <div className="flex items-center justify-between">
+                    <Badge tone="navy" size="sm">{b.code}</Badge>
+                    <Badge tone={levelTone(lvl)} size="sm">{levelLabel(lvl)}</Badge>
+                  </div>
+                  <h3 className="mt-3 font-display text-base font-semibold text-navy-900 leading-snug">
+                    {b.title}
+                  </h3>
+                  <div className="mt-4">
+                    <ProgressBar value={pct} variant="gradient" />
+                    <div className="mt-1 text-xs text-slate-500 flex justify-between">
+                      <span>{pct}%</span>
+                      <span>bonnes réponses</span>
+                    </div>
+                  </div>
+                </CardBody>
+              </Card>
+            );
+          })}
+        </section>
+      </div>
+    );
+  }
+
+  // Sinon : wizard
+  const { data: questions } = await supabase
+    .from("placement_questions")
+    .select("id, bloc_id, prompt, choices, order, blocs(code, title)")
+    .eq("active", true)
+    .order("bloc_id")
+    .order("order");
+
+  return (
+    <div className="max-w-3xl mx-auto space-y-6">
+      <header>
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-gold-700" />
+          <span className="eyebrow text-gold-700">Avant de démarrer</span>
+        </div>
+        <h1 className="mt-2 font-display text-3xl font-semibold text-navy-950 tracking-tight">
+          Test de positionnement
+        </h1>
+        <p className="mt-2 text-slate-600 text-sm">
+          Quelques questions sur les blocs de compétences pour adapter votre parcours.
+          Aucun impact sur votre certification — c'est juste pour nous aider à vous orienter.
+        </p>
+      </header>
+      {(!questions || questions.length === 0) ? (
+        <Card>
+          <CardBody className="py-10 text-center">
+            <p className="text-slate-600 text-sm">
+              Aucune question de positionnement n'est configurée pour l'instant.
+            </p>
+            <Link href="/dashboard" className="inline-block mt-4">
+              <Button size="md">Retour au tableau de bord</Button>
+            </Link>
+          </CardBody>
+        </Card>
+      ) : (
+        <PlacementWizard questions={questions as any} />
+      )}
+    </div>
+  );
+}
