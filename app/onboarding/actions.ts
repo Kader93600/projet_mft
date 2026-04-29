@@ -28,3 +28,68 @@ export async function acceptDocument(raw: unknown) {
   revalidatePath("/dashboard");
   return { ok: true };
 }
+
+const selectFormationSchema = z.object({
+  slug: z.string().min(1),
+});
+
+export async function selectFormation(raw: unknown) {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Non authentifié");
+
+  const res = selectFormationSchema.safeParse(raw);
+  if (!res.success) throw new Error("Formation invalide");
+
+  // Vérifier que la formation existe en BDD
+  const { data: formation, error: fErr } = await supabase
+    .from("formations")
+    .select("id, slug, active")
+    .eq("slug", res.data.slug)
+    .maybeSingle();
+  if (fErr) throw new Error(fErr.message);
+  if (!formation) throw new Error("Formation introuvable");
+  if (formation.active === false) throw new Error("Formation inactive");
+
+  // Insert idempotent (vérifie l'existant)
+  const { data: existing } = await supabase
+    .from("enrollments")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("formation_slug", formation.slug)
+    .maybeSingle();
+
+  if (!existing) {
+    const { error: eErr } = await supabase.from("enrollments").insert({
+      user_id: user.id,
+      formation_slug: formation.slug,
+      formation_id: formation.id,
+      status: "en_cours",
+      session_label: `onboarding-${formation.slug}-${Date.now()}`,
+    });
+    if (eErr) throw new Error(eErr.message);
+  }
+
+  revalidatePath("/onboarding");
+  revalidatePath("/dashboard");
+  return { ok: true, slug: formation.slug };
+}
+
+export async function completeOnboarding() {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Non authentifié");
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ onboarding_completed_at: new Date().toISOString() })
+    .eq("id", user.id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/dashboard");
+  return { ok: true };
+}
