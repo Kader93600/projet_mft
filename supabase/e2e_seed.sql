@@ -46,9 +46,10 @@ BEGIN
   UPDATE public.profiles SET role = 'student' WHERE id = v_student;
   UPDATE public.profiles SET role = 'trainer' WHERE id = v_trainer;
 
-  -- ─── 2) Bypass onboarding ────────────────────────────────────────
+  -- ─── 2) Bypass onboarding + positionnement ──────────────────────
   UPDATE public.profiles
-     SET onboarding_completed_at = COALESCE(onboarding_completed_at, now())
+     SET onboarding_completed_at = COALESCE(onboarding_completed_at, now()),
+         placement_completed_at  = COALESCE(placement_completed_at,  now())
    WHERE id IN (v_student, v_trainer);
 
   -- ─── 3) Récupérer la formation cible ─────────────────────────────
