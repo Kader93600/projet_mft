@@ -11,15 +11,15 @@ npm run test:e2e:install   # installe Chromium + dépendances système
 
 ## Comptes et données pré-requis
 
-Les tests **n'inscrivent pas** de comptes ni ne créent de quiz : ils
-consomment des fixtures déjà présentes en BDD. Provisionner manuellement :
+### Setup automatique (recommandé)
 
-1. **Compte stagiaire** : un user role `student`, inscrit sur la formation
-   du quiz de test (table `enrollments`).
-2. **Compte formateur** : un user role `trainer`, rattaché à la même
-   formation via `trainer_formations`.
-3. **Quiz mixte** : un quiz contenant ≥ 1 QCM + ≥ 1 QR, lié à la formation
-   ci-dessus. Récupérer son UUID.
+1. Dans **Supabase Studio → Authentication → Users**, créer 2 comptes :
+   - `stagiaire-e2e@test.local` (mdp solide)
+   - `formateur-e2e@test.local` (mdp solide)
+2. Dans **SQL Editor**, exécuter `supabase/e2e_seed.sql`. Le script :
+   - configure les rôles, bypass onboarding, rattache le formateur,
+     inscrit le stagiaire, crée un quiz mixte QCM+QR
+   - affiche en sortie l'`E2E_QUIZ_ID` à reporter dans `.env.test`
 
 ## Variables d'environnement
 
