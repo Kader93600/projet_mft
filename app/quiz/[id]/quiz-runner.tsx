@@ -13,6 +13,8 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { cn, scoreColor } from "@/lib/utils";
+import { FormationBadge } from "@/components/formation/formation-badge";
+import { FormationStripe } from "@/components/formation/formation-stripe";
 
 interface Choice { id: string; label: string; is_correct: boolean; order: number; }
 interface Question {
@@ -61,10 +63,12 @@ export function QuizRunner({
   quiz,
   questions,
   attemptState,
+  formationSlug,
 }: {
   quiz: Quiz;
   questions: Question[];
   attemptState: AttemptState | null;
+  formationSlug?: string | null;
 }) {
   const router = useRouter();
   const [started, setStarted] = useState(false);
@@ -282,16 +286,23 @@ export function QuizRunner({
     return (
       <div className="max-w-2xl mx-auto">
         <Card className="overflow-hidden">
+          {/* Stripe couleur formation pour identification immédiate */}
+          {formationSlug && <FormationStripe slug={formationSlug} />}
           <CardBody className="text-center space-y-5 py-12 px-8">
-            {isMock ? (
-              <Badge tone="gold" size="md" className="mx-auto">
-                <ShieldAlert className="h-3 w-3" /> Examen blanc officiel
-              </Badge>
-            ) : quiz.type === "examen" ? (
-              <Badge tone="gold" size="sm" className="mx-auto">Mode examen</Badge>
-            ) : (
-              <Badge tone="navy" size="sm" className="mx-auto">Entraînement</Badge>
-            )}
+            <div className="flex items-center justify-center gap-2 flex-wrap">
+              {formationSlug && (
+                <FormationBadge slug={formationSlug} size="md" icon withTitle />
+              )}
+              {isMock ? (
+                <Badge tone="gold" size="md">
+                  <ShieldAlert className="h-3 w-3" /> Examen blanc officiel
+                </Badge>
+              ) : quiz.type === "examen" ? (
+                <Badge tone="gold" size="sm">Mode examen</Badge>
+              ) : (
+                <Badge tone="navy" size="sm">Entraînement</Badge>
+              )}
+            </div>
             <h1 className="font-display text-3xl font-semibold text-navy-950 tracking-tight">
               {quiz.title}
             </h1>

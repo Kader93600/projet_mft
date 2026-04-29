@@ -7,6 +7,8 @@ import { ArrowLeft, Award, User, BookOpen, Clock } from "lucide-react";
 import { findFormation } from "@/lib/formations-config";
 import { initials } from "@/lib/utils";
 import { isStaff } from "@/lib/permissions";
+import { FormationStripe } from "@/components/formation/formation-stripe";
+import { FormationBadge } from "@/components/formation/formation-badge";
 import { QrGradingForm } from "./qr-grading-form";
 import { FinalizeForm } from "./finalize-form";
 
@@ -104,7 +106,9 @@ export default async function CorrectionDetailPage({
   const quiz = (attempt as any).quiz;
 
   return (
-    <div className="space-y-8">
+    <div>
+      {formationSlug && <FormationStripe slug={formationSlug} />}
+      <div className="space-y-8 pt-6">
       <Link
         href="/formateur/corrections"
         className="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-navy-900"
@@ -239,6 +243,7 @@ export default async function CorrectionDetailPage({
           </CardBody>
         </Card>
       </section>
+      </div>
     </div>
   );
 }

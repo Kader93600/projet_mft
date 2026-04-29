@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { FormationBadge } from "@/components/formation/formation-badge";
 import { Button } from "@/components/ui/button";
 import { blocTone } from "@/lib/utils";
 import { Plus, ChevronRight, BookOpen } from "lucide-react";
@@ -10,18 +11,32 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminModules() {
   const supabase = createClient();
-  const [{ data: modules }, { data: lessonCounts }] = await Promise.all([
+  const [
+    { data: modules },
+    { data: lessonCounts },
+    { data: formationModules },
+  ] = await Promise.all([
     supabase
       .from("modules")
       .select("*, blocs(code, title)")
       .order("bloc_id")
       .order("order"),
     supabase.from("lessons").select("module_id"),
+    supabase
+      .from("formation_modules")
+      .select("module_id, formation:formations(slug, code)"),
   ]);
 
   const counts = new Map<string, number>();
   (lessonCounts ?? []).forEach((l: any) => {
     counts.set(l.module_id, (counts.get(l.module_id) ?? 0) + 1);
+  });
+
+  const formationByModule = new Map<string, string>();
+  (formationModules ?? []).forEach((fm: any) => {
+    if (fm.formation?.slug && !formationByModule.has(fm.module_id)) {
+      formationByModule.set(fm.module_id, fm.formation.slug);
+    }
   });
 
   return (
@@ -48,6 +63,7 @@ export default async function AdminModules() {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-navy-50/60 text-[11px] uppercase tracking-wider text-slate-600">
+                <th className="text-left px-5 py-3 font-semibold">Formation</th>
                 <th className="text-left px-5 py-3 font-semibold">Bloc</th>
                 <th className="text-left px-5 py-3 font-semibold">Module</th>
                 <th className="text-left px-5 py-3 font-semibold">Leçons</th>
@@ -62,6 +78,17 @@ export default async function AdminModules() {
                   key={m.id}
                   className="border-t border-navy-50 hover:bg-navy-50/30 group"
                 >
+                  <td className="px-5 py-3.5">
+                    {formationByModule.has(m.id) ? (
+                      <FormationBadge
+                        slug={formationByModule.get(m.id)}
+                        size="sm"
+                        icon
+                      />
+                    ) : (
+                      <span className="text-xs text-slate-400">— Aucune —</span>
+                    )}
+                  </td>
                   <td className="px-5 py-3.5">
                     <Badge tone={blocTone(m.blocs?.code)} size="sm">
                       {m.blocs?.code}

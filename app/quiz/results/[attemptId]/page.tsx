@@ -15,6 +15,9 @@ import {
   Award,
 } from "lucide-react";
 import { cn, scoreColor } from "@/lib/utils";
+import { FormationBadge } from "@/components/formation/formation-badge";
+import { FormationStripe } from "@/components/formation/formation-stripe";
+import { resolveFormationFromQuiz } from "@/lib/formation-resolver";
 
 export const dynamic = "force-dynamic";
 
@@ -77,8 +80,15 @@ export default async function QuizResultsPage({
   const isGraded = status === "graded";
   const isAwaiting = status === "awaiting_review";
 
+  // Résolution formation pour identification visuelle
+  const formationSlug = await resolveFormationFromQuiz(attempt.quiz_id);
+
   return (
-    <div className="space-y-8 max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto">
+      {/* Stripe couleur formation en haut de page */}
+      {formationSlug && <FormationStripe slug={formationSlug} />}
+
+      <div className="space-y-8 pt-6">
       <Link
         href="/quiz"
         className="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-navy-900"
@@ -88,6 +98,9 @@ export default async function QuizResultsPage({
 
       <header>
         <div className="flex items-center gap-2 mb-2 flex-wrap">
+          {formationSlug && (
+            <FormationBadge slug={formationSlug} size="sm" icon />
+          )}
           {quiz?.is_mock_exam && (
             <Badge tone="gold" size="sm">
               <Award className="h-3 w-3" />
@@ -382,6 +395,7 @@ export default async function QuizResultsPage({
         >
           Tableau de bord
         </Link>
+      </div>
       </div>
     </div>
   );

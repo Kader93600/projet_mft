@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Card } from "@/components/ui/card";
+import { FormationBadge } from "@/components/formation/formation-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Plus, ChevronRight, HelpCircle, Clock } from "lucide-react";
@@ -9,17 +10,29 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminQuizzes() {
   const supabase = createClient();
-  const [{ data: quizzes }, { data: questions }] = await Promise.all([
-    supabase
-      .from("quizzes")
-      .select("*, modules(title)")
-      .order("created_at", { ascending: false }),
-    supabase.from("questions").select("quiz_id"),
-  ]);
+  const [{ data: quizzes }, { data: questions }, { data: formationQuizzes }] =
+    await Promise.all([
+      supabase
+        .from("quizzes")
+        .select("*, modules(title)")
+        .order("created_at", { ascending: false }),
+      supabase.from("questions").select("quiz_id"),
+      supabase
+        .from("formation_quizzes")
+        .select("quiz_id, formation:formations(slug, code)"),
+    ]);
 
   const counts = new Map<string, number>();
   (questions ?? []).forEach((q: any) => {
     counts.set(q.quiz_id, (counts.get(q.quiz_id) ?? 0) + 1);
+  });
+
+  // Mapping quiz_id → slug formation (1er liaison trouvée)
+  const formationByQuiz = new Map<string, string>();
+  (formationQuizzes ?? []).forEach((fq: any) => {
+    if (fq.formation?.slug && !formationByQuiz.has(fq.quiz_id)) {
+      formationByQuiz.set(fq.quiz_id, fq.formation.slug);
+    }
   });
 
   return (
@@ -47,6 +60,7 @@ export default async function AdminQuizzes() {
             <thead>
               <tr className="bg-navy-50/60 text-[11px] uppercase tracking-wider text-slate-600">
                 <th className="text-left px-5 py-3 font-semibold">Quiz</th>
+                <th className="text-left px-5 py-3 font-semibold">Formation</th>
                 <th className="text-left px-5 py-3 font-semibold">Type</th>
                 <th className="text-left px-5 py-3 font-semibold">Module</th>
                 <th className="text-left px-5 py-3 font-semibold">Questions</th>
@@ -68,6 +82,17 @@ export default async function AdminQuizzes() {
                     >
                       {q.title}
                     </Link>
+                  </td>
+                  <td className="px-5 py-3.5">
+                    {formationByQuiz.has(q.id) ? (
+                      <FormationBadge
+                        slug={formationByQuiz.get(q.id)}
+                        size="sm"
+                        icon
+                      />
+                    ) : (
+                      <span className="text-xs text-slate-400">— Aucune —</span>
+                    )}
                   </td>
                   <td className="px-5 py-3.5">
                     <Badge tone={q.type === "examen" ? "gold" : "navy"}>

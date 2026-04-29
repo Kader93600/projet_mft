@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { QuizRunner } from "./quiz-runner";
+import { resolveFormationFromQuiz } from "@/lib/formation-resolver";
 
 interface UnifiedQuestion {
   /** id de la question (table source : "questions" ou "question_bank") */
@@ -154,11 +155,15 @@ export default async function QuizPage({ params }: { params: { id: string } }) {
     p_quiz_id: quiz.id,
   });
 
+  // Résolution de la formation associée pour identification visuelle
+  const formationSlug = await resolveFormationFromQuiz(quiz.id);
+
   return (
     <QuizRunner
       quiz={quiz}
       questions={list}
       attemptState={(attemptState as any) ?? null}
+      formationSlug={formationSlug}
     />
   );
 }

@@ -4,6 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import { renderMarkdown } from "@/lib/markdown";
 import { LessonContent } from "@/lib/lesson-blocks";
 import { ProtectedContent } from "@/components/lesson/protected-content";
+import { FormationBadge } from "@/components/formation/formation-badge";
+import { FormationStripe } from "@/components/formation/formation-stripe";
+import { resolveFormationFromModule } from "@/lib/formation-resolver";
 import { Card, CardBody } from "@/components/ui/card";
 import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import { MarkDoneButton } from "./mark-done-button";
@@ -56,8 +59,13 @@ export default async function LessonPage({
     completed = !!data?.completed;
   }
 
+  // Résolution formation pour identification visuelle
+  const formationSlug = await resolveFormationFromModule(module.id);
+
   return (
-    <div className="max-w-3xl mx-auto space-y-8">
+    <div className="max-w-3xl mx-auto">
+      {formationSlug && <FormationStripe slug={formationSlug} />}
+      <div className="space-y-8 pt-6">
       <SessionTracker lessonId={lesson.id} />
       <Link
         href={`/modules/${module.slug}`}
@@ -67,8 +75,13 @@ export default async function LessonPage({
       </Link>
 
       <article>
-        <div className="eyebrow text-gold-700">
-          Leçon {idx >= 0 ? idx + 1 : ""} · {module.title}
+        <div className="flex items-center gap-2 mb-2 flex-wrap">
+          {formationSlug && (
+            <FormationBadge slug={formationSlug} size="sm" icon />
+          )}
+          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+            Leçon {idx >= 0 ? idx + 1 : ""} · {module.title}
+          </span>
         </div>
         <h1 className="mt-3 font-display text-3xl md:text-4xl font-semibold text-navy-950 tracking-tight">
           {lesson.title}
@@ -128,6 +141,7 @@ export default async function LessonPage({
             </Link>
           )}
         </div>
+      </div>
       </div>
     </div>
   );
