@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 import { sendMessage } from "@/app/messages/actions";
 import { Send, Loader2 } from "lucide-react";
 
+type Role = "student" | "admin" | "trainer";
+
 type Msg = {
   id: string;
   sender_id: string;
-  sender_role: "student" | "admin";
+  sender_role: Role;
   body: string;
   created_at: string;
   read_at: string | null;
@@ -22,7 +24,7 @@ export function MessageThread({
 }: {
   conversationId: string;
   messages: Msg[];
-  viewerRole: "student" | "admin";
+  viewerRole: Role;
   viewerId: string;
 }) {
   const router = useRouter();
@@ -73,6 +75,8 @@ export function MessageThread({
                       ? "bg-navy-900 text-white rounded-br-sm"
                       : m.sender_role === "admin"
                       ? "bg-gold-100 text-navy-900 rounded-bl-sm border border-gold-200"
+                      : m.sender_role === "trainer"
+                      ? "bg-emerald-50 text-navy-900 rounded-bl-sm border border-emerald-200"
                       : "bg-white text-navy-900 rounded-bl-sm border border-navy-100")
                   }
                 >
@@ -84,7 +88,8 @@ export function MessageThread({
                     (mine ? "text-right" : "text-left")
                   }
                 >
-                  {m.sender_role === "admin" && !mine && "Équipe pédagogique · "}
+                  {!mine && m.sender_role === "admin" && "Équipe pédagogique · "}
+                  {!mine && m.sender_role === "trainer" && "Formateur · "}
                   {new Date(m.created_at).toLocaleString("fr-FR", {
                     day: "2-digit",
                     month: "short",
@@ -115,7 +120,9 @@ export function MessageThread({
             }}
             placeholder={
               viewerRole === "student"
-                ? "Écrivez à l'équipe pédagogique…"
+                ? "Écrivez à votre formateur ou à l'équipe pédagogique…"
+                : viewerRole === "trainer"
+                ? "Répondre au stagiaire…"
                 : "Répondre au stagiaire…"
             }
             className="flex-1 resize-none rounded-xl border border-navy-100 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400"
