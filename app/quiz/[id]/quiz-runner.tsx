@@ -15,7 +15,15 @@ import {
 import { cn, scoreColor } from "@/lib/utils";
 
 interface Choice { id: string; label: string; is_correct: boolean; order: number; }
-interface Question { id: string; statement: string; explanation: string | null; choices: Choice[]; }
+interface Question {
+  id: string;
+  statement: string;
+  explanation?: string | null;
+  choices: Choice[];
+  type?: "qcm" | "qr";
+  source?: "legacy" | "bank";
+  max_score?: number;
+}
 interface Quiz {
   id: string;
   title: string;
@@ -62,6 +70,8 @@ export function QuizRunner({
   const [started, setStarted] = useState(false);
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  // Réponses rédigées (QR) — texte libre du stagiaire
+  const [qrAnswers, setQrAnswers] = useState<Record<string, string>>({});
   const [finished, setFinished] = useState(false);
   const [remaining, setRemaining] = useState(quiz.time_limit_s ?? 0);
   const [startedAt, setStartedAt] = useState<Date | null>(null);
@@ -182,36 +192,84 @@ export function QuizRunner({
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    // Sépare QCM et QR
+    const qcmList = orderedQuestions.filter((q) => (q.type ?? "qcm") === "qcm");
+    const qrList = orderedQuestions.filter((q) => q.type === "qr");
+
+    // Score QCM auto-corrigé
     let score = 0;
-    orderedQuestions.forEach((q) => {
+    qcmList.forEach((q) => {
       const sel = answers[q.id];
       if (sel && q.choices.find((c) => c.is_correct)?.id === sel) score++;
     });
+    const totalQcm = qcmList.length;
+    const qcmPercentage = totalQcm ? Math.round((score / totalQcm) * 100) : 0;
     const total = orderedQuestions.length;
-    const percentage = total ? Math.round((score / total) * 100) : 0;
 
+    const hasQr = qrList.length > 0;
     const mode = isMock ? "blanc" : quiz.type === "examen" ? "examen" : "entrainement";
 
-    await supabase.from("quiz_attempts").insert({
-      user_id: user.id,
-      quiz_id: quiz.id,
-      score,
-      total,
-      percentage,
-      passed: percentage >= quiz.pass_threshold,
-      duration_s: startedAt ? Math.round((finishedAt.getTime() - startedAt.getTime()) / 1000) : null,
-      answers,
-      started_at: startedAt?.toISOString(),
-      finished_at: finishedAt.toISOString(),
-      focus_loss_count: focusRef.current,
-      flagged_questions: Array.from(flagged),
-      mode,
-    });
+    // Insert tentative principale
+    const { data: inserted, error: insertErr } = await supabase
+      .from("quiz_attempts")
+      .insert({
+        user_id: user.id,
+        quiz_id: quiz.id,
+        score,
+        total: totalQcm,                                // pour le score QCM
+        percentage: qcmPercentage,                       // % QCM auto
+        passed: hasQr ? null : qcmPercentage >= quiz.pass_threshold,
+        duration_s: startedAt ? Math.round((finishedAt.getTime() - startedAt.getTime()) / 1000) : null,
+        answers,
+        started_at: startedAt?.toISOString(),
+        finished_at: finishedAt.toISOString(),
+        focus_loss_count: focusRef.current,
+        flagged_questions: Array.from(flagged),
+        mode,
+        // Statut différé si QR présents (sinon graded comme avant)
+        status: hasQr ? "awaiting_review" : "graded",
+        qcm_score: qcmPercentage,
+      } as any)
+      .select("id")
+      .single();
+
+    if (insertErr || !inserted) {
+      console.error("[quiz submit] insert error", insertErr);
+      return;
+    }
+    const attemptId = inserted.id;
+
+    // Soumettre chaque réponse rédigée via la RPC sécurisée
+    if (hasQr) {
+      for (const q of qrList) {
+        const text = (qrAnswers[q.id] ?? "").trim();
+        try {
+          await supabase.rpc("submit_qr_response", {
+            p_attempt: attemptId,
+            p_question: q.id,
+            p_answer: text,
+          });
+        } catch (e) {
+          console.error("[submit_qr_response]", q.id, e);
+        }
+      }
+      // Marque la tentative en attente de correction (notif formateurs)
+      try {
+        await supabase.rpc("mark_attempt_awaiting_review", {
+          p_attempt: attemptId,
+          p_qcm_score: qcmPercentage,
+        });
+      } catch (e) {
+        console.error("[mark_attempt_awaiting_review]", e);
+      }
+    }
+
     // Sort du fullscreen
     if (document.fullscreenElement) {
       try { await document.exitFullscreen(); } catch {}
     }
-    router.refresh();
+    // Redirige vers la page résultats (gère les 3 états : completed/awaiting/graded)
+    router.push(`/quiz/results/${attemptId}`);
   }
 
   // ----- Landing -----
@@ -710,40 +768,78 @@ export function QuizRunner({
 
       <Card>
         <CardBody className="space-y-5">
-          <h2 className="font-display text-xl font-semibold text-navy-900 leading-snug">
+          <div className="flex items-center gap-2 mb-1">
+            {q.type === "qr" ? (
+              <Badge tone="gold" size="sm">
+                Question rédigée
+              </Badge>
+            ) : (
+              <Badge tone="navy" size="sm">
+                QCM
+              </Badge>
+            )}
+            {q.type === "qr" && q.max_score && (
+              <span className="text-xs text-slate-500">
+                Barème : {q.max_score} pt{q.max_score > 1 ? "s" : ""}
+              </span>
+            )}
+          </div>
+          <h2 className="font-display text-xl font-semibold text-navy-900 leading-snug whitespace-pre-wrap">
             {q.statement}
           </h2>
-          <div className="space-y-2.5">
-            {q.choices.map((c, i) => {
-              const letter = String.fromCharCode(65 + i);
-              const isSel = selected === c.id;
-              return (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => setAnswers({ ...answers, [q.id]: c.id })}
-                  className={cn(
-                    "w-full text-left px-4 py-3.5 rounded-xl border flex items-center gap-3 transition-all",
-                    isSel
-                      ? "border-navy-900 bg-navy-50 ring-2 ring-navy-900/10"
-                      : "border-navy-100 bg-white hover:border-navy-300 hover:bg-navy-50/50"
-                  )}
-                >
-                  <span
+          {q.type === "qr" ? (
+            <div>
+              <textarea
+                value={qrAnswers[q.id] ?? ""}
+                onChange={(e) =>
+                  setQrAnswers({ ...qrAnswers, [q.id]: e.target.value })
+                }
+                placeholder="Rédigez votre réponse ici…"
+                rows={10}
+                className="w-full rounded-xl border border-navy-200 bg-white p-4 text-[15px] text-navy-900 placeholder:text-slate-400 focus:border-navy-500 focus:outline-none focus:ring-2 focus:ring-navy-500/20 resize-y min-h-[180px]"
+              />
+              <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
+                <span>
+                  {(qrAnswers[q.id] ?? "").length} caractères
+                </span>
+                <span className="italic">
+                  Cette réponse sera corrigée manuellement par votre formateur.
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2.5">
+              {q.choices.map((c, i) => {
+                const letter = String.fromCharCode(65 + i);
+                const isSel = selected === c.id;
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => setAnswers({ ...answers, [q.id]: c.id })}
                     className={cn(
-                      "h-7 w-7 rounded-md font-semibold text-xs flex items-center justify-center shrink-0",
+                      "w-full text-left px-4 py-3.5 rounded-xl border flex items-center gap-3 transition-all",
                       isSel
-                        ? "bg-navy-900 text-gold-400"
-                        : "bg-navy-50 text-navy-700"
+                        ? "border-navy-900 bg-navy-50 ring-2 ring-navy-900/10"
+                        : "border-navy-100 bg-white hover:border-navy-300 hover:bg-navy-50/50"
                     )}
                   >
-                    {letter}
-                  </span>
-                  <span className="text-[15px] text-navy-900">{c.label}</span>
-                </button>
-              );
-            })}
-          </div>
+                    <span
+                      className={cn(
+                        "h-7 w-7 rounded-md font-semibold text-xs flex items-center justify-center shrink-0",
+                        isSel
+                          ? "bg-navy-900 text-gold-400"
+                          : "bg-navy-50 text-navy-700"
+                      )}
+                    >
+                      {letter}
+                    </span>
+                    <span className="text-[15px] text-navy-900">{c.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </CardBody>
       </Card>
 
@@ -756,7 +852,15 @@ export function QuizRunner({
           <ArrowLeft className="h-4 w-4" /> Précédent
         </Button>
         {current < orderedQuestions.length - 1 ? (
-          <Button onClick={() => setCurrent(current + 1)} disabled={!selected} className="group">
+          <Button
+            onClick={() => setCurrent(current + 1)}
+            disabled={
+              q.type === "qr"
+                ? false /* on autorise à passer même sans rédaction */
+                : !selected
+            }
+            className="group"
+          >
             Suivant
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Button>

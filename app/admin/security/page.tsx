@@ -1,8 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
-import { Card, CardBody } from "@/components/ui/card";
+import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ShieldCheck, KeyRound, AlertTriangle } from "lucide-react";
 import { RemoveFactorButton } from "./remove-factor";
+import { MfaSetup } from "./mfa-setup";
 
 export const dynamic = "force-dynamic";
 
@@ -31,18 +32,21 @@ export default async function AdminSecurityPage() {
         </p>
       </header>
 
-      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
-        <AlertTriangle className="h-5 w-5 text-amber-700 mt-0.5 shrink-0" />
-        <div className="flex-1">
-          <div className="font-semibold text-amber-900">
-            Configuration 2FA temporairement désactivée
+      {!hasVerified && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
+          <AlertTriangle className="h-5 w-5 text-amber-700 mt-0.5 shrink-0" />
+          <div className="flex-1">
+            <div className="font-semibold text-amber-900">
+              Aucun facteur 2FA actif
+            </div>
+            <p className="text-sm text-amber-900/90">
+              Pour les comptes administrateurs et super-administrateurs, la
+              double authentification est <strong>fortement recommandée</strong>.
+              Configurez une application d'authentification ci-dessous.
+            </p>
           </div>
-          <p className="text-sm text-amber-900/90">
-            Le rendu du QR code et la vérification du code seront finalisés
-            prochainement. L'accès admin n'est plus bloqué en attendant.
-          </p>
         </div>
-      </div>
+      )}
 
       <section>
         <h2 className="font-display text-xl font-semibold text-navy-900 mb-4">
@@ -91,7 +95,6 @@ export default async function AdminSecurityPage() {
         </Card>
       </section>
 
-      {/* Section "Activer 2FA" temporairement masquée — voir bandeau ci-dessus.
       <section>
         <h2 className="font-display text-xl font-semibold text-navy-900 mb-4">
           {hasVerified ? "Ajouter un facteur supplémentaire" : "Activer 2FA"}
@@ -100,14 +103,14 @@ export default async function AdminSecurityPage() {
           <CardBody>
             <CardTitle>Application d'authentification (TOTP)</CardTitle>
             <p className="text-sm text-slate-600 mt-1 mb-4">
-              Scannez le QR code avec votre application puis saisissez le code à
-              6 chiffres pour valider.
+              Scannez le QR code avec votre application (Google Authenticator,
+              1Password, Authy, Bitwarden…) puis saisissez le code à 6 chiffres
+              pour valider.
             </p>
             <MfaSetup />
           </CardBody>
         </Card>
       </section>
-      */}
     </div>
   );
 }

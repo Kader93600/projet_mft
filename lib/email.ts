@@ -129,6 +129,51 @@ export function enrollmentReceivedEmail(input: { fullName: string }) {
   };
 }
 
+/** Notif stagiaire : sa copie est corrigée. */
+export function copyGradedEmail(input: {
+  fullName: string;
+  quizTitle: string;
+  scorePct: number;
+  passed: boolean;
+  resultsUrl: string;
+}) {
+  return {
+    subject: `Votre copie "${input.quizTitle}" a été corrigée`,
+    html: emailLayout(
+      `${input.fullName}, votre note est disponible !`,
+      `<p>Votre formateur a finalisé la correction de l'examen <strong>${input.quizTitle}</strong>.</p>
+       <p style="font-size:24px;font-weight:bold;color:${input.passed ? "#16a34a" : "#e11d48"};margin:16px 0">
+         ${Math.round(input.scorePct)}% — ${input.passed ? "Examen réussi" : "Continuez la préparation"}
+       </p>
+       <p style="margin:24px 0">
+         <a href="${input.resultsUrl}" style="display:inline-block;padding:12px 22px;background:#0E1240;color:#fff;text-decoration:none;border-radius:12px;font-weight:500">Voir le détail et les commentaires</a>
+       </p>
+       <p style="font-size:13px;color:#64748B">Bonne continuation dans votre préparation !</p>`
+    ),
+  };
+}
+
+/** Notif formateur : nouvelle copie à corriger. */
+export function newCopyToGradeEmail(input: {
+  trainerName: string;
+  studentName: string;
+  quizTitle: string;
+  correctionUrl: string;
+}) {
+  return {
+    subject: `Nouvelle copie à corriger — ${input.studentName}`,
+    html: emailLayout(
+      `Bonjour ${input.trainerName},`,
+      `<p><strong>${input.studentName}</strong> vient de soumettre l'examen <strong>${input.quizTitle}</strong>.</p>
+       <p>La copie contient des questions rédigées en attente de votre correction.</p>
+       <p style="margin:24px 0">
+         <a href="${input.correctionUrl}" style="display:inline-block;padding:12px 22px;background:#9FE220;color:#0E1240;text-decoration:none;border-radius:12px;font-weight:600">Corriger maintenant</a>
+       </p>
+       <p style="font-size:13px;color:#64748B">Le stagiaire reçoit sa note dès que vous finalisez. Délai habituel : 48 à 72 h ouvrées.</p>`
+    ),
+  };
+}
+
 export function paymentReminderEmail(input: {
   fullName: string;
   amount: string;

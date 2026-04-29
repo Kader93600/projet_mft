@@ -270,6 +270,27 @@ export default async function BanqueQuestionsPage({
                   <ArrowRight className="h-5 w-5 text-signal-700 group-hover:translate-x-1 transition-transform" />
                 </div>
               </Link>
+              {focused.qr > 0 && (
+                <Link
+                  href={`/admin/banque-questions/validation-qr?f=${focused.slug}`}
+                  className="rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100 transition p-4 group"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-wider text-amber-700">
+                        Questions rédigées
+                      </div>
+                      <div className="font-display text-2xl font-semibold text-navy-900 mt-0.5">
+                        {focused.qr} QR
+                      </div>
+                      <div className="text-xs text-amber-700/80 mt-1">
+                        Réponses-modèles + barème + activation
+                      </div>
+                    </div>
+                    <ArrowRight className="h-5 w-5 text-amber-700 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </Link>
+              )}
             </div>
           </div>
         </section>

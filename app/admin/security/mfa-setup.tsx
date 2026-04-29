@@ -110,10 +110,15 @@ export function MfaSetup() {
     <div className="space-y-5">
       <div className="grid md:grid-cols-2 gap-6 items-start">
         <div className="rounded-2xl border border-navy-100 bg-ivory p-4 flex justify-center">
-          <div
-            className="bg-white p-3 rounded-lg [&_svg]:h-44 [&_svg]:w-44"
-            dangerouslySetInnerHTML={{ __html: enroll.qrSvg }}
-          />
+          <div className="bg-white p-3 rounded-lg">
+            {/* Supabase renvoie une data URL (data:image/svg+xml;utf-8,...) */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={enroll.qrSvg}
+              alt="QR code TOTP — scanner avec votre application d'authentification"
+              className="h-44 w-44"
+            />
+          </div>
         </div>
         <div className="space-y-3">
           <div>
