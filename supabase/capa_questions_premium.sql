@@ -14,7 +14,7 @@
 -- Idempotent : ON CONFLICT (source_ref) DO NOTHING.
 -- =====================================================================
 
-DO $$
+DO $outer$
 DECLARE
   formation_uuid uuid;
 BEGIN
@@ -198,7 +198,7 @@ d. Quelles sanctions risque le gérant s''il tarde à déposer le bilan ?',
   -- Mise à jour des QR avec leur réponse-modèle (pour aider le formateur)
   UPDATE public.question_bank
   SET expected_answer = $$
-a. L''entreprise est en CESSATION DES PAIEMENTS : impossibilité de faire face au passif exigible (50 000 €) avec l''actif disponible (30 000 €).
+a. L'entreprise est en CESSATION DES PAIEMENTS : impossibilité de faire face au passif exigible (50 000 €) avec l'actif disponible (30 000 €).
 
 b. Le délai légal pour la déclaration de cessation des paiements est de 45 JOURS à compter de la date de cessation (art. L. 631-4 C. com.).
 
@@ -209,9 +209,9 @@ c. Procédures possibles :
    On peut aussi citer : conciliation, mandat ad hoc.
 
 d. Sanctions du gérant en cas de retard :
-   - Faillite personnelle (jusqu''à 15 ans d''interdiction de gérer)
+   - Faillite personnelle (jusqu'à 15 ans d'interdiction de gérer)
    - Interdiction de gérer (action séparée)
-   - Responsabilité civile pour insuffisance d''actif (combler le passif)
+   - Responsabilité civile pour insuffisance d'actif (combler le passif)
    - Sanctions pénales possibles (banqueroute si éléments constitutifs)
 $$,
       scoring_grid = 'a (1pt) : reconnaissance cessation des paiements + comparaison actif/passif | b (1pt) : 45 jours | c (1,5pt) : 2 procédures correctes citées | d (1,5pt) : 2 sanctions correctes (faillite perso, comblement passif, banqueroute)'
@@ -352,8 +352,8 @@ b. Argumentaire commercial :
 
 c. Documents à préparer :
    - Carte de visite + plaquette commerciale
-   - Attestation d''inscription au registre des transporteurs
-   - Attestation d''assurance RC pro
+   - Attestation d'inscription au registre des transporteurs
+   - Attestation d'assurance RC pro
    - Devis type (pour pouvoir établir un devis sur place)
    - Tarifs de référence par typologie de course
 
@@ -540,7 +540,7 @@ d. Délai d''obtention de la licence',
 
   UPDATE public.question_bank
   SET expected_answer = $$
-a. 4 conditions d''accès :
+a. 4 conditions d'accès :
    1. HONORABILITÉ professionnelle (bulletin n°2 du casier judiciaire vierge)
    2. CAPACITÉ FINANCIÈRE (1 800 € pour le 1er véhicule + 900 € par véhicule supplémentaire)
    3. CAPACITÉ PROFESSIONNELLE (attestation obtenue après formation et examen)
@@ -548,11 +548,11 @@ a. 4 conditions d''accès :
 
 b. Inscription :
    - Auprès de la DREAL (Direction Régionale Environnement Aménagement Logement) du siège
-   - Documents à fournir : K-bis, attestations capacité (financière + professionnelle), B2 du casier, justificatif d''établissement, statuts si société
+   - Documents à fournir : K-bis, attestations capacité (financière + professionnelle), B2 du casier, justificatif d'établissement, statuts si société
 
 c. Documents à bord :
-   - Certificat d''immatriculation (carte grise)
-   - Attestation d''assurance + macaron sur pare-brise
+   - Certificat d'immatriculation (carte grise)
+   - Attestation d'assurance + macaron sur pare-brise
    - Contrôle technique en cours de validité
    - Permis de conduire valide
    - COPIE CERTIFIÉE CONFORME de la licence de transport intérieur (1 par véhicule)
@@ -746,17 +746,17 @@ d. La banque devrait-elle accorder le crédit ? Justifiez en 3 arguments.',
 a. CAF (méthode simplifiée) = Résultat net + Dotations aux amortissements
    = 18 000 + 12 000 = 30 000 €
 
-b. Ratio d''autonomie financière = Capitaux propres / Dettes financières
+b. Ratio d'autonomie financière = Capitaux propres / Dettes financières
    = 60 000 / 25 000 = 2,4
-   (ratio > 1 : très bon, l''entreprise est peu endettée)
+   (ratio > 1 : très bon, l'entreprise est peu endettée)
 
 c. Annuité capital nouvel emprunt = 40 000 / 5 = 8 000 € par an
-   (avec ~1 200 € d''intérêts, l''annuité réelle ~9 200 €)
+   (avec ~1 200 € d'intérêts, l'annuité réelle ~9 200 €)
 
 d. Décision banque : OUI, le crédit doit être accordé. 3 arguments :
-   1. CAF (30 000 €) couvre largement l''annuité (9 200 €) → ratio CAF/annuité = 3,3 (>>1,5 minimum)
+   1. CAF (30 000 €) couvre largement l'annuité (9 200 €) → ratio CAF/annuité = 3,3 (>>1,5 minimum)
    2. Endettement post-crédit : (25 000 + 40 000) / 60 000 = 1,08 → reste viable (< 2)
-   3. Le ratio d''autonomie reste sain : 60 000 / 65 000 = 0,92 (légèrement < 1, mais avec un nouvel actif productif)
+   3. Le ratio d'autonomie reste sain : 60 000 / 65 000 = 0,92 (légèrement < 1, mais avec un nouvel actif productif)
 $$,
       scoring_grid = 'a (1pt) : CAF = 30 000 € | b (1pt) : 2,4 | c (1pt) : 8 000 €/an capital | d (3pts) : décision OUI + 3 arguments chiffrés'
   WHERE source_ref = 'mft-original-2026:55';
@@ -947,9 +947,9 @@ d. Citez 2 risques pour vous si la procédure n''est pas respectée à la lettre
   UPDATE public.question_bank
   SET expected_answer = $$
 a. Procédure de licenciement disciplinaire :
-   1. CONVOCATION à entretien préalable par LRAR ou remise main propre contre décharge (≥5 jours ouvrables avant l''entretien, mention de l''objet, date, heure, lieu, droit à assistance).
+   1. CONVOCATION à entretien préalable par LRAR ou remise main propre contre décharge (≥5 jours ouvrables avant l'entretien, mention de l'objet, date, heure, lieu, droit à assistance).
    2. ENTRETIEN PRÉALABLE : exposer les motifs, écouter les explications du salarié. Le salarié peut être assisté (collègue ou conseiller du salarié).
-   3. NOTIFICATION du licenciement par LRAR (≥2 jours ouvrables après l''entretien, ≤1 mois pour faute), avec motifs précis et circonstanciés.
+   3. NOTIFICATION du licenciement par LRAR (≥2 jours ouvrables après l'entretien, ≤1 mois pour faute), avec motifs précis et circonstanciés.
    4. Versement des indemnités, remise des documents (certificat de travail, attestation Pôle Emploi, solde de tout compte).
 
 b. Indemnité légale = 1/4 mois × 6 ans × 2 100 € = 3 150 €
@@ -962,7 +962,7 @@ d. Risques en cas de procédure non respectée :
    1. CONDAMNATION pour licenciement sans cause réelle et sérieuse : indemnité minimale fixée par le barème Macron (entre 3 et 8 mois selon ancienneté → ici ~6-12 000 €)
    2. CONDAMNATION pour irrégularité de procédure : 1 mois de salaire supplémentaire (~2 100 €)
    3. Versement des dommages-intérêts pour préjudice moral si éléments
-   4. Inscription au prud''hommes (procédure publique, atteinte à la réputation)
+   4. Inscription au prud'hommes (procédure publique, atteinte à la réputation)
 $$,
       scoring_grid = 'a (2pts) : 3-4 étapes claires (convocation, entretien, notification) | b (1pt) : 3 150 € | c (1pt) : 2 mois | d (2pts) : 2 risques pertinents (condamnation prud''homale + irrégularité)'
   WHERE source_ref = 'mft-original-2026:71';
@@ -1088,21 +1088,21 @@ d. Comment vous mettre en conformité dans les 30 prochains jours ?',
   SET expected_answer = $$
 a. Obligations légales :
    - Établir et tenir à jour le DUERP dès le 1er salarié (art. R. 4121-1 C. trav.)
-   - Mise à jour annuelle minimum + à chaque changement significatif (nouveau matériel, accident, modification d''organisation)
+   - Mise à jour annuelle minimum + à chaque changement significatif (nouveau matériel, accident, modification d'organisation)
    - Identifier tous les risques (routier, manutention, TMS, chimique, stress…)
-   - Définir un plan d''action de prévention
+   - Définir un plan d'action de prévention
    - Le DUERP doit être accessible aux salariés, médecin du travail, CSE, inspecteur du travail
    - Conservation 40 ans (loi 2021)
 
 b. Sanctions encourues :
    - Administratives : amende 1 500 € (3 000 € en récidive) pour absence DUERP
-   - Pénales : RESPONSABILITÉ PÉNALE du dirigeant en cas d''accident (mise en danger d''autrui, blessures involontaires)
-   - Civiles : reconnaissance de FAUTE INEXCUSABLE par les prud''hommes → indemnisation majorée de la victime, augmentation du taux AT
-   - Suspension possible de l''activité par l''inspection du travail si danger grave et imminent
+   - Pénales : RESPONSABILITÉ PÉNALE du dirigeant en cas d'accident (mise en danger d'autrui, blessures involontaires)
+   - Civiles : reconnaissance de FAUTE INEXCUSABLE par les prud'hommes → indemnisation majorée de la victime, augmentation du taux AT
+   - Suspension possible de l'activité par l'inspection du travail si danger grave et imminent
 
 c. Documents à tenir à jour :
    - DUERP (annuel)
-   - Plan d''action de prévention
+   - Plan d'action de prévention
    - Fiches de poste avec risques identifiés
    - Registre des accidents bénins
    - Justificatifs des formations (gestes et postures, sécurité routière, premiers secours)
@@ -1111,13 +1111,13 @@ c. Documents à tenir à jour :
 
 d. Plan de mise en conformité 30 jours :
    - SEMAINE 1 : Diagnostic des risques avec les salariés (méthode INRS), modèle DUERP gratuit sur inrs.fr
-   - SEMAINE 2 : Rédaction du DUERP + plan d''action priorisé
+   - SEMAINE 2 : Rédaction du DUERP + plan d'action priorisé
    - SEMAINE 3 : Formation gestes et postures (organisme agréé, ~150 €/salarié)
    - SEMAINE 4 : Mise en place des actions immédiates (équipements, signalétique, procédures)
    - Information formelle des salariés + affichage du DUERP
-   - Communication à la médecine du travail + à l''inspection (preuve de bonne foi)
+   - Communication à la médecine du travail + à l'inspection (preuve de bonne foi)
 $$,
       scoring_grid = 'a (1,5pt) : DUERP obligatoire, MAJ annuelle, contenu | b (1,5pt) : sanctions admin (1500€) + pénales (mise en danger) + faute inexcusable | c (1,5pt) : 4 docs cohérents | d (1,5pt) : plan structuré 30j'
   WHERE source_ref = 'mft-original-2026:81';
 
-END $$;
+END $outer$;
