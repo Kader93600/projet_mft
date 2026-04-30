@@ -76,16 +76,16 @@ export default async function DashboardPage() {
       <MyFormationsSection />
 
       {/* Hero / Welcome */}
-      <section className="grid lg:grid-cols-[1.4fr_1fr] gap-6">
+      <section className="grid lg:grid-cols-[1.4fr_1fr] gap-4 md:gap-6">
         <Card variant="solid-navy" className="relative overflow-hidden">
           <div className="absolute inset-0 bg-mesh-navy opacity-50" />
           <div className="absolute inset-0 bg-grid-navy opacity-[0.08]" />
-          <CardBody className="relative p-8">
+          <CardBody className="relative p-6 sm:p-8">
             <div className="flex items-center gap-2 mb-3">
               <Sparkles className="h-4 w-4 text-gold-400" />
               <span className="eyebrow text-gold-300">Session en cours</span>
             </div>
-            <h1 className="font-display text-3xl md:text-4xl font-semibold tracking-tight">
+            <h1 className="font-display text-[26px] sm:text-3xl md:text-4xl font-semibold tracking-tight leading-tight">
               Bonjour, {firstName}.
             </h1>
             <p className="mt-3 text-white/70 text-[15px] max-w-lg leading-relaxed">
@@ -102,15 +102,22 @@ export default async function DashboardPage() {
               de votre préparation. Reprenez là où vous vous êtes arrêté et
               maintenez votre élan.
             </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link href="/modules">
-                <Button variant="gold" size="lg" className="group">
+            <div className="mt-6 flex flex-col sm:flex-row gap-2.5 sm:gap-3">
+              <Link href="/modules" className="contents">
+                <Button
+                  variant="gold"
+                  size="lg"
+                  className="group w-full sm:w-auto justify-center"
+                >
                   Reprendre la formation
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0" />
                 </Button>
               </Link>
-              <Link href="/quiz">
-                <Button size="lg" className="bg-white/10 hover:bg-white/15 text-white border border-white/15 shadow-none">
+              <Link href="/quiz" className="contents">
+                <Button
+                  size="lg"
+                  className="w-full sm:w-auto justify-center bg-white/10 hover:bg-white/15 text-white border border-white/15 shadow-none"
+                >
                   Lancer un quiz
                 </Button>
               </Link>
@@ -119,15 +126,21 @@ export default async function DashboardPage() {
         </Card>
 
         <Card className="relative overflow-hidden">
-          <CardBody className="flex items-center gap-6 h-full">
-            <RadialProgress value={progressPct} size={112} strokeWidth={10} />
-            <div>
+          <CardBody className="flex items-center gap-4 sm:gap-6 h-full p-5 sm:p-6">
+            <div className="shrink-0">
+              <RadialProgress
+                value={progressPct}
+                size={96}
+                strokeWidth={9}
+              />
+            </div>
+            <div className="min-w-0">
               <div className="eyebrow text-gold-700">Progression globale</div>
-              <div className="mt-1 font-display text-2xl font-semibold text-navy-900">
+              <div className="mt-1 font-display text-xl sm:text-2xl font-semibold text-navy-900 tabular-nums">
                 {completedLessons} / {totalLessons ?? 0}
               </div>
-              <p className="text-sm text-slate-600 mt-1">leçons terminées</p>
-              <div className="mt-4 flex items-center gap-1.5 text-xs text-emerald-700 font-medium">
+              <p className="text-sm text-slate-600 mt-0.5">leçons terminées</p>
+              <div className="mt-3 inline-flex items-center gap-1.5 text-xs text-emerald-700 font-medium">
                 <TrendingUp className="h-3.5 w-3.5" />
                 Bonne dynamique
               </div>
@@ -149,7 +162,7 @@ export default async function DashboardPage() {
       <RecentAchievements />
 
       {/* KPI row */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           icon={BookOpen}
           label="Leçons terminées"
@@ -255,23 +268,42 @@ export default async function DashboardPage() {
                 {attempts.map((a: any) => (
                   <div
                     key={a.id}
-                    className="flex items-center justify-between px-6 py-4"
+                    className="flex items-center justify-between gap-3 px-4 sm:px-6 py-3.5 sm:py-4"
                   >
-                    <div className="min-w-0">
-                      <div className="font-medium text-navy-900 truncate">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium text-navy-900 truncate text-[15px]">
                         {a.quizzes?.title}
                       </div>
-                      <div className="text-xs text-slate-500 mt-0.5">
-                        {a.finished_at && formatDate(a.finished_at)}
+                      <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
+                        {a.finished_at && (
+                          <span className="truncate">
+                            {formatDate(a.finished_at)}
+                          </span>
+                        )}
+                        {/* Badge inline mobile (gain de place) */}
+                        <span className="sm:hidden">
+                          {a.passed ? (
+                            <Badge tone="success" size="sm">Réussi</Badge>
+                          ) : (
+                            <Badge tone="slate" size="sm">À retravailler</Badge>
+                          )}
+                        </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      {a.passed ? (
-                        <Badge tone="success" size="sm">Réussi</Badge>
-                      ) : (
-                        <Badge tone="slate" size="sm">À retravailler</Badge>
-                      )}
-                      <div className={`font-display font-semibold text-xl ${scoreColor(a.percentage)}`}>
+                    <div className="flex items-center gap-3 shrink-0">
+                      {/* Badge desktop (caché en mobile) */}
+                      <span className="hidden sm:inline">
+                        {a.passed ? (
+                          <Badge tone="success" size="sm">Réussi</Badge>
+                        ) : (
+                          <Badge tone="slate" size="sm">À retravailler</Badge>
+                        )}
+                      </span>
+                      <div
+                        className={`font-display font-semibold text-lg sm:text-xl tabular-nums ${scoreColor(
+                          a.percentage
+                        )}`}
+                      >
                         {a.percentage}%
                       </div>
                     </div>
@@ -384,25 +416,29 @@ function StatCard({
           "absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full opacity-80 " + c.bar
         }
       />
-      <CardBody className="relative flex items-start gap-4">
+      <CardBody className="relative flex items-start gap-3 sm:gap-4 p-4 sm:p-5">
         <div
           className={
-            "h-11 w-11 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105 motion-reduce:group-hover:scale-100 " +
+            "h-10 w-10 sm:h-11 sm:w-11 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105 motion-reduce:group-hover:scale-100 " +
             c.iconBg +
             " " +
             c.iconText
           }
         >
-          <Icon className="h-5 w-5" />
+          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
         </div>
         <div className="min-w-0">
-          <div className="text-[11px] uppercase tracking-wider text-slate-500 font-medium">
+          <div className="text-[10px] sm:text-[11px] uppercase tracking-wider text-slate-500 font-medium leading-tight">
             {label}
           </div>
-          <div className="font-display text-[28px] font-semibold text-navy-900 mt-0.5 leading-none tabular-nums">
+          <div className="font-display text-2xl sm:text-[28px] font-semibold text-navy-900 mt-0.5 leading-none tabular-nums">
             {value}
           </div>
-          {hint && <div className="text-xs text-slate-500 mt-1.5">{hint}</div>}
+          {hint && (
+            <div className="text-[11px] sm:text-xs text-slate-500 mt-1.5 leading-tight">
+              {hint}
+            </div>
+          )}
         </div>
       </CardBody>
     </Card>
