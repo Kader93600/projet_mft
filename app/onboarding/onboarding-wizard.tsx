@@ -269,8 +269,11 @@ export function OnboardingWizard({
             </div>
 
             {/* Cards formations */}
-            <div className="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {filtered.map((f) => {
+            <div
+              key={filter /* re-stagger quand le filtre change */}
+              className="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 gap-3"
+            >
+              {filtered.map((f, i) => {
                 const Icon = ICONS[f.iconName] ?? Truck;
                 const active = chosenSlug === f.slug;
                 return (
@@ -278,19 +281,60 @@ export function OnboardingWizard({
                     key={f.slug}
                     type="button"
                     onClick={() => setChosenSlug(f.slug)}
+                    aria-pressed={active}
+                    style={{
+                      animation: "fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) both",
+                      animationDelay: `${Math.min(i, 8) * 60}ms`,
+                      // Variable CSS pour réutiliser l'accent partout sur la card
+                      ["--accent" as any]: f.accent,
+                    }}
                     className={
-                      "text-left rounded-xl border-2 p-4 transition group " +
+                      "relative text-left rounded-2xl border-2 p-4 group overflow-hidden " +
+                      "transition-[transform,box-shadow,border-color,background] duration-300 ease-out " +
+                      "motion-reduce:transition-none motion-reduce:!animate-none " +
                       (active
-                        ? "border-navy-900 bg-navy-50/40 shadow-soft"
-                        : "border-navy-100 bg-white hover:border-navy-300")
+                        ? "border-[var(--accent)] bg-white shadow-raised -translate-y-0.5"
+                        : "border-navy-100 bg-white hover:-translate-y-1 hover:shadow-raised hover:border-[var(--accent)] motion-reduce:hover:translate-y-0")
                     }
                   >
-                    <div className="flex items-start gap-3">
+                    {/* Halo radial qui s'allume sur hover/active */}
+                    <div
+                      aria-hidden
+                      className={
+                        "absolute inset-0 rounded-2xl pointer-events-none transition-opacity duration-500 " +
+                        (active ? "opacity-100" : "opacity-0 group-hover:opacity-100")
+                      }
+                      style={{
+                        background: `radial-gradient(120% 80% at 0% 0%, ${f.accent}1A 0%, transparent 55%)`,
+                      }}
+                    />
+                    {/* Trait accent vertical à gauche, animé */}
+                    <span
+                      aria-hidden
+                      className={
+                        "absolute left-0 top-3 bottom-3 w-[3px] rounded-r-full transition-all duration-300 ease-out " +
+                        (active
+                          ? "opacity-100 scale-y-100"
+                          : "opacity-0 scale-y-50 group-hover:opacity-80 group-hover:scale-y-100")
+                      }
+                      style={{ background: f.accent, transformOrigin: "center" }}
+                    />
+
+                    <div className="relative flex items-start gap-3">
                       <div
-                        className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0"
+                        className={
+                          "h-11 w-11 rounded-xl flex items-center justify-center shrink-0 " +
+                          "transition-transform duration-300 ease-out " +
+                          (active
+                            ? "scale-105"
+                            : "group-hover:scale-105 motion-reduce:group-hover:scale-100")
+                        }
                         style={{
-                          background: `${f.accent}22`,
+                          background: `${f.accent}1F`,
                           color: f.accent,
+                          boxShadow: active
+                            ? `0 8px 24px -10px ${f.accent}66`
+                            : undefined,
                         }}
                       >
                         <Icon className="h-5 w-5" />
@@ -304,16 +348,19 @@ export function OnboardingWizard({
                             {f.code}
                           </span>
                           {active && (
-                            <Check className="h-3.5 w-3.5 text-emerald-600" />
+                            <Check
+                              className="h-3.5 w-3.5"
+                              style={{ color: f.accent }}
+                            />
                           )}
                         </div>
-                        <div className="mt-0.5 font-semibold text-sm text-navy-900 leading-tight">
+                        <div className="mt-0.5 font-semibold text-[15px] text-navy-900 leading-snug">
                           {f.title}
                         </div>
-                        <div className="mt-1 text-xs text-slate-600 line-clamp-2">
+                        <div className="mt-1 text-xs text-slate-600 line-clamp-2 leading-relaxed">
                           {f.tagline}
                         </div>
-                        <div className="mt-2 text-[11px] text-slate-500">
+                        <div className="mt-2 text-[11px] uppercase tracking-wider text-slate-400 font-medium">
                           {f.duration}
                         </div>
                       </div>
