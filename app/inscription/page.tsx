@@ -30,14 +30,14 @@ const STATUS_TONE: Record<string, "gold" | "navy" | "success" | "slate" | "rose"
 };
 
 const STATUS_LABEL: Record<string, string> = {
-  prospect: "Prospect",
+  prospect: "Demande reçue",
   devis: "Devis envoyé",
-  accord_financeur: "Accord financeur",
-  a_payer: "À régler",
+  accord_financeur: "Accord financeur reçu",
+  a_payer: "Paiement à effectuer",
   en_cours: "Formation en cours",
-  termine: "Terminée",
-  abandon: "Abandon",
-  refuse: "Refusé",
+  termine: "Formation terminée",
+  abandon: "Dossier abandonné",
+  refuse: "Demande refusée",
 };
 
 const FUNDING_LABEL: Record<string, string> = {
@@ -101,8 +101,10 @@ export default async function InscriptionPage({
         <h1 className="mt-2 font-display text-3xl md:text-4xl font-semibold text-navy-950 tracking-tight">
           Inscription & financement
         </h1>
-        <p className="mt-2 text-slate-600 max-w-2xl">
-          Suivi de votre dossier administratif, financement et échéances.
+        <p className="mt-2 text-slate-600 max-w-2xl leading-relaxed">
+          Suivez l'avancement de votre dossier, vos justificatifs et vos
+          échéances en un seul endroit. Un conseiller dédié vous accompagne à
+          chaque étape.
         </p>
       </header>
 
@@ -259,9 +261,12 @@ export default async function InscriptionPage({
         <section>
           <Card>
             <CardBody>
-              <CardTitle>Demander une inscription</CardTitle>
-              <p className="text-sm text-slate-600 mt-1">
-                Notre équipe vous recontacte sous 48 h pour valider votre dossier.
+              <CardTitle>Démarrer votre inscription</CardTitle>
+              <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">
+                Remplissez ce formulaire en 2 minutes. Un conseiller vous
+                rappelle sous <strong className="text-navy-900">48 h
+                ouvrées</strong> pour étudier votre projet et constituer le
+                dossier de financement adapté.
               </p>
 
               {presetFormation && (
@@ -317,7 +322,9 @@ export default async function InscriptionPage({
                   <Input id="phone" name="phone" type="tel" />
                 </div>
                 <div>
-                  <Label htmlFor="funding_kind">Mode de financement envisagé</Label>
+                  <Label htmlFor="funding_kind">
+                    Comment souhaitez-vous financer la formation&nbsp;?
+                  </Label>
                   <select
                     id="funding_kind"
                     name="funding_kind"
@@ -332,16 +339,26 @@ export default async function InscriptionPage({
                   </select>
                 </div>
                 <div className="md:col-span-2">
-                  <Label htmlFor="message">Message (optionnel)</Label>
+                  <Label htmlFor="message">
+                    Votre projet en quelques lignes (optionnel)
+                  </Label>
                   <Textarea
                     id="message"
                     name="message"
                     rows={4}
-                    placeholder="Votre projet, vos disponibilités…"
+                    placeholder="Métier visé, calendrier souhaité, employeur actuel… Tout ce qui nous aidera à mieux vous accompagner."
                   />
                 </div>
-                <div className="md:col-span-2 flex justify-end">
-                  <Button type="submit" variant="gold">
+                <div className="md:col-span-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-1">
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Vos données sont utilisées pour traiter votre demande
+                    uniquement. Aucun engagement à ce stade.
+                  </p>
+                  <Button
+                    type="submit"
+                    variant="gold"
+                    className="w-full sm:w-auto justify-center"
+                  >
                     Envoyer ma demande
                   </Button>
                 </div>
