@@ -9,18 +9,31 @@ export const dynamic = "force-dynamic";
 export default async function AdminPlacementPage() {
   const supabase = createClient();
 
-  const [{ data: questions }, { data: blocs }, { count: resultsCount }] =
-    await Promise.all([
-      supabase
-        .from("placement_questions")
-        .select("id, bloc_id, prompt, choices, correct_index, difficulty, order, active, blocs(code)")
-        .order("bloc_id")
-        .order("order"),
-      supabase.from("blocs").select("id, code, title").order("order"),
-      supabase
-        .from("placement_results")
-        .select("user_id", { count: "exact", head: true }),
-    ]);
+  const [
+    { data: questions },
+    { data: blocs },
+    { count: resultsCount },
+    { data: dbFormations },
+  ] = await Promise.all([
+    supabase
+      .from("placement_questions")
+      .select(
+        "id, bloc_id, qtype, prompt, choices, correct_index, expected_answer, image_url, difficulty, order, active, blocs(code), formation:formations(slug, code)"
+      )
+      .order("bloc_id")
+      .order("order"),
+    supabase.from("blocs").select("id, code, title").order("order"),
+    supabase
+      .from("placement_results")
+      .select("user_id", { count: "exact", head: true }),
+    supabase
+      .from("formations")
+      .select("slug, code, title")
+      .eq("active", true)
+      .order("code"),
+  ]);
+
+  const formations = dbFormations ?? [];
 
   return (
     <div className="space-y-8">
@@ -45,7 +58,11 @@ export default async function AdminPlacementPage() {
               Nouvelle question
             </h2>
           </div>
-          <QuestionEditor blocs={blocs ?? []} mode="create" />
+          <QuestionEditor
+            blocs={blocs ?? []}
+            formations={formations as any}
+            mode="create"
+          />
         </CardBody>
       </Card>
 
@@ -72,8 +89,12 @@ export default async function AdminPlacementPage() {
               </div>
               <QuestionEditor
                 blocs={blocs ?? []}
+                formations={formations as any}
                 mode="edit"
-                question={q}
+                question={{
+                  ...q,
+                  formation_slug: q.formation?.slug ?? null,
+                }}
               />
             </CardBody>
           </Card>

@@ -70,7 +70,7 @@ export default async function SuperAdminLayout({
           </Link>
         </div>
 
-        <nav className="relative flex-1 px-3 py-5 space-y-1">
+        <nav className="relative flex-1 px-3 py-5 space-y-1 overflow-y-auto">
           <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/45 px-3 mb-2">
             Pilotage régalien
           </div>
@@ -79,6 +79,17 @@ export default async function SuperAdminLayout({
           <NavLink href="/super-admin/permissions" icon={ShieldCheck} label="Permissions" />
           <NavLink href="/super-admin/audit" icon={Activity} label="Journal d'audit" />
           <NavLink href="/super-admin/settings" icon={Settings} label="Configuration" />
+
+          <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/45 px-3 mt-5 mb-2">
+            Pilotage admin (raccourcis)
+          </div>
+          <NavLink href="/admin" icon={LayoutDashboard} label="Tableau admin" />
+          <NavLink href="/admin/users" icon={UserCog} label="Utilisateurs" />
+          <NavLink href="/admin/formations" icon={ShieldCheck} label="Catalogue formations" />
+          <NavLink href="/admin/modules" icon={Settings} label="Modules & leçons" />
+          <NavLink href="/admin/quizzes" icon={Activity} label="Quiz & examens" />
+          <NavLink href="/admin/enrollments" icon={Settings} label="Inscriptions" />
+          <NavLink href="/admin/announcements" icon={Activity} label="Annonces" />
         </nav>
 
         <div className="relative px-3 pb-2 border-t border-white/10 pt-3 space-y-1">

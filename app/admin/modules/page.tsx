@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { FormationBadge } from "@/components/formation/formation-badge";
 import { Button } from "@/components/ui/button";
 import { blocTone } from "@/lib/utils";
-import { Plus, ChevronRight, BookOpen } from "lucide-react";
+import { Plus, ChevronRight, BookOpen, AlertCircle } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +39,11 @@ export default async function AdminModules() {
     }
   });
 
+  // Modules orphelins (sans formation rattachée)
+  const orphans = (modules ?? []).filter(
+    (m: any) => !formationByModule.has(m.id)
+  );
+
   return (
     <div className="space-y-8">
       <header className="flex items-end justify-between gap-4 flex-wrap">
@@ -57,6 +62,21 @@ export default async function AdminModules() {
           </Button>
         </Link>
       </header>
+
+      {orphans.length > 0 && (
+        <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 flex items-start gap-3">
+          <AlertCircle className="h-5 w-5 text-amber-700 shrink-0 mt-0.5" />
+          <div className="text-sm text-amber-900 flex-1">
+            <strong>
+              {orphans.length} module{orphans.length > 1 ? "s" : ""} sans
+              formation associée
+            </strong>{" "}
+            — chaque module doit être rattaché à une formation pour apparaître
+            dans le parcours pédagogique des stagiaires. Cliquez sur le module
+            concerné pour l'affecter.
+          </div>
+        </div>
+      )}
 
       <Card>
         <div className="overflow-x-auto">
@@ -101,9 +121,11 @@ export default async function AdminModules() {
                     >
                       {m.title}
                     </Link>
-                    <div className="text-xs text-slate-500 font-mono mt-0.5">
-                      {m.slug}
-                    </div>
+                    {m.slug && (
+                      <div className="text-[11px] text-slate-400 mt-0.5 truncate max-w-xs">
+                        /{m.slug}
+                      </div>
+                    )}
                   </td>
                   <td className="px-5 py-3.5">
                     <span className="inline-flex items-center gap-1 text-slate-600 text-xs">

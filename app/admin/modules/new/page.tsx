@@ -3,12 +3,26 @@ import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { ModuleForm } from "../module-form";
+import { FORMATIONS } from "@/lib/formations-config";
 
 export const dynamic = "force-dynamic";
 
 export default async function NewModulePage() {
   const supabase = createClient();
-  const { data: blocs } = await supabase.from("blocs").select("*").order("id");
+  const [{ data: blocs }, { data: dbFormations }] = await Promise.all([
+    supabase.from("blocs").select("*").order("id"),
+    supabase
+      .from("formations")
+      .select("slug, code, title")
+      .eq("active", true)
+      .order("code"),
+  ]);
+
+  // On préfère les formations de la BDD ; fallback sur le catalogue local
+  const formations =
+    dbFormations && dbFormations.length > 0
+      ? dbFormations
+      : FORMATIONS.map((f) => ({ slug: f.slug, code: f.code, title: f.title }));
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -23,7 +37,7 @@ export default async function NewModulePage() {
           <CardTitle>Nouveau module</CardTitle>
         </div>
         <CardBody>
-          <ModuleForm blocs={blocs ?? []} />
+          <ModuleForm blocs={blocs ?? []} formations={formations as any} />
         </CardBody>
       </Card>
     </div>

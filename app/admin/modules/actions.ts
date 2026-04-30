@@ -24,17 +24,55 @@ function slugify(s: string) {
 
 // ---------------- MODULES ----------------
 
+/**
+ * Récupère l'id de la formation à partir du slug.
+ * Lève si introuvable — la création de module exige une formation valide.
+ */
+async function resolveFormationId(
+  supabase: any,
+  slug: string
+): Promise<string> {
+  const { data, error } = await supabase
+    .from("formations")
+    .select("id")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error(`Formation "${slug}" introuvable`);
+  return data.id;
+}
+
 export async function createModule(raw: unknown) {
-  const { supabase, admin } = await requireAdmin();
+  const { supabase } = await requireAdmin();
   const data = validate(moduleCreateSchema, raw);
   const slug = data.slug || slugify(data.title);
+
+  // 1) Vérifier la formation cible AVANT de créer le module (transactionnel)
+  const formationId = await resolveFormationId(supabase, data.formation_slug);
+
+  // 2) Créer le module
+  const { formation_slug, ...moduleData } = data;
   const { data: created, error } = await supabase
     .from("modules")
-    .insert({ ...data, slug })
+    .insert({ ...moduleData, slug })
     .select()
     .single();
   if (error) throw new Error(error.message);
-  await auditLog("create_module", "module", created.id, { title: data.title });
+
+  // 3) Lier le module à la formation
+  const { error: linkErr } = await supabase
+    .from("formation_modules")
+    .insert({ formation_id: formationId, module_id: created.id });
+  if (linkErr) {
+    // Best-effort : on supprime le module créé pour ne pas laisser un orphelin
+    await supabase.from("modules").delete().eq("id", created.id);
+    throw new Error(`Lien formation impossible : ${linkErr.message}`);
+  }
+
+  await auditLog("create_module", "module", created.id, {
+    title: data.title,
+    formation_slug: data.formation_slug,
+  });
   revalidatePath("/admin/modules");
   redirect(`/admin/modules/${created.id}`);
 }
@@ -42,9 +80,33 @@ export async function createModule(raw: unknown) {
 export async function updateModule(id: string, raw: unknown) {
   const { supabase } = await requireAdmin();
   const patch = validate(moduleUpdateSchema, raw);
-  const { error } = await supabase.from("modules").update(patch).eq("id", id);
-  if (error) throw new Error(error.message);
-  await auditLog("update_module", "module", id);
+  const { formation_slug, ...modulePatch } = patch;
+
+  // Mise à jour du module
+  if (Object.keys(modulePatch).length > 0) {
+    const { error } = await supabase
+      .from("modules")
+      .update(modulePatch)
+      .eq("id", id);
+    if (error) throw new Error(error.message);
+  }
+
+  // Re-affectation formation si demandé (remplace les liens existants)
+  if (formation_slug) {
+    const formationId = await resolveFormationId(supabase, formation_slug);
+    // Supprimer les liens actuels (un module = une formation principale en règle générale)
+    const { error: delErr } = await supabase
+      .from("formation_modules")
+      .delete()
+      .eq("module_id", id);
+    if (delErr) throw new Error(delErr.message);
+    const { error: insErr } = await supabase
+      .from("formation_modules")
+      .insert({ formation_id: formationId, module_id: id });
+    if (insErr) throw new Error(insErr.message);
+  }
+
+  await auditLog("update_module", "module", id, formation_slug ? { formation_slug } : undefined);
   revalidatePath("/admin/modules");
   revalidatePath(`/admin/modules/${id}`);
   return { ok: true };

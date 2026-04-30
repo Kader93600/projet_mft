@@ -14,12 +14,22 @@ interface Module {
   title: string;
 }
 
+interface FormationOpt {
+  slug: string;
+  code: string;
+  title: string;
+}
+
 export function QuizSettingsForm({
   modules,
+  formations,
   quiz,
+  initialFormationSlug,
 }: {
   modules: Module[];
+  formations: FormationOpt[];
   quiz?: any;
+  initialFormationSlug?: string | null;
 }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -53,9 +63,16 @@ export function QuizSettingsForm({
   const [showExp, setShowExp] = useState<"always" | "after_pass" | "never">(
     quiz?.show_explanations_mode ?? "always"
   );
+  const [formationSlug, setFormationSlug] = useState<string>(
+    initialFormationSlug ?? formations[0]?.slug ?? ""
+  );
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!formationSlug) {
+      toast("Sélectionnez la formation associée", "error");
+      return;
+    }
     startTransition(async () => {
       try {
         const payload = {
@@ -63,6 +80,7 @@ export function QuizSettingsForm({
           description: description || undefined,
           type,
           module_id: moduleId || null,
+          formation_slug: formationSlug,
           timer_enabled: timerEnabled,
           time_limit_s: timerEnabled ? minutes * 60 : null,
           pass_threshold: threshold,
@@ -89,6 +107,27 @@ export function QuizSettingsForm({
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
+      <label className="block">
+        <span className="block text-xs font-medium text-slate-600 mb-1.5">
+          Formation associée <span className="text-rose-600">*</span>
+        </span>
+        <Select
+          value={formationSlug}
+          onChange={(e) => setFormationSlug(e.target.value)}
+          required
+        >
+          <option value="">— Sélectionner une formation —</option>
+          {formations.map((f) => (
+            <option key={f.slug} value={f.slug}>
+              {f.code} — {f.title}
+            </option>
+          ))}
+        </Select>
+        <span className="mt-1 block text-[11px] text-slate-500">
+          Le quiz sera rattaché à cette formation et apparaîtra dans son
+          parcours d'évaluation.
+        </span>
+      </label>
       <label className="block">
         <span className="block text-xs font-medium text-slate-600 mb-1.5">Titre</span>
         <Input

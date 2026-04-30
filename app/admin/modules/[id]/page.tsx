@@ -16,12 +16,33 @@ export default async function EditModulePage({
   params: { id: string };
 }) {
   const supabase = createClient();
-  const [{ data: module }, { data: blocs }, { data: lessons }] = await Promise.all([
+  const [
+    { data: module },
+    { data: blocs },
+    { data: lessons },
+    { data: dbFormations },
+    { data: currentLink },
+  ] = await Promise.all([
     supabase.from("modules").select("*, blocs(code, title)").eq("id", params.id).single(),
     supabase.from("blocs").select("*").order("id"),
     supabase.from("lessons").select("*").eq("module_id", params.id).order("order"),
+    supabase
+      .from("formations")
+      .select("slug, code, title")
+      .eq("active", true)
+      .order("code"),
+    supabase
+      .from("formation_modules")
+      .select("formation:formations(slug)")
+      .eq("module_id", params.id)
+      .limit(1)
+      .maybeSingle(),
   ]);
   if (!module) notFound();
+
+  const initialFormationSlug =
+    (currentLink?.formation as any)?.slug ?? null;
+  const formations = dbFormations ?? [];
 
   return (
     <div className="space-y-6">
@@ -50,7 +71,12 @@ export default async function EditModulePage({
               <CardTitle className="text-base">Informations du module</CardTitle>
             </div>
             <CardBody>
-              <ModuleForm blocs={blocs ?? []} module={module} />
+              <ModuleForm
+                blocs={blocs ?? []}
+                formations={formations as any}
+                module={module}
+                initialFormationSlug={initialFormationSlug}
+              />
             </CardBody>
           </Card>
 

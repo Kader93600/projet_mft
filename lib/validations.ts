@@ -46,6 +46,11 @@ export const moduleCreateSchema = z.object({
   title: nonEmptyText(200),
   slug: slugSchema,
   bloc_id: z.number().int().positive(),
+  // Slug formation OBLIGATOIRE à la création (lien formation_modules)
+  formation_slug: z
+    .string()
+    .trim()
+    .min(1, "La formation associée est obligatoire"),
   summary: z.string().trim().max(1000).optional(),
   difficulty: z.enum(["debutant", "intermediaire", "avance"]).default("debutant"),
   duration_min: z.number().int().min(5).max(600).default(30),
@@ -53,7 +58,10 @@ export const moduleCreateSchema = z.object({
   cover_url: z.string().url().max(500).nullable().optional(),
 });
 
-export const moduleUpdateSchema = moduleCreateSchema.partial();
+// À l'update, la formation_slug peut bouger (ré-affectation)
+export const moduleUpdateSchema = moduleCreateSchema
+  .partial()
+  .extend({ formation_slug: z.string().trim().optional() });
 
 // ============ Lessons ============
 export const lessonCreateSchema = z.object({
@@ -75,6 +83,11 @@ export const quizCreateSchema = z.object({
   description: z.string().trim().max(1000).optional(),
   type: z.enum(["entrainement", "examen"]).default("entrainement"),
   module_id: uuid.nullable().optional(),
+  // Slug formation OBLIGATOIRE à la création (lien formation_quizzes)
+  formation_slug: z
+    .string()
+    .trim()
+    .min(1, "La formation associée est obligatoire"),
   time_limit_s: z.number().int().min(30).max(14400).nullable().optional(),
   timer_enabled: z.boolean().default(true),
   pass_threshold: z.number().int().min(0).max(100).default(70),
@@ -87,7 +100,9 @@ export const quizCreateSchema = z.object({
   show_explanations_mode: z.enum(["always", "after_pass", "never"]).default("always"),
 });
 
-export const quizUpdateSchema = quizCreateSchema.partial();
+export const quizUpdateSchema = quizCreateSchema
+  .partial()
+  .extend({ formation_slug: z.string().trim().optional() });
 
 // ============ Questions ============
 export const questionCreateSchema = z.object({
@@ -180,15 +195,52 @@ export const surveySchema = z.object({
 });
 
 // ============ Placement (positionnement initial) ============
-export const placementQuestionSchema = z.object({
-  bloc_id: z.number().int().positive(),
-  prompt: nonEmptyText(1000),
-  choices: z.array(nonEmptyText(300)).min(2).max(6),
-  correct_index: z.number().int().min(0).max(5),
-  difficulty: z.enum(["facile", "standard", "difficile"]).default("standard"),
-  order: z.number().int().min(0).default(0),
-  active: z.boolean().default(true),
-});
+export const placementQuestionSchema = z
+  .object({
+    bloc_id: z.number().int().positive(),
+    qtype: z.enum(["qcm", "qr", "image"]).default("qcm"),
+    formation_slug: z
+      .string()
+      .trim()
+      .min(1, "La formation associée est obligatoire"),
+    prompt: nonEmptyText(1000),
+    choices: z.array(z.string().trim().max(300)).max(6).default([]),
+    correct_index: z.number().int().min(0).max(5).default(0),
+    expected_answer: z.string().trim().max(2000).nullable().optional(),
+    image_url: z.string().url().max(2000).nullable().optional(),
+    difficulty: z.enum(["facile", "standard", "difficile"]).default("standard"),
+    order: z.number().int().min(0).default(0),
+    active: z.boolean().default(true),
+  })
+  .superRefine((d, ctx) => {
+    // QCM / image : 2-6 choix valides + correct_index dans la plage
+    if (d.qtype === "qcm" || d.qtype === "image") {
+      const valid = d.choices.filter((c) => c.length > 0);
+      if (valid.length < 2) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["choices"],
+          message: "Au moins 2 choix sont requis",
+        });
+      }
+      if (d.correct_index >= valid.length) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["correct_index"],
+          message: "L'index de la bonne réponse dépasse le nombre de choix",
+        });
+      }
+    }
+    // QR : pas de choix, expected_answer optionnelle (correction manuelle)
+    // Image : URL d'image obligatoire
+    if (d.qtype === "image" && !d.image_url) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["image_url"],
+        message: "URL de l'image obligatoire pour le type 'image'",
+      });
+    }
+  });
 
 export const placementSubmitSchema = z.object({
   answers: z.record(z.string().uuid(), z.number().int().min(0).max(5)),

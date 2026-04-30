@@ -32,11 +32,13 @@ import {
   updateUserProfile,
 } from "./actions";
 
+type Role = "student" | "trainer" | "admin" | "super_admin";
+
 interface User {
   id: string;
   email: string;
   full_name: string | null;
-  role: "student" | "admin";
+  role: Role;
   level: string;
   group_id: string | null;
   disabled: boolean;
@@ -45,6 +47,20 @@ interface User {
   attempts_count: number;
   avg_score: number;
 }
+
+const ROLE_LABEL: Record<Role, string> = {
+  student: "Stagiaire",
+  trainer: "Formateur",
+  admin: "Admin",
+  super_admin: "Super admin",
+};
+
+const ROLE_TONE: Record<Role, "slate" | "gold" | "navy" | "success"> = {
+  student: "slate",
+  trainer: "navy",
+  admin: "gold",
+  super_admin: "success",
+};
 
 interface Group {
   id: string;
@@ -115,8 +131,10 @@ export function UsersTable({
           </div>
           <Select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
             <option value="all">Tous les rôles</option>
-            <option value="student">Étudiants</option>
+            <option value="student">Stagiaires</option>
+            <option value="trainer">Formateurs</option>
             <option value="admin">Administrateurs</option>
+            <option value="super_admin">Super-admins</option>
           </Select>
           <Select
             value={groupFilter}
@@ -190,11 +208,9 @@ export function UsersTable({
                       )}
                     </td>
                     <td className="px-5 py-3.5">
-                      {u.role === "admin" ? (
-                        <Badge tone="gold">Admin</Badge>
-                      ) : (
-                        <Badge tone="slate">Étudiant</Badge>
-                      )}
+                      <Badge tone={ROLE_TONE[u.role] ?? "slate"}>
+                        {ROLE_LABEL[u.role] ?? u.role}
+                      </Badge>
                     </td>
                     <td className="px-5 py-3.5">
                       <div className="text-xs">

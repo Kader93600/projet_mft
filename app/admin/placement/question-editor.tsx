@@ -14,12 +14,18 @@ import {
 } from "./actions";
 
 type Bloc = { id: number; code: string; title: string };
+type FormationOpt = { slug: string; code: string; title: string };
+type QType = "qcm" | "qr" | "image";
 type Q = {
   id: string;
   bloc_id: number;
+  qtype?: QType;
+  formation_slug?: string;
   prompt: string;
   choices: string[];
   correct_index: number;
+  expected_answer?: string | null;
+  image_url?: string | null;
   difficulty: string;
   order: number;
   active: boolean;
@@ -27,10 +33,12 @@ type Q = {
 
 export function QuestionEditor({
   blocs,
+  formations,
   mode,
   question,
 }: {
   blocs: Bloc[];
+  formations: FormationOpt[];
   mode: "create" | "edit";
   question?: Q;
 }) {
@@ -40,6 +48,10 @@ export function QuestionEditor({
   const [blocId, setBlocId] = useState<number>(
     question?.bloc_id ?? blocs[0]?.id ?? 0
   );
+  const [qtype, setQtype] = useState<QType>(question?.qtype ?? "qcm");
+  const [formationSlug, setFormationSlug] = useState<string>(
+    question?.formation_slug ?? formations[0]?.slug ?? ""
+  );
   const [prompt, setPrompt] = useState(question?.prompt ?? "");
   const [choices, setChoices] = useState<string[]>(
     question?.choices?.length ? question.choices : ["", ""]
@@ -47,6 +59,10 @@ export function QuestionEditor({
   const [correctIndex, setCorrectIndex] = useState<number>(
     question?.correct_index ?? 0
   );
+  const [expectedAnswer, setExpectedAnswer] = useState<string>(
+    question?.expected_answer ?? ""
+  );
+  const [imageUrl, setImageUrl] = useState<string>(question?.image_url ?? "");
   const [difficulty, setDifficulty] = useState<string>(
     question?.difficulty ?? "standard"
   );
@@ -65,24 +81,38 @@ export function QuestionEditor({
 
   function save() {
     setError(null);
+    if (!formationSlug) {
+      setError("Sélectionnez la formation associée");
+      return;
+    }
     start(async () => {
       try {
-        const payload = {
+        const cleanedChoices = choices.map((c) => c.trim()).filter(Boolean);
+        const payload: any = {
           bloc_id: blocId,
+          qtype,
+          formation_slug: formationSlug,
           prompt,
-          choices: choices.map((c) => c.trim()).filter(Boolean),
-          correct_index: correctIndex,
+          choices: qtype === "qr" ? [] : cleanedChoices,
+          correct_index: qtype === "qr" ? 0 : correctIndex,
+          expected_answer:
+            qtype === "qr" && expectedAnswer.trim()
+              ? expectedAnswer.trim()
+              : null,
+          image_url:
+            qtype === "image" && imageUrl.trim() ? imageUrl.trim() : null,
           difficulty: difficulty as any,
           order,
           active: question?.active ?? true,
         };
-        if (payload.choices.length < 2) throw new Error("Au moins 2 choix");
+
         if (mode === "create") {
           await createPlacementQuestion(payload);
-          // reset
           setPrompt("");
           setChoices(["", ""]);
           setCorrectIndex(0);
+          setExpectedAnswer("");
+          setImageUrl("");
           setOrder(0);
         } else if (question) {
           await updatePlacementQuestion({ id: question.id, ...payload });
@@ -121,6 +151,35 @@ export function QuestionEditor({
 
   return (
     <div className="space-y-3">
+      <div className="grid md:grid-cols-2 gap-3">
+        <label className="block">
+          <span className="block text-xs font-medium text-slate-600 mb-1.5">
+            Formation associée <span className="text-rose-600">*</span>
+          </span>
+          <Select
+            value={formationSlug}
+            onChange={(e) => setFormationSlug(e.target.value)}
+            required
+          >
+            <option value="">— Sélectionner —</option>
+            {formations.map((f) => (
+              <option key={f.slug} value={f.slug}>
+                {f.code} — {f.title}
+              </option>
+            ))}
+          </Select>
+        </label>
+        <label className="block">
+          <span className="block text-xs font-medium text-slate-600 mb-1.5">
+            Type de question
+          </span>
+          <Select value={qtype} onChange={(e) => setQtype(e.target.value as QType)}>
+            <option value="qcm">QCM (choix multiples)</option>
+            <option value="qr">QR (réponse rédigée)</option>
+            <option value="image">QCM avec image</option>
+          </Select>
+        </label>
+      </div>
       <div className="grid md:grid-cols-3 gap-3">
         <Select
           value={String(blocId)}
@@ -155,6 +214,44 @@ export function QuestionEditor({
         rows={2}
       />
 
+      {/* Image (conditionnel) */}
+      {qtype === "image" && (
+        <div>
+          <label className="block text-xs font-medium text-slate-600 mb-1.5">
+            URL de l'image <span className="text-rose-600">*</span>
+          </label>
+          <Input
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
+            placeholder="https://…"
+          />
+          {imageUrl && (
+            <img
+              src={imageUrl}
+              alt=""
+              className="mt-2 max-h-48 rounded-lg border border-navy-100 object-contain"
+            />
+          )}
+        </div>
+      )}
+
+      {/* QR : réponse-modèle */}
+      {qtype === "qr" && (
+        <div>
+          <label className="block text-xs font-medium text-slate-600 mb-1.5">
+            Réponse-modèle (correction manuelle)
+          </label>
+          <Textarea
+            value={expectedAnswer}
+            onChange={(e) => setExpectedAnswer(e.target.value)}
+            placeholder="Réponse attendue, points clés à valider…"
+            rows={3}
+          />
+        </div>
+      )}
+
+      {/* Choices (QCM ou Image) */}
+      {qtype !== "qr" && (
       <div className="space-y-2">
         {choices.map((c, i) => (
           <div key={i} className="flex items-center gap-2">
@@ -200,6 +297,7 @@ export function QuestionEditor({
           </button>
         )}
       </div>
+      )}
 
       {error && (
         <p className="text-sm text-rose-700 bg-rose-50 border border-rose-200 px-3 py-2 rounded-lg">

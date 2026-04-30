@@ -15,12 +15,22 @@ interface Bloc {
   title: string;
 }
 
+interface FormationOpt {
+  slug: string;
+  code: string;
+  title: string;
+}
+
 export function ModuleForm({
   blocs,
+  formations,
   module,
+  initialFormationSlug,
 }: {
   blocs: Bloc[];
+  formations: FormationOpt[];
   module?: any;
+  initialFormationSlug?: string | null;
 }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -35,9 +45,16 @@ export function ModuleForm({
   const [duration, setDuration] = useState<number>(module?.duration_min ?? 30);
   const [order, setOrder] = useState<number>(module?.order ?? 0);
   const [coverUrl, setCoverUrl] = useState(module?.cover_url ?? "");
+  const [formationSlug, setFormationSlug] = useState<string>(
+    initialFormationSlug ?? formations[0]?.slug ?? ""
+  );
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!formationSlug) {
+      toast("Sélectionnez la formation associée", "error");
+      return;
+    }
     startTransition(async () => {
       try {
         if (module?.id) {
@@ -45,6 +62,7 @@ export function ModuleForm({
             title,
             slug: slug || undefined,
             bloc_id: blocId,
+            formation_slug: formationSlug,
             summary: summary || null,
             difficulty,
             duration_min: duration,
@@ -58,6 +76,7 @@ export function ModuleForm({
             title,
             slug: slug || undefined,
             bloc_id: blocId,
+            formation_slug: formationSlug,
             summary: summary || undefined,
             difficulty,
             duration_min: duration,
@@ -73,6 +92,27 @@ export function ModuleForm({
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
+      <label className="block">
+        <span className="block text-xs font-medium text-slate-600 mb-1.5">
+          Formation associée <span className="text-rose-600">*</span>
+        </span>
+        <Select
+          value={formationSlug}
+          onChange={(e) => setFormationSlug(e.target.value)}
+          required
+        >
+          <option value="">— Sélectionner une formation —</option>
+          {formations.map((f) => (
+            <option key={f.slug} value={f.slug}>
+              {f.code} — {f.title}
+            </option>
+          ))}
+        </Select>
+        <span className="mt-1 block text-[11px] text-slate-500">
+          Le module sera rattaché à cette formation et apparaîtra dans son
+          parcours pédagogique.
+        </span>
+      </label>
       <label className="block">
         <span className="block text-xs font-medium text-slate-600 mb-1.5">Titre</span>
         <Input

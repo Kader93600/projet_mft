@@ -119,6 +119,7 @@ export const ADMIN_GROUPS: NavGroup[] = [
     label: "Administration",
     items: [
       { href: "/admin/enrollments", label: "Inscriptions & paiements", icon: Wallet },
+      { href: "/admin/settings", label: "Paramètres (index)", icon: Settings, exact: true },
       { href: "/admin/settings/formation", label: "Paramètres formation", icon: Settings },
       { href: "/admin/settings/documents", label: "Documents d'accueil", icon: FileSignature },
       { href: "/admin/rgpd", label: "RGPD & confidentialité", icon: ShieldCheck },

@@ -16,17 +16,36 @@ export default async function EditQuizPage({
   params: { id: string };
 }) {
   const supabase = createClient();
-  const [{ data: quiz }, { data: modules }, { data: questions }] =
-    await Promise.all([
-      supabase.from("quizzes").select("*").eq("id", params.id).single(),
-      supabase.from("modules").select("id, title").order("bloc_id").order("order"),
-      supabase
-        .from("questions")
-        .select("*, choices(*)")
-        .eq("quiz_id", params.id)
-        .order("order"),
-    ]);
+  const [
+    { data: quiz },
+    { data: modules },
+    { data: questions },
+    { data: dbFormations },
+    { data: currentLink },
+  ] = await Promise.all([
+    supabase.from("quizzes").select("*").eq("id", params.id).single(),
+    supabase.from("modules").select("id, title").order("bloc_id").order("order"),
+    supabase
+      .from("questions")
+      .select("*, choices(*)")
+      .eq("quiz_id", params.id)
+      .order("order"),
+    supabase
+      .from("formations")
+      .select("slug, code, title")
+      .eq("active", true)
+      .order("code"),
+    supabase
+      .from("formation_quizzes")
+      .select("formation:formations(slug)")
+      .eq("quiz_id", params.id)
+      .limit(1)
+      .maybeSingle(),
+  ]);
   if (!quiz) notFound();
+
+  const initialFormationSlug =
+    (currentLink?.formation as any)?.slug ?? null;
 
   return (
     <div className="space-y-6">
@@ -71,7 +90,12 @@ export default async function EditQuizPage({
               <CardTitle className="text-base">Paramètres</CardTitle>
             </div>
             <CardBody>
-              <QuizSettingsForm modules={modules ?? []} quiz={quiz} />
+              <QuizSettingsForm
+                modules={modules ?? []}
+                formations={(dbFormations ?? []) as any}
+                quiz={quiz}
+                initialFormationSlug={initialFormationSlug}
+              />
             </CardBody>
           </Card>
           <QuizDangerZone quizId={quiz.id} />

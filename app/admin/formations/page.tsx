@@ -208,15 +208,25 @@ export default async function AdminFormationsPage() {
                       {r.completed}
                     </td>
                     <td className="px-6 py-3 text-right">
-                      <a
-                        href={`${LEGAL.website}/formations/${r.formation.slug}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-navy-900"
-                        aria-label="Voir la page publique"
-                      >
-                        <ExternalLink className="h-3.5 w-3.5" />
-                      </a>
+                      <div className="inline-flex items-center gap-3">
+                        <Link
+                          href={`/admin/enrollments?formation=${r.formation.slug}`}
+                          className="text-xs text-navy-700 hover:text-brand-700 font-medium"
+                          aria-label="Gérer les inscriptions de cette formation"
+                        >
+                          Inscriptions
+                        </Link>
+                        <a
+                          href={`/formations/${r.formation.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-navy-900"
+                          aria-label="Voir la page publique de la formation"
+                          title="Page publique"
+                        >
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </a>
+                      </div>
                     </td>
                   </tr>
                 ))}
