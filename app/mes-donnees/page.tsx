@@ -15,7 +15,7 @@ import Link from "next/link";
 import {
   requestDeletion,
   cancelDeletion,
-  setConsent,
+  toggleConsent,
 } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -198,12 +198,13 @@ export default async function MesDonneesPage() {
                         <p className="text-sm text-slate-600">{meta.desc}</p>
                       </div>
                     </div>
-                    <form
-                      action={async () => {
-                        "use server";
-                        await setConsent(kind, !granted);
-                      }}
-                    >
+                    <form action={toggleConsent}>
+                      <input type="hidden" name="kind" value={kind} />
+                      <input
+                        type="hidden"
+                        name="granted"
+                        value={String(!granted)}
+                      />
                       <button
                         type="submit"
                         disabled={kind === "essential"}

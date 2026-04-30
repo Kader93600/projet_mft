@@ -1,10 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
 import { formatZodError } from "./validations";
+import { isStaff, isSuperAdmin } from "./permissions";
 
 /**
- * Vérifie qu'un admin est connecté. Renvoie le client Supabase + l'admin.
- * Utilisé dans toutes les server actions sensibles.
+ * Vérifie qu'un membre du staff (admin OU super_admin) est connecté.
+ * Renvoie le client Supabase + le profil.
+ * Utilisé dans toutes les server actions sensibles côté /admin.
+ *
+ * NB : le miroir SQL `public.is_admin()` autorise déjà admin + super_admin
+ * (cf. supabase/permissions_v2_step2.sql). On aligne le check TypeScript.
  */
 export async function requireAdmin() {
   const supabase = createClient();
@@ -19,8 +24,18 @@ export async function requireAdmin() {
     .single();
   if (!profile) throw new Error("Profil introuvable");
   if (profile.disabled) throw new Error("Compte désactivé");
-  if (profile.role !== "admin") throw new Error("Accès refusé");
+  if (!isStaff(profile.role)) throw new Error("Accès refusé");
   return { supabase, admin: profile };
+}
+
+/**
+ * Variante stricte : super_admin uniquement (régalien — gestion des rôles,
+ * configuration globale, audit sensible).
+ */
+export async function requireSuperAdmin() {
+  const { supabase, admin } = await requireAdmin();
+  if (!isSuperAdmin(admin.role)) throw new Error("Accès refusé");
+  return { supabase, admin };
 }
 
 /**

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Logo } from "@/components/ui/logo";
 import { initials } from "@/lib/utils";
+import { LogoutButton } from "./logout-button";
 import {
   LayoutDashboard,
   ShieldCheck,
@@ -11,6 +12,7 @@ import {
   Settings,
   ArrowLeft,
   Crown,
+  GraduationCap,
 } from "lucide-react";
 
 export default async function SuperAdminLayout({
@@ -80,6 +82,9 @@ export default async function SuperAdminLayout({
         </nav>
 
         <div className="relative px-3 pb-2 border-t border-white/10 pt-3 space-y-1">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/45 px-3 mb-1">
+            Naviguer entre les espaces
+          </div>
           <Link
             href="/admin"
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/65 hover:bg-white/5 hover:text-white transition"
@@ -87,11 +92,18 @@ export default async function SuperAdminLayout({
             <ArrowLeft className="w-4 h-4" /> Espace admin
           </Link>
           <Link
+            href="/formateur"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/65 hover:bg-white/5 hover:text-white transition"
+          >
+            <GraduationCap className="w-4 h-4" /> Espace formateur
+          </Link>
+          <Link
             href="/dashboard"
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/65 hover:bg-white/5 hover:text-white transition"
           >
-            <ArrowLeft className="w-4 h-4" /> Retour stagiaire
+            <ArrowLeft className="w-4 h-4" /> Espace stagiaire
           </Link>
+          <LogoutButton />
         </div>
 
         <div className="relative border-t border-white/10 p-3">

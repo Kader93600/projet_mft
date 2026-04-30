@@ -94,11 +94,13 @@ export async function middleware(request: NextRequest) {
     ) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
-    // L'espace formateur est réservé aux rôles 'trainer' et 'admin'
+    // L'espace formateur est ouvert à : trainer, admin, super_admin
+    // (admin/super_admin = encadrement pédagogique légitime sur tous les stagiaires)
     if (
       pathname.startsWith("/formateur") &&
       profile?.role !== "trainer" &&
-      profile?.role !== "admin"
+      profile?.role !== "admin" &&
+      profile?.role !== "super_admin"
     ) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
