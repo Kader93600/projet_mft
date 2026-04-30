@@ -8,11 +8,22 @@ import { FormationBadge } from "@/components/formation/formation-badge";
 import { FormationStripe } from "@/components/formation/formation-stripe";
 import { resolveFormationFromModule } from "@/lib/formation-resolver";
 import { Card, CardBody } from "@/components/ui/card";
-import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, Clock, BookOpen } from "lucide-react";
 import { MarkDoneButton } from "./mark-done-button";
 import { SessionTracker } from "@/components/session-tracker";
 import { LessonVideo } from "@/components/lesson-video";
 import { LessonResources } from "@/components/lesson-resources";
+
+/**
+ * Estimation du temps de lecture : ~210 mots / minute (français adulte).
+ * Compte uniquement les mots, ignore les caractères de markdown.
+ */
+function estimateReadingTime(md: string | null | undefined): number {
+  if (!md) return 0;
+  const text = md.replace(/[#>*_`~\[\]\(\)\-]/g, " ");
+  const words = text.trim().split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 210));
+}
 
 export default async function LessonPage({
   params,
@@ -61,37 +72,80 @@ export default async function LessonPage({
 
   // Résolution formation pour identification visuelle
   const formationSlug = await resolveFormationFromModule(module.id);
+  const readingMin = estimateReadingTime(lesson.content_md);
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-[42rem] mx-auto">
       {formationSlug && <FormationStripe slug={formationSlug} />}
-      <div className="space-y-8 pt-6">
+      <div className="space-y-10 pt-6">
       <SessionTracker lessonId={lesson.id} />
       <Link
         href={`/modules/${module.slug}`}
-        className="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-navy-900"
+        className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-navy-900 transition-colors"
       >
-        <ArrowLeft className="w-4 h-4" /> Retour au module
+        <ArrowLeft className="w-3.5 h-3.5" /> Retour au module
       </Link>
 
       <article>
-        <div className="flex items-center gap-2 mb-2 flex-wrap">
+        {/* Eyebrow + métadonnées du module */}
+        <div className="flex items-center gap-2.5 mb-4 flex-wrap">
           {formationSlug && (
             <FormationBadge slug={formationSlug} size="sm" icon />
           )}
+          <span
+            aria-hidden
+            className="h-1 w-1 rounded-full bg-slate-300"
+          />
           <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-            Leçon {idx >= 0 ? idx + 1 : ""} · {module.title}
+            {module.title}
+            {idx >= 0 && (
+              <>
+                <span className="mx-1.5 text-slate-300">·</span>
+                Leçon {idx + 1}
+              </>
+            )}
           </span>
         </div>
-        <h1 className="mt-3 font-display text-3xl md:text-4xl font-semibold text-navy-950 tracking-tight">
+
+        {/* H1 — titre de la leçon, fluide, balanced */}
+        <h1
+          className="font-display font-semibold text-navy-950"
+          style={{
+            fontSize: "clamp(2rem, 1.6rem + 1.6vw, 3rem)",
+            lineHeight: 1.05,
+            letterSpacing: "-0.025em",
+            textWrap: "balance",
+          }}
+        >
           {lesson.title}
         </h1>
+
+        {/* Métadonnées de lecture sous le titre */}
+        <div className="mt-5 flex items-center gap-4 text-[13px] text-slate-500">
+          {readingMin > 0 && (
+            <span className="inline-flex items-center gap-1.5">
+              <Clock className="h-3.5 w-3.5" />
+              <span>
+                {readingMin}{" "}
+                <span className="text-slate-400">min de lecture</span>
+              </span>
+            </span>
+          )}
+          {lesson.video_url && (
+            <span className="inline-flex items-center gap-1.5">
+              <BookOpen className="h-3.5 w-3.5" />
+              <span className="text-slate-400">vidéo + texte</span>
+            </span>
+          )}
+        </div>
+
         {lesson.video_url && (
-          <div className="mt-6">
+          <div className="mt-8">
             <LessonVideo url={lesson.video_url} title={lesson.title} />
           </div>
         )}
-        <div className="mt-8">
+
+        <div className="mt-10">
           <ProtectedContent>
             <LessonContent source={lesson.content_md} />
           </ProtectedContent>
@@ -117,27 +171,43 @@ export default async function LessonPage({
         </Card>
       )}
 
-      <div className="flex items-center justify-between pt-6 border-t border-navy-100 gap-3">
-        <div className="flex-1">
+      <div className="grid sm:grid-cols-[1fr_auto_1fr] items-center pt-8 border-t border-navy-100 gap-4">
+        <div className="min-w-0">
           {prev && (
             <Link
               href={`/modules/${module.slug}/${prev.slug}`}
-              className="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-navy-900"
+              className="group inline-flex items-start gap-2.5 text-left transition-colors"
             >
-              <ArrowLeft className="h-3.5 w-3.5" />
-              <span className="truncate">{prev.title}</span>
+              <ArrowLeft className="h-3.5 w-3.5 mt-1 text-slate-400 group-hover:text-brand-600 group-hover:-translate-x-0.5 transition-transform shrink-0" />
+              <span className="min-w-0">
+                <span className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                  Précédent
+                </span>
+                <span className="block font-display text-sm font-medium text-navy-800 group-hover:text-brand-700 truncate transition-colors">
+                  {prev.title}
+                </span>
+              </span>
             </Link>
           )}
         </div>
-        <MarkDoneButton lessonId={lesson.id} initialDone={completed} />
-        <div className="flex-1 text-right">
+        <div className="flex justify-center">
+          <MarkDoneButton lessonId={lesson.id} initialDone={completed} />
+        </div>
+        <div className="min-w-0 sm:text-right">
           {next && (
             <Link
               href={`/modules/${module.slug}/${next.slug}`}
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-navy-900 hover:text-gold-700"
+              className="group inline-flex items-start gap-2.5 text-left sm:flex-row-reverse transition-colors"
             >
-              <span className="truncate">{next.title}</span>
-              <ArrowRight className="h-3.5 w-3.5" />
+              <ArrowRight className="h-3.5 w-3.5 mt-1 text-slate-400 group-hover:text-signal-700 group-hover:translate-x-0.5 transition-transform shrink-0" />
+              <span className="min-w-0">
+                <span className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-signal-700">
+                  Suivant
+                </span>
+                <span className="block font-display text-sm font-semibold text-navy-900 group-hover:text-brand-700 truncate transition-colors">
+                  {next.title}
+                </span>
+              </span>
             </Link>
           )}
         </div>

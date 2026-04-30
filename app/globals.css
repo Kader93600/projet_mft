@@ -37,41 +37,161 @@
     @apply text-xs font-semibold uppercase tracking-[0.14em] text-navy-600;
   }
 
-  /* Prose pour le contenu pédagogique */
+  /* ───────────────────────────────────────────────────────────────
+     Prose pour le contenu pédagogique — échelle 1.333, fluide.
+     Inspirée Stripe/Apple : sobriété, hiérarchie ferme, lecture longue.
+     ─────────────────────────────────────────────────────────────── */
   .prose-lesson {
-    @apply text-slate-700 leading-relaxed;
+    @apply text-slate-700;
+    font-feature-settings: "kern", "liga", "calt", "ss01";
+    /* Compteur de section pour H2 numérotées */
+    counter-reset: lesson-section;
+    line-height: 1.7;
   }
+
+  /* H2 : section principale, numérotée */
   .prose-lesson h2 {
-    @apply text-2xl md:text-3xl font-display font-semibold mt-10 mb-4 text-navy-900;
-    letter-spacing: -0.02em;
+    @apply font-display font-semibold mt-14 mb-5 text-navy-900;
+    font-size: clamp(1.5rem, 2.8vw, 2.25rem);
+    line-height: 1.15;
+    letter-spacing: -0.022em;
+    text-wrap: balance;
+    counter-increment: lesson-section;
   }
+  .prose-lesson h2::before {
+    content: counter(lesson-section, decimal-leading-zero);
+    @apply font-mono text-[0.55em] font-semibold tracking-[0.18em] text-signal-700 uppercase mr-3 align-top;
+    position: relative;
+    top: 0.45em;
+  }
+
+  /* H3 : sous-section */
   .prose-lesson h3 {
-    @apply text-xl font-display font-semibold mt-8 mb-3 text-navy-800;
+    @apply font-display font-semibold mt-10 mb-3 text-navy-800;
+    font-size: clamp(1.25rem, 1.6vw, 1.4rem);
+    line-height: 1.25;
+    letter-spacing: -0.012em;
+    text-wrap: balance;
   }
+
+  /* Body : 17px desktop, 16px mobile, hyphenation activée */
   .prose-lesson p {
-    @apply my-4 text-[17px] leading-[1.7];
+    @apply my-5;
+    font-size: clamp(1rem, 0.93rem + 0.18vw, 1.0625rem);
+    line-height: 1.7;
     max-width: 68ch;
+    hyphens: auto;
+    -webkit-hyphens: auto;
   }
+
+  /* Lead paragraph — premier paragraphe = chapeau d'article */
+  .prose-lesson > p:first-of-type {
+    @apply text-navy-800;
+    font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem);
+    font-weight: 500;
+    line-height: 1.65;
+    letter-spacing: -0.005em;
+    margin-top: 0.5rem;
+    margin-bottom: 1.75rem;
+  }
+
   .prose-lesson ul {
-    @apply list-disc pl-6 space-y-2 my-4;
+    @apply pl-0 my-5 space-y-2.5;
+    list-style: none;
+  }
+  .prose-lesson ul > li {
+    @apply relative pl-6 leading-[1.7];
+    font-size: clamp(1rem, 0.93rem + 0.18vw, 1.0625rem);
+  }
+  .prose-lesson ul > li::before {
+    content: "";
+    @apply absolute left-1 top-[0.78em] h-1.5 w-1.5 rounded-full bg-signal-500;
   }
   .prose-lesson ol {
-    @apply list-decimal pl-6 space-y-2 my-4;
+    @apply pl-6 my-5 space-y-2.5 list-decimal;
+    counter-reset: list-counter;
   }
+  .prose-lesson ol > li {
+    @apply leading-[1.7] pl-1;
+    font-size: clamp(1rem, 0.93rem + 0.18vw, 1.0625rem);
+  }
+  .prose-lesson ol > li::marker {
+    @apply font-mono text-sm font-semibold text-brand-700;
+  }
+
   .prose-lesson strong {
     @apply font-semibold text-navy-900;
+    text-decoration: underline;
+    text-decoration-color: rgba(159, 226, 32, 0.45);
+    text-decoration-thickness: 0.18em;
+    text-underline-offset: 0.18em;
   }
+
+  /* Blockquote — refonte sans border-left (anti-pattern DESIGN.md) */
   .prose-lesson blockquote {
-    @apply my-6 border-l-2 border-gold-500 pl-5 py-1 italic text-navy-800 font-display text-lg;
+    @apply my-8 px-6 md:px-10 py-5 rounded-2xl bg-navy-50/40;
+    position: relative;
   }
+  .prose-lesson blockquote::before {
+    content: "“";
+    @apply font-display text-signal-500;
+    position: absolute;
+    left: 0.3rem;
+    top: -0.4rem;
+    font-size: 3.5rem;
+    line-height: 1;
+    font-weight: 600;
+  }
+  .prose-lesson blockquote p {
+    @apply font-display text-navy-900 my-0;
+    font-size: clamp(1.125rem, 1rem + 0.4vw, 1.25rem);
+    font-style: italic;
+    font-weight: 500;
+    line-height: 1.55;
+    max-width: none;
+  }
+
+  /* Tables typographiques */
   .prose-lesson table {
-    @apply my-6 w-full text-sm border border-navy-100 rounded-xl overflow-hidden;
+    @apply my-8 w-full border border-navy-100 rounded-xl overflow-hidden;
+    font-size: 0.9375rem;
+    font-variant-numeric: tabular-nums;
   }
   .prose-lesson thead {
     @apply bg-navy-50;
   }
+  .prose-lesson th {
+    @apply px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.12em] text-navy-700;
+  }
+  .prose-lesson td {
+    @apply px-4 py-3 border-t border-navy-50 text-slate-700;
+  }
+  .prose-lesson tbody tr:hover {
+    @apply bg-navy-50/40;
+  }
+
   .prose-lesson code {
     @apply font-mono text-[0.85em] px-1.5 py-0.5 rounded bg-navy-50 text-navy-800 border border-navy-100;
+  }
+  .prose-lesson pre {
+    @apply my-6 p-4 rounded-xl bg-navy-50 border border-navy-100 overflow-x-auto;
+  }
+  .prose-lesson pre code {
+    @apply bg-transparent border-0 p-0;
+  }
+  .prose-lesson a:not(.no-prose) {
+    @apply text-brand-700 underline decoration-brand-200 hover:decoration-brand-500;
+    text-underline-offset: 0.18em;
+    text-decoration-thickness: 0.08em;
+  }
+  .prose-lesson hr {
+    @apply my-12 border-t border-navy-100;
+  }
+  .prose-lesson figure {
+    @apply my-8;
+  }
+  .prose-lesson figcaption {
+    @apply mt-3 text-center text-xs text-slate-500 italic;
   }
 
   /* Prose pour pages légales (CGU, CGV, mentions, etc.) */
