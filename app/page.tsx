@@ -106,89 +106,125 @@ function Header() {
 
 /* =============================================================== HERO */
 function Hero() {
+  // Stagger : 0ms (badge) → 80 → 160 → 240 → 320 → 400 (KPIs)
+  const stagger = (delayMs: number) => ({
+    animation: "fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both",
+    animationDelay: `${delayMs}ms`,
+  });
+
+  const kpis = [
+    { value: "8", label: "formations" },
+    { value: "1 200+", label: "stagiaires formés" },
+    { value: "87 %", label: "taux de réussite" },
+    { value: "Qualiopi", label: "certifié" },
+  ];
+
   return (
-    <section className="relative overflow-hidden pt-12 pb-20 md:pt-20 md:pb-28">
-      {/* Backgrounds */}
-      <div className="absolute inset-0 bg-mesh-night opacity-90 pointer-events-none" />
+    <section className="relative overflow-hidden pt-14 pb-24 md:pt-24 md:pb-32 lg:pt-28 lg:pb-36">
+      {/* Backgrounds — mesh signal + grille tech, masquée vers le bas */}
+      <div className="absolute inset-0 bg-mesh-night opacity-95 pointer-events-none" />
       <div
-        className="absolute inset-0 bg-grid-night opacity-40 pointer-events-none"
+        className="absolute inset-0 bg-grid-night opacity-30 pointer-events-none"
         style={{
-          backgroundSize: "56px 56px",
+          backgroundSize: "64px 64px",
           maskImage:
-            "linear-gradient(to bottom, black 0%, black 60%, transparent 100%)",
+            "linear-gradient(to bottom, transparent 0%, black 18%, black 65%, transparent 100%)",
+        }}
+      />
+      {/* Halo doux brand-signal en bas-gauche pour profondeur */}
+      <div
+        aria-hidden
+        className="absolute -bottom-32 -left-24 h-[28rem] w-[28rem] rounded-full pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(37,48,217,0.35) 0%, rgba(37,48,217,0) 60%)",
         }}
       />
 
-      <div className="relative max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center">
+      <div className="relative max-w-7xl mx-auto px-6 grid lg:grid-cols-[1.05fr_1fr] gap-14 lg:gap-10 items-center">
         {/* Texte */}
-        <div className="text-center lg:text-left animate-fade-up">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 backdrop-blur px-3.5 py-1.5 text-xs font-medium text-white/80">
-            <Sparkles className="w-3.5 h-3.5 text-signal-400" />
+        <div className="text-center lg:text-left">
+          {/* Badge */}
+          <div
+            style={stagger(0)}
+            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] backdrop-blur px-3.5 py-1.5 text-[11px] font-medium tracking-wide text-white/75"
+          >
+            <span
+              className="h-1.5 w-1.5 rounded-full bg-signal-400 animate-glow-pulse motion-reduce:animate-none"
+              aria-hidden
+            />
             Certifié Qualiopi · 8 formations transport
           </div>
 
-          <h1 className="mt-6 font-display text-4xl md:text-6xl lg:text-[64px] font-semibold tracking-[-0.02em] leading-[1.05] text-white">
-            L'école qui forme{" "}
-            <span className="relative inline-block">
-              <span className="italic text-signal-400">les pros</span>
-              <svg
-                className="absolute -bottom-2 left-0 w-full h-3 text-signal-500"
-                viewBox="0 0 200 12"
-                preserveAspectRatio="none"
-              >
-                <path
-                  d="M0 6 Q 50 0 100 6 T 200 6"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  fill="none"
-                  strokeLinecap="round"
-                />
-              </svg>
+          {/* H1 — Apple/Stripe scale, punch sur "Sérieusement." */}
+          <h1
+            style={stagger(80)}
+            className="mt-6 font-display font-semibold text-white leading-[1.02] tracking-[-0.025em] text-[44px] sm:text-[56px] md:text-[68px] lg:text-[80px]"
+          >
+            Formez-vous au transport.
+            <span className="block mt-1.5 bg-gradient-to-r from-signal-300 via-signal-400 to-signal-500 bg-clip-text text-transparent">
+              Sérieusement.
             </span>
-            <br />
-            du transport.
           </h1>
 
-          <p className="mt-6 text-lg text-white/70 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-            Marchandises, voyageurs, capacité, FIMO, taxi, VTC, ECSR…{" "}
-            {LEGAL.brand} prépare tous les métiers réglementés du transport,
-            avec une plateforme moderne et un accompagnement humain.
+          {/* Sous-titre — court, autoritaire */}
+          <p
+            style={stagger(160)}
+            className="mt-7 text-base md:text-lg text-white/65 max-w-xl mx-auto lg:mx-0 leading-relaxed"
+          >
+            Préparation aux titres pros et certifications du transport
+            routier. Plateforme premium, formateurs experts, financements
+            CPF · OPCO · France Travail.
           </p>
 
-          <div className="mt-10 flex flex-wrap justify-center lg:justify-start gap-3">
+          {/* CTAs */}
+          <div
+            style={stagger(240)}
+            className="mt-9 flex flex-wrap justify-center lg:justify-start gap-3"
+          >
             <Link
               href="/formations"
-              className="inline-flex items-center gap-2 rounded-2xl bg-signal-500 text-night px-6 py-3.5 text-sm font-semibold hover:bg-signal-400 transition shadow-glow-signal"
+              className="group relative inline-flex items-center gap-2 rounded-2xl bg-signal-500 text-night-900 px-6 py-3.5 text-[15px] font-semibold transition hover:bg-signal-400 hover:-translate-y-0.5 shadow-glow-signal motion-reduce:hover:translate-y-0"
             >
-              Découvrir nos formations
-              <ArrowRight className="h-4 w-4" />
+              Découvrir les formations
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0" />
             </Link>
             <Link
-              href="/contact"
-              className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/5 backdrop-blur px-6 py-3.5 text-sm font-semibold text-white hover:bg-white/10 transition"
+              href="#experience"
+              className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/[0.03] backdrop-blur px-6 py-3.5 text-[15px] font-semibold text-white/90 hover:bg-white/[0.07] hover:border-white/25 transition"
             >
-              Nous contacter
+              Comment ça marche
             </Link>
           </div>
 
-          <div className="mt-8 flex flex-wrap items-center justify-center lg:justify-start gap-x-5 gap-y-2 text-xs text-white/60">
-            <span className="inline-flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-signal-400" />
-              CPF · OPCO · France Travail
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-signal-400" />
-              Plateforme en ligne 24/7
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-signal-400" />
-              Accompagnement personnalisé
-            </span>
-          </div>
+          {/* KPI strip — preuve sobre */}
+          <dl
+            style={stagger(400)}
+            className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-5 max-w-xl mx-auto lg:mx-0 border-t border-white/5 pt-7"
+          >
+            {kpis.map((k) => (
+              <div key={k.label} className="text-center lg:text-left">
+                <dt className="font-display text-2xl md:text-[28px] font-semibold text-white tracking-tight tabular-nums">
+                  {k.value}
+                </dt>
+                <dd className="mt-1 text-[11px] uppercase tracking-[0.14em] text-white/50">
+                  {k.label}
+                </dd>
+              </div>
+            ))}
+          </dl>
         </div>
 
-        {/* Carrefour 3D */}
-        <div className="relative">
+        {/* Illustration — Carrefour 3D, fade-in léger */}
+        <div className="relative" style={stagger(120)}>
+          <div
+            aria-hidden
+            className="absolute inset-0 -z-10 rounded-[3rem]"
+            style={{
+              background:
+                "radial-gradient(closest-side, rgba(159,226,32,0.10), rgba(159,226,32,0) 70%)",
+            }}
+          />
           <Crossroads />
         </div>
       </div>
@@ -416,7 +452,7 @@ function Experience() {
     },
   ];
   return (
-    <section className="py-20 md:py-28">
+    <section id="experience" className="py-20 md:py-28 scroll-mt-20">
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center max-w-2xl mx-auto">
           <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-signal-400">
