@@ -59,10 +59,16 @@ identifié à une formation (badge, stripe, headers contextuels).
 ### Stacks
 
 ```css
---font-fraunces: serif éditorial premium (titres, hero, accents)
---font-inter:    sans-serif neutre (corps, UI, navigation)
---font-jetbrains: monospace (code, tokens, données techniques)
+--font-fraunces:  Bricolage Grotesque — sans-serif moderne architecturale
+                  (titres, hero, accents). Variable conservée pour compat ;
+                  la police a été remplacée pour un rendu plus contemporain.
+--font-inter:     Inter — sans-serif neutre (corps, UI, navigation)
+--font-jetbrains: JetBrains Mono — monospace (code, tokens, données)
 ```
+
+**Pairing actuel** : Bricolage Grotesque (display) + Inter (body). Vibe
+Stripe/Linear. Si on veut un look encore plus uniforme façon Linear, basculer
+sur Inter Display partout (changer juste l'import dans `app/layout.tsx`).
 
 ### Échelle (mobile → desktop)
 
@@ -77,8 +83,8 @@ identifié à une formation (badge, stripe, headers contextuels).
 
 ### Règles
 
-- **Display = Fraunces** uniquement pour les vrais titres (h1/h2/h3 hero+section).
-  Jamais pour les éléments UI (boutons, labels, navigation).
+- **Display = Bricolage Grotesque** uniquement pour les vrais titres
+  (h1/h2/h3 hero+section). Jamais pour les éléments UI (boutons, labels, nav).
 - **Body = Inter** partout ailleurs.
 - **Tracking** : `tracking-tight` (-0.015em) sur les titres ≥ 28 px ;
   `tracking-wider` (+0.05em) sur les eyebrows.

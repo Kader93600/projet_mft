@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Fraunces, JetBrains_Mono } from "next/font/google";
+import { Inter, Bricolage_Grotesque, JetBrains_Mono } from "next/font/google";
 import { cookies } from "next/headers";
 import "./globals.css";
 import { createClient } from "@/lib/supabase/server";
@@ -13,11 +13,13 @@ const inter = Inter({
   variable: "--font-inter",
   display: "swap",
 });
-const fraunces = Fraunces({
+// Display font moderne (sans-serif architecturale, vibe Stripe/Linear).
+// On garde l'alias --font-fraunces pour ne pas casser les usages existants.
+const display = Bricolage_Grotesque({
   subsets: ["latin"],
   variable: "--font-fraunces",
   display: "swap",
-  axes: ["SOFT", "opsz"],
+  axes: ["wdth", "opsz"],
 });
 const jetbrains = JetBrains_Mono({
   subsets: ["latin"],
@@ -121,7 +123,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html
       lang="fr"
-      className={`${inter.variable} ${fraunces.variable} ${jetbrains.variable} ${a11yClasses} ${themeClass}`}
+      className={`${inter.variable} ${display.variable} ${jetbrains.variable} ${a11yClasses} ${themeClass}`}
       style={{
         fontSize: `${Math.round(fontScale * 100)}%`,
         colorScheme: themeCookie === "dark" ? "dark" : themeCookie === "light" ? "light" : undefined,
