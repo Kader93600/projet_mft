@@ -194,6 +194,23 @@ const config: Config = {
           "0%, 100%": { opacity: "0.4" },
           "50%": { opacity: "0.9" },
         },
+        // Shake horizontal court — feedback erreur (login, forms)
+        shake: {
+          "0%, 100%": { transform: "translateX(0)" },
+          "10%, 30%, 50%, 70%, 90%": { transform: "translateX(-6px)" },
+          "20%, 40%, 60%, 80%": { transform: "translateX(6px)" },
+        },
+        // Pulse sur badge unlock
+        "badge-unlock": {
+          "0%": { transform: "scale(0.6)", opacity: "0" },
+          "60%": { transform: "scale(1.15)", opacity: "1" },
+          "100%": { transform: "scale(1)", opacity: "1" },
+        },
+        // Animation fluide d'une barre de progression : 0 → valeur cible
+        "progress-fill": {
+          "0%": { transform: "scaleX(0)" },
+          "100%": { transform: "scaleX(var(--p, 1))" },
+        },
       },
       animation: {
         "fade-up": "fade-up 0.5s ease-out",
@@ -204,6 +221,11 @@ const config: Config = {
         "draw-path": "draw-path 2s ease-out forwards",
         "marquee-x": "marquee-x 40s linear infinite",
         "glow-pulse": "glow-pulse 3s ease-in-out infinite",
+        shake: "shake 0.5s ease-in-out",
+        "badge-unlock":
+          "badge-unlock 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both",
+        "progress-fill":
+          "progress-fill 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both",
       },
     },
   },

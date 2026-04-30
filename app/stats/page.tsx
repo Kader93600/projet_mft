@@ -19,6 +19,8 @@ import {
   BookOpen,
 } from "lucide-react";
 import { ActivityHeatmap } from "@/components/activity-heatmap";
+import { ScoreEvolutionChart } from "@/components/stats/score-evolution-chart";
+import { ActivityBarsChart } from "@/components/stats/activity-bars-chart";
 
 export const dynamic = "force-dynamic";
 
@@ -329,6 +331,35 @@ export default async function StatsPage() {
                 {total > 0 ? Math.round((nbPassed / total) * 100) : 0}%
               </div>
             </div>
+          </CardBody>
+        </Card>
+      </section>
+
+      {/* NOUVEAUX GRAPHIQUES — évolution score + activité 30 jours */}
+      <section className="grid lg:grid-cols-2 gap-4">
+        <Card>
+          <CardBody>
+            <div className="flex items-center gap-2 mb-4">
+              <TrendingUp className="h-4 w-4 text-brand-600" />
+              <h2 className="font-display text-base font-semibold text-navy-900">
+                Évolution de mon score (30 jours)
+              </h2>
+            </div>
+            <ScoreEvolutionChart
+              attempts={(attempts ?? []) as any}
+              passThreshold={70}
+            />
+          </CardBody>
+        </Card>
+        <Card>
+          <CardBody>
+            <div className="flex items-center gap-2 mb-4">
+              <BarChart3 className="h-4 w-4 text-brand-600" />
+              <h2 className="font-display text-base font-semibold text-navy-900">
+                Temps d'apprentissage quotidien
+              </h2>
+            </div>
+            <ActivityBarsChart daily={(daily ?? []) as any} />
           </CardBody>
         </Card>
       </section>

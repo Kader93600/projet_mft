@@ -21,6 +21,7 @@ import {
 import { Logo } from "@/components/ui/logo";
 import { Crossroads } from "@/components/home/crossroads";
 import { FaqSection } from "@/components/home/faq";
+import { FormationsConstellation } from "@/components/home/formations-constellation";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { LEGAL } from "@/lib/legal-config";
 import { FORMATIONS, listByCategory } from "@/lib/formations-config";
@@ -49,7 +50,7 @@ export default function HomePage() {
       <Hero />
       <TrustBar />
       <Pillars />
-      <FormationsCatalog />
+      <FormationsConstellation />
       <Experience />
       <Stats />
       <Testimonials />
@@ -243,22 +244,43 @@ function TrustBar() {
     "DREAL",
     "Ministère du Travail",
   ];
-  // duplique pour effet marquee
+  // Duplique pour effet marquee continu
   const list = [...items, ...items];
   return (
-    <section className="border-y border-white/5 bg-white/[0.02] py-6 overflow-hidden">
-      <div className="text-center text-[10px] uppercase tracking-[0.18em] text-white/40 mb-4">
-        Reconnu par
+    <section className="border-y border-white/5 bg-white/[0.02] py-7 overflow-hidden">
+      {/* Eyebrow centré horizontalement */}
+      <div className="flex flex-col items-center justify-center mb-5">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/45 inline-flex items-center gap-2">
+          <span
+            aria-hidden
+            className="h-px w-8 bg-gradient-to-r from-transparent to-white/30"
+          />
+          Reconnu par
+          <span
+            aria-hidden
+            className="h-px w-8 bg-gradient-to-l from-transparent to-white/30"
+          />
+        </span>
       </div>
-      <div className="relative">
+
+      {/* Marquee avec masques de fade sur les bords */}
+      <div
+        className="relative"
+        style={{
+          maskImage:
+            "linear-gradient(to right, transparent 0, black 8%, black 92%, transparent 100%)",
+          WebkitMaskImage:
+            "linear-gradient(to right, transparent 0, black 8%, black 92%, transparent 100%)",
+        }}
+      >
         <div
-          className="flex gap-12 whitespace-nowrap animate-marquee-x"
+          className="flex gap-12 whitespace-nowrap animate-marquee-x motion-reduce:animate-none motion-reduce:justify-center motion-reduce:flex-wrap"
           style={{ width: "max-content" }}
         >
           {list.map((label, i) => (
             <span
               key={i}
-              className="font-display text-lg md:text-xl font-semibold text-white/40 tracking-wide"
+              className="font-display text-lg md:text-xl font-semibold text-white/45 tracking-wide hover:text-white/80 transition-colors"
             >
               {label}
             </span>
