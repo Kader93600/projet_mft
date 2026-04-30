@@ -89,8 +89,18 @@ export default async function DashboardPage() {
               Bonjour, {firstName}.
             </h1>
             <p className="mt-3 text-white/70 text-[15px] max-w-lg leading-relaxed">
-              Vous êtes à <span className="text-gold-400 font-semibold">{progressPct}%</span> de votre
-              préparation. Reprenez là où vous vous êtes arrêté et maintenez votre élan.
+              Vous êtes à{" "}
+              <span className="relative inline-flex items-baseline">
+                <span className="font-display text-2xl font-semibold bg-gradient-to-r from-signal-300 to-signal-500 bg-clip-text text-transparent tabular-nums">
+                  {progressPct}%
+                </span>
+                <span
+                  aria-hidden
+                  className="absolute -inset-x-1 -bottom-0.5 h-px bg-gradient-to-r from-signal-400/0 via-signal-400/60 to-signal-400/0"
+                />
+              </span>{" "}
+              de votre préparation. Reprenez là où vous vous êtes arrêté et
+              maintenez votre élan.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link href="/modules">
@@ -145,25 +155,28 @@ export default async function DashboardPage() {
           label="Leçons terminées"
           value={`${completedLessons}`}
           hint={`sur ${totalLessons ?? 0}`}
+          color="brand"
         />
         <StatCard
           icon={Flame}
           label="Progression"
           value={`${progressPct}%`}
           hint="préparation globale"
+          color="amber"
         />
         <StatCard
           icon={Trophy}
           label="Score moyen"
           value={`${avgScore}%`}
           hint="sur vos quiz"
-          accent
+          color="signal"
         />
         <StatCard
           icon={ClipboardCheck}
           label="Quiz passés"
           value={String(attempts?.length ?? 0)}
           hint="entraînements + examens"
+          color="emerald"
         />
       </section>
 
@@ -310,27 +323,74 @@ export default async function DashboardPage() {
   );
 }
 
+type StatColor = "brand" | "signal" | "amber" | "emerald";
+
+const STAT_COLORS: Record<
+  StatColor,
+  { iconBg: string; iconText: string; halo: string; bar: string }
+> = {
+  brand: {
+    iconBg: "bg-brand-50",
+    iconText: "text-brand-700",
+    halo: "rgba(37,48,217,0.18)",
+    bar: "bg-brand-500",
+  },
+  signal: {
+    iconBg: "bg-signal-100",
+    iconText: "text-signal-800",
+    halo: "rgba(159,226,32,0.28)",
+    bar: "bg-signal-500",
+  },
+  amber: {
+    iconBg: "bg-amber-100",
+    iconText: "text-amber-700",
+    halo: "rgba(245,158,11,0.22)",
+    bar: "bg-amber-500",
+  },
+  emerald: {
+    iconBg: "bg-emerald-50",
+    iconText: "text-emerald-700",
+    halo: "rgba(16,185,129,0.22)",
+    bar: "bg-emerald-500",
+  },
+};
+
 function StatCard({
   icon: Icon,
   label,
   value,
   hint,
-  accent,
+  color = "brand",
 }: {
   icon: any;
   label: string;
   value: string;
   hint?: string;
-  accent?: boolean;
+  color?: StatColor;
 }) {
+  const c = STAT_COLORS[color];
   return (
-    <Card>
-      <CardBody className="flex items-start gap-4">
+    <Card className="relative overflow-hidden group transition-shadow duration-300 hover:shadow-raised">
+      {/* Halo radial coloré, doux, animé au hover */}
+      <div
+        aria-hidden
+        className="absolute -top-16 -right-16 h-40 w-40 rounded-full pointer-events-none opacity-60 group-hover:opacity-100 transition-opacity duration-500"
+        style={{ background: `radial-gradient(circle, ${c.halo} 0%, transparent 70%)` }}
+      />
+      {/* Barre verticale d'accent à gauche */}
+      <span
+        aria-hidden
+        className={
+          "absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full opacity-80 " + c.bar
+        }
+      />
+      <CardBody className="relative flex items-start gap-4">
         <div
           className={
-            accent
-              ? "h-11 w-11 rounded-xl bg-gold-100 text-gold-800 flex items-center justify-center"
-              : "h-11 w-11 rounded-xl bg-navy-50 text-navy-800 flex items-center justify-center"
+            "h-11 w-11 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105 motion-reduce:group-hover:scale-100 " +
+            c.iconBg +
+            " " +
+            c.iconText
           }
         >
           <Icon className="h-5 w-5" />
@@ -339,10 +399,10 @@ function StatCard({
           <div className="text-[11px] uppercase tracking-wider text-slate-500 font-medium">
             {label}
           </div>
-          <div className="font-display text-2xl font-semibold text-navy-900 mt-0.5 leading-none">
+          <div className="font-display text-[28px] font-semibold text-navy-900 mt-0.5 leading-none tabular-nums">
             {value}
           </div>
-          {hint && <div className="text-xs text-slate-500 mt-1">{hint}</div>}
+          {hint && <div className="text-xs text-slate-500 mt-1.5">{hint}</div>}
         </div>
       </CardBody>
     </Card>
