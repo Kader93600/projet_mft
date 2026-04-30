@@ -181,15 +181,28 @@ export function OnboardingWizard({
 
       <div className="space-y-6 pt-6">
         {/* Header */}
-        <div>
+        <div style={{ animation: "fade-up 0.6s ease-out both" }}>
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-gold-700" />
-            <span className="eyebrow text-gold-700">Entrée en formation</span>
+            <Sparkles className="h-4 w-4 text-signal-700 animate-glow-pulse motion-reduce:animate-none" />
+            <span className="eyebrow text-signal-700">Entrée en formation</span>
           </div>
-          <h1 className="mt-2 font-display text-3xl font-semibold text-navy-950 tracking-tight">
-            Bienvenue, {firstName} 👋
+          <h1 className="mt-2 font-display text-3xl md:text-4xl font-semibold text-navy-950 tracking-tight">
+            Bienvenue,{" "}
+            <span className="bg-gradient-to-r from-brand-700 to-brand-500 bg-clip-text text-transparent">
+              {firstName}
+            </span>{" "}
+            <span
+              aria-hidden
+              className="inline-block origin-bottom-right motion-reduce:animate-none"
+              style={{
+                animation:
+                  "float-slow 3.5s ease-in-out infinite, fade-up 0.6s ease-out 0.2s both",
+              }}
+            >
+              👋
+            </span>
           </h1>
-          <p className="mt-2 text-slate-600 text-sm max-w-2xl">
+          <p className="mt-3 text-slate-600 text-[15px] max-w-2xl leading-relaxed">
             Trois étapes rapides pour démarrer : choisir votre formation, signer
             les documents d'entrée, puis accéder à votre espace personnalisé.
           </p>
@@ -470,21 +483,87 @@ export function OnboardingWizard({
 
         {/* ÉTAPE 3 — Confirmation finale */}
         {stage === "done" && (
-          <div className="rounded-2xl bg-white border border-navy-100 shadow-soft p-8 text-center space-y-5">
-            <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-gold-400 to-gold-500 flex items-center justify-center shadow-soft">
-              <ShieldCheck className="h-7 w-7 text-navy-900" />
+          <div className="relative rounded-3xl bg-white border border-navy-100 shadow-raised p-10 text-center space-y-6 overflow-hidden">
+            {/* Décor : halos colorés + gradient festif sobre */}
+            <div
+              aria-hidden
+              className="absolute -top-32 left-1/2 -translate-x-1/2 h-96 w-[36rem] rounded-full pointer-events-none opacity-60"
+              style={{
+                background:
+                  "radial-gradient(closest-side, rgba(159,226,32,0.18), rgba(37,48,217,0.10) 50%, transparent 75%)",
+              }}
+            />
+            {/* Confettis discrets (pas de lib) — 12 petits points qui flottent */}
+            <div aria-hidden className="absolute inset-0 pointer-events-none motion-reduce:hidden">
+              {[
+                { l: "8%",  t: "12%", c: "#9FE220", d: 0,    s: 6 },
+                { l: "20%", t: "6%",  c: "#2530D9", d: 0.2,  s: 5 },
+                { l: "35%", t: "18%", c: "#9FE220", d: 0.4,  s: 4 },
+                { l: "62%", t: "8%",  c: "#2530D9", d: 0.1,  s: 6 },
+                { l: "78%", t: "16%", c: "#9FE220", d: 0.3,  s: 5 },
+                { l: "92%", t: "10%", c: "#2530D9", d: 0.5,  s: 4 },
+                { l: "12%", t: "78%", c: "#9FE220", d: 0.6,  s: 5 },
+                { l: "30%", t: "88%", c: "#2530D9", d: 0.15, s: 6 },
+                { l: "52%", t: "84%", c: "#9FE220", d: 0.45, s: 4 },
+                { l: "72%", t: "90%", c: "#2530D9", d: 0.25, s: 5 },
+                { l: "88%", t: "80%", c: "#9FE220", d: 0.55, s: 6 },
+                { l: "5%",  t: "50%", c: "#2530D9", d: 0.35, s: 4 },
+              ].map((p, i) => (
+                <span
+                  key={i}
+                  className="absolute rounded-full"
+                  style={{
+                    left: p.l,
+                    top: p.t,
+                    width: `${p.s}px`,
+                    height: `${p.s}px`,
+                    background: p.c,
+                    animation: `float-slow 5.5s ease-in-out ${p.d}s infinite, fade-up 0.9s ease-out ${p.d}s both`,
+                    boxShadow: `0 0 12px ${p.c}`,
+                    opacity: 0.7,
+                  }}
+                />
+              ))}
             </div>
-            <div>
-              <span className="eyebrow text-gold-700">Onboarding terminé</span>
-              <h2 className="mt-2 font-display text-2xl font-semibold text-navy-950">
+
+            <div className="relative">
+              {/* Icône gold avec halo et léger bounce-in */}
+              <div
+                className="mx-auto h-20 w-20 rounded-3xl bg-gradient-to-br from-signal-300 to-signal-500 flex items-center justify-center shadow-glow-signal"
+                style={{
+                  animation:
+                    "fade-up 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both",
+                }}
+              >
+                <ShieldCheck className="h-9 w-9 text-night-900" />
+              </div>
+            </div>
+
+            <div className="relative space-y-3">
+              <span
+                className="eyebrow text-signal-700 inline-block"
+                style={{ animation: "fade-up 0.5s ease-out 0.2s both" }}
+              >
+                Onboarding terminé
+              </span>
+              <h2
+                className="font-display text-3xl md:text-4xl font-semibold text-navy-950 tracking-tight"
+                style={{ animation: "fade-up 0.6s ease-out 0.3s both" }}
+              >
                 Tout est prêt, {firstName}.
               </h2>
-              <p className="mt-2 text-slate-600 text-sm">
-                Votre formation est sélectionnée, vos documents sont signés et
-                archivés. Votre dashboard a été personnalisé.
+              <p
+                className="text-slate-600 text-[15px] max-w-md mx-auto leading-relaxed"
+                style={{ animation: "fade-up 0.5s ease-out 0.4s both" }}
+              >
+                Votre formation est sélectionnée, vos documents signés et
+                archivés. Votre dashboard est personnalisé pour vous.
               </p>
               {chosenSlug && (
-                <div className="mt-4 flex justify-center">
+                <div
+                  className="flex justify-center pt-1"
+                  style={{ animation: "fade-up 0.5s ease-out 0.5s both" }}
+                >
                   <FormationBadge
                     slug={chosenSlug}
                     size="md"
@@ -496,25 +575,37 @@ export function OnboardingWizard({
               )}
             </div>
 
-            {err && <div className="text-sm text-rose-700">{err}</div>}
+            {err && (
+              <div className="relative text-sm text-rose-700">{err}</div>
+            )}
 
-            <Button
-              onClick={finish}
-              disabled={pending}
-              variant="gold"
-              size="lg"
+            <div
+              className="relative pt-2"
+              style={{ animation: "fade-up 0.5s ease-out 0.6s both" }}
             >
-              {pending ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Préparation…
-                </>
-              ) : (
-                <>
-                  Accéder à mon dashboard
-                  <ArrowRight className="h-4 w-4" />
-                </>
-              )}
-            </Button>
+              <Button
+                onClick={finish}
+                disabled={pending}
+                variant="gold"
+                size="lg"
+                className="hover:-translate-y-0.5 transition-transform motion-reduce:hover:translate-y-0"
+              >
+                {pending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" /> Préparation…
+                  </>
+                ) : (
+                  <>
+                    Accéder à mon dashboard
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
+              </Button>
+              <p className="mt-3 text-[11px] text-slate-400">
+                Vous pourrez modifier vos préférences à tout moment dans votre
+                profil.
+              </p>
+            </div>
           </div>
         )}
       </div>
