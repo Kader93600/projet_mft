@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { FormationBadge } from "@/components/formation/formation-badge";
 import { renderMarkdown } from "@/lib/markdown";
 import { BookOpen, Search } from "lucide-react";
 
@@ -11,32 +12,51 @@ export const revalidate = 300;
 export default async function GlossairePage({
   searchParams,
 }: {
-  searchParams?: { q?: string; bloc?: string };
+  searchParams?: { q?: string; bloc?: string; formation?: string };
 }) {
   const supabase = createClient();
   const q = searchParams?.q?.trim() ?? "";
   const blocFilter = searchParams?.bloc ?? "";
+  const formationFilter = searchParams?.formation ?? "";
 
   let query = supabase
     .from("glossary_terms")
-    .select("id, term, definition_md, bloc_id, synonyms, source, blocs(code, title)")
+    .select(
+      "id, term, definition_md, bloc_id, formation_id, synonyms, source, blocs(code, title), formation:formations(slug, code, title)"
+    )
     .order("term");
 
   if (blocFilter) {
     if (blocFilter === "none") query = query.is("bloc_id", null);
     else query = query.eq("bloc_id", Number(blocFilter));
   }
+  if (formationFilter) {
+    if (formationFilter === "none") query = query.is("formation_id", null);
+    else {
+      // Sous-requête : on récupère l'id à partir du slug
+      const { data: f } = await supabase
+        .from("formations")
+        .select("id")
+        .eq("slug", formationFilter)
+        .maybeSingle();
+      if (f?.id) query = query.eq("formation_id", f.id);
+    }
+  }
   if (q) {
     // Recherche simple : ILIKE sur term + synonyms via OR ; FTS pourrait remplacer
-    query = query.or(
-      `term.ilike.%${q}%,definition_md.ilike.%${q}%`
-    );
+    query = query.or(`term.ilike.%${q}%,definition_md.ilike.%${q}%`);
   }
 
-  const [{ data: terms }, { data: blocs }] = await Promise.all([
-    query,
-    supabase.from("blocs").select("id, code, title").order("order"),
-  ]);
+  const [{ data: terms }, { data: blocs }, { data: formations }] =
+    await Promise.all([
+      query,
+      supabase.from("blocs").select("id, code, title").order("order"),
+      supabase
+        .from("formations")
+        .select("slug, code, title")
+        .eq("active", true)
+        .order("code"),
+    ]);
 
   // Regroupement alphabétique
   const grouped: Record<string, any[]> = {};
@@ -73,6 +93,19 @@ export default async function GlossairePage({
           />
         </div>
         <select
+          name="formation"
+          defaultValue={formationFilter}
+          className="h-10 rounded-xl border border-navy-200 bg-white px-3 text-sm text-navy-900"
+        >
+          <option value="">Toutes formations</option>
+          {formations?.map((f: any) => (
+            <option key={f.slug} value={f.slug}>
+              {f.code} — {f.title}
+            </option>
+          ))}
+          <option value="none">Transversal</option>
+        </select>
+        <select
           name="bloc"
           defaultValue={blocFilter}
           className="h-10 rounded-xl border border-navy-200 bg-white px-3 text-sm text-navy-900"
@@ -91,7 +124,7 @@ export default async function GlossairePage({
         >
           Filtrer
         </button>
-        {(q || blocFilter) && (
+        {(q || blocFilter || formationFilter) && (
           <Link
             href="/glossaire"
             className="h-10 inline-flex items-center px-3 rounded-xl text-sm text-slate-600 hover:text-navy-900"
@@ -100,6 +133,10 @@ export default async function GlossairePage({
           </Link>
         )}
       </form>
+
+      <div className="text-xs text-slate-500">
+        {terms?.length ?? 0} terme{(terms?.length ?? 0) > 1 ? "s" : ""}
+      </div>
 
       {(!terms || terms.length === 0) && (
         <Card>
@@ -137,9 +174,25 @@ export default async function GlossairePage({
                   <h3 className="font-display text-lg font-semibold text-navy-900">
                     {t.term}
                   </h3>
-                  <div className="flex items-center gap-2">
-                    {t.blocs?.code && <Badge tone="navy" size="sm">{t.blocs.code}</Badge>}
-                    {!t.bloc_id && <Badge tone="slate" size="sm">Transversal</Badge>}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {t.formation?.slug && (
+                      <FormationBadge
+                        slug={t.formation.slug}
+                        size="xs"
+                        icon
+                        variant="soft"
+                      />
+                    )}
+                    {t.blocs?.code && (
+                      <Badge tone="navy" size="sm">
+                        {t.blocs.code}
+                      </Badge>
+                    )}
+                    {!t.bloc_id && !t.formation_id && (
+                      <Badge tone="slate" size="sm">
+                        Transversal
+                      </Badge>
+                    )}
                   </div>
                 </div>
                 {t.synonyms?.length > 0 && (
