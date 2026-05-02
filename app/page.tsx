@@ -87,16 +87,16 @@ function Header() {
         </nav>
         <div className="flex items-center gap-3">
           <Link
-            href="/login"
-            className="hidden md:inline text-sm text-white/70 hover:text-white"
+            href="/contact"
+            className="hidden md:inline text-sm text-white/70 hover:text-white transition"
           >
-            Espace stagiaire
+            Demander un devis
           </Link>
           <Link
-            href="/inscription"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-signal-500 text-night px-4 py-2 text-sm font-semibold hover:bg-signal-400 transition shadow-glow-signal"
+            href="/login"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-signal-500 text-night-900 px-4 py-2 text-sm font-semibold hover:bg-signal-400 transition shadow-glow-signal"
           >
-            S'inscrire
+            Espace stagiaire
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>

@@ -138,11 +138,15 @@ export default function LoginPage() {
           <p className="mt-6 text-center text-sm text-slate-600">
             Pas encore de compte ?{" "}
             <Link
-              href="/signup"
+              href="/contact"
               className="font-semibold text-brand-700 hover:text-brand-900 underline-offset-4 hover:underline"
             >
-              Créer mon accès
+              Contactez l'école
             </Link>
+          </p>
+          <p className="mt-2 text-center text-xs text-slate-400">
+            Les comptes stagiaires sont créés par notre équipe pédagogique
+            après confirmation de votre inscription.
           </p>
 
           <div className="mt-10 pt-6 border-t border-navy-100 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-slate-500">

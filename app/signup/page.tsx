@@ -1,145 +1,120 @@
 import Link from "next/link";
-import { SignupForm } from "./signup-form";
 import { Logo } from "@/components/ui/logo";
-import {
-  CheckCircle2,
-  BookOpen,
-  Trophy,
-  ArrowLeft,
-  Sparkles,
-} from "lucide-react";
+import { ArrowLeft, Phone, Mail, ShieldCheck, ArrowRight } from "lucide-react";
 import { LEGAL } from "@/lib/legal-config";
 
-export default function SignupPage() {
+export const metadata = {
+  title: "Inscription — contactez-nous",
+  description:
+    "Les comptes stagiaires sont créés par notre équipe pédagogique après confirmation de votre dossier d'inscription.",
+};
+
+/**
+ * /signup est désactivé : les inscriptions passent désormais par l'école
+ * (création de compte par admin / super-admin uniquement). Cette page
+ * informe les visiteurs et les redirige vers /contact.
+ */
+export default function SignupClosedPage() {
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-night text-white">
-      {/* Left — Visual panel (dark mode brand) */}
-      <aside className="relative hidden lg:flex flex-col justify-between p-10 overflow-hidden">
-        <div className="absolute inset-0 bg-mesh-night opacity-90" />
-        <div
-          className="absolute inset-0 bg-grid-night opacity-30"
-          style={{
-            backgroundSize: "56px 56px",
-            maskImage: "linear-gradient(to bottom, black 0%, black 60%, transparent 100%)",
-          }}
-        />
-        <div
-          aria-hidden="true"
-          className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-signal-500/15 blur-3xl pointer-events-none"
-        />
-        <div
-          aria-hidden="true"
-          className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-brand-500/20 blur-3xl pointer-events-none"
-        />
+    <div className="min-h-screen flex items-center justify-center bg-ivory px-6 py-16">
+      <div className="max-w-xl w-full">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-navy-900 transition mb-8"
+        >
+          <ArrowLeft className="h-4 w-4" /> Retour au site
+        </Link>
 
-        <div className="relative">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-sm text-white/70 hover:text-white transition"
+        <div
+          className="rounded-3xl bg-white border border-navy-100 p-8 md:p-10 shadow-soft"
+          style={{ animation: "fade-up 0.6s ease-out both" }}
+        >
+          <div className="flex items-center gap-3 mb-6">
+            <Logo size="sm" />
+          </div>
+
+          <div
+            className="h-12 w-12 rounded-2xl bg-brand-50 text-brand-700 flex items-center justify-center"
+            style={{
+              animation:
+                "fade-up 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both",
+            }}
           >
-            <ArrowLeft className="h-4 w-4" />
-            Retour au site
-          </Link>
-        </div>
+            <ShieldCheck className="h-6 w-6" />
+          </div>
 
-        <div className="relative space-y-8 max-w-md">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-signal-500/30 bg-signal-500/10 px-3 py-1 text-xs font-medium text-signal-300">
-            <Sparkles className="h-3 w-3" />
-            Rejoindre {LEGAL.brand}
-          </span>
-          <h2 className="font-display text-4xl leading-[1.05] tracking-tight">
-            Lancez votre{" "}
-            <span className="italic text-signal-400">parcours</span> dans le
-            transport.
-          </h2>
-          <p className="text-white/70 text-[15px] leading-relaxed">
-            Créez votre compte gratuit pour explorer notre catalogue de
-            formations. Vous pourrez ensuite finaliser votre dossier d'inscription
-            avec notre équipe.
+          <h1
+            className="mt-5 font-display text-2xl md:text-3xl font-semibold text-navy-950 tracking-tight"
+            style={{ animation: "fade-up 0.5s ease-out 0.15s both" }}
+          >
+            Inscription accompagnée
+          </h1>
+
+          <p
+            className="mt-3 text-slate-600 leading-relaxed"
+            style={{ animation: "fade-up 0.5s ease-out 0.25s both" }}
+          >
+            Pour garantir un accompagnement personnalisé et un dossier de
+            financement adapté à votre situation,{" "}
+            <strong className="text-navy-900">
+              les inscriptions sont gérées par notre équipe pédagogique
+            </strong>
+            .
           </p>
 
-          <ul className="space-y-3 text-sm">
-            <li className="flex items-start gap-3">
-              <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-md bg-signal-500/15 border border-signal-500/30 text-signal-400">
-                <BookOpen className="h-3.5 w-3.5" />
-              </span>
-              <span className="text-white/85">
-                8 formations transport (GOTRM, ECSR, FIMO, Capacités…)
-              </span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-md bg-signal-500/15 border border-signal-500/30 text-signal-400">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-              </span>
-              <span className="text-white/85">
-                Plateforme accessible 24 h/24 + sessions live
-              </span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-md bg-signal-500/15 border border-signal-500/30 text-signal-400">
-                <Trophy className="h-3.5 w-3.5" />
-              </span>
-              <span className="text-white/85">
-                Examens blancs en conditions réelles + correction personnalisée
-              </span>
-            </li>
-          </ul>
-        </div>
+          <p
+            className="mt-3 text-slate-600 leading-relaxed"
+            style={{ animation: "fade-up 0.5s ease-out 0.32s both" }}
+          >
+            Contactez-nous, nous étudions votre projet et créons votre accès
+            sous <strong>48 h ouvrées</strong>.
+          </p>
 
-        <div className="relative text-xs text-white/45 tracking-wide uppercase">
-          © {new Date().getFullYear()} {LEGAL.brand}
-        </div>
-      </aside>
-
-      {/* Right — Form */}
-      <main className="flex items-center justify-center p-6 sm:p-10 bg-ivory text-ink">
-        <div className="w-full max-w-md">
-          <div className="lg:hidden mb-8 flex justify-center">
-            <Logo />
+          <div
+            className="mt-8 grid sm:grid-cols-2 gap-3"
+            style={{ animation: "fade-up 0.5s ease-out 0.4s both" }}
+          >
+            <Link
+              href="/contact"
+              className="group rounded-2xl bg-navy-900 text-white p-5 hover:bg-navy-800 transition flex items-start gap-3"
+            >
+              <Mail className="h-5 w-5 shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold">Formulaire de contact</div>
+                <div className="text-xs text-white/60 mt-0.5">
+                  Réponse sous 48 h ouvrées
+                </div>
+              </div>
+              <ArrowRight className="h-4 w-4 mt-0.5 shrink-0 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+            <a
+              href={`mailto:${LEGAL.email}`}
+              className="group rounded-2xl bg-white border border-navy-100 p-5 hover:border-brand-300 hover:shadow-soft transition flex items-start gap-3"
+            >
+              <Mail className="h-5 w-5 text-brand-700 shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-navy-900">Email direct</div>
+                <div className="text-xs text-slate-500 mt-0.5 truncate">
+                  {LEGAL.email}
+                </div>
+              </div>
+            </a>
           </div>
 
-          <div className="mb-8">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-signal-700">
-              Créer un compte
-            </span>
-            <h1 className="mt-2 font-display text-3xl font-semibold text-navy-950 tracking-tight">
-              Commencez votre formation.
-            </h1>
-            <p className="mt-2 text-[15px] text-slate-600">
-              Quelques secondes pour accéder à toute la plateforme.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-navy-100 bg-white p-8 shadow-soft">
-            <SignupForm />
-          </div>
-
-          <p className="mt-6 text-center text-sm text-slate-600">
-            Déjà inscrit ?{" "}
+          <div
+            className="mt-8 pt-6 border-t border-navy-50 text-center text-sm text-slate-600"
+            style={{ animation: "fade-up 0.5s ease-out 0.5s both" }}
+          >
+            Vous avez déjà un compte ?{" "}
             <Link
               href="/login"
               className="font-semibold text-brand-700 hover:text-brand-900 underline-offset-4 hover:underline"
             >
               Se connecter
             </Link>
-          </p>
-
-          <div className="mt-10 pt-6 border-t border-navy-100 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-slate-500">
-            <Link href="/mentions-legales" className="hover:text-navy-900">
-              Mentions légales
-            </Link>
-            <Link href="/cgu" className="hover:text-navy-900">
-              CGU
-            </Link>
-            <Link href="/cgv" className="hover:text-navy-900">
-              CGV
-            </Link>
-            <Link href="/confidentialite" className="hover:text-navy-900">
-              Confidentialité
-            </Link>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
