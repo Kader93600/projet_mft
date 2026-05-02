@@ -438,7 +438,7 @@ export default async function UserProfilePage({
             </div>
             {total === 0 ? (
               <CardBody className="py-12 text-center text-sm text-slate-400">
-                Cet étudiant n'a effectué aucun quiz.
+                Ce stagiaire n'a effectué aucun quiz.
               </CardBody>
             ) : (
               <div className="overflow-x-auto">

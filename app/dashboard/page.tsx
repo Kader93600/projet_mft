@@ -59,7 +59,7 @@ export default async function DashboardPage() {
       ? Math.round(attempts.reduce((s, a) => s + a.percentage, 0) / attempts.length)
       : 0;
 
-  const firstName = profile?.full_name?.split(" ")[0] || "étudiant";
+  const firstName = profile?.full_name?.split(" ")[0] || "stagiaire";
 
   return (
     <div className="space-y-10">

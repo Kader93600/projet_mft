@@ -63,7 +63,7 @@ export default async function AdminHome() {
 
   const kpis = [
     {
-      label: "Étudiants",
+      label: "Stagiaires",
       value: usersCount ?? 0,
       icon: Users,
       tone: "navy",

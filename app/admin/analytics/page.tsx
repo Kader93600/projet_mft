@@ -69,7 +69,7 @@ export default async function AdminAnalytics() {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-navy-50/60 text-[11px] uppercase tracking-wider text-slate-600">
-                <th className="text-left px-5 py-3 font-semibold">Étudiant</th>
+                <th className="text-left px-5 py-3 font-semibold">Stagiaire</th>
                 <th className="text-left px-5 py-3 font-semibold">Quiz</th>
                 <th className="text-left px-5 py-3 font-semibold">Score</th>
                 <th className="text-left px-5 py-3 font-semibold">Statut</th>

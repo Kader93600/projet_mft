@@ -23,7 +23,7 @@ const ACTION_LABELS: Record<string, { label: string; tone: string }> = {
   create_group: { label: "Classe créée", tone: "success" },
   update_group: { label: "Classe modifiée", tone: "navy" },
   delete_group: { label: "Classe supprimée", tone: "slate" },
-  assign_group: { label: "Étudiant assigné", tone: "navy" },
+  assign_group: { label: "Stagiaire assigné", tone: "navy" },
   bulk_assign_group: { label: "Assignation en masse", tone: "navy" },
   update_profile: { label: "Profil modifié", tone: "navy" },
   delete_user: { label: "Compte supprimé", tone: "slate" },

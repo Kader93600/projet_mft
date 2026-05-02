@@ -32,7 +32,7 @@ export function QuizDangerZone({ quizId }: { quizId: string }) {
       </div>
       <CardBody>
         <p className="text-xs text-slate-600 mb-3">
-          La suppression est définitive et supprime aussi toutes les tentatives des étudiants.
+          La suppression est définitive et supprime aussi toutes les tentatives des stagiaires.
         </p>
         <Button variant="danger" size="sm" onClick={onDelete} disabled={isPending}>
           <Trash2 className="h-4 w-4" /> Supprimer le quiz

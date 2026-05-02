@@ -56,7 +56,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 /**
- * Section "Mes formations" affichée en tête du dashboard étudiant.
+ * Section "Mes formations" affichée en tête du dashboard stagiaire.
  * Liste les enrollments actifs du stagiaire avec progression sommaire
  * et lien direct vers le module / la formation.
  */

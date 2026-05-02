@@ -73,8 +73,10 @@ export function UserEditForm({
       <div className="grid grid-cols-2 gap-3">
         <Field label="Rôle">
           <Select value={role} onChange={(e) => setRole(e.target.value as any)}>
-            <option value="student">Étudiant</option>
+            <option value="student">Stagiaire</option>
+            <option value="trainer">Formateur</option>
             <option value="admin">Administrateur</option>
+            <option value="super_admin">Super administrateur</option>
           </Select>
         </Field>
         <Field label="Niveau">

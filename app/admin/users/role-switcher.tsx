@@ -31,7 +31,8 @@ export function RoleSwitcher({
       disabled={pending}
       className="text-xs rounded-lg border border-navy-200 bg-white text-navy-900 px-2.5 py-1.5 font-medium focus:outline-none focus:ring-2 focus:ring-navy-600/15 focus:border-navy-600 disabled:opacity-50"
     >
-      <option value="student">Étudiant</option>
+      <option value="student">Stagiaire</option>
+      <option value="trainer">Formateur</option>
       <option value="admin">Admin</option>
     </select>
   );

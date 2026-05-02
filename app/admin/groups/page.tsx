@@ -14,7 +14,7 @@ export default async function AdminGroups() {
       .eq("role", "student"),
   ]);
 
-  // Enrichir chaque groupe avec le nombre d'étudiants
+  // Enrichir chaque groupe avec le nombre d'stagiaires
   const enriched = (groups ?? []).map((g) => ({
     ...g,
     students_count: (profiles ?? []).filter((p) => p.group_id === g.id).length,
@@ -28,7 +28,7 @@ export default async function AdminGroups() {
           Classes & groupes
         </h1>
         <p className="mt-2 text-slate-600">
-          Organisez vos étudiants en promotions pour un suivi personnalisé.
+          Organisez vos stagiaires en promotions pour un suivi personnalisé.
         </p>
       </header>
 

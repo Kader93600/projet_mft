@@ -76,7 +76,7 @@ export function GroupsManager({
       <div className="flex justify-between items-center">
         <p className="text-sm text-slate-600">
           <strong className="text-navy-900">{groups.length}</strong> classes ·{" "}
-          <strong className="text-navy-900">{students.length}</strong> étudiants
+          <strong className="text-navy-900">{students.length}</strong> stagiaires
         </p>
         <Button
           variant="gold"
@@ -98,7 +98,7 @@ export function GroupsManager({
             </div>
             <p className="mt-3 text-navy-900 font-medium">Aucune classe encore</p>
             <p className="text-sm text-slate-500 mt-1">
-              Créez votre première classe pour organiser vos étudiants.
+              Créez votre première classe pour organiser vos stagiaires.
             </p>
           </CardBody>
         </Card>
@@ -124,7 +124,7 @@ export function GroupsManager({
                       </button>
                       <button
                         onClick={() => {
-                          if (confirm(`Supprimer la classe "${g.name}" ? Les étudiants seront détachés.`)) {
+                          if (confirm(`Supprimer la classe "${g.name}" ? Les stagiaires seront détachés.`)) {
                             startTransition(async () => {
                               try {
                                 await deleteGroup(g.id);
@@ -158,7 +158,7 @@ export function GroupsManager({
                     </div>
                     <div className="text-xs text-slate-500">
                       <strong className="text-navy-900">{g.students_count}</strong>{" "}
-                      étudiant{g.students_count > 1 ? "s" : ""}
+                      stagiaire{g.students_count > 1 ? "s" : ""}
                     </div>
                   </div>
                   <Button
@@ -167,7 +167,7 @@ export function GroupsManager({
                     className="mt-4 w-full"
                     onClick={() => setManagingGroup(g)}
                   >
-                    <Users className="h-3.5 w-3.5" /> Gérer les étudiants
+                    <Users className="h-3.5 w-3.5" /> Gérer les stagiaires
                   </Button>
                 </CardBody>
               </Card>
@@ -183,7 +183,7 @@ export function GroupsManager({
         editing={editing}
       />
 
-      {/* Dialog gestion étudiants */}
+      {/* Dialog gestion stagiaires */}
       {managingGroup && (
         <ManageStudentsDialog
           group={managingGroup}
@@ -343,7 +343,7 @@ function ManageStudentsDialog({
     startTransition(async () => {
       try {
         await assignUserToGroup(userId, target);
-        toast(target ? "Étudiant ajouté" : "Étudiant retiré", "success");
+        toast(target ? "Stagiaire ajouté" : "Stagiaire retiré", "success");
       } catch (e: any) {
         toast(e.message, "error");
       }
@@ -353,8 +353,8 @@ function ManageStudentsDialog({
   return (
     <Dialog open={true} onClose={onClose} size="lg">
       <DialogHeader
-        title={`Étudiants · ${group.name}`}
-        description={`${inGroup.length} étudiant${inGroup.length > 1 ? "s" : ""} dans la classe`}
+        title={`Stagiaires · ${group.name}`}
+        description={`${inGroup.length} stagiaire${inGroup.length > 1 ? "s" : ""} dans la classe`}
         onClose={onClose}
       />
       <DialogBody className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -364,7 +364,7 @@ function ManageStudentsDialog({
           <div className="space-y-1.5 max-h-[50vh] overflow-y-auto pr-1">
             {inGroup.length === 0 && (
               <div className="text-sm text-slate-400 py-6 text-center border border-dashed border-navy-100 rounded-xl">
-                Aucun étudiant
+                Aucun stagiaire
               </div>
             )}
             {inGroup.map((s) => (
@@ -396,7 +396,7 @@ function ManageStudentsDialog({
 
         {/* À ajouter */}
         <div>
-          <div className="eyebrow text-slate-500 mb-2">Ajouter un étudiant</div>
+          <div className="eyebrow text-slate-500 mb-2">Ajouter un stagiaire</div>
           <Input
             placeholder="Rechercher par nom ou email…"
             value={filter}

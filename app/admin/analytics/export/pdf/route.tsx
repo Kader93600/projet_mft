@@ -256,7 +256,7 @@ function Report({
             ? React.createElement(
                 Text,
                 { style: [styles.th, { width: "25%" }] },
-                "Étudiant"
+                "Stagiaire"
               )
             : React.createElement(Text, { style: [styles.th, { width: "15%" }] }, "Type"),
           React.createElement(Text, { style: [styles.th, { width: "12%" }] }, "Score"),
@@ -395,7 +395,7 @@ function AttemptReport({
       React.createElement(
         View,
         { style: styles.kpiRow },
-        kpi("Étudiant", student?.full_name || student?.email || "—"),
+        kpi("Stagiaire", student?.full_name || student?.email || "—"),
         kpi("Score", `${attempt.score}/${attempt.total} (${attempt.percentage}%)`),
         kpi("Résultat", attempt.passed ? "Réussi" : "Échoué")
       ),

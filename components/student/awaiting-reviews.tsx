@@ -4,7 +4,7 @@ import { Card, CardBody } from "@/components/ui/card";
 import { Hourglass, ArrowRight, Sparkles } from "lucide-react";
 
 /**
- * Encart affiché sur le dashboard étudiant : liste des copies de l'étudiant
+ * Encart affiché sur le dashboard stagiaire : liste des copies de le stagiaire
  * encore en attente de correction. Masqué si aucune copie en attente.
  */
 export async function StudentAwaitingReviews() {
