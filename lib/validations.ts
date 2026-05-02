@@ -155,6 +155,7 @@ export function validateUpload(file: File) {
 
 // ============ Formation settings ============
 export const formationSettingsSchema = z.object({
+  formation_slug: z.string().trim().min(1, "Formation requise"),
   organisme_nom: nonEmptyText(160),
   organisme_siret: z.string().trim().max(20).nullable().optional(),
   organisme_num_da: z.string().trim().max(40).nullable().optional(),

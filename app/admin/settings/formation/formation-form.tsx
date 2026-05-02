@@ -33,7 +33,17 @@ function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
   );
 }
 
-export function FormationForm({ initial }: { initial: any }) {
+export function FormationForm({
+  initial,
+  formationSlug,
+  formationTitle,
+  formationCode,
+}: {
+  initial: any;
+  formationSlug: string;
+  formationTitle?: string;
+  formationCode?: string;
+}) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [err, setErr] = useState<string | null>(null);
@@ -72,6 +82,7 @@ export function FormationForm({ initial }: { initial: any }) {
       try {
         await updateFormationSettings({
           ...f,
+          formation_slug: formationSlug,
           formation_duree_h: Number(f.formation_duree_h) || 0,
           indicateur_satisfaction:
             f.indicateur_satisfaction === "" ? null : Number(f.indicateur_satisfaction),
