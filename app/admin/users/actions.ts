@@ -1,7 +1,183 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { requireAdmin, validate, auditLog } from "@/lib/admin-guard";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { updateProfileSchema, uuid } from "@/lib/validations";
+import { z } from "zod";
+
+// ─── Schéma de création stagiaire ──────────────────────────────────────
+const createStudentSchema = z.object({
+  // Personnel
+  email: z.string().trim().email("Email invalide").max(254),
+  full_name: z.string().trim().min(2, "Nom complet requis").max(160),
+  phone: z.string().trim().max(30).optional().nullable(),
+  date_naissance: z
+    .string()
+    .trim()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Format YYYY-MM-DD")
+    .optional()
+    .nullable(),
+  adresse: z.string().trim().max(300).optional().nullable(),
+  code_postal: z.string().trim().max(10).optional().nullable(),
+  ville: z.string().trim().max(100).optional().nullable(),
+
+  // Pédagogique
+  formation_slug: z.string().trim().min(1, "Formation requise"),
+  session_label: z.string().trim().max(120).optional().nullable(),
+  entry_date: z
+    .string()
+    .trim()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Format YYYY-MM-DD")
+    .optional()
+    .nullable(),
+  referent_id: z.string().uuid().optional().nullable(),
+  trainer_id: z.string().uuid().optional().nullable(),
+
+  // Administratif
+  funder_id: z.string().uuid().optional().nullable(),
+  funding_kind: z
+    .enum(["opco", "cpf", "employeur", "pole_emploi", "auto", "autre"])
+    .optional(),
+  enrollment_status: z
+    .enum([
+      "prospect",
+      "devis",
+      "accord_financeur",
+      "a_payer",
+      "en_cours",
+      "termine",
+    ])
+    .default("en_cours"),
+  total_amount_cents: z.number().int().min(0).max(99_999_999).optional(),
+
+  // Accès
+  access_mode: z.enum(["invite", "password"]).default("invite"),
+  initial_password: z
+    .string()
+    .min(8, "8 caractères minimum")
+    .max(72)
+    .optional()
+    .nullable(),
+});
+
+/**
+ * Crée un compte stagiaire complet :
+ *  1. Création du user auth (Supabase Admin API)
+ *  2. Profil stagiaire avec coordonnées
+ *  3. Inscription (enrollments) sur la formation choisie
+ *  4. Bypass automatique de l'onboarding et du positionnement
+ *  5. Email d'invitation OU mot de passe initial selon access_mode
+ *
+ * Sécurité : action gardée par requireAdmin (admin / super_admin uniquement).
+ */
+export async function createStudent(raw: unknown) {
+  const { admin } = await requireAdmin();
+  const data = validate(createStudentSchema, raw);
+
+  // Validation conditionnelle : si mode 'password', le mot de passe est requis
+  if (data.access_mode === "password" && !data.initial_password) {
+    throw new Error("Mot de passe initial requis en mode 'password'");
+  }
+
+  const sb = createAdminClient();
+
+  // Vérifier que la formation existe et récupérer son id
+  const { data: formation, error: fErr } = await sb
+    .from("formations")
+    .select("id, slug, title")
+    .eq("slug", data.formation_slug)
+    .maybeSingle();
+  if (fErr) throw new Error(fErr.message);
+  if (!formation) throw new Error(`Formation "${data.formation_slug}" introuvable`);
+
+  // 1) Création du user auth
+  let userId: string;
+  if (data.access_mode === "invite") {
+    // Email d'invitation : Supabase envoie un lien magique pour finaliser
+    const redirectTo =
+      (process.env.NEXT_PUBLIC_APP_URL ?? "") + "/login";
+    const { data: invited, error: invErr } = await sb.auth.admin.inviteUserByEmail(
+      data.email,
+      {
+        data: { full_name: data.full_name, created_by: admin.id },
+        redirectTo,
+      }
+    );
+    if (invErr) throw new Error(`Invitation impossible : ${invErr.message}`);
+    userId = invited.user.id;
+  } else {
+    // Mode password : compte actif immédiatement
+    const { data: created, error: cErr } = await sb.auth.admin.createUser({
+      email: data.email,
+      password: data.initial_password!,
+      email_confirm: true,
+      user_metadata: { full_name: data.full_name, created_by: admin.id },
+    });
+    if (cErr) throw new Error(`Création impossible : ${cErr.message}`);
+    userId = created.user.id;
+  }
+
+  // 2) Profil stagiaire complet (le trigger handle_new_user a peut-être déjà
+  //    créé une ligne minimale ; on fait un upsert pour compléter)
+  const profilePayload: Record<string, any> = {
+    id: userId,
+    email: data.email,
+    full_name: data.full_name,
+    role: "student",
+    phone: data.phone || null,
+    date_naissance: data.date_naissance || null,
+    adresse: data.adresse || null,
+    code_postal: data.code_postal || null,
+    ville: data.ville || null,
+    referent_id: data.referent_id || null,
+    trainer_id: data.trainer_id || null,
+    entry_date: data.entry_date || null,
+    // L'admin gère l'onboarding et le placement → bypass pour le stagiaire
+    onboarding_completed_at: new Date().toISOString(),
+    placement_completed_at: new Date().toISOString(),
+  };
+
+  const { error: pErr } = await sb
+    .from("profiles")
+    .upsert(profilePayload, { onConflict: "id" });
+  if (pErr) {
+    // Si le profil n'a pas pu être inséré, supprimer le user auth pour éviter l'orphelin
+    await sb.auth.admin.deleteUser(userId).catch(() => {});
+    throw new Error(`Création du profil impossible : ${pErr.message}`);
+  }
+
+  // 3) Création de l'enrollment
+  const enrollmentPayload: Record<string, any> = {
+    user_id: userId,
+    formation_slug: formation.slug,
+    formation_id: formation.id,
+    funder_id: data.funder_id || null,
+    funding_kind: data.funding_kind || "auto",
+    session_label:
+      data.session_label || `${formation.slug}-${new Date().getFullYear()}`,
+    start_date: data.entry_date || null,
+    status: data.enrollment_status,
+    total_amount_cents: data.total_amount_cents ?? 0,
+  };
+
+  const { error: eErr } = await sb.from("enrollments").insert(enrollmentPayload);
+  if (eErr) {
+    console.error("[createStudent] enrollment insert failed", eErr);
+    // Non-bloquant : on garde le compte mais on signale
+  }
+
+  // 4) Audit log
+  await auditLog("create_student", "profile", userId, {
+    email: data.email,
+    formation_slug: data.formation_slug,
+    access_mode: data.access_mode,
+  });
+
+  revalidatePath("/admin/users");
+  revalidatePath("/admin/enrollments");
+
+  return { ok: true, userId, email: data.email, accessMode: data.access_mode };
+}
 
 export async function updateUserProfile(userId: string, raw: unknown) {
   const { supabase, admin } = await requireAdmin();

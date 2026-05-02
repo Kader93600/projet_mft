@@ -1,5 +1,8 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { UsersTable } from "./users-table";
+import { Button } from "@/components/ui/button";
+import { UserPlus } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -30,14 +33,22 @@ export default async function AdminUsers() {
 
   return (
     <div className="space-y-8">
-      <header>
-        <span className="eyebrow text-gold-700">Administration</span>
-        <h1 className="mt-2 font-display text-3xl font-semibold text-navy-950 tracking-tight">
-          Utilisateurs
-        </h1>
-        <p className="mt-2 text-slate-600">
-          {users?.length ?? 0} comptes · gérez rôles, groupes, activité et accès.
-        </p>
+      <header className="flex items-end justify-between gap-4 flex-wrap">
+        <div>
+          <span className="eyebrow text-gold-700">Administration</span>
+          <h1 className="mt-2 font-display text-3xl font-semibold text-navy-950 tracking-tight">
+            Utilisateurs
+          </h1>
+          <p className="mt-2 text-slate-600">
+            {users?.length ?? 0} comptes · gérez rôles, groupes, activité et
+            accès.
+          </p>
+        </div>
+        <Link href="/admin/users/new">
+          <Button variant="gold">
+            <UserPlus className="h-4 w-4" /> Nouveau stagiaire
+          </Button>
+        </Link>
       </header>
 
       <UsersTable users={enriched} groups={groups ?? []} />
