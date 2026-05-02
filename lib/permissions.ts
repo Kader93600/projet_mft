@@ -35,3 +35,36 @@ export function isStudent(role: Role | string | null | undefined): boolean {
 export function isTrainer(role: Role | string | null | undefined): boolean {
   return role === "trainer";
 }
+
+/**
+ * Routes /admin/* ouvertes aux formateurs (pédagogie).
+ * Le scope par formation est appliqué au niveau des actions et des
+ * requêtes (RLS / filtres). Ces routes sont en LECTURE pour les
+ * formateurs ; les écritures sont gardées par requireStaffOrFormationTrainer.
+ */
+export const TRAINER_ALLOWED_ADMIN_PREFIXES = [
+  "/admin/modules",
+  "/admin/quizzes",
+  "/admin/banque-questions",
+  "/admin/placement",
+] as const;
+
+/** True si la route /admin/* est accessible à un formateur. */
+export function isTrainerAllowedAdminRoute(pathname: string): boolean {
+  return TRAINER_ALLOWED_ADMIN_PREFIXES.some((p) => pathname.startsWith(p));
+}
+
+/**
+ * True si l'utilisateur peut accéder à une route /admin/* selon son rôle.
+ * - admin / super_admin : tout
+ * - trainer : uniquement les routes pédagogiques listées ci-dessus
+ * - student : rien
+ */
+export function canAccessAdminRoute(
+  role: Role | string | null | undefined,
+  pathname: string
+): boolean {
+  if (isStaff(role)) return true;
+  if (isTrainer(role) && isTrainerAllowedAdminRoute(pathname)) return true;
+  return false;
+}

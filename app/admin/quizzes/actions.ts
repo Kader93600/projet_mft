@@ -1,7 +1,30 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireAdmin, validate, auditLog } from "@/lib/admin-guard";
+import { createClient } from "@/lib/supabase/server";
+import {
+  requireAdmin,
+  requireStaffOrFormationTrainer,
+  validate,
+  auditLog,
+} from "@/lib/admin-guard";
+
+/**
+ * Récupère le slug de la formation actuellement liée à un quiz.
+ * Utilisé pour vérifier l'habilitation trainer avant update/delete.
+ */
+async function getQuizFormationSlug(
+  supabase: any,
+  quizId: string
+): Promise<string | null> {
+  const { data } = await supabase
+    .from("formation_quizzes")
+    .select("formation:formations(slug)")
+    .eq("quiz_id", quizId)
+    .limit(1)
+    .maybeSingle();
+  return (data?.formation as any)?.slug ?? null;
+}
 import {
   quizCreateSchema,
   quizUpdateSchema,
@@ -28,8 +51,8 @@ async function resolveFormationIdQuiz(
 
 // ---------- QUIZZES ----------
 export async function createQuiz(raw: unknown) {
-  const { supabase } = await requireAdmin();
   const data = validate(quizCreateSchema, raw);
+  const { supabase } = await requireStaffOrFormationTrainer(data.formation_slug);
 
   // 1) Vérifier la formation cible AVANT de créer le quiz
   const formationId = await resolveFormationIdQuiz(supabase, data.formation_slug);
@@ -61,10 +84,14 @@ export async function createQuiz(raw: unknown) {
 }
 
 export async function updateQuiz(id: string, raw: unknown) {
-  const { supabase } = await requireAdmin();
   validate(uuid, id);
   const patch = validate(quizUpdateSchema, raw);
   const { formation_slug, ...quizPatch } = patch;
+  // Gating trainer
+  const sbRead = createClient();
+  const currentSlug = await getQuizFormationSlug(sbRead, id);
+  const slugToCheck = formation_slug || currentSlug || "";
+  const { supabase } = await requireStaffOrFormationTrainer(slugToCheck);
 
   if (Object.keys(quizPatch).length > 0) {
     const { error } = await supabase
@@ -100,8 +127,10 @@ export async function updateQuiz(id: string, raw: unknown) {
 }
 
 export async function deleteQuiz(id: string) {
-  const { supabase } = await requireAdmin();
   validate(uuid, id);
+  const sbRead = createClient();
+  const currentSlug = await getQuizFormationSlug(sbRead, id);
+  const { supabase } = await requireStaffOrFormationTrainer(currentSlug || "");
   const { error } = await supabase.from("quizzes").delete().eq("id", id);
   if (error) throw new Error(error.message);
   await auditLog("delete_quiz", "quiz", id);
@@ -111,8 +140,11 @@ export async function deleteQuiz(id: string) {
 
 // ---------- QUESTIONS ----------
 export async function createQuestion(raw: unknown) {
-  const { supabase } = await requireAdmin();
   const data = validate(questionCreateSchema, raw);
+  // Gating via le quiz parent
+  const sbRead = createClient();
+  const slug = await getQuizFormationSlug(sbRead, data.quiz_id);
+  const { supabase } = await requireStaffOrFormationTrainer(slug || "");
   const { data: created, error } = await supabase
     .from("questions")
     .insert(data)
@@ -125,10 +157,12 @@ export async function createQuestion(raw: unknown) {
 }
 
 export async function updateQuestion(id: string, quizId: string, raw: unknown) {
-  const { supabase } = await requireAdmin();
   validate(uuid, id);
   validate(uuid, quizId);
   const patch = validate(questionUpdateSchema, raw);
+  const sbRead = createClient();
+  const slug = await getQuizFormationSlug(sbRead, quizId);
+  const { supabase } = await requireStaffOrFormationTrainer(slug || "");
   const { error } = await supabase.from("questions").update(patch).eq("id", id);
   if (error) throw new Error(error.message);
   await auditLog("update_question", "question", id);
@@ -137,9 +171,11 @@ export async function updateQuestion(id: string, quizId: string, raw: unknown) {
 }
 
 export async function deleteQuestion(id: string, quizId: string) {
-  const { supabase } = await requireAdmin();
   validate(uuid, id);
   validate(uuid, quizId);
+  const sbRead = createClient();
+  const slug = await getQuizFormationSlug(sbRead, quizId);
+  const { supabase } = await requireStaffOrFormationTrainer(slug || "");
   const { error } = await supabase.from("questions").delete().eq("id", id);
   if (error) throw new Error(error.message);
   await auditLog("delete_question", "question", id);
@@ -153,9 +189,11 @@ export async function setChoices(
   quizId: string,
   choices: { label: string; is_correct: boolean; order: number }[]
 ) {
-  const { supabase } = await requireAdmin();
   validate(uuid, questionId);
   validate(uuid, quizId);
+  const sbRead = createClient();
+  const slug = await getQuizFormationSlug(sbRead, quizId);
+  const { supabase } = await requireStaffOrFormationTrainer(slug || "");
   const validated = validate(choicesArraySchema, choices);
 
   const { error: delErr } = await supabase

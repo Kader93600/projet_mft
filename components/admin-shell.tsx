@@ -23,6 +23,10 @@ import { SidebarNav } from "@/components/sidebar-nav";
 import { MobileNavSheet } from "@/components/mobile-nav-sheet";
 import { ADMIN_GROUPS, flattenGroups } from "@/components/nav-groups";
 import { LogoMark } from "@/components/ui/logo";
+import {
+  TRAINER_ALLOWED_ADMIN_PREFIXES,
+  isTrainer as roleIsTrainer,
+} from "@/lib/permissions";
 
 interface Props {
   children: React.ReactNode;
@@ -30,6 +34,23 @@ interface Props {
 }
 
 const FLAT = flattenGroups(ADMIN_GROUPS);
+
+/**
+ * Filtre la nav admin selon le rôle :
+ * - admin / super_admin : tout
+ * - trainer : seulement les items pédagogiques autorisés
+ */
+function filterGroupsForRole(role: string) {
+  if (!roleIsTrainer(role)) return ADMIN_GROUPS;
+  return ADMIN_GROUPS.map((g) => ({
+    ...g,
+    items: g.items.filter((it) =>
+      TRAINER_ALLOWED_ADMIN_PREFIXES.some((p) =>
+        (it.href as string).startsWith(p)
+      )
+    ),
+  })).filter((g) => g.items.length > 0);
+}
 const MOBILE_PRIMARY = FLAT.filter((i) =>
   ["/admin", "/admin/users", "/admin/modules", "/admin/quizzes"].includes(i.href)
 );
@@ -82,7 +103,7 @@ export function AdminShell({ children, profile }: Props) {
             </Link>
           </div>
 
-          <SidebarNav groups={ADMIN_GROUPS} variant="dark" />
+          <SidebarNav groups={filterGroupsForRole(profile.role)} variant="dark" />
 
           {/* Bloc utilisateur consolidé : carte profil + actions claires */}
           <div className="border-t border-white/10 p-3 space-y-3">
@@ -218,6 +239,11 @@ export function AdminShell({ children, profile }: Props) {
                   <span className="h-1.5 w-1.5 rounded-full bg-signal-500 animate-glow-pulse" />
                   Super-admin
                 </span>
+              ) : profile.role === "trainer" ? (
+                <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 text-[11px] font-semibold uppercase tracking-wide border border-emerald-200 inline-flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  Mode formateur
+                </span>
               ) : (
                 <span className="px-2.5 py-1 rounded-lg bg-brand-100 text-brand-800 text-[11px] font-semibold uppercase tracking-wide border border-brand-200">
                   Mode admin
@@ -258,7 +284,7 @@ export function AdminShell({ children, profile }: Props) {
                 </Link>
               );
             })}
-            <MobileNavSheet groups={ADMIN_GROUPS} />
+            <MobileNavSheet groups={filterGroupsForRole(profile.role)} />
           </nav>
         </main>
       </div>

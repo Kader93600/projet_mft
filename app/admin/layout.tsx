@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/admin-shell";
 import { createClient } from "@/lib/supabase/server";
-import { isStaff } from "@/lib/permissions";
+import { isStaff, isTrainer } from "@/lib/permissions";
 
 export default async function AdminLayout({
   children,
@@ -19,7 +19,11 @@ export default async function AdminLayout({
     .eq("id", user.id)
     .single();
   if (!profile) redirect("/login");
-  // Admin ET super_admin ont accès à l'espace admin
-  if (!isStaff(profile.role)) redirect("/dashboard");
+  // Admin / super_admin : tout l'admin.
+  // Trainer : seulement les routes pédagogiques (gating fin par middleware
+  // + per-action via requireStaffOrFormationTrainer).
+  if (!isStaff(profile.role) && !isTrainer(profile.role)) {
+    redirect("/dashboard");
+  }
   return <AdminShell profile={profile}>{children}</AdminShell>;
 }

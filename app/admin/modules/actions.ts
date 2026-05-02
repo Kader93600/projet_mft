@@ -1,7 +1,14 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireAdmin, validate, auditLog, rateLimit } from "@/lib/admin-guard";
+import { createClient } from "@/lib/supabase/server";
+import {
+  requireAdmin,
+  requireStaffOrFormationTrainer,
+  validate,
+  auditLog,
+  rateLimit,
+} from "@/lib/admin-guard";
 import {
   moduleCreateSchema,
   moduleUpdateSchema,
@@ -42,9 +49,27 @@ async function resolveFormationId(
   return data.id;
 }
 
+/**
+ * Récupère le slug de la formation actuellement liée à un module.
+ * Utilisé pour vérifier l'habilitation trainer avant update/delete.
+ */
+async function getModuleFormationSlug(
+  supabase: any,
+  moduleId: string
+): Promise<string | null> {
+  const { data } = await supabase
+    .from("formation_modules")
+    .select("formation:formations(slug)")
+    .eq("module_id", moduleId)
+    .limit(1)
+    .maybeSingle();
+  return (data?.formation as any)?.slug ?? null;
+}
+
 export async function createModule(raw: unknown) {
-  const { supabase } = await requireAdmin();
+  // Validation d'abord pour récupérer formation_slug (gating)
   const data = validate(moduleCreateSchema, raw);
+  const { supabase } = await requireStaffOrFormationTrainer(data.formation_slug);
   const slug = data.slug || slugify(data.title);
 
   // 1) Vérifier la formation cible AVANT de créer le module (transactionnel)
@@ -78,9 +103,14 @@ export async function createModule(raw: unknown) {
 }
 
 export async function updateModule(id: string, raw: unknown) {
-  const { supabase } = await requireAdmin();
   const patch = validate(moduleUpdateSchema, raw);
   const { formation_slug, ...modulePatch } = patch;
+
+  // Récupérer le slug actuellement lié au module (pour le gating trainer)
+  const sbRead = createClient();
+  const currentSlug = await getModuleFormationSlug(sbRead, id);
+  const slugToCheck = formation_slug || currentSlug || "";
+  const { supabase } = await requireStaffOrFormationTrainer(slugToCheck);
 
   // Mise à jour du module
   if (Object.keys(modulePatch).length > 0) {
@@ -113,8 +143,11 @@ export async function updateModule(id: string, raw: unknown) {
 }
 
 export async function deleteModule(id: string) {
-  const { supabase } = await requireAdmin();
   if (!id || typeof id !== "string") throw new Error("ID invalide");
+  // Gating trainer : doit être habilité sur la formation actuelle
+  const sbRead = createClient();
+  const currentSlug = await getModuleFormationSlug(sbRead, id);
+  const { supabase } = await requireStaffOrFormationTrainer(currentSlug || "");
   const { error } = await supabase.from("modules").delete().eq("id", id);
   if (error) throw new Error(error.message);
   await auditLog("delete_module", "module", id);
@@ -125,8 +158,11 @@ export async function deleteModule(id: string) {
 // ---------------- LESSONS ----------------
 
 export async function createLesson(raw: unknown) {
-  const { supabase } = await requireAdmin();
   const data = validate(lessonCreateSchema, raw);
+  // Gating trainer : il faut être habilité sur la formation du module parent
+  const sbRead = createClient();
+  const formationSlug = await getModuleFormationSlug(sbRead, data.module_id);
+  const { supabase } = await requireStaffOrFormationTrainer(formationSlug || "");
   const slug = data.slug || slugify(data.title);
   const { data: created, error } = await supabase
     .from("lessons")
@@ -148,8 +184,11 @@ export async function createLesson(raw: unknown) {
 }
 
 export async function updateLesson(id: string, moduleId: string, raw: unknown) {
-  const { supabase } = await requireAdmin();
   const patch = validate(lessonUpdateSchema, raw);
+  // Gating trainer : habilitation sur la formation du module parent
+  const sbRead = createClient();
+  const slug = await getModuleFormationSlug(sbRead, moduleId);
+  const { supabase } = await requireStaffOrFormationTrainer(slug || "");
   const { error } = await supabase.from("lessons").update(patch).eq("id", id);
   if (error) throw new Error(error.message);
   await auditLog("update_lesson", "lesson", id);
@@ -159,8 +198,10 @@ export async function updateLesson(id: string, moduleId: string, raw: unknown) {
 }
 
 export async function deleteLesson(id: string, moduleId: string) {
-  const { supabase } = await requireAdmin();
   if (!id || !moduleId) throw new Error("ID invalide");
+  const sbRead = createClient();
+  const slug = await getModuleFormationSlug(sbRead, moduleId);
+  const { supabase } = await requireStaffOrFormationTrainer(slug || "");
   const { error } = await supabase.from("lessons").delete().eq("id", id);
   if (error) throw new Error(error.message);
   await auditLog("delete_lesson", "lesson", id);

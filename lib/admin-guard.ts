@@ -39,6 +39,110 @@ export async function requireSuperAdmin() {
 }
 
 /**
+ * Garde pour les actions pédagogiques scopées par formation.
+ *
+ *  - admin / super_admin : accès total (toutes formations).
+ *  - trainer : accès uniquement aux formations sur lesquelles il est
+ *    habilité (table `trainer_formations`).
+ *
+ * Lance "Accès refusé" sinon. Le formation_slug est passé pour vérifier
+ * l'habilitation côté trainer ; pour les actions sans slug en entrée
+ * (update/delete), récupérer le slug depuis l'objet ciblé d'abord.
+ */
+export async function requireStaffOrFormationTrainer(formation_slug: string) {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Non authentifié");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, role, email, disabled")
+    .eq("id", user.id)
+    .single();
+  if (!profile) throw new Error("Profil introuvable");
+  if (profile.disabled) throw new Error("Compte désactivé");
+
+  if (isStaff(profile.role)) {
+    return { supabase, profile, isTrainerOnly: false };
+  }
+
+  if (profile.role === "trainer") {
+    if (!formation_slug) throw new Error("Formation requise");
+
+    // Vérifier l'habilitation : la formation doit être dans
+    // trainer_formations pour ce trainer.
+    const { data: link } = await supabase
+      .from("trainer_formations")
+      .select("formation_id, formations!inner(slug)")
+      .eq("trainer_id", profile.id)
+      .eq("formations.slug", formation_slug)
+      .maybeSingle();
+
+    if (!link) {
+      throw new Error(
+        `Vous n'êtes pas habilité sur la formation "${formation_slug}"`
+      );
+    }
+    return { supabase, profile, isTrainerOnly: true };
+  }
+
+  throw new Error("Accès refusé");
+}
+
+/**
+ * Récupère la liste des slugs de formations sur lesquelles le user
+ * courant est habilité (admin → toutes, trainer → ses formations).
+ * Utilisé pour filtrer les listes côté pages /admin/modules, /quizzes...
+ */
+export async function getAuthorizedFormationSlugs(): Promise<{
+  slugs: string[];
+  isStaff: boolean;
+  isTrainerOnly: boolean;
+}> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { slugs: [], isStaff: false, isTrainerOnly: false };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, role, disabled")
+    .eq("id", user.id)
+    .single();
+  if (!profile || profile.disabled) {
+    return { slugs: [], isStaff: false, isTrainerOnly: false };
+  }
+
+  if (isStaff(profile.role)) {
+    const { data: all } = await supabase
+      .from("formations")
+      .select("slug")
+      .eq("active", true);
+    return {
+      slugs: (all ?? []).map((f) => f.slug),
+      isStaff: true,
+      isTrainerOnly: false,
+    };
+  }
+
+  if (profile.role === "trainer") {
+    const { data: links } = await supabase
+      .from("trainer_formations")
+      .select("formation:formations(slug, active)")
+      .eq("trainer_id", profile.id);
+    const slugs = (links ?? [])
+      .map((l: any) => l.formation?.slug)
+      .filter((s: any): s is string => !!s);
+    return { slugs, isStaff: false, isTrainerOnly: true };
+  }
+
+  return { slugs: [], isStaff: false, isTrainerOnly: false };
+}
+
+/**
  * Valide un payload avec un schéma Zod et retourne les données typées.
  * Lève une erreur formatée en cas d'échec.
  */

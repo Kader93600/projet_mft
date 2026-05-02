@@ -87,12 +87,25 @@ export async function middleware(request: NextRequest) {
     ) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
-    if (
-      pathname.startsWith("/admin") &&
-      profile?.role !== "admin" &&
-      profile?.role !== "super_admin"
-    ) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+    // /admin : ouvert au staff (admin/super_admin), et partiellement
+    // au trainer pour les routes pédagogiques (modules, quizzes,
+    // banque-questions, placement). Scope par formation appliqué côté
+    // server actions et requêtes.
+    if (pathname.startsWith("/admin")) {
+      const isStaff =
+        profile?.role === "admin" || profile?.role === "super_admin";
+      const isTrainer = profile?.role === "trainer";
+      const TRAINER_ALLOWED = [
+        "/admin/modules",
+        "/admin/quizzes",
+        "/admin/banque-questions",
+        "/admin/placement",
+      ];
+      const trainerAllowed =
+        isTrainer && TRAINER_ALLOWED.some((p) => pathname.startsWith(p));
+      if (!isStaff && !trainerAllowed) {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+      }
     }
     // L'espace formateur est ouvert à : trainer, admin, super_admin
     // (admin/super_admin = encadrement pédagogique légitime sur tous les stagiaires)

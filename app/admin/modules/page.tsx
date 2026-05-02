@@ -5,12 +5,23 @@ import { Badge } from "@/components/ui/badge";
 import { FormationBadge } from "@/components/formation/formation-badge";
 import { Button } from "@/components/ui/button";
 import { blocTone } from "@/lib/utils";
-import { Plus, ChevronRight, BookOpen, AlertCircle } from "lucide-react";
+import {
+  Plus,
+  ChevronRight,
+  BookOpen,
+  AlertCircle,
+  GraduationCap,
+} from "lucide-react";
+import { getAuthorizedFormationSlugs } from "@/lib/admin-guard";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminModules() {
   const supabase = createClient();
+
+  // Détermine le scope : admin → toutes formations, trainer → ses habilitations
+  const { slugs, isTrainerOnly } = await getAuthorizedFormationSlugs();
+
   const [
     { data: modules },
     { data: lessonCounts },
@@ -39,10 +50,18 @@ export default async function AdminModules() {
     }
   });
 
-  // Modules orphelins (sans formation rattachée)
-  const orphans = (modules ?? []).filter(
-    (m: any) => !formationByModule.has(m.id)
-  );
+  // Filtre trainer : ne garder que les modules liés à une formation autorisée
+  const allowed = new Set(slugs);
+  const visibleModules = (modules ?? []).filter((m: any) => {
+    if (!isTrainerOnly) return true;
+    const slug = formationByModule.get(m.id);
+    return slug ? allowed.has(slug) : false;
+  });
+
+  // Modules orphelins (sans formation rattachée) — admins seulement
+  const orphans = isTrainerOnly
+    ? []
+    : (modules ?? []).filter((m: any) => !formationByModule.has(m.id));
 
   return (
     <div className="space-y-8">
@@ -53,7 +72,15 @@ export default async function AdminModules() {
             Modules & leçons
           </h1>
           <p className="mt-2 text-slate-600">
-            {modules?.length ?? 0} modules · créez, éditez et organisez le contenu pédagogique.
+            {visibleModules.length} module{visibleModules.length > 1 ? "s" : ""}
+            {isTrainerOnly && (
+              <>
+                {" "}sur {slugs.length} formation
+                {slugs.length > 1 ? "s" : ""} habilité
+                {slugs.length > 1 ? "es" : "e"}
+              </>
+            )}
+            {!isTrainerOnly && " · créez, éditez et organisez le contenu pédagogique."}
           </p>
         </div>
         <Link href="/admin/modules/new">
@@ -62,6 +89,19 @@ export default async function AdminModules() {
           </Button>
         </Link>
       </header>
+
+      {/* Bandeau formateur : rappel du scope */}
+      {isTrainerOnly && (
+        <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 flex items-start gap-3">
+          <GraduationCap className="h-5 w-5 text-emerald-700 shrink-0 mt-0.5" />
+          <div className="text-sm text-emerald-900 flex-1">
+            <strong>Espace formateur</strong> — vous voyez et modifiez
+            uniquement les modules des formations sur lesquelles vous êtes
+            habilité ({slugs.join(", ") || "aucune"}). Pour étendre votre
+            périmètre, contactez votre administrateur.
+          </div>
+        </div>
+      )}
 
       {orphans.length > 0 && (
         <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 flex items-start gap-3">
@@ -93,7 +133,7 @@ export default async function AdminModules() {
               </tr>
             </thead>
             <tbody>
-              {modules?.map((m: any) => (
+              {visibleModules.map((m: any) => (
                 <tr
                   key={m.id}
                   className="border-t border-navy-50 hover:bg-navy-50/30 group"
@@ -145,10 +185,12 @@ export default async function AdminModules() {
                   </td>
                 </tr>
               ))}
-              {(!modules || modules.length === 0) && (
+              {visibleModules.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-5 py-16 text-center text-slate-400">
-                    Aucun module. Créez-en un pour démarrer.
+                    {isTrainerOnly
+                      ? "Aucun module sur vos formations habilitées."
+                      : "Aucun module. Créez-en un pour démarrer."}
                   </td>
                 </tr>
               )}

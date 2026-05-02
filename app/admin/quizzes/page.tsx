@@ -4,12 +4,21 @@ import { Card } from "@/components/ui/card";
 import { FormationBadge } from "@/components/formation/formation-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus, ChevronRight, HelpCircle, Clock } from "lucide-react";
+import {
+  Plus,
+  ChevronRight,
+  HelpCircle,
+  Clock,
+  GraduationCap,
+} from "lucide-react";
+import { getAuthorizedFormationSlugs } from "@/lib/admin-guard";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminQuizzes() {
   const supabase = createClient();
+  const { slugs, isTrainerOnly } = await getAuthorizedFormationSlugs();
+
   const [{ data: quizzes }, { data: questions }, { data: formationQuizzes }] =
     await Promise.all([
       supabase
@@ -35,6 +44,14 @@ export default async function AdminQuizzes() {
     }
   });
 
+  // Filtre trainer
+  const allowed = new Set(slugs);
+  const visibleQuizzes = (quizzes ?? []).filter((q: any) => {
+    if (!isTrainerOnly) return true;
+    const slug = formationByQuiz.get(q.id);
+    return slug ? allowed.has(slug) : false;
+  });
+
   return (
     <div className="space-y-8">
       <header className="flex items-end justify-between gap-4 flex-wrap">
@@ -44,7 +61,17 @@ export default async function AdminQuizzes() {
             Quiz & examens
           </h1>
           <p className="mt-2 text-slate-600">
-            {quizzes?.length ?? 0} évaluations · créez des entraînements et examens blancs.
+            {visibleQuizzes.length} évaluation
+            {visibleQuizzes.length > 1 ? "s" : ""}
+            {isTrainerOnly && (
+              <>
+                {" "}sur {slugs.length} formation
+                {slugs.length > 1 ? "s" : ""} habilité
+                {slugs.length > 1 ? "es" : "e"}
+              </>
+            )}
+            {!isTrainerOnly &&
+              " · créez des entraînements et examens blancs."}
           </p>
         </div>
         <Link href="/admin/quizzes/new">
@@ -53,6 +80,18 @@ export default async function AdminQuizzes() {
           </Button>
         </Link>
       </header>
+
+      {/* Bandeau formateur : rappel du scope */}
+      {isTrainerOnly && (
+        <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 flex items-start gap-3">
+          <GraduationCap className="h-5 w-5 text-emerald-700 shrink-0 mt-0.5" />
+          <div className="text-sm text-emerald-900 flex-1">
+            <strong>Espace formateur</strong> — quiz visibles : ceux des
+            formations sur lesquelles vous êtes habilité ({slugs.join(", ") ||
+              "aucune"}).
+          </div>
+        </div>
+      )}
 
       <Card>
         <div className="overflow-x-auto">
@@ -70,7 +109,7 @@ export default async function AdminQuizzes() {
               </tr>
             </thead>
             <tbody>
-              {(quizzes ?? []).map((q: any) => (
+              {visibleQuizzes.map((q: any) => (
                 <tr
                   key={q.id}
                   className="border-t border-navy-50 hover:bg-navy-50/30 group"
@@ -131,10 +170,12 @@ export default async function AdminQuizzes() {
                   </td>
                 </tr>
               ))}
-              {(!quizzes || quizzes.length === 0) && (
+              {visibleQuizzes.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-5 py-16 text-center text-slate-400">
-                    Aucun quiz. Créez-en un pour démarrer.
+                    {isTrainerOnly
+                      ? "Aucun quiz sur vos formations habilitées."
+                      : "Aucun quiz. Créez-en un pour démarrer."}
                   </td>
                 </tr>
               )}
