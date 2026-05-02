@@ -19,7 +19,7 @@ import {
   deleteQuestion,
   setChoices,
 } from "../actions";
-import { uploadMedia } from "@/app/admin/modules/actions";
+import { ImageUploader } from "@/components/admin/image-uploader";
 import { useRouter } from "next/navigation";
 
 interface Choice {
@@ -110,7 +110,6 @@ function QuestionCard({
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
-  const fileRef = useRef<HTMLInputElement>(null);
 
   const [statement, setStatement] = useState(question.statement);
   const [explanation, setExplanation] = useState(question.explanation ?? "");
@@ -139,27 +138,6 @@ function QuestionCard({
 
   function removeChoice(i: number) {
     setLocalChoices((cs) => cs.filter((_, j) => j !== i).map((c, j) => ({ ...c, order: j })));
-  }
-
-  async function onImageFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      toast("Image > 5 MB", "error");
-      return;
-    }
-    startTransition(async () => {
-      try {
-        const fd = new FormData();
-        fd.append("file", file);
-        const { url } = await uploadMedia(fd);
-        setImageUrl(url);
-        toast("Image uploadée", "success");
-      } catch (err: any) {
-        toast(err.message, "error");
-      }
-    });
-    e.target.value = "";
   }
 
   function onSave() {
@@ -242,45 +220,15 @@ function QuestionCard({
             />
           </label>
 
-          {/* Image */}
-          <div>
-            <span className="block text-xs font-medium text-slate-600 mb-1.5">
-              Image (optionnelle)
-            </span>
-            {imageUrl ? (
-              <div className="relative inline-block">
-                <img
-                  src={imageUrl}
-                  alt=""
-                  className="max-h-40 rounded-lg border border-navy-100"
-                />
-                <button
-                  type="button"
-                  onClick={() => setImageUrl("")}
-                  className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-rose-600 text-white flex items-center justify-center shadow"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => fileRef.current?.click()}
-                disabled={isPending}
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-navy-200 text-xs text-slate-600 hover:bg-navy-50"
-              >
-                <ImageIcon className="h-4 w-4" />
-                {isPending ? "Upload…" : "Ajouter une image"}
-              </button>
-            )}
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={onImageFile}
-            />
-          </div>
+          {/* Image (illustration de la question) */}
+          <ImageUploader
+            value={imageUrl}
+            onChange={(url) => setImageUrl(url ?? "")}
+            prefix={`questions/${question.id}`}
+            label="Illustration de la question (optionnel)"
+            ratio="video"
+            hint="Image affichée au-dessus de l'énoncé. PNG/JPG/WebP, 5 Mo max."
+          />
 
           {/* Choices */}
           <div>

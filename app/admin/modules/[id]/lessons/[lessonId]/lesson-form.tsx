@@ -6,6 +6,7 @@ import { useToast } from "@/components/ui/toast";
 import { Save, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { MarkdownEditor } from "@/components/markdown-editor";
+import { ImageUploader } from "@/components/admin/image-uploader";
 import {
   createLesson,
   updateLesson,
@@ -111,16 +112,16 @@ export function LessonForm({
             placeholder="temps-de-conduite"
           />
         </label>
-        <label className="block">
-          <span className="block text-xs font-medium text-slate-600 mb-1.5">
-            Couverture (URL)
-          </span>
-          <Input
+        <div className="md:col-span-2">
+          <ImageUploader
             value={coverUrl}
-            onChange={(e) => setCoverUrl(e.target.value)}
-            placeholder="https://…"
+            onChange={(url) => setCoverUrl(url ?? "")}
+            prefix={`lessons/${lesson?.id ?? "new"}/cover`}
+            label="Image de couverture (optionnel)"
+            ratio="wide"
+            hint="PNG, JPG, WebP — 5 Mo max."
           />
-        </label>
+        </div>
       </div>
       <label className="block">
         <span className="block text-xs font-medium text-slate-600 mb-1.5">

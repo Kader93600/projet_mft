@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/toast";
 import { Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createModule, updateModule } from "./actions";
+import { ImageUploader } from "@/components/admin/image-uploader";
 
 interface Bloc {
   id: number;
@@ -183,16 +184,14 @@ export function ModuleForm({
           />
         </label>
       </div>
-      <label className="block">
-        <span className="block text-xs font-medium text-slate-600 mb-1.5">
-          Image de couverture (URL)
-        </span>
-        <Input
-          value={coverUrl}
-          onChange={(e) => setCoverUrl(e.target.value)}
-          placeholder="https://…"
-        />
-      </label>
+      <ImageUploader
+        value={coverUrl}
+        onChange={(url) => setCoverUrl(url ?? "")}
+        prefix={`modules/${module?.id ?? "new"}/cover`}
+        label="Image de couverture"
+        ratio="wide"
+        hint="PNG, JPG, WebP — 5 Mo max. Glisser-déposer ou cliquer pour parcourir."
+      />
       <div className="pt-2 flex justify-end">
         <Button type="submit" disabled={isPending || !title}>
           <Save className="h-4 w-4" />

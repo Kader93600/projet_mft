@@ -250,11 +250,36 @@ export async function deleteLessonResource(id: string) {
 
 // ---------------- STORAGE upload ----------------
 
+/**
+ * Upload d'un fichier (image/document) dans le bucket content-media.
+ * Ouvert au staff (admin/super_admin) ET aux trainers (la délimitation
+ * par formation se fait au niveau du module/quiz qui consomme l'URL).
+ *
+ * Validation stricte côté serveur (type, taille, extension) + rate limit.
+ */
 export async function uploadMedia(formData: FormData) {
-  const { supabase, admin } = await requireAdmin();
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Non authentifié");
 
-  // Rate limit : 30 uploads / minute / admin
-  const rl = rateLimit(`upload:${admin.id}`, 30, 60_000);
+  // Vérifier que c'est un acteur pédagogique (staff OU trainer)
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, role, disabled")
+    .eq("id", user.id)
+    .single();
+  if (!profile) throw new Error("Profil introuvable");
+  if (profile.disabled) throw new Error("Compte désactivé");
+  const isStaffOrTrainer =
+    profile.role === "admin" ||
+    profile.role === "super_admin" ||
+    profile.role === "trainer";
+  if (!isStaffOrTrainer) throw new Error("Accès refusé");
+
+  // Rate limit : 30 uploads / minute / user
+  const rl = rateLimit(`upload:${profile.id}`, 30, 60_000);
   if (!rl.allowed) {
     throw new Error(
       `Trop d'uploads. Réessayez dans ${Math.ceil(rl.retryInMs / 1000)}s.`
@@ -267,8 +292,16 @@ export async function uploadMedia(formData: FormData) {
   // Validation stricte type/taille/extension
   const ext = validateUpload(file);
 
+  // Préfixe optionnel pour ranger les uploads par contexte
+  // (ex. 'modules/abc-id/cover')
+  const prefix = (formData.get("prefix") as string | null) || "content";
+  const safePrefix = prefix
+    .replace(/[^a-z0-9-_/]/gi, "_")
+    .replace(/^\/+|\/+$/g, "")
+    .slice(0, 100);
+
   const name = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-  const path = `content/${name}`;
+  const path = `${safePrefix}/${name}`;
   const { error } = await supabase.storage
     .from("content-media")
     .upload(path, file, { contentType: file.type, upsert: false });
@@ -277,6 +310,42 @@ export async function uploadMedia(formData: FormData) {
   await auditLog("upload_media", "file", path, {
     size: file.size,
     type: file.type,
+    prefix: safePrefix,
   });
-  return { url: data.publicUrl };
+  return { url: data.publicUrl, path };
+}
+
+/**
+ * Supprime un fichier précédemment uploadé. Le path vient de uploadMedia.
+ */
+export async function deleteMedia(path: string) {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Non authentifié");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, role, disabled")
+    .eq("id", user.id)
+    .single();
+  if (!profile) throw new Error("Profil introuvable");
+  if (profile.disabled) throw new Error("Compte désactivé");
+  const isStaffOrTrainer =
+    profile.role === "admin" ||
+    profile.role === "super_admin" ||
+    profile.role === "trainer";
+  if (!isStaffOrTrainer) throw new Error("Accès refusé");
+
+  if (!path || typeof path !== "string") throw new Error("Path invalide");
+  // Empêche les évasions / chemins absolus
+  if (path.includes("..") || path.startsWith("/")) {
+    throw new Error("Path invalide");
+  }
+
+  const { error } = await supabase.storage.from("content-media").remove([path]);
+  if (error) throw new Error(error.message);
+  await auditLog("delete_media", "file", path);
+  return { ok: true };
 }
