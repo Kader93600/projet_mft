@@ -1,26 +1,16 @@
 "use client";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { cn, initials } from "@/lib/utils";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 import { ToastProvider } from "@/components/ui/toast";
 import { SessionTracker } from "@/components/session-tracker";
-import {
-  LogOut,
-  Shield,
-  ArrowLeft,
-  ChevronRight,
-  LayoutDashboard,
-  GraduationCap,
-  User,
-  Crown,
-  Repeat,
-} from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { NotificationsBell } from "@/components/notifications-bell";
 import { SearchPalette } from "@/components/search-palette";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SidebarNav } from "@/components/sidebar-nav";
 import { MobileNavSheet } from "@/components/mobile-nav-sheet";
+import { UserMenu } from "@/components/user-menu";
 import { ADMIN_GROUPS, flattenGroups } from "@/components/nav-groups";
 import { LogoMark } from "@/components/ui/logo";
 import {
@@ -72,15 +62,6 @@ function crumbsFromPath(p: string): { label: string; href: string }[] {
 
 export function AdminShell({ children, profile }: Props) {
   const pathname = usePathname();
-  const router = useRouter();
-
-  async function logout() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push("/");
-    router.refresh();
-  }
-
   const crumbs = crumbsFromPath(pathname);
 
   return (
@@ -104,91 +85,6 @@ export function AdminShell({ children, profile }: Props) {
           </div>
 
           <SidebarNav groups={filterGroupsForRole(profile.role)} variant="dark" />
-
-          {/* Bloc utilisateur consolidé : carte profil + actions claires */}
-          <div className="border-t border-white/10 p-3 space-y-3">
-            {/* Carte profil */}
-            <div className="flex items-center gap-3 px-2 py-2 rounded-xl bg-white/[0.04]">
-              <div
-                className={cn(
-                  "h-10 w-10 rounded-full flex items-center justify-center font-semibold text-sm shrink-0",
-                  profile.role === "super_admin"
-                    ? "bg-gradient-to-br from-signal-400 via-brand-400 to-brand-600 text-white shadow-glow-signal"
-                    : "bg-gradient-to-br from-signal-400 to-signal-600 text-night-900"
-                )}
-              >
-                {initials(profile.full_name || profile.email)}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-semibold text-white text-sm truncate">
-                  {profile.full_name || profile.email}
-                </div>
-                <div className="text-[10px] uppercase tracking-wider font-semibold inline-flex items-center gap-1">
-                  {profile.role === "super_admin" ? (
-                    <>
-                      <Crown className="h-2.5 w-2.5 text-signal-400" />
-                      <span className="bg-gradient-to-r from-signal-300 to-brand-300 bg-clip-text text-transparent">
-                        Super administrateur
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-signal-300">Administrateur</span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Changer d'espace — section dédiée et claire */}
-            <div>
-              <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/40 px-2 mb-1.5 inline-flex items-center gap-1.5">
-                <Repeat className="h-3 w-3" />
-                Changer d'espace
-              </div>
-              <div className="space-y-0.5">
-                {profile.role === "super_admin" && (
-                  <Link
-                    href="/super-admin"
-                    className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-white/80 hover:bg-gradient-to-r hover:from-brand-600/20 hover:to-signal-500/20 hover:text-white transition border border-transparent hover:border-signal-500/30"
-                  >
-                    <Crown className="w-3.5 h-3.5 text-signal-400" />
-                    Espace super-admin
-                  </Link>
-                )}
-                <Link
-                  href="/formateur"
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-white/70 hover:bg-white/5 hover:text-white transition"
-                >
-                  <GraduationCap className="w-3.5 h-3.5" />
-                  Espace formateur
-                </Link>
-                <Link
-                  href="/dashboard"
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-white/70 hover:bg-white/5 hover:text-white transition"
-                >
-                  <User className="w-3.5 h-3.5" />
-                  Espace stagiaire
-                </Link>
-              </div>
-            </div>
-
-            {/* Actions compte — séparées visuellement */}
-            <div className="border-t border-white/10 pt-3 space-y-0.5">
-              <Link
-                href="/admin/users/me"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-white/70 hover:bg-white/5 hover:text-white transition"
-              >
-                <User className="w-3.5 h-3.5" />
-                Mon profil
-              </Link>
-              <button
-                onClick={logout}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-rose-300 hover:bg-rose-500/10 hover:text-rose-100 transition"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                Se déconnecter
-              </button>
-            </div>
-          </div>
         </aside>
 
         {/* Mobile top bar */}
@@ -200,12 +96,7 @@ export function AdminShell({ children, profile }: Props) {
               <span className="block text-signal-400 font-extrabold">TRANSPORT</span>
             </span>
           </Link>
-          <button
-            onClick={logout}
-            className="h-9 w-9 rounded-lg hover:bg-white/10 flex items-center justify-center"
-          >
-            <LogOut className="h-4 w-4" />
-          </button>
+          <UserMenu profile={profile} variant="dark" />
         </div>
 
         {/* Main */}
@@ -249,9 +140,7 @@ export function AdminShell({ children, profile }: Props) {
                   Mode admin
                 </span>
               )}
-              <div className="h-8 w-8 rounded-full bg-navy-900 text-gold-400 flex items-center justify-center font-semibold text-xs">
-                {initials(profile.full_name || profile.email)}
-              </div>
+              <UserMenu profile={profile} variant="light" />
             </div>
           </div>
 
