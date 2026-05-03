@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MarkdownEditor } from "@/components/markdown-editor";
 import { updateDocument } from "./actions";
-import { Save, Loader2, AlertTriangle } from "lucide-react";
+import { Save, Loader2, AlertTriangle, Download } from "lucide-react";
 
 export function DocumentEditor({ doc }: { doc: any }) {
   const router = useRouter();
@@ -100,6 +100,32 @@ export function DocumentEditor({ doc }: { doc: any }) {
         <div className="flex items-center gap-3">
           {err && <span className="text-sm text-rose-700">{err}</span>}
           {ok && <span className="text-sm text-emerald-700">Enregistré.</span>}
+          {contentChanged && (
+            <span className="text-xs text-slate-500 italic">
+              Enregistre avant d'exporter
+            </span>
+          )}
+          <a
+            href={`/admin/settings/documents/export/${doc.id}`}
+            target="_blank"
+            rel="noopener"
+            aria-disabled={contentChanged}
+            onClick={(e) => {
+              if (contentChanged) {
+                e.preventDefault();
+                setErr(
+                  "Modifications non enregistrées : enregistre d'abord pour les inclure dans le PDF."
+                );
+              }
+            }}
+            className={
+              "inline-flex items-center gap-2 rounded-xl border border-navy-200 bg-white px-3 py-2 text-sm font-medium text-navy-900 hover:bg-navy-50 hover:border-navy-300 transition-colors " +
+              (contentChanged ? "opacity-60 cursor-not-allowed" : "")
+            }
+          >
+            <Download className="h-4 w-4" />
+            Exporter PDF
+          </a>
           <Button onClick={submit} disabled={pending} variant="gold">
             {pending ? (
               <>
