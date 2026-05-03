@@ -39,37 +39,17 @@ export function ResetPasswordForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Vérifie qu'on a bien une session de recovery (établie automatiquement
-  // par Supabase à partir du fragment #access_token=...&type=recovery).
+  // Avec le flow PKCE @supabase/ssr, /auth/callback échange déjà le code
+  // contre une session avant l'arrivée ici. On vérifie juste qu'elle est là.
   useEffect(() => {
     const supabase = createClient();
     let mounted = true;
-
-    // 1. Vérification immédiate
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return;
-      if (data.session) setHasSession("yes");
+      setHasSession(data.session ? "yes" : "no");
     });
-
-    // 2. Écoute l'event PASSWORD_RECOVERY (au cas où la session arrive après)
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (!mounted) return;
-      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
-        setHasSession("yes");
-      }
-    });
-
-    // 3. Fallback : si pas de session après 1.5s, on considère que le lien
-    //    est invalide / expiré
-    const timer = setTimeout(() => {
-      if (!mounted) return;
-      setHasSession((prev) => (prev === "checking" ? "no" : prev));
-    }, 1500);
-
     return () => {
       mounted = false;
-      sub.subscription.unsubscribe();
-      clearTimeout(timer);
     };
   }, []);
 

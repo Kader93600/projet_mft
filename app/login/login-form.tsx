@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
@@ -12,15 +13,11 @@ import {
   Loader2,
   Check,
   KeyRound,
-  ShieldCheck,
 } from "lucide-react";
-
-type Mode = "login" | "forgot";
 
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,13 +25,15 @@ export function LoginForm() {
   const [success, setSuccess] = useState<string | null>(null);
   const [shake, setShake] = useState(false);
 
-  // Toast succès après réinitialisation du mot de passe
+  // Toasts via querystring (?reset=success après reset, ?error=... après callback)
   useEffect(() => {
     if (searchParams.get("reset") === "success") {
       setSuccess(
         "Votre mot de passe a bien été mis à jour. Connectez-vous avec vos nouveaux identifiants."
       );
     }
+    const err = searchParams.get("error");
+    if (err) setError(err);
   }, [searchParams]);
 
   function triggerShake() {
@@ -42,7 +41,7 @@ export function LoginForm() {
     window.setTimeout(() => setShake(false), 500);
   }
 
-  async function onSubmitLogin(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -53,50 +52,26 @@ export function LoginForm() {
       password,
     });
     if (error) {
-      // Petit shake premium pour signaler l'échec sans agresser
       triggerShake();
       setError(translateAuthError(error.message));
       setLoading(false);
       return;
     }
     setSuccess("Connexion réussie. Redirection…");
-    // Léger délai pour laisser apparaître l'état succès
     window.setTimeout(() => {
       router.push("/dashboard");
       router.refresh();
     }, 400);
   }
 
-  async function onSubmitForgot(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
-    const supabase = createClient();
-    const redirectTo =
-      typeof window !== "undefined"
-        ? `${window.location.origin}/reset-password`
-        : undefined;
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo,
-    });
-    setLoading(false);
-    if (error) {
-      triggerShake();
-      setError(translateAuthError(error.message));
-      return;
-    }
-    setSuccess(
-      "Si un compte existe avec cette adresse, un email de réinitialisation vient d'être envoyé. Vérifiez votre boîte (et le dossier spam)."
-    );
-  }
-
   return (
     <form
-      onSubmit={mode === "login" ? onSubmitLogin : onSubmitForgot}
+      onSubmit={onSubmit}
       className={
         "space-y-5 transition-transform " +
-        (shake ? "animate-[shake_0.5s_ease-in-out] motion-reduce:animate-none" : "")
+        (shake
+          ? "animate-[shake_0.5s_ease-in-out] motion-reduce:animate-none"
+          : "")
       }
     >
       <div style={{ animation: "fade-up 0.4s ease-out both" }}>
@@ -116,43 +91,35 @@ export function LoginForm() {
         </div>
       </div>
 
-      {mode === "login" && (
-        <div style={{ animation: "fade-up 0.4s ease-out 0.08s both" }}>
-          <div className="flex items-center justify-between mb-2">
-            <Label htmlFor="password" className="mb-0">
-              Mot de passe
-            </Label>
-            <button
-              type="button"
-              onClick={() => {
-                setMode("forgot");
-                setError(null);
-                setSuccess(null);
-              }}
-              className="text-xs text-slate-500 hover:text-brand-700 transition-colors inline-flex items-center gap-1"
-            >
-              <KeyRound className="h-3 w-3" />
-              Mot de passe oublié ?
-            </button>
-          </div>
-          <div className="relative">
-            <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <Input
-              id="password"
-              type="password"
-              required
-              minLength={6}
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="pl-10"
-            />
-          </div>
+      <div style={{ animation: "fade-up 0.4s ease-out 0.08s both" }}>
+        <div className="flex items-center justify-between mb-2">
+          <Label htmlFor="password" className="mb-0">
+            Mot de passe
+          </Label>
+          <Link
+            href="/forgot-password"
+            className="text-xs text-slate-500 hover:text-brand-700 transition-colors inline-flex items-center gap-1"
+          >
+            <KeyRound className="h-3 w-3" />
+            Mot de passe oublié ?
+          </Link>
         </div>
-      )}
+        <div className="relative">
+          <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Input
+            id="password"
+            type="password"
+            required
+            minLength={6}
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+            className="pl-10"
+          />
+        </div>
+      </div>
 
-      {/* Feedback : erreur / succès */}
       {error && (
         <div
           role="alert"
@@ -184,40 +151,19 @@ export function LoginForm() {
         {loading ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
-            {mode === "login" ? "Connexion…" : "Envoi…"}
+            Connexion…
           </>
-        ) : mode === "login" ? (
+        ) : (
           <>
             Se connecter
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0" />
           </>
-        ) : (
-          <>
-            Envoyer le lien de réinitialisation
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0" />
-          </>
         )}
       </Button>
-
-      {mode === "forgot" && (
-        <button
-          type="button"
-          onClick={() => {
-            setMode("login");
-            setError(null);
-            setSuccess(null);
-          }}
-          className="w-full text-center text-xs text-slate-500 hover:text-navy-900 transition-colors"
-          style={{ animation: "fade-up 0.4s ease-out 0.2s both" }}
-        >
-          ← Revenir à la connexion
-        </button>
-      )}
     </form>
   );
 }
 
-/** Traductions FR des erreurs Supabase Auth les plus fréquentes. */
 function translateAuthError(msg: string): string {
   const m = msg.toLowerCase();
   if (m.includes("invalid login credentials"))
