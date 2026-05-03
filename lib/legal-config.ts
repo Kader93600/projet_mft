@@ -44,8 +44,8 @@ export const LEGAL = {
 
   // Organisme de formation (NDA délivré par la DREETS Île-de-France, région 11)
   trainingActivityNumber: "11 77 09 47177",
-  qualiopiNumber: "[À COMPLÉTER : numéro de certification Qualiopi]",
-  qualiopiBody: "[À COMPLÉTER : nom de l'organisme certificateur, ex. AFNOR Certification]",
+  qualiopiNumber: "CW202525-4287",
+  qualiopiBody: "BCI France (Bureau de Certification International)",
 
   // Référentiel principal (gardé pour compatibilité PDF — voir formations-config.ts pour le détail multi-formations)
   rncpCode: "RNCP 40990",
