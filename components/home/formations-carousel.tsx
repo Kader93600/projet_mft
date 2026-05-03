@@ -59,6 +59,75 @@ export function FormationsCarousel() {
   const [flippedSlugs, setFlippedSlugs] = React.useState<Set<string>>(
     () => new Set()
   );
+  const [isHovering, setIsHovering] = React.useState(false);
+
+  // Auto-scroll lent en ping-pong, en pause sur hover / flip / interaction
+  React.useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    if (reduceMotion) return;
+
+    let raf = 0;
+    let lastTs = performance.now();
+    let direction: 1 | -1 = 1;
+    let userInteractingUntil = 0;
+    const SPEED = 0.022; // px / ms ≈ 22 px/s
+
+    const onUserInteract = () => {
+      // Met l'auto-scroll en pause pendant 4s après une action utilisateur
+      userInteractingUntil = performance.now() + 4000;
+    };
+    el.addEventListener("pointerdown", onUserInteract, { passive: true });
+    el.addEventListener("wheel", onUserInteract, { passive: true });
+    el.addEventListener("touchstart", onUserInteract, { passive: true });
+
+    const tick = (now: number) => {
+      const dt = now - lastTs;
+      lastTs = now;
+      const paused =
+        isHoveringRef.current ||
+        flippedRef.current > 0 ||
+        now < userInteractingUntil;
+
+      if (!paused) {
+        const max = el.scrollWidth - el.clientWidth;
+        if (max > 1) {
+          let next = el.scrollLeft + direction * SPEED * dt;
+          if (next >= max) {
+            next = max;
+            direction = -1;
+          } else if (next <= 0) {
+            next = 0;
+            direction = 1;
+          }
+          el.scrollLeft = next;
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      el.removeEventListener("pointerdown", onUserInteract);
+      el.removeEventListener("wheel", onUserInteract);
+      el.removeEventListener("touchstart", onUserInteract);
+    };
+  }, []);
+
+  // Refs synchronisés pour lecture dans le RAF
+  const isHoveringRef = React.useRef(false);
+  const flippedRef = React.useRef(0);
+  React.useEffect(() => {
+    isHoveringRef.current = isHovering;
+  }, [isHovering]);
+  React.useEffect(() => {
+    flippedRef.current = flippedSlugs.size;
+  }, [flippedSlugs]);
 
   const scrollToCard = (idx: number) => {
     const el = scrollerRef.current;
@@ -141,7 +210,11 @@ export function FormationsCarousel() {
         </div>
 
         {/* Carrousel ─────────────────────────────────────────────────── */}
-        <div className="relative mt-12">
+        <div
+          className="relative mt-12"
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
+        >
           {/* Boutons prev/next (desktop) */}
           <button
             type="button"
@@ -183,7 +256,7 @@ export function FormationsCarousel() {
           {/* Scroller */}
           <div
             ref={scrollerRef}
-            className="flex gap-5 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-8 pt-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex gap-5 overflow-x-auto snap-x snap-proximity scroll-smooth pb-8 pt-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             style={{
               paddingLeft: "max(1.5rem, calc(50% - 165px))",
               paddingRight: "max(1.5rem, calc(50% - 165px))",
