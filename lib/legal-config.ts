@@ -13,19 +13,19 @@
 // =====================================================================
 
 export const LEGAL = {
-  // Identité de l'organisme
+  // Identité de l'organisme (source : attestation INPI/RNE 03/05/2026)
   brand: "MA FORMATION TRANSPORT",
   legalName: "MA FORMATION TRANSPORT",
-  legalForm: "[À COMPLÉTER : SAS / SASU / EURL / SARL / EI]",
+  legalForm: "SAS, société par actions simplifiée",
   siren: "908 851 280",
-  siret: "[À COMPLÉTER : SIREN + 5 chiffres NIC]",
-  rcs: "[À COMPLÉTER : RCS Meaux + numéro]",
-  vatNumber: "[À COMPLÉTER : FR XX 908851280]",
-  shareCapital: "[À COMPLÉTER : x xxx €]",
+  siret: "908 851 280 00028",
+  rcs: "RCS Meaux 908 851 280",
+  vatNumber: "FR58908851280",
+  shareCapital: "3 000 €",
   apeCode: "8559B",
   apeLabel: "Autres enseignements",
 
-  // Adresse
+  // Adresse (siège social)
   address: {
     street: "39 Avenue des Sablons Bouillants",
     postalCode: "77100",
@@ -33,9 +33,9 @@ export const LEGAL = {
     country: "France",
   },
 
-  // Direction
-  director: "[À COMPLÉTER : nom du représentant légal]",
-  publicationDirector: "[À COMPLÉTER : directeur de publication]",
+  // Direction (source : INPI/RNE)
+  director: "Mehdie Debbouza",
+  publicationDirector: "Mehdie Debbouza",
 
   // Contact
   email: "contact@maformationtransport.fr",
@@ -51,8 +51,8 @@ export const LEGAL = {
   rncpCode: "RNCP 40990",
   rncpTitle: "Gestionnaire des Opérations de Transport Routier de Marchandises",
 
-  // RGPD
-  dpoName: "[À COMPLÉTER : nom du DPO ou délégué]",
+  // RGPD (par défaut : le représentant légal assume la fonction DPO)
+  dpoName: "Mehdie Debbouza",
   dpoEmail: "dpo@maformationtransport.fr",
 
   // Hébergement
