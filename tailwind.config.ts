@@ -178,6 +178,10 @@ const config: Config = {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-8px)" },
         },
+        "float-y": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-6px)" },
+        },
         "spin-slow": {
           "0%": { transform: "rotate(0deg)" },
           "100%": { transform: "rotate(360deg)" },
@@ -217,6 +221,7 @@ const config: Config = {
         shimmer: "shimmer 2s linear infinite",
         "road-pulse": "road-pulse 2.5s ease-in-out infinite",
         "float-slow": "float-slow 6s ease-in-out infinite",
+        "float-y": "float-y 6s ease-in-out infinite",
         "spin-slow": "spin-slow 30s linear infinite",
         "draw-path": "draw-path 2s ease-out forwards",
         "marquee-x": "marquee-x 40s linear infinite",

@@ -28,47 +28,49 @@ const ICONS: Record<string, any> = {
 };
 
 /**
- * Constellation des formations : logo de l'école au centre, 8 formations
- * disposées en cercle autour (desktop). Mobile : grille classique.
+ * Constellation atomique : le logo de l'école est le noyau, les 8 formations
+ * gravitent autour comme des électrons sur deux orbites contre-rotatives.
  *
- * Animations :
- *  - Stagger fade-up à l'entrée (50ms par item, en spirale depuis le centre)
- *  - Hover : carte qui se lève + glow accent + arrow translate
- *  - Lignes de connexion (SVG) qui se dessinent à l'entrée (draw-path)
- *  - Logo central : pulse glow signal très subtil
+ *  - Desktop (≥ md) : orbite réelle avec positions calculées en pourcentage
+ *    sur un conteneur carré responsive (clamp 540 → 720 px).
+ *  - Mobile : version compacte avec mini-orbite + tap pour activer une
+ *    formation (affiche tagline avant de naviguer).
  *
- * Tout respecte motion-reduce.
+ *  Animations (toutes désactivées en motion-reduce) :
+ *   - Stagger fade-up à l'apparition (depuis le centre vers l'extérieur)
+ *   - Orbite tournante en arrière-plan (CSS spin-slow contre-rotatif)
+ *   - Léger flottement vertical de chaque carte (animation `float-y`)
+ *   - Halo pulsant signal sur le logo central
+ *   - Hover/focus/tap : glow accent + scale + ligne SVG mise en avant +
+ *     tagline qui apparaît sous la carte
  */
 export function FormationsConstellation() {
   const items = FORMATIONS;
   const total = items.length;
-  // 8 positions sur un cercle, centrées sur 90° (haut) → -90° (bas)
-  // On part du haut puis on tourne dans le sens horaire.
-  const radius = 38; // % du conteneur
+  const radius = 38;
   const positions = items.map((_, i) => {
-    const angle = (i / total) * Math.PI * 2 - Math.PI / 2; // commence en haut
+    const angle = (i / total) * Math.PI * 2 - Math.PI / 2;
     return {
-      // x/y en pourcentage relatif au conteneur (centre = 50%)
       x: 50 + radius * Math.cos(angle),
       y: 50 + radius * Math.sin(angle),
       angle: (angle * 180) / Math.PI,
     };
   });
 
-  const [hoveredSlug, setHoveredSlug] = useState<string | null>(null);
+  const [activeSlug, setActiveSlug] = useState<string | null>(null);
 
   return (
     <section
       id="formations"
       className="relative py-20 md:py-28 bg-white/[0.02] border-y border-white/5 overflow-hidden"
     >
-      {/* Fond décoratif : grille subtile + halo signal central */}
+      {/* Halos décoratifs (signal + brand) */}
       <div
         aria-hidden
-        className="absolute inset-0 pointer-events-none opacity-30"
+        className="absolute inset-0 pointer-events-none opacity-40"
         style={{
           background:
-            "radial-gradient(ellipse at center, rgba(159,226,32,0.10) 0%, transparent 50%), radial-gradient(ellipse at center, rgba(37,48,217,0.18) 0%, transparent 70%)",
+            "radial-gradient(ellipse 50% 60% at center, rgba(159,226,32,0.12) 0%, transparent 60%), radial-gradient(ellipse 80% 80% at center, rgba(37,48,217,0.20) 0%, transparent 70%)",
         }}
       />
 
@@ -86,218 +88,379 @@ export function FormationsConstellation() {
           </p>
         </div>
 
-        {/* DESKTOP — orbite ≥ md */}
+        {/* DESKTOP — orbite ≥ md ============================================ */}
         <div
-          className="hidden md:block relative mt-16 mx-auto"
-          style={{ width: "min(720px, 90vw)", aspectRatio: "1 / 1" }}
-          onMouseLeave={() => setHoveredSlug(null)}
+          className="hidden md:flex justify-center mt-16"
+          onMouseLeave={() => setActiveSlug(null)}
         >
-          {/* Cercles concentriques décoratifs */}
-          <svg
-            aria-hidden
-            className="absolute inset-0 w-full h-full pointer-events-none"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="xMidYMid meet"
-          >
-            <defs>
-              <radialGradient id="ring-grad" cx="50%" cy="50%" r="50%">
-                <stop offset="60%" stopColor="rgba(255,255,255,0)" />
-                <stop offset="100%" stopColor="rgba(159,226,32,0.12)" />
-              </radialGradient>
-            </defs>
-            <circle
-              cx="50"
-              cy="50"
-              r={radius}
-              fill="none"
-              stroke="rgba(255,255,255,0.08)"
-              strokeWidth="0.2"
-              strokeDasharray="0.8 0.6"
-              className="motion-reduce:hidden animate-[spin-slow_60s_linear_infinite]"
-              style={{ transformOrigin: "50% 50%" }}
-            />
-            <circle
-              cx="50"
-              cy="50"
-              r={radius - 8}
-              fill="none"
-              stroke="rgba(159,226,32,0.10)"
-              strokeWidth="0.15"
-            />
-            <circle
-              cx="50"
-              cy="50"
-              r="14"
-              fill="url(#ring-grad)"
-              opacity="0.6"
-            />
-            {/* Lignes de connexion logo ↔ chaque formation */}
-            {positions.map((p, i) => (
-              <line
-                key={i}
-                x1="50"
-                y1="50"
-                x2={p.x}
-                y2={p.y}
-                stroke={
-                  hoveredSlug === items[i].slug
-                    ? items[i].accent ?? "#9FE220"
-                    : "rgba(255,255,255,0.06)"
-                }
-                strokeWidth={hoveredSlug === items[i].slug ? "0.25" : "0.15"}
-                strokeDasharray="0.6 0.4"
-                style={{
-                  transition: "stroke 0.4s ease-out, stroke-width 0.4s ease-out",
-                  animation: `draw-path 1.2s ease-out ${i * 80}ms both`,
-                }}
-              />
-            ))}
-          </svg>
-
-          {/* Logo central */}
           <div
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10"
-            style={{ animation: "fade-up 0.6s ease-out 0.2s both" }}
+            className="relative aspect-square"
+            style={{ width: "min(720px, 88vw)" }}
           >
-            <div className="relative">
-              {/* Halo pulsant */}
+            {/* Anneaux orbitaux animés (counter-rotation) ----------------- */}
+            <div
+              aria-hidden
+              className="absolute inset-0 motion-reduce:hidden"
+              style={{
+                animation: "spin-slow 90s linear infinite",
+                transformOrigin: "50% 50%",
+              }}
+            >
+              <svg
+                className="w-full h-full"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="xMidYMid meet"
+              >
+                <circle
+                  cx="50"
+                  cy="50"
+                  r={radius}
+                  fill="none"
+                  stroke="rgba(255,255,255,0.10)"
+                  strokeWidth="0.18"
+                  strokeDasharray="0.7 0.7"
+                />
+              </svg>
+            </div>
+            <div
+              aria-hidden
+              className="absolute inset-0 motion-reduce:hidden"
+              style={{
+                animation: "spin-slow 70s linear infinite reverse",
+                transformOrigin: "50% 50%",
+              }}
+            >
+              <svg
+                className="w-full h-full"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="xMidYMid meet"
+              >
+                <circle
+                  cx="50"
+                  cy="50"
+                  r={radius - 10}
+                  fill="none"
+                  stroke="rgba(159,226,32,0.16)"
+                  strokeWidth="0.12"
+                  strokeDasharray="0.4 1"
+                />
+              </svg>
+            </div>
+
+            {/* Halo central + lignes de connexion ---------------------------- */}
+            <svg
+              aria-hidden
+              className="absolute inset-0 w-full h-full pointer-events-none"
+              viewBox="0 0 100 100"
+              preserveAspectRatio="xMidYMid meet"
+            >
+              <defs>
+                <radialGradient id="core-grad" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="rgba(159,226,32,0.30)" />
+                  <stop offset="60%" stopColor="rgba(159,226,32,0.05)" />
+                  <stop offset="100%" stopColor="rgba(159,226,32,0)" />
+                </radialGradient>
+              </defs>
+              <circle cx="50" cy="50" r="18" fill="url(#core-grad)" />
+              {positions.map((p, i) => {
+                const isActive = activeSlug === items[i].slug;
+                const accent = items[i].accent ?? "#9FE220";
+                return (
+                  <line
+                    key={i}
+                    x1="50"
+                    y1="50"
+                    x2={p.x}
+                    y2={p.y}
+                    stroke={isActive ? accent : "rgba(255,255,255,0.07)"}
+                    strokeWidth={isActive ? "0.32" : "0.14"}
+                    strokeDasharray={isActive ? "0" : "0.6 0.5"}
+                    style={{
+                      transition:
+                        "stroke 0.4s ease-out, stroke-width 0.4s ease-out",
+                      animation: `draw-path 1.2s ease-out ${i * 90}ms both`,
+                      filter: isActive
+                        ? `drop-shadow(0 0 1.5px ${accent})`
+                        : undefined,
+                    }}
+                  />
+                );
+              })}
+            </svg>
+
+            {/* Logo central (noyau) ------------------------------------------ */}
+            <div
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10"
+              style={{ animation: "fade-up 0.6s ease-out 0.2s both" }}
+            >
+              <div className="relative flex flex-col items-center">
+                {/* Halo pulsant */}
+                <div
+                  aria-hidden
+                  className="absolute -inset-8 rounded-full motion-reduce:hidden"
+                  style={{
+                    background:
+                      "radial-gradient(circle, rgba(159,226,32,0.35) 0%, transparent 65%)",
+                    animation: "glow-pulse 4s ease-in-out infinite",
+                  }}
+                />
+                {/* Anneau autour du noyau */}
+                <div
+                  aria-hidden
+                  className="absolute inset-0 -m-3 rounded-[2rem] border border-signal-400/30 motion-reduce:hidden"
+                  style={{
+                    animation: "glow-pulse 4s ease-in-out infinite",
+                  }}
+                />
+                <div className="relative h-32 w-32 rounded-3xl bg-night-100 border border-white/15 flex items-center justify-center shadow-glow-signal">
+                  <LogoMark className="h-20 w-20" variant="light" />
+                </div>
+                <div className="mt-4 text-center">
+                  <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/55">
+                    Votre école
+                  </div>
+                  <div className="text-sm font-display font-semibold text-white mt-1 leading-tight">
+                    MA FORMATION
+                  </div>
+                  <div className="text-sm font-display font-extrabold text-signal-400 leading-tight">
+                    TRANSPORT
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 8 formations en orbite --------------------------------------- */}
+            {items.map((f, i) => {
+              const Icon = ICONS[f.iconName] ?? Truck;
+              const p = positions[i];
+              const accent = f.accent ?? "#9FE220";
+              const isActive = activeSlug === f.slug;
+              return (
+                <div
+                  key={f.slug}
+                  className="absolute z-20"
+                  style={{
+                    left: `${p.x}%`,
+                    top: `${p.y}%`,
+                    transform: "translate(-50%, -50%)",
+                    animation: `fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) ${
+                      300 + i * 80
+                    }ms both`,
+                  }}
+                >
+                  {/* Wrapper avec flottement vertical (subtil) */}
+                  <div
+                    className="motion-reduce:!animate-none"
+                    style={{
+                      animation: `float-y 6s ease-in-out ${i * 0.4}s infinite`,
+                    }}
+                  >
+                    <Link
+                      href={`/formations/${f.slug}`}
+                      onMouseEnter={() => setActiveSlug(f.slug)}
+                      onFocus={() => setActiveSlug(f.slug)}
+                      onBlur={() => setActiveSlug(null)}
+                      className="group block focus:outline-none"
+                    >
+                      <div
+                        className={
+                          "relative w-44 rounded-2xl border bg-night-100/85 backdrop-blur-md p-3.5 " +
+                          "transition-[transform,box-shadow,border-color,background] duration-300 " +
+                          "motion-reduce:transition-none " +
+                          (isActive
+                            ? "scale-[1.08] -translate-y-1 border-white/30 bg-night-100"
+                            : "border-white/10 group-hover:border-white/25 group-hover:scale-[1.04] motion-reduce:group-hover:scale-100")
+                        }
+                        style={{
+                          boxShadow: isActive
+                            ? `0 18px 50px -10px ${accent}80, 0 0 0 1px ${accent}55, inset 0 0 24px ${accent}14`
+                            : undefined,
+                        }}
+                      >
+                        {/* Halo accent en hover */}
+                        <div
+                          aria-hidden
+                          className="absolute -top-10 -right-10 h-24 w-24 rounded-full pointer-events-none transition-opacity duration-500"
+                          style={{
+                            background: `radial-gradient(circle, ${accent}55 0%, transparent 70%)`,
+                            opacity: isActive ? 1 : 0,
+                          }}
+                        />
+
+                        <div className="relative flex items-start gap-2.5">
+                          <div
+                            className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300"
+                            style={{
+                              background: `${accent}1F`,
+                              border: `1px solid ${accent}55`,
+                              color: accent,
+                              transform: isActive ? "scale(1.1)" : "scale(1)",
+                            }}
+                          >
+                            <Icon className="h-4 w-4" />
+                          </div>
+                          <div className="min-w-0">
+                            <div
+                              className="text-[10px] font-bold uppercase tracking-wider"
+                              style={{ color: accent }}
+                            >
+                              {f.code}
+                            </div>
+                            <div className="text-[13px] font-semibold text-white leading-tight mt-0.5 line-clamp-2">
+                              {f.title}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-2.5 flex items-center justify-between text-[11px]">
+                          <span className="text-white/45 truncate">
+                            {f.duration}
+                          </span>
+                          <ArrowRight
+                            className="h-3 w-3 shrink-0 transition-transform"
+                            style={{
+                              color: accent,
+                              transform: isActive
+                                ? "translateX(3px)"
+                                : "translateX(0)",
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Tagline qui apparaît au hover (tooltip) */}
+                      <div
+                        className={
+                          "absolute left-1/2 top-full mt-2 -translate-x-1/2 w-52 " +
+                          "rounded-xl bg-night-50/95 backdrop-blur-sm border border-white/10 " +
+                          "px-3 py-2 text-[11px] text-white/80 leading-snug pointer-events-none " +
+                          "transition-[opacity,transform] duration-300 ease-out " +
+                          (isActive
+                            ? "opacity-100 translate-y-0"
+                            : "opacity-0 -translate-y-1")
+                        }
+                        style={{
+                          boxShadow: isActive
+                            ? `0 12px 30px -8px ${accent}55`
+                            : undefined,
+                        }}
+                      >
+                        {f.tagline}
+                      </div>
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* MOBILE — mini-orbite + tap activation ============================ */}
+        <div className="md:hidden mt-12">
+          <div className="relative mx-auto aspect-square w-full max-w-sm">
+            {/* Anneau */}
+            <div
+              aria-hidden
+              className="absolute inset-0 motion-reduce:hidden"
+              style={{
+                animation: "spin-slow 80s linear infinite",
+                transformOrigin: "50% 50%",
+              }}
+            >
+              <svg
+                className="w-full h-full"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="xMidYMid meet"
+              >
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="38"
+                  fill="none"
+                  stroke="rgba(255,255,255,0.10)"
+                  strokeWidth="0.25"
+                  strokeDasharray="0.7 0.7"
+                />
+              </svg>
+            </div>
+
+            {/* Logo central */}
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
               <div
                 aria-hidden
-                className="absolute inset-0 -m-6 rounded-full motion-reduce:hidden"
+                className="absolute -inset-6 rounded-full motion-reduce:hidden"
                 style={{
                   background:
-                    "radial-gradient(circle, rgba(159,226,32,0.25) 0%, transparent 70%)",
+                    "radial-gradient(circle, rgba(159,226,32,0.35) 0%, transparent 65%)",
                   animation: "glow-pulse 4s ease-in-out infinite",
                 }}
               />
-              <div className="relative h-28 w-28 rounded-3xl bg-night-100 border border-white/10 flex items-center justify-center shadow-glow-signal">
-                <LogoMark className="h-16 w-16" variant="light" />
-              </div>
-              <div className="mt-3 text-center">
-                <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/50">
-                  Votre école
-                </div>
-                <div className="text-sm font-display font-semibold text-white mt-0.5">
-                  MA FORMATION
-                </div>
-                <div className="text-sm font-display font-extrabold text-signal-400 -mt-0.5">
-                  TRANSPORT
-                </div>
+              <div className="relative h-20 w-20 rounded-2xl bg-night-100 border border-white/15 flex items-center justify-center shadow-glow-signal">
+                <LogoMark className="h-12 w-12" variant="light" />
               </div>
             </div>
-          </div>
 
-          {/* 8 formations en orbite */}
-          {items.map((f, i) => {
-            const Icon = ICONS[f.iconName] ?? Truck;
-            const p = positions[i];
-            const accent = f.accent ?? "#9FE220";
-            const isHovered = hoveredSlug === f.slug;
-            return (
-              <Link
-                key={f.slug}
-                href={`/formations/${f.slug}`}
-                onMouseEnter={() => setHoveredSlug(f.slug)}
-                className="group absolute z-20"
-                style={{
-                  left: `${p.x}%`,
-                  top: `${p.y}%`,
-                  transform: "translate(-50%, -50%)",
-                  animation: `fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) ${
-                    300 + i * 80
-                  }ms both`,
-                }}
-              >
-                <div
-                  className={
-                    "relative w-44 rounded-2xl border bg-night-100/80 backdrop-blur-md p-3.5 " +
-                    "transition-[transform,box-shadow,border-color,background] duration-300 " +
-                    "motion-reduce:transition-none " +
-                    (isHovered
-                      ? "scale-[1.06] -translate-y-1 shadow-raised border-white/30 bg-night-100"
-                      : "border-white/10 hover:border-white/20 hover:scale-[1.04] motion-reduce:hover:scale-100")
-                  }
-                  style={{
-                    boxShadow: isHovered
-                      ? `0 14px 40px -10px ${accent}66, 0 0 0 1px ${accent}33`
-                      : undefined,
-                  }}
-                >
-                  {/* Halo accent */}
-                  <div
-                    aria-hidden
-                    className="absolute -top-8 -right-8 h-20 w-20 rounded-full pointer-events-none transition-opacity duration-500"
-                    style={{
-                      background: `radial-gradient(circle, ${accent}40 0%, transparent 70%)`,
-                      opacity: isHovered ? 1 : 0,
-                    }}
-                  />
-
-                  <div className="relative flex items-start gap-2.5">
-                    <div
-                      className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
-                      style={{
-                        background: `${accent}1F`,
-                        border: `1px solid ${accent}55`,
-                        color: accent,
-                      }}
-                    >
-                      <Icon className="h-4 w-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <div
-                        className="text-[10px] font-bold uppercase tracking-wider"
-                        style={{ color: accent }}
-                      >
-                        {f.code}
-                      </div>
-                      <div className="text-[13px] font-semibold text-white leading-tight mt-0.5 line-clamp-2">
-                        {f.title}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-2.5 flex items-center justify-between text-[11px]">
-                    <span className="text-white/45 truncate">{f.duration}</span>
-                    <ArrowRight
-                      className="h-3 w-3 shrink-0 transition-transform"
-                      style={{
-                        color: accent,
-                        transform: isHovered
-                          ? "translateX(2px)"
-                          : "translateX(0)",
-                      }}
-                    />
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-
-        {/* MOBILE — fallback grille */}
-        <div className="md:hidden mt-12 space-y-6">
-          {/* Logo en haut */}
-          <div className="flex justify-center">
-            <div className="relative h-20 w-20 rounded-2xl bg-night-100 border border-white/10 flex items-center justify-center shadow-glow-signal">
-              <LogoMark className="h-12 w-12" variant="light" />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* 8 puces formations en orbite (icônes seulement) */}
             {items.map((f, i) => {
+              const Icon = ICONS[f.iconName] ?? Truck;
+              const p = positions[i];
+              const accent = f.accent ?? "#9FE220";
+              const isActive = activeSlug === f.slug;
+              return (
+                <button
+                  key={f.slug}
+                  type="button"
+                  onClick={() => setActiveSlug(isActive ? null : f.slug)}
+                  className="absolute z-20 focus:outline-none"
+                  style={{
+                    left: `${p.x}%`,
+                    top: `${p.y}%`,
+                    transform: "translate(-50%, -50%)",
+                    animation: `fade-up 0.5s ease-out ${200 + i * 60}ms both`,
+                  }}
+                  aria-label={f.title}
+                >
+                  <span
+                    className={
+                      "h-12 w-12 rounded-2xl flex items-center justify-center transition-all duration-300 " +
+                      (isActive
+                        ? "scale-110"
+                        : "scale-100 active:scale-95")
+                    }
+                    style={{
+                      background: `${accent}22`,
+                      border: `1px solid ${accent}88`,
+                      color: accent,
+                      boxShadow: isActive
+                        ? `0 0 0 4px ${accent}33, 0 12px 30px -8px ${accent}88`
+                        : undefined,
+                    }}
+                  >
+                    <Icon className="h-5 w-5" />
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Carte détail de la formation active (mobile) */}
+          <div className="mt-6 min-h-[7rem]">
+            {(() => {
+              const f =
+                items.find((x) => x.slug === activeSlug) ?? items[0];
               const Icon = ICONS[f.iconName] ?? Truck;
               const accent = f.accent ?? "#9FE220";
               return (
                 <Link
-                  key={f.slug}
                   href={`/formations/${f.slug}`}
-                  className="group rounded-2xl border border-white/10 bg-night-100 p-4 transition-all hover:border-white/30 hover:-translate-y-0.5"
+                  className="block rounded-2xl border bg-night-100 p-4 transition-all"
                   style={{
-                    animation: `fade-up 0.5s ease-out ${i * 50}ms both`,
+                    borderColor: `${accent}55`,
+                    boxShadow: `0 12px 32px -10px ${accent}55, inset 0 0 0 1px ${accent}22`,
                   }}
                 >
                   <div className="flex items-start gap-3">
                     <div
-                      className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0"
+                      className="h-11 w-11 rounded-xl flex items-center justify-center shrink-0"
                       style={{
                         background: `${accent}1F`,
                         border: `1px solid ${accent}55`,
@@ -306,7 +469,7 @@ export function FormationsConstellation() {
                     >
                       <Icon className="h-5 w-5" />
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <div
                         className="text-[10px] font-bold uppercase tracking-wider"
                         style={{ color: accent }}
@@ -316,15 +479,24 @@ export function FormationsConstellation() {
                       <div className="text-sm font-semibold text-white mt-0.5 leading-tight">
                         {f.title}
                       </div>
-                      <div className="mt-1 text-xs text-white/55 line-clamp-2">
+                      <div className="mt-1 text-xs text-white/65 line-clamp-2">
                         {f.tagline}
                       </div>
                     </div>
+                    <ArrowRight
+                      className="h-4 w-4 shrink-0 mt-1"
+                      style={{ color: accent }}
+                    />
                   </div>
                 </Link>
               );
-            })}
+            })()}
           </div>
+          <p className="mt-3 text-center text-[11px] text-white/45">
+            {activeSlug
+              ? "Touchez à nouveau pour fermer · ou la carte pour ouvrir"
+              : "Touchez une formation pour la mettre en avant"}
+          </p>
         </div>
 
         <div className="mt-12 text-center">
