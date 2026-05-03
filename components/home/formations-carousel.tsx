@@ -12,7 +12,6 @@ import {
   Award,
   ShieldCheck,
   ArrowRight,
-  ArrowLeft,
   RotateCw,
   Clock,
   MapPin,
@@ -38,110 +37,27 @@ const MODALITY_LABEL: Record<string, string> = {
 };
 
 /**
- * Carrousel de flip cards 3D — remplace la constellation orbitale.
+ * Marquee infini des formations — défile lentement et en continu, avec
+ * cartes flip 3D individuelles.
  *
- * Mécanique :
- *  - Scroller horizontal avec scroll-snap (1 carte centrée = 1 snap)
- *  - Chaque carte est un conteneur avec perspective 1400px ; l'enfant
- *    flippe en rotateY(180deg) au hover (desktop) ou via data-flipped
- *    après un tap (mobile, sans hover).
- *  - IntersectionObserver pour suivre la carte centrée → indicateurs.
- *  - Boutons prev/next desktop, dots responsive.
+ *  - Inner row : flex gap, width: max-content, animation translateX 0 → -50%
+ *  - Cartes dupliquées (×2) → boucle parfaitement sans saut
+ *  - CSS :hover sur le row → animation-play-state: paused
+ *  - Si une carte est flippée → pause forcée via inline style
+ *  - prefers-reduced-motion : marquee figée, swipe horizontal possible
+ *  - Mobile : touchstart pause 4s, puis reprise
  *
- * Face avant : icône glow accent + code + niveau RNCP, titre, durée,
- *              hint "Retourner".
- * Face arrière : code, RNCP, titre complet, baseline, durée + modalité +
- *               public, CTA "Découvrir la formation".
+ * Pas de scroll-snap, pas d'IntersectionObserver, pas de RAF.
+ * La marquee CSS gère tout.
  */
 export function FormationsCarousel() {
-  const scrollerRef = React.useRef<HTMLDivElement>(null);
-  const [activeIdx, setActiveIdx] = React.useState(0);
   const [flippedSlugs, setFlippedSlugs] = React.useState<Set<string>>(
     () => new Set()
   );
-  const [isHovering, setIsHovering] = React.useState(false);
-
-  // Auto-scroll lent en ping-pong, en pause sur hover / flip / interaction
-  React.useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-
-    const reduceMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-    if (reduceMotion) return;
-
-    let raf = 0;
-    let lastTs = performance.now();
-    let direction: 1 | -1 = 1;
-    let userInteractingUntil = 0;
-    const SPEED = 0.022; // px / ms ≈ 22 px/s
-
-    const onUserInteract = () => {
-      // Met l'auto-scroll en pause pendant 4s après une action utilisateur
-      userInteractingUntil = performance.now() + 4000;
-    };
-    el.addEventListener("pointerdown", onUserInteract, { passive: true });
-    el.addEventListener("wheel", onUserInteract, { passive: true });
-    el.addEventListener("touchstart", onUserInteract, { passive: true });
-
-    const tick = (now: number) => {
-      const dt = now - lastTs;
-      lastTs = now;
-      const paused =
-        isHoveringRef.current ||
-        flippedRef.current > 0 ||
-        now < userInteractingUntil;
-
-      if (!paused) {
-        const max = el.scrollWidth - el.clientWidth;
-        if (max > 1) {
-          let next = el.scrollLeft + direction * SPEED * dt;
-          if (next >= max) {
-            next = max;
-            direction = -1;
-          } else if (next <= 0) {
-            next = 0;
-            direction = 1;
-          }
-          el.scrollLeft = next;
-        }
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-
-    return () => {
-      cancelAnimationFrame(raf);
-      el.removeEventListener("pointerdown", onUserInteract);
-      el.removeEventListener("wheel", onUserInteract);
-      el.removeEventListener("touchstart", onUserInteract);
-    };
-  }, []);
-
-  // Refs synchronisés pour lecture dans le RAF
-  const isHoveringRef = React.useRef(false);
-  const flippedRef = React.useRef(0);
-  React.useEffect(() => {
-    isHoveringRef.current = isHovering;
-  }, [isHovering]);
-  React.useEffect(() => {
-    flippedRef.current = flippedSlugs.size;
-  }, [flippedSlugs]);
-
-  const scrollToCard = (idx: number) => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const card = el.children[idx] as HTMLElement | undefined;
-    if (!card) return;
-    const target =
-      card.offsetLeft - (el.clientWidth - card.clientWidth) / 2 - el.offsetLeft;
-    el.scrollTo({ left: target, behavior: "smooth" });
-  };
-
-  const next = () =>
-    scrollToCard(Math.min(activeIdx + 1, FORMATIONS.length - 1));
-  const prev = () => scrollToCard(Math.max(activeIdx - 1, 0));
+  const [touchPaused, setTouchPaused] = React.useState(false);
+  const touchTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
 
   const toggleFlip = (slug: string) => {
     setFlippedSlugs((prev) => {
@@ -152,33 +68,23 @@ export function FormationsCarousel() {
     });
   };
 
-  // Track centered card via IntersectionObserver
+  const handleTouchStart = () => {
+    if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
+    setTouchPaused(true);
+    touchTimerRef.current = setTimeout(() => setTouchPaused(false), 4000);
+  };
+
   React.useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        let bestRatio = 0;
-        let bestTarget: Element | null = null;
-        entries.forEach((e) => {
-          if (e.intersectionRatio > bestRatio) {
-            bestRatio = e.intersectionRatio;
-            bestTarget = e.target;
-          }
-        });
-        if (bestTarget && bestRatio > 0.55) {
-          const idx = Number((bestTarget as HTMLElement).dataset.idx);
-          if (!Number.isNaN(idx)) setActiveIdx(idx);
-        }
-      },
-      {
-        root: el,
-        threshold: [0.4, 0.6, 0.8, 1],
-      }
-    );
-    Array.from(el.children).forEach((child) => observer.observe(child));
-    return () => observer.disconnect();
+    return () => {
+      if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
+    };
   }, []);
+
+  // Pause si au moins une carte est flippée OU pause tactile récente
+  const isPaused = flippedSlugs.size > 0 || touchPaused;
+
+  // Duplique les formations pour la boucle parfaite
+  const items = [...FORMATIONS, ...FORMATIONS];
 
   return (
     <section
@@ -204,97 +110,45 @@ export function FormationsCarousel() {
             Toutes nos formations transport.
           </h2>
           <p className="mt-3 text-white/70 text-base md:text-lg leading-relaxed">
-            Survolez (ou tapez) une carte pour révéler la formation : niveau
-            RNCP, durée, public visé, et accès direct à la fiche détaillée.
+            Survolez (ou tapez) une carte pour la retourner et accéder au
+            détail. Le défilement se met en pause automatiquement.
           </p>
         </div>
 
-        {/* Carrousel ─────────────────────────────────────────────────── */}
+        {/* Marquee ───────────────────────────────────────────────────── */}
         <div
           className="relative mt-12"
-          onMouseEnter={() => setIsHovering(true)}
-          onMouseLeave={() => setIsHovering(false)}
+          onTouchStart={handleTouchStart}
+          style={{
+            // Masques fade gauche/droite (les cartes apparaissent/disparaissent en douceur)
+            maskImage:
+              "linear-gradient(to right, transparent 0, black 6%, black 94%, transparent 100%)",
+            WebkitMaskImage:
+              "linear-gradient(to right, transparent 0, black 6%, black 94%, transparent 100%)",
+          }}
         >
-          {/* Boutons prev/next (desktop) */}
-          <button
-            type="button"
-            onClick={prev}
-            disabled={activeIdx === 0}
-            aria-label="Formation précédente"
-            className="hidden md:grid absolute left-3 top-[42%] -translate-y-1/2 z-20 h-12 w-12 place-items-center rounded-full bg-night-100/85 backdrop-blur-md border border-white/15 text-white shadow-2xl hover:bg-night-50 hover:border-signal-400/60 hover:scale-105 transition disabled:opacity-25 disabled:pointer-events-none"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <button
-            type="button"
-            onClick={next}
-            disabled={activeIdx === FORMATIONS.length - 1}
-            aria-label="Formation suivante"
-            className="hidden md:grid absolute right-3 top-[42%] -translate-y-1/2 z-20 h-12 w-12 place-items-center rounded-full bg-night-100/85 backdrop-blur-md border border-white/15 text-white shadow-2xl hover:bg-night-50 hover:border-signal-400/60 hover:scale-105 transition disabled:opacity-25 disabled:pointer-events-none"
-          >
-            <ArrowRight className="h-5 w-5" />
-          </button>
-
-          {/* Bord fade gauche / droite */}
-          <div
-            aria-hidden
-            className="hidden md:block pointer-events-none absolute left-0 top-0 bottom-12 w-16 z-10"
-            style={{
-              background:
-                "linear-gradient(to right, rgba(8,11,42,0.95) 0%, transparent 100%)",
-            }}
-          />
-          <div
-            aria-hidden
-            className="hidden md:block pointer-events-none absolute right-0 top-0 bottom-12 w-16 z-10"
-            style={{
-              background:
-                "linear-gradient(to left, rgba(8,11,42,0.95) 0%, transparent 100%)",
-            }}
-          />
-
-          {/* Scroller */}
-          <div
-            ref={scrollerRef}
-            className="flex gap-5 overflow-x-auto snap-x snap-proximity scroll-smooth pb-8 pt-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-            style={{
-              paddingLeft: "max(1.5rem, calc(50% - 165px))",
-              paddingRight: "max(1.5rem, calc(50% - 165px))",
-            }}
-          >
-            {FORMATIONS.map((f, i) => (
-              <FlipCard
-                key={f.slug}
-                formation={f}
-                idx={i}
-                flipped={flippedSlugs.has(f.slug)}
-                onToggle={() => toggleFlip(f.slug)}
-                isCenter={i === activeIdx}
-              />
-            ))}
-          </div>
-
-          {/* Dots indicator */}
-          <div className="flex justify-center items-center gap-1.5 mt-2">
-            {FORMATIONS.map((f, i) => (
-              <button
-                key={f.slug}
-                type="button"
-                onClick={() => scrollToCard(i)}
-                aria-label={`Aller à ${f.code}`}
-                aria-current={i === activeIdx}
-                className={
-                  "h-1.5 rounded-full transition-all duration-300 " +
-                  (i === activeIdx
-                    ? "w-8 bg-signal-400 shadow-[0_0_12px_rgba(159,226,32,0.7)]"
-                    : "w-1.5 bg-white/20 hover:bg-white/40")
-                }
-              />
-            ))}
+          {/* Wrapper marquee : pause au hover (CSS) + pause forcée si flip ou touch */}
+          <div className="group overflow-hidden py-6">
+            <div
+              className="flex gap-5 w-max group-hover:[animation-play-state:paused] motion-reduce:!animation-none"
+              style={{
+                animation: "marquee-x 90s linear infinite",
+                animationPlayState: isPaused ? "paused" : undefined,
+              }}
+            >
+              {items.map((f, i) => (
+                <FlipCard
+                  key={`${f.slug}-${i}`}
+                  formation={f}
+                  flipped={flippedSlugs.has(f.slug)}
+                  onToggle={() => toggleFlip(f.slug)}
+                />
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="mt-10 text-center">
+        <div className="mt-8 text-center">
           <Link
             href="/formations"
             className="inline-flex items-center gap-1.5 text-sm font-medium text-signal-400 hover:text-signal-300 transition-colors"
@@ -312,38 +166,26 @@ export function FormationsCarousel() {
 
 function FlipCard({
   formation,
-  idx,
   flipped,
   onToggle,
-  isCenter,
 }: {
   formation: (typeof FORMATIONS)[number];
-  idx: number;
   flipped: boolean;
   onToggle: () => void;
-  isCenter: boolean;
 }) {
   const Icon = ICONS[formation.iconName] ?? Truck;
   const accent = formation.accent ?? "#9FE220";
 
   return (
     <div
-      data-idx={idx}
-      className={
-        "snap-center shrink-0 w-[260px] sm:w-[280px] md:w-[300px] " +
-        "transition-[transform,opacity] duration-500 " +
-        (isCenter
-          ? "scale-100 opacity-100"
-          : "scale-[0.92] opacity-70")
-      }
+      className="shrink-0 w-[260px] sm:w-[280px] md:w-[300px]"
       style={{ aspectRatio: "3 / 4" }}
     >
       <div
-        className="group relative w-full h-full cursor-pointer"
+        className="flip-card group/card relative w-full h-full cursor-pointer"
         style={{ perspective: "1400px" }}
         data-flipped={flipped ? "true" : "false"}
         onClick={(e) => {
-          // Don't toggle if click was on inner CTA link
           if ((e.target as HTMLElement).closest("a")) return;
           onToggle();
         }}
@@ -356,13 +198,13 @@ function FlipCard({
         role="button"
         tabIndex={0}
         aria-label={`${formation.code} — ${formation.title}. ${
-          flipped ? "Face avant" : "Face arrière"
+          flipped ? "Face arrière" : "Face avant"
         } visible. Tapez pour retourner.`}
       >
-        {/* Ombre dynamique sous la carte */}
+        {/* Ombre sous la carte */}
         <div
           aria-hidden
-          className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-[80%] h-8 rounded-full blur-2xl pointer-events-none transition-opacity duration-500 group-hover:opacity-90"
+          className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-[80%] h-8 rounded-full blur-2xl pointer-events-none transition-opacity duration-500 group-hover/card:opacity-90"
           style={{
             background: `radial-gradient(ellipse, ${accent}80 0%, transparent 70%)`,
             opacity: 0.5,
@@ -373,8 +215,8 @@ function FlipCard({
           className={
             "relative w-full h-full transition-transform duration-[800ms] " +
             "ease-[cubic-bezier(0.16,1,0.3,1)] [transform-style:preserve-3d] " +
-            "md:group-hover:[transform:rotateY(180deg)] " +
-            "group-data-[flipped=true]:[transform:rotateY(180deg)] " +
+            "md:group-hover/card:[transform:rotateY(180deg)] " +
+            "group-data-[flipped=true]/card:[transform:rotateY(180deg)] " +
             "motion-reduce:transition-none"
           }
         >
@@ -387,14 +229,12 @@ function FlipCard({
               boxShadow: `0 24px 60px -12px ${accent}44, inset 0 0 0 1px rgba(255,255,255,0.04)`,
             }}
           >
-            {/* Icône XL en filigrane */}
             <Icon
               className="absolute -bottom-10 -right-10 h-64 w-64 pointer-events-none"
               style={{ color: accent, opacity: 0.07 }}
               strokeWidth={1.1}
             />
 
-            {/* Halo top-left */}
             <div
               aria-hidden
               className="absolute -top-16 -left-16 h-44 w-44 rounded-full pointer-events-none"
@@ -403,15 +243,16 @@ function FlipCard({
               }}
             />
 
-            {/* Particules signal subtiles */}
             <Sparkles
               aria-hidden
               className="absolute top-5 right-5 h-3.5 w-3.5 motion-reduce:hidden"
-              style={{ color: accent, animation: "glow-pulse 4s ease-in-out infinite" }}
+              style={{
+                color: accent,
+                animation: "glow-pulse 4s ease-in-out infinite",
+              }}
             />
 
             <div className="relative z-10 h-full flex flex-col p-6">
-              {/* Top : code + niveau */}
               <div className="flex items-start justify-between gap-2">
                 <div className="inline-flex items-center gap-2">
                   <span
@@ -435,10 +276,9 @@ function FlipCard({
                 )}
               </div>
 
-              {/* Centre : icône glow */}
               <div className="flex-1 flex items-center justify-center">
                 <div
-                  className="relative h-24 w-24 rounded-3xl grid place-items-center transition-transform duration-500 md:group-hover:scale-110"
+                  className="relative h-24 w-24 rounded-3xl grid place-items-center transition-transform duration-500 md:group-hover/card:scale-110"
                   style={{
                     background: `linear-gradient(135deg, ${accent}33, ${accent}11)`,
                     border: `1px solid ${accent}88`,
@@ -447,7 +287,6 @@ function FlipCard({
                   }}
                 >
                   <Icon className="h-11 w-11" strokeWidth={1.6} />
-                  {/* Anneau pulsant */}
                   <span
                     aria-hidden
                     className="absolute inset-0 rounded-3xl border motion-reduce:hidden"
@@ -459,7 +298,6 @@ function FlipCard({
                 </div>
               </div>
 
-              {/* Bas : titre + durée + hint */}
               <div>
                 <div className="font-display text-[17px] font-semibold text-white leading-snug line-clamp-2">
                   {formation.title}
@@ -469,7 +307,7 @@ function FlipCard({
                     <Clock className="h-3 w-3" />
                     {formation.duration}
                   </span>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-white/40 group-hover:text-white/85 transition-colors">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-white/40 group-hover/card:text-white/85 transition-colors">
                     <RotateCw className="h-3 w-3" />
                     Retourner
                   </span>
@@ -488,7 +326,6 @@ function FlipCard({
               boxShadow: `inset 0 0 40px ${accent}22, 0 24px 60px -12px ${accent}66`,
             }}
           >
-            {/* Décor : halo accent en bas */}
             <div
               aria-hidden
               className="absolute -bottom-20 -right-20 h-52 w-52 rounded-full pointer-events-none"
@@ -497,7 +334,6 @@ function FlipCard({
               }}
             />
 
-            {/* Top : code + RNCP */}
             <div className="flex items-start justify-between gap-2">
               <div className="inline-flex items-center gap-1.5">
                 <Icon
@@ -519,17 +355,14 @@ function FlipCard({
               )}
             </div>
 
-            {/* Titre complet */}
             <h3 className="mt-4 font-display text-[15px] font-semibold text-white leading-tight">
               {formation.title}
             </h3>
 
-            {/* Tagline */}
             <p className="mt-2 text-[12px] text-white/65 leading-relaxed line-clamp-3">
               {formation.tagline}
             </p>
 
-            {/* Infos clés */}
             <ul className="mt-4 space-y-2.5 text-[11.5px]">
               <li className="flex items-start gap-2.5 text-white/75">
                 <Clock
@@ -554,7 +387,6 @@ function FlipCard({
               </li>
             </ul>
 
-            {/* CTA */}
             <Link
               href={`/formations/${formation.slug}`}
               className="mt-auto inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-night-900 transition-transform hover:scale-[1.02]"
