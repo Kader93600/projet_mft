@@ -1,15 +1,15 @@
 "use client";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { cn, initials } from "@/lib/utils";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 import { Logo } from "@/components/ui/logo";
-import { LogOut, Settings, Shield } from "lucide-react";
+import { Settings, Shield } from "lucide-react";
 import { NotificationsBell } from "@/components/notifications-bell";
 import { SearchPalette } from "@/components/search-palette";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SidebarNav } from "@/components/sidebar-nav";
 import { MobileNavSheet } from "@/components/mobile-nav-sheet";
+import { UserMenu } from "@/components/user-menu";
 import { STUDENT_GROUPS, flattenGroups } from "@/components/nav-groups";
 
 interface AppShellProps {
@@ -30,14 +30,6 @@ const MOBILE_PRIMARY = FLAT.filter((i) =>
 
 export function AppShell({ children, profile }: AppShellProps) {
   const pathname = usePathname();
-  const router = useRouter();
-
-  async function logout() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push("/");
-    router.refresh();
-  }
 
   const pageTitle =
     FLAT.find((n) => pathname === n.href || pathname.startsWith(n.href + "/"))
@@ -87,27 +79,6 @@ export function AppShell({ children, profile }: AppShellProps) {
           </div>
         )}
 
-        <div className="border-t border-navy-100 p-3">
-          <div className="flex items-center gap-3 px-2 py-2">
-            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-brand-600 to-brand-800 text-signal-400 flex items-center justify-center font-semibold text-sm">
-              {initials(profile.full_name || profile.email)}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-semibold text-navy-900 text-sm truncate">
-                {profile.full_name || profile.email}
-              </div>
-              <div className="text-[11px] text-signal-700 tracking-wide uppercase font-semibold">
-                Stagiaire · Niveau {profile.level}
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={logout}
-            className="mt-2 w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-slate-600 hover:bg-navy-50 hover:text-navy-900 transition-colors"
-          >
-            <LogOut className="w-4 h-4" /> Déconnexion
-          </button>
-        </div>
       </aside>
 
       {/* Mobile top bar */}
@@ -117,12 +88,7 @@ export function AppShell({ children, profile }: AppShellProps) {
         </Link>
         <div className="flex items-center gap-2">
           <NotificationsBell />
-          <button
-            onClick={logout}
-            className="h-9 w-9 inline-flex items-center justify-center rounded-lg hover:bg-navy-50 text-navy-700"
-          >
-            <LogOut className="h-4 w-4" />
-          </button>
+          <UserMenu profile={profile} variant="light" />
         </div>
       </div>
 
@@ -145,10 +111,8 @@ export function AppShell({ children, profile }: AppShellProps) {
             </div>
             <ThemeToggle />
             <NotificationsBell />
-            <div className="ml-2 flex items-center gap-2 pl-3 border-l border-navy-100">
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-brand-600 to-brand-800 text-signal-400 flex items-center justify-center font-semibold text-xs">
-                {initials(profile.full_name || profile.email)}
-              </div>
+            <div className="ml-2 flex items-center pl-3 border-l border-navy-100">
+              <UserMenu profile={profile} variant="light" />
             </div>
           </div>
         </div>

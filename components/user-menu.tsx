@@ -11,6 +11,7 @@ import {
   GraduationCap,
   Repeat,
   ChevronDown,
+  Shield,
 } from "lucide-react";
 
 /**
@@ -151,52 +152,79 @@ export function UserMenu({
           </div>
         </div>
 
-        {/* Changer d'espace */}
-        <div className="px-2 pt-2.5 pb-1">
-          <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400 px-2.5 mb-1 inline-flex items-center gap-1.5">
-            <Repeat className="h-3 w-3" />
-            Changer d'espace
-          </div>
-          <div className="space-y-0.5">
-            {profile.role === "super_admin" && (
+        {/* Changer d'espace — affiché seulement si l'utilisateur a accès à plusieurs espaces */}
+        {(profile.role === "super_admin" ||
+          profile.role === "admin" ||
+          profile.role === "trainer") && (
+          <div className="px-2 pt-2.5 pb-1">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400 px-2.5 mb-1 inline-flex items-center gap-1.5">
+              <Repeat className="h-3 w-3" />
+              Changer d'espace
+            </div>
+            <div className="space-y-0.5">
+              {profile.role === "super_admin" && (
+                <Link
+                  href="/super-admin"
+                  onClick={close}
+                  className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium text-navy-800 hover:bg-gradient-to-r hover:from-brand-50 hover:to-signal-50 hover:text-brand-900 transition-colors"
+                >
+                  <Crown className="w-4 h-4 text-signal-500" />
+                  Espace super-admin
+                </Link>
+              )}
+              {(profile.role === "admin" || profile.role === "super_admin") && (
+                <Link
+                  href="/admin"
+                  onClick={close}
+                  className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium text-navy-800 hover:bg-brand-50 hover:text-brand-900 transition-colors"
+                >
+                  <Shield className="w-4 h-4 text-brand-600" />
+                  Espace admin
+                </Link>
+              )}
+              {/* Formateur ouvert à trainer / admin / super_admin */}
               <Link
-                href="/super-admin"
+                href="/formateur"
                 onClick={close}
-                className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium text-navy-800 hover:bg-gradient-to-r hover:from-brand-50 hover:to-signal-50 hover:text-brand-900 transition-colors"
+                className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium text-navy-800 hover:bg-emerald-50 hover:text-emerald-900 transition-colors"
               >
-                <Crown className="w-4 h-4 text-signal-500" />
-                Espace super-admin
+                <GraduationCap className="w-4 h-4 text-emerald-600" />
+                Espace formateur
               </Link>
-            )}
-            <Link
-              href="/formateur"
-              onClick={close}
-              className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium text-navy-800 hover:bg-emerald-50 hover:text-emerald-900 transition-colors"
-            >
-              <GraduationCap className="w-4 h-4 text-emerald-600" />
-              Espace formateur
-            </Link>
-            <Link
-              href="/dashboard"
-              onClick={close}
-              className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium text-navy-800 hover:bg-brand-50 hover:text-brand-900 transition-colors"
-            >
-              <User className="w-4 h-4 text-brand-600" />
-              Espace stagiaire
-            </Link>
+              <Link
+                href="/dashboard"
+                onClick={close}
+                className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium text-navy-800 hover:bg-brand-50 hover:text-brand-900 transition-colors"
+              >
+                <User className="w-4 h-4 text-brand-600" />
+                Espace stagiaire
+              </Link>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Compte */}
-        <div className="px-2 pt-1.5 pb-2 border-t border-navy-100 mt-1">
-          <Link
-            href="/admin/users/me"
-            onClick={close}
-            className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium text-navy-800 hover:bg-navy-50 transition-colors"
-          >
-            <User className="w-4 h-4 text-slate-500" />
-            Mon profil
-          </Link>
+        <div
+          className={cn(
+            "px-2 pb-2",
+            profile.role === "super_admin" ||
+              profile.role === "admin" ||
+              profile.role === "trainer"
+              ? "pt-1.5 border-t border-navy-100 mt-1"
+              : "pt-2.5"
+          )}
+        >
+          {/* Mon profil — staff uniquement (la page /admin/users/me est admin-only) */}
+          {(profile.role === "admin" || profile.role === "super_admin") && (
+            <Link
+              href="/admin/users/me"
+              onClick={close}
+              className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium text-navy-800 hover:bg-navy-50 transition-colors"
+            >
+              <User className="w-4 h-4 text-slate-500" />
+              Mon profil
+            </Link>
+          )}
           <button
             type="button"
             onClick={() => {
