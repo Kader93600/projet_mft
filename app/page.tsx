@@ -21,7 +21,7 @@ import {
 import { Logo } from "@/components/ui/logo";
 import { Crossroads } from "@/components/home/crossroads";
 import { FaqSection } from "@/components/home/faq";
-import { FormationsConstellation } from "@/components/home/formations-constellation";
+import { FormationsCarousel } from "@/components/home/formations-carousel";
 import { RecognizedBy } from "@/components/home/recognized-by";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { LEGAL } from "@/lib/legal-config";
@@ -51,7 +51,7 @@ export default function HomePage() {
       <Hero />
       <RecognizedBy />
       <Pillars />
-      <FormationsConstellation />
+      <FormationsCarousel />
       <Experience />
       <Stats />
       <Testimonials />
