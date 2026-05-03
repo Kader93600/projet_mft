@@ -39,11 +39,11 @@ export const LEGAL = {
 
   // Contact
   email: "contact@maformationtransport.fr",
-  phone: "[À COMPLÉTER : 0X XX XX XX XX]",
+  phone: "01 60 09 54 47",
   supportEmail: "support@maformationtransport.fr",
 
-  // Organisme de formation
-  trainingActivityNumber: "[À COMPLÉTER : numéro de déclaration d'activité OF — 11 chiffres + région]",
+  // Organisme de formation (NDA délivré par la DREETS Île-de-France, région 11)
+  trainingActivityNumber: "11 77 09 47177",
   qualiopiNumber: "[À COMPLÉTER : numéro de certification Qualiopi]",
   qualiopiBody: "[À COMPLÉTER : nom de l'organisme certificateur, ex. AFNOR Certification]",
 
