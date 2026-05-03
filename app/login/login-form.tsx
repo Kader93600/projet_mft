@@ -1,7 +1,6 @@
 "use client";
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
@@ -13,12 +12,14 @@ import {
   Loader2,
   Check,
   KeyRound,
+  ShieldCheck,
 } from "lucide-react";
 
 type Mode = "login" | "forgot";
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,6 +27,15 @@ export function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [shake, setShake] = useState(false);
+
+  // Toast succès après réinitialisation du mot de passe
+  useEffect(() => {
+    if (searchParams.get("reset") === "success") {
+      setSuccess(
+        "Votre mot de passe a bien été mis à jour. Connectez-vous avec vos nouveaux identifiants."
+      );
+    }
+  }, [searchParams]);
 
   function triggerShake() {
     setShake(true);
@@ -65,7 +75,7 @@ export function LoginForm() {
     const supabase = createClient();
     const redirectTo =
       typeof window !== "undefined"
-        ? `${window.location.origin}/login`
+        ? `${window.location.origin}/reset-password`
         : undefined;
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo,

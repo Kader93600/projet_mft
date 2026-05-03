@@ -1,0 +1,322 @@
+"use client";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input, Label } from "@/components/ui/input";
+import {
+  AlertCircle,
+  Lock,
+  ArrowRight,
+  Loader2,
+  Check,
+  Eye,
+  EyeOff,
+  ShieldCheck,
+} from "lucide-react";
+
+/**
+ * Formulaire de définition d'un nouveau mot de passe après clic sur le
+ * lien de récupération reçu par email.
+ *
+ * Flux Supabase :
+ *  1. /login → "Mot de passe oublié" → resetPasswordForEmail(redirectTo)
+ *  2. Email reçu → clic → atterrit ici avec #access_token=...&type=recovery
+ *  3. Supabase JS établit automatiquement une session de recovery
+ *  4. supabase.auth.updateUser({ password }) → succès
+ *  5. signOut + redirect vers /login?reset=success
+ */
+export function ResetPasswordForm() {
+  const router = useRouter();
+  const [hasSession, setHasSession] = useState<"checking" | "yes" | "no">(
+    "checking"
+  );
+  const [pwd, setPwd] = useState("");
+  const [pwd2, setPwd2] = useState("");
+  const [show, setShow] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  // Vérifie qu'on a bien une session de recovery (établie automatiquement
+  // par Supabase à partir du fragment #access_token=...&type=recovery).
+  useEffect(() => {
+    const supabase = createClient();
+    let mounted = true;
+
+    // 1. Vérification immédiate
+    supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return;
+      if (data.session) setHasSession("yes");
+    });
+
+    // 2. Écoute l'event PASSWORD_RECOVERY (au cas où la session arrive après)
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (!mounted) return;
+      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
+        setHasSession("yes");
+      }
+    });
+
+    // 3. Fallback : si pas de session après 1.5s, on considère que le lien
+    //    est invalide / expiré
+    const timer = setTimeout(() => {
+      if (!mounted) return;
+      setHasSession((prev) => (prev === "checking" ? "no" : prev));
+    }, 1500);
+
+    return () => {
+      mounted = false;
+      sub.subscription.unsubscribe();
+      clearTimeout(timer);
+    };
+  }, []);
+
+  const strength = scorePassword(pwd);
+  const meetsRules = strength.score >= 3 && pwd.length >= 8;
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (pwd !== pwd2) {
+      setError("Les deux mots de passe ne correspondent pas.");
+      return;
+    }
+    if (!meetsRules) {
+      setError(
+        "Mot de passe trop faible : minimum 8 caractères avec au moins 1 lettre, 1 chiffre."
+      );
+      return;
+    }
+    setLoading(true);
+    const supabase = createClient();
+    const { error: upErr } = await supabase.auth.updateUser({ password: pwd });
+    if (upErr) {
+      setError(translateAuthError(upErr.message));
+      setLoading(false);
+      return;
+    }
+    setSuccess(true);
+    // Déconnecte la session de recovery puis renvoie sur /login
+    await supabase.auth.signOut();
+    setTimeout(() => {
+      router.push("/login?reset=success");
+      router.refresh();
+    }, 1200);
+  }
+
+  if (hasSession === "checking") {
+    return (
+      <div className="flex flex-col items-center gap-3 py-8 text-slate-600">
+        <Loader2 className="h-6 w-6 animate-spin text-brand-600 motion-reduce:animate-none" />
+        <span className="text-sm">Vérification du lien…</span>
+      </div>
+    );
+  }
+
+  if (hasSession === "no") {
+    return (
+      <div
+        role="alert"
+        className="space-y-4"
+        style={{ animation: "fade-up 0.4s ease-out both" }}
+      >
+        <div className="flex items-start gap-3 rounded-xl bg-rose-50 border border-rose-200 px-4 py-4 text-sm text-rose-800">
+          <AlertCircle className="h-5 w-5 mt-0.5 flex-none" />
+          <div>
+            <div className="font-semibold">Lien invalide ou expiré</div>
+            <p className="mt-1 text-rose-700/90">
+              Le lien de réinitialisation n'est plus valide. Demandez-en un
+              nouveau depuis la page de connexion.
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/login"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-navy-900 px-4 py-3 text-sm font-semibold text-white hover:bg-navy-800 transition-colors"
+        >
+          Retour à la connexion
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </div>
+    );
+  }
+
+  if (success) {
+    return (
+      <div
+        role="status"
+        className="flex flex-col items-center gap-4 py-6 text-center"
+        style={{ animation: "fade-up 0.4s ease-out both" }}
+      >
+        <div className="h-14 w-14 rounded-full bg-emerald-100 grid place-items-center">
+          <ShieldCheck className="h-7 w-7 text-emerald-700" />
+        </div>
+        <div>
+          <div className="font-display text-lg font-semibold text-navy-900">
+            Mot de passe mis à jour
+          </div>
+          <p className="mt-1 text-sm text-slate-600">
+            Redirection vers la connexion…
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={onSubmit} className="space-y-5">
+      <div style={{ animation: "fade-up 0.4s ease-out both" }}>
+        <Label htmlFor="pwd">Nouveau mot de passe</Label>
+        <div className="relative">
+          <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Input
+            id="pwd"
+            type={show ? "text" : "password"}
+            required
+            minLength={8}
+            autoComplete="new-password"
+            value={pwd}
+            onChange={(e) => setPwd(e.target.value)}
+            placeholder="Au moins 8 caractères"
+            className="pl-10 pr-11"
+          />
+          <button
+            type="button"
+            onClick={() => setShow((v) => !v)}
+            aria-label={show ? "Masquer le mot de passe" : "Afficher"}
+            className="absolute right-3 top-1/2 -translate-y-1/2 h-7 w-7 rounded-md grid place-items-center text-slate-400 hover:text-navy-700 hover:bg-navy-50 transition-colors"
+          >
+            {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        </div>
+
+        {/* Indicateur de force */}
+        {pwd && (
+          <div className="mt-2 space-y-1">
+            <div className="flex gap-1">
+              {[0, 1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className={
+                    "h-1 flex-1 rounded-full transition-colors " +
+                    (i < strength.score
+                      ? strength.score <= 1
+                        ? "bg-rose-500"
+                        : strength.score === 2
+                        ? "bg-amber-500"
+                        : strength.score === 3
+                        ? "bg-emerald-500"
+                        : "bg-emerald-600"
+                      : "bg-navy-100")
+                  }
+                />
+              ))}
+            </div>
+            <div className="text-[11px] text-slate-500">
+              Force : <span className="font-medium">{strength.label}</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div style={{ animation: "fade-up 0.4s ease-out 0.08s both" }}>
+        <Label htmlFor="pwd2">Confirmer le mot de passe</Label>
+        <div className="relative">
+          <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Input
+            id="pwd2"
+            type={show ? "text" : "password"}
+            required
+            minLength={8}
+            autoComplete="new-password"
+            value={pwd2}
+            onChange={(e) => setPwd2(e.target.value)}
+            placeholder="Retapez votre nouveau mot de passe"
+            className="pl-10"
+          />
+        </div>
+        {pwd2 && pwd !== pwd2 && (
+          <p className="mt-1.5 text-[11px] text-rose-700">
+            Les mots de passe ne correspondent pas.
+          </p>
+        )}
+        {pwd2 && pwd && pwd === pwd2 && (
+          <p className="mt-1.5 text-[11px] text-emerald-700 inline-flex items-center gap-1">
+            <Check className="h-3 w-3" />
+            Les mots de passe correspondent.
+          </p>
+        )}
+      </div>
+
+      {error && (
+        <div
+          role="alert"
+          className="flex items-start gap-2 rounded-xl bg-rose-50 border border-rose-200 px-3.5 py-3 text-sm text-rose-700"
+          style={{ animation: "fade-up 0.3s ease-out both" }}
+        >
+          <AlertCircle className="h-4 w-4 mt-0.5 flex-none" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      <Button
+        type="submit"
+        disabled={loading || !meetsRules || pwd !== pwd2}
+        className="w-full group transition-transform active:scale-[0.98] motion-reduce:active:scale-100"
+        size="lg"
+        style={{ animation: "fade-up 0.4s ease-out 0.16s both" }}
+      >
+        {loading ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
+            Mise à jour…
+          </>
+        ) : (
+          <>
+            Définir le nouveau mot de passe
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0" />
+          </>
+        )}
+      </Button>
+
+      <Link
+        href="/login"
+        className="block w-full text-center text-xs text-slate-500 hover:text-navy-900 transition-colors"
+        style={{ animation: "fade-up 0.4s ease-out 0.2s both" }}
+      >
+        ← Annuler et revenir à la connexion
+      </Link>
+    </form>
+  );
+}
+
+/* ─── Helpers ─────────────────────────────────────────────────────── */
+
+function scorePassword(pwd: string): { score: number; label: string } {
+  if (!pwd) return { score: 0, label: "—" };
+  let score = 0;
+  if (pwd.length >= 8) score++;
+  if (pwd.length >= 12) score++;
+  if (/[A-Z]/.test(pwd) && /[a-z]/.test(pwd)) score++;
+  if (/\d/.test(pwd)) score++;
+  if (/[^A-Za-z0-9]/.test(pwd)) score++;
+  // Plafond à 4
+  score = Math.min(score, 4);
+  const labels = ["Très faible", "Faible", "Moyen", "Bon", "Excellent"];
+  return { score, label: labels[score] };
+}
+
+function translateAuthError(msg: string): string {
+  const m = msg.toLowerCase();
+  if (m.includes("same as the old"))
+    return "Le nouveau mot de passe doit être différent de l'ancien.";
+  if (m.includes("weak password") || m.includes("at least"))
+    return "Mot de passe trop faible. Minimum 8 caractères avec lettres et chiffres.";
+  if (m.includes("rate limit") || m.includes("too many"))
+    return "Trop de tentatives. Réessayez dans quelques minutes.";
+  if (m.includes("expired") || m.includes("invalid"))
+    return "Lien de réinitialisation expiré ou invalide. Demandez-en un nouveau.";
+  return msg;
+}
