@@ -71,7 +71,7 @@ const FUNDING = [
     audience: "Particuliers, indépendants",
     desc: "Paiement direct, en une fois ou en 3-4 fois sans frais (plateforme Stripe sécurisée).",
     how: "Signature en ligne du contrat de formation, paiement par carte bancaire. Délai de rétractation 14 j.",
-    href: "/inscription?financeur=auto",
+    href: "/contact?financeur=auto",
     cta: "Voir les modalités",
   },
 ];

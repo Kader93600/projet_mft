@@ -145,10 +145,10 @@ export default function FormationPage({ params }: { params: { slug: string } }) 
 
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
-                href={`/inscription?formation=${f.slug}`}
+                href={`/contact?formation=${f.slug}`}
                 className="inline-flex items-center gap-2 rounded-2xl bg-signal-500 text-night px-6 py-3 text-sm font-semibold hover:bg-signal-400 shadow-glow-signal transition"
               >
-                Démarrer mon dossier
+                Demander un devis
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link

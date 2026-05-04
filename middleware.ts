@@ -65,6 +65,17 @@ export async function middleware(request: NextRequest) {
     isMfaChallenge ||
     pathname.startsWith("/admin");
 
+  // Cas spécial : /inscription est le tableau de bord "Mon dossier" du
+  // stagiaire connecté, mais d'anciens liens publics y pointaient. Pour un
+  // visiteur non connecté, on bascule vers /contact (avec préservation des
+  // query params formation= / financeur= / plan=) plutôt que /login, où il
+  // n'aurait aucun moyen de créer un compte (signup public désactivé).
+  if (!user && pathname.startsWith("/inscription")) {
+    const url = new URL("/contact", request.url);
+    request.nextUrl.searchParams.forEach((v, k) => url.searchParams.set(k, v));
+    return NextResponse.redirect(url);
+  }
+
   if (!user && (isProtected || isOnboarding)) {
     return NextResponse.redirect(new URL("/login", request.url));
   }

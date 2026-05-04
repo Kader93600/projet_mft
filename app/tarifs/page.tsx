@@ -168,7 +168,7 @@ export default function TarifsPage() {
                 </div>
 
                 <Link
-                  href={`/inscription?plan=${plan.id}`}
+                  href={`/contact?plan=${plan.id}`}
                   className={
                     "mt-7 inline-flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl text-sm font-semibold transition " +
                     (isHighlight
@@ -220,21 +220,21 @@ export default function TarifsPage() {
               title="OPCO / Plan employeur"
               desc="Votre entreprise prend en charge tout ou partie via son OPCO. Nous gérons le dossier de A à Z."
               cta="Demander un devis OPCO"
-              href="/inscription?financeur=opco"
+              href="/contact?financeur=opco"
             />
             <FundingCard
               icon={Users}
               title="France Travail (AIF)"
               desc="Aide Individuelle à la Formation pour les demandeurs d'emploi. Étude personnalisée du dossier."
               cta="Étudier mon éligibilité"
-              href="/inscription?financeur=pole_emploi"
+              href="/contact?financeur=pole_emploi"
             />
             <FundingCard
               icon={GraduationCap}
               title="Auto-financement"
               desc="Paiement en ligne sécurisé (carte bancaire) en une fois ou en 3 fois sans frais."
               cta="Démarrer maintenant"
-              href="/inscription?financeur=auto"
+              href="/contact?financeur=auto"
             />
             <FundingCard
               icon={ShieldCheck}
