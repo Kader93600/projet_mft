@@ -153,9 +153,13 @@ export default function EcolePage() {
             Des formateurs <span className="italic text-signal-400">issus du terrain</span>.
           </h2>
           <p className="text-white/65 leading-relaxed mb-8 max-w-2xl">
-            Notre équipe pédagogique combine expertise métier et savoir-faire
-            d'enseignement. Tous nos formateurs ont exercé dans le secteur
-            avant de transmettre.
+            Une équipe passionnée, qui connaît le métier de l'intérieur. Plus
+            de 15 ans d'expérience dans leurs domaines respectifs : exploitation,
+            réglementation, sécurité routière, transport de voyageurs. Chaque
+            formateur a exercé sur le terrain avant de transmettre, et c'est ce
+            qui fait la différence — des cours ancrés dans la réalité, des
+            réponses concrètes à vos questions, et un accompagnement humain à
+            chaque étape de votre parcours.
           </p>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
