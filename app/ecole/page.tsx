@@ -1,7 +1,6 @@
 import { SiteShell, PageHero } from "@/components/site/site-shell";
 import { LEGAL } from "@/lib/legal-config";
 import { FORMATIONS } from "@/lib/formations-config";
-import { TEAM, initials as teamInitials } from "@/lib/team-config";
 import {
   ShieldCheck,
   Award,
@@ -9,7 +8,6 @@ import {
   Sparkles,
   Building2,
   GraduationCap,
-  Linkedin,
   Users2,
 } from "lucide-react";
 
@@ -157,69 +155,10 @@ export default function EcolePage() {
             de 15 ans d'expérience dans leurs domaines respectifs : exploitation,
             réglementation, sécurité routière, transport de voyageurs. Chaque
             formateur a exercé sur le terrain avant de transmettre, et c'est ce
-            qui fait la différence — des cours ancrés dans la réalité, des
+            qui fait la différence : des cours ancrés dans la réalité, des
             réponses concrètes à vos questions, et un accompagnement humain à
             chaque étape de votre parcours.
           </p>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {TEAM.map((m) => (
-              <article
-                key={m.slug}
-                className="rounded-2xl border border-white/10 bg-night-100 p-6 hover:border-signal-500/30 transition"
-              >
-                <div className="flex items-center gap-4">
-                  {m.photo ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img
-                      src={m.photo}
-                      alt={m.name}
-                      className="h-14 w-14 rounded-full object-cover"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="h-14 w-14 rounded-full bg-gradient-to-br from-brand-500 to-signal-500 flex items-center justify-center font-display text-lg font-bold text-night">
-                      {teamInitials(m.name)}
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="font-display text-base font-semibold text-white truncate">
-                      {m.name}
-                    </div>
-                    <div className="text-xs uppercase tracking-wider text-signal-400 mt-0.5">
-                      {m.role}
-                    </div>
-                  </div>
-                  {m.linkedin && (
-                    <a
-                      href={m.linkedin}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="h-8 w-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition"
-                      aria-label={`LinkedIn de ${m.name}`}
-                    >
-                      <Linkedin className="h-4 w-4" />
-                    </a>
-                  )}
-                </div>
-
-                <p className="mt-4 text-sm text-white/65 leading-relaxed">
-                  {m.bio}
-                </p>
-
-                <div className="mt-4 flex flex-wrap gap-1.5">
-                  {m.expertise.map((e) => (
-                    <span
-                      key={e}
-                      className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-white/60"
-                    >
-                      {e}
-                    </span>
-                  ))}
-                </div>
-              </article>
-            ))}
-          </div>
         </section>
 
         {/* Engagement Qualiopi */}
