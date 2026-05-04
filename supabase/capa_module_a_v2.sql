@@ -112,16 +112,10 @@ Le droit français distingue deux grandes familles de personnes :
 
 ### 1.1 Les personnes morales se subdivisent en deux catégories
 
-```
-┌──────────────────────────┐
-│   PERSONNES MORALES      │
-├──────────────────────────┤
-│                          │
-│  ▸ Droit public          │   → État, communes, hôpitaux
-│  ▸ Droit privé           │   → SARL, SAS, EURL, associations…
-│                          │
-└──────────────────────────┘
-```
+| Catégorie | Exemples |
+|---|---|
+| **Personnes morales de droit public** | État, communes, départements, hôpitaux publics, établissements publics administratifs |
+| **Personnes morales de droit privé** | SARL, SAS, EURL, associations, syndicats, fondations |
 
 Une entreprise de transport sera **toujours** une personne morale de **droit privé**.
 
@@ -178,23 +172,16 @@ Avoir la capacité juridique ne suffit pas pour devenir commerçant. Il faut en 
 
 ### 4.1 Les incompatibilités : 6 professions exclues
 
-```
-                  ┌─────────────────────────┐
-                  │  ACTIVITÉ COMMERCIALE   │
-                  │      INTERDITE          │
-                  └────────────┬────────────┘
-                               │
-        ┌──────────────────────┼──────────────────────┐
-        │                      │                      │
-   Fonctionnaire         Officier ministériel      Avocat
-   (statut)              (notaire, huissier)
-        │                      │                      │
-   ────┴──────────────────┴──────────────────┴────
-        │                      │                      │
-   Commissaire           Architecte            Mineur émancipé
-   aux comptes           (en exercice)         sans autorisation
-   et expert-comptable
-```
+L'activité commerciale est strictement **incompatible** avec les professions suivantes :
+
+| # | Profession | Raison |
+|---|---|---|
+| 1 | **Fonctionnaire** | Statut public exclusif |
+| 2 | **Officier ministériel** (notaire, huissier) | Indépendance vis-à-vis du commerce |
+| 3 | **Avocat** | Indépendance professionnelle |
+| 4 | **Commissaire aux comptes / expert-comptable** | Indépendance vis-à-vis des entreprises auditées |
+| 5 | **Architecte** (en exercice) | Indépendance professionnelle |
+| 6 | **Mineur non émancipé** | Capacité juridique insuffisante |
 
 ### 4.2 Les interdictions : faillite personnelle
 
@@ -254,43 +241,33 @@ C'est **le** chapitre le plus structurant de votre parcours. Le choix de la form
 
 ## 1. Les 8 étapes incontournables
 
-```
-   1. L'IDÉE                    (intuition, expérience terrain)
-        ↓
-   2. LE PROJET PERSONNEL       (cohérence avec votre vie)
-        ↓
-   3. L'ÉTUDE DE MARCHÉ         (clients, concurrents, prix)
-        ↓
-   4. LES PRÉVISIONS FINANCIÈRES (chiffrage de la viabilité)
-        ↓
-   5. TROUVER DES FINANCEMENTS  (apports, prêts, aides)
-        ↓
-   6. LES AIDES À LA CRÉATION   (ACRE, NACRE, prêts d'honneur)
-        ↓
-   7. CHOISIR UN STATUT JURIDIQUE  ← La pierre angulaire
-        ↓
-   8. LES FORMALITÉS             (INPI, banque, KBIS, licence)
-```
+| # | Étape | Objectif |
+|---|---|---|
+| 1 | **L'idée** | Intuition, savoir-faire terrain, opportunité identifiée |
+| 2 | **Le projet personnel** | Vérifier la cohérence avec votre vie, vos objectifs, vos contraintes |
+| 3 | **L'étude de marché** | Identifier clients, concurrents, prix, potentiel |
+| 4 | **Les prévisions financières** | Chiffrer la viabilité (CA, charges, marges) |
+| 5 | **Trouver des financements** | Apports personnels, prêts bancaires, leasing |
+| 6 | **Les aides à la création** | ACRE, NACRE, prêts d'honneur, garanties BPI / SIAGI |
+| 7 | **Choisir un statut juridique** | **La pierre angulaire** — voir section 2 |
+| 8 | **Les formalités** | INPI, banque, KBIS, licence transport |
 
 ### 1.1 Les formalités côté transporteur (focus terrain)
 
-Pour le transporteur léger ≤ 3,5 T, les formalités vont au-delà du simple INPI. Voici l'ordre **réel** :
+Pour le transporteur léger ≤ 3,5 T, les formalités vont au-delà du simple INPI. Voici l'ordre **réel** à respecter :
 
-```
-┌─ Établir un business plan
-├─ Choisir un statut juridique
-├─ Rédiger un projet de statuts
-├─ Rendez-vous banque pour DÉPÔT DE CAPITAL
-├─ Attendre l'attestation de dépôt de capital
-├─ Demande d'autorisation d'exercer la profession
-│  (avec un expert-comptable ou centre de gestion agréé)
-├─ Attendre l'accusé réception de la DREAL/DRIEAT
-├─ Faire paraître une ANNONCE LÉGALE
-├─ Enregistrer la société sur le PORTAIL INPI (e-procédures.inpi.fr)
-├─ Attendre le KBIS (extrait d'immatriculation au RCS)
-├─ Envoyer le KBIS à la DREAL/DRIEAT
-└─ Attendre les LICENCES de transport
-```
+1. Établir un **business plan**
+2. Choisir un **statut juridique**
+3. Rédiger un **projet de statuts**
+4. Prendre rendez-vous en banque pour le **dépôt de capital**
+5. Attendre l'**attestation de dépôt de capital** délivrée par la banque
+6. Déposer la **demande d'autorisation d'exercer la profession** (avec un expert-comptable ou un centre de gestion agréé)
+7. Attendre l'**accusé de réception de la DREAL / DRIEAT**
+8. Faire paraître une **annonce légale** dans un journal habilité
+9. Enregistrer la société sur le **portail INPI** (`procedures.inpi.fr`)
+10. Attendre la délivrance du **KBIS** (extrait d'immatriculation au RCS)
+11. Envoyer le **KBIS à la DREAL / DRIEAT**
+12. Attendre la délivrance des **licences de transport**
 
 > ⚠️ **Important depuis 2023**
 >
@@ -386,27 +363,16 @@ Pour le transporteur léger ≤ 3,5 T, les formalités vont au-delà du simple I
 
 ---
 
-## 3. Comment trancher ? L'arbre de décision
+## 3. Comment trancher ? Méthode de choix
 
-```
-                    ┌────────────────────────┐
-                    │  Combien d'associés ?  │
-                    └──────────┬─────────────┘
-                               │
-                  ┌────────────┴────────────┐
-                  │                         │
-              1 SEUL                   2 ou +
-                  │                         │
-        ┌─────────┴─────────┐               │
-        │                   │               │
-   Simplicité ?       Flexibilité ?    Plusieurs ?
-        │                   │               │
-        ▼                   ▼               ▼
-       EI                 SASU       ┌──────┴──────┐
-       ou                 ou         │             │
-      EURL                EURL     SARL          SAS
-                          (TNS)   (familial)  (flexible)
-```
+| Votre situation | Forme recommandée |
+|---|---|
+| Vous démarrez **seul** et voulez un maximum de simplicité (pas de statuts, pas de capital) | **EI** (Entrepreneur Individuel) |
+| Vous démarrez **seul** mais voulez les avantages d'une société (responsabilité limitée, transmission facilitée) | **EURL** ou **SASU** |
+| Vous démarrez **seul** et privilégiez le régime salarié (meilleure protection sociale) | **SASU** |
+| Vous démarrez **seul** et privilégiez le régime indépendant (cotisations plus basses) | **EI** ou **EURL** (gérant associé unique) |
+| Vous êtes **plusieurs** dans un projet familial / structure classique | **SARL** |
+| Vous êtes **plusieurs** et voulez une grande flexibilité statutaire / lever des fonds | **SAS** |
 
 > 📌 **Les 3 critères clés**
 >
@@ -460,14 +426,11 @@ Dans le transport, la facture n'est pas un simple papier : c'est une **preuve ju
 
 ## 1. La facture : 17 mentions obligatoires
 
-La facture remplit **3 rôles** :
+La facture remplit **3 rôles** indissociables :
 
-```
-┌─────────────────────┐    ┌──────────────────────┐    ┌──────────────────────┐
-│  PREUVE JURIDIQUE   │    │  JUSTIFICATIF        │    │  SUPPORT TVA         │
-│  (litige, contrat)  │ +  │  COMPTABLE           │ +  │  (collecte/déduct.)  │
-└─────────────────────┘    └──────────────────────┘    └──────────────────────┘
-```
+- **Preuve juridique** d'une opération commerciale (en cas de litige avec un client ou un fournisseur)
+- **Justificatif comptable** obligatoire pour la tenue des comptes
+- **Support de la TVA** (collectée sur les ventes, déductible sur les achats)
 
 ### 1.1 Les 17 mentions imposées par le Code de commerce
 
@@ -514,15 +477,11 @@ La facture remplit **3 rôles** :
 
 Un **effet de commerce** est un titre par lequel un créancier (le **tireur**) ordonne à un débiteur (le **tiré**) de payer une somme à une **échéance précise** (généralement < 90 jours).
 
-```
-┌──────────────┐                         ┌──────────────┐
-│   TIREUR     │ ─── ordre de payer ──→  │     TIRÉ     │
-│  (créancier) │                         │  (débiteur)  │
-└──────────────┘                         └──────────────┘
-        ↑                                        │
-        │                                        │
-        └─────── paiement à échéance ────────────┘
-```
+| Rôle | Qualité | Action |
+|---|---|---|
+| **Tireur** | Le créancier (vendeur, transporteur) | Émet l'effet et ordonne le paiement |
+| **Tiré** | Le débiteur (client) | Doit régler la somme à l'échéance prévue |
+| **Bénéficiaire** | Le tireur lui-même ou un tiers désigné | Reçoit le paiement à l'échéance |
 
 ### 2.1 Les 6 mentions obligatoires sur un effet de commerce
 
@@ -550,17 +509,11 @@ Un **effet de commerce** est un titre par lequel un créancier (le **tireur**) o
 
 L'**escompte** consiste à vendre l'effet à votre **banque** avant l'échéance. Vous récupérez la somme **immédiatement**, moins les agios (frais bancaires).
 
-```
-   J0          J+30                 J+60
-   │            │                    │
-   │ Vente      │ Escompte           │ Échéance
-   │ + traite   │ banque             │ initiale
-   │ 60j        │ → cash − agios     │
-   │            │                    │
-   ▼            ▼                    ▼
-  Facture   Trésorerie immédiate  Encaissement
-                                  par la banque
-```
+| Étape | Date | Action |
+|---|---|---|
+| 1 | J + 0 | Vous émettez la facture et la traite à 60 jours (le client signe) |
+| 2 | J + 30 | Vous remettez la traite à votre banque pour escompte → la banque vous verse le montant moins les agios |
+| 3 | J + 60 | Échéance : la banque encaisse directement le montant auprès du client |
 
 | Avantage | Inconvénient |
 |---|---|
@@ -619,23 +572,10 @@ Quand on prête de l'argent à un client (ce que vous faites à chaque facture �
 
 Une **sûreté** est un mécanisme juridique qui permet au créancier d'être payé **par préférence** en cas de défaillance du débiteur. Il existe deux grandes familles :
 
-```
-                    ┌─────────────────┐
-                    │     SÛRETÉS     │
-                    └────────┬────────┘
-                             │
-                ┌────────────┴────────────┐
-                │                         │
-       SÛRETÉS PERSONNELLES        SÛRETÉS RÉELLES
-       (engagement d'un tiers)     (un bien sert de gage)
-                │                         │
-       ┌────────┴────────┐    ┌───────────┼─────────────┐
-       │                 │    │           │             │
-    Caution       Caution      Gage    Nantissement   Hypothèque
-    (personne)    bancaire    (bien    (valeurs        (immeuble)
-                              meuble)   mobilières /
-                                        incorporelles)
-```
+| Famille | Principe | Exemples |
+|---|---|---|
+| **Sûretés personnelles** | Engagement d'une **personne** (physique ou morale) à payer en cas de défaillance du débiteur principal | Caution simple, caution bancaire |
+| **Sûretés réelles** | Affectation d'un **bien** (meuble ou immeuble) en garantie de la dette | Gage, nantissement, hypothèque |
 
 ### 1.1 Sûretés personnelles : caution et caution bancaire
 
@@ -658,28 +598,12 @@ Une **sûreté** est un mécanisme juridique qui permet au créancier d'être pa
 
 #### Le gage en détail
 
-```
-   ┌─────────────────────────────────┐
-   │           LE GAGE               │
-   ├─────────────────────────────────┤
-   │                                 │
-   │  AVEC dépossession              │
-   │   ▸ Le bien va chez un tiers    │
-   │     "tiers gagiste"             │
-   │   ▸ Publicité sur le site       │
-   │                                 │
-   │  SANS dépossession              │
-   │   ▸ Le débiteur garde le bien   │
-   │   ▸ Publicité au greffe         │
-   │     du tribunal de commerce     │
-   │                                 │
-   │  Dans les 2 cas :               │
-   │   ✓ Pas de transfert de prop.   │
-   │   ✓ Le créancier peut devenir   │
-   │     propriétaire si défaillance │
-   │                                 │
-   └─────────────────────────────────┘
-```
+| Variante | Localisation du bien | Publicité légale |
+|---|---|---|
+| **Gage AVEC dépossession** | Le bien est confié à un **tiers gagiste** (de confiance) | Sur le site où le bien est entreposé |
+| **Gage SANS dépossession** | Le débiteur **conserve l'usage** du bien | Au **greffe du tribunal de commerce** (consultable en ligne) |
+
+> 📌 **Dans les deux cas** : il n'y a **pas de transfert de propriété** au moment de la constitution du gage. Le créancier peut **devenir propriétaire** uniquement en cas de défaillance, après mise en œuvre des procédures légales.
 
 > 🚛 **Cas transport**
 >
@@ -698,22 +622,10 @@ L'**acte de constitution doit être notarié** sous peine de nullité. Confère 
 
 Quand un client ne paie pas, vous avez **deux voies** :
 
-```
-                  ┌─────────────────────┐
-                  │   RECOUVREMENT      │
-                  └──────────┬──────────┘
-                             │
-              ┌──────────────┴──────────────┐
-              │                             │
-       RECOUVREMENT INTERNE         RECOUVREMENT EXTERNE
-       (Service contentieux)        (Société de recouvrement,
-                                     huissiers, avocats)
-                │                             │
-                ├─ Lettre de relance          ├─ Phoning
-                ├─ Mise en demeure            ├─ Courriers AR
-                ├─ Injonction de payer        ├─ Visite sur site
-                └─ Action en paiement         └─ Action judiciaire
-```
+| Voie | Acteurs | Outils mobilisés |
+|---|---|---|
+| **Recouvrement interne** | Votre service contentieux (ou vous-même) | Lettre de relance, mise en demeure, injonction de payer, action en paiement |
+| **Recouvrement externe** | Société de recouvrement, huissier, avocat | Phoning, courriers AR, visite sur site, action judiciaire |
 
 ### 2.1 Les 3 étapes amiables
 
@@ -740,20 +652,11 @@ Procédure **non contradictoire** (le débiteur n'est pas convoqué), **rapide**
 
 ### 2.3 L'agence de recouvrement : 3 étapes structurées
 
-```
-┌───────────────────────────────────────────────────┐
-│  ÉTAPE 1 — RECUEIL D'INFORMATIONS                 │
-│  Enquête sur historique, solvabilité, raison du   │
-│  non-paiement                                     │
-├───────────────────────────────────────────────────┤
-│  ÉTAPE 2 — RELANCE AMIABLE                        │
-│  Courriers / phoning / visite (selon montant)     │
-├───────────────────────────────────────────────────┤
-│  ÉTAPE 3 — DÉCISION                               │
-│  • Règlement total/partiel  • Rééchelonnement     │
-│  • Procédure judiciaire     • Irrécouvrable       │
-└───────────────────────────────────────────────────┘
-```
+| Étape | Phase | Détail |
+|---|---|---|
+| **1** | Recueil d'informations | Enquête sur l'historique du client, sa solvabilité, la raison du non-paiement |
+| **2** | Relance amiable | Courriers (simples puis recommandés), phoning, visite sur site (selon le montant en jeu) |
+| **3** | Décision | Plusieurs issues possibles : règlement total ou partiel, rééchelonnement de la dette, lancement d'une procédure judiciaire, classement en irrécouvrable |
 
 ### 2.4 L'affacturage : externaliser ET financer
 
@@ -813,30 +716,27 @@ C'est l'**indicateur d'alerte** du Code de commerce. Quand il se déclenche, une
 
 ### 1.1 Calcul des capitaux propres
 
-```
-   Capitaux propres = Capital social
-                    + Réserves
-                    + Bénéfices non distribués (exercices antérieurs)
-                    + Bénéfice de l'exercice
-                    + Provisions réglementées
-                    − Pertes (cumulées)
-```
+Les capitaux propres se calculent en **additionnant** :
+
+- Le **capital social**
+- Les **réserves** (légale, statutaire, libre)
+- Les **bénéfices non distribués** des exercices antérieurs (report à nouveau)
+- Le **bénéfice de l'exercice** en cours
+- Les **provisions réglementées**
+
+Puis en **déduisant** :
+
+- Les **pertes** cumulées (report à nouveau négatif)
 
 ### 1.2 La procédure de l'article L. 223-42 (SARL) / L. 225-248 (SA)
 
-```
-   Constat des pertes : Capitaux propres < 50 % du capital social
-        │
-        ▼
-   AGE (Assemblée Générale Extraordinaire) dans les 4 mois suivant l'AG
-   d'approbation des comptes de l'exercice déficitaire
-        │
-        ▼
-   ┌────────────────┬──────────────────┐
-   │                │                  │
- DISSOUDRE     POURSUIVRE        Régulariser dans les 2 ans
- immédiatement  malgré pertes    suivant la clôture du 2e exercice
-```
+La procédure se déroule en **3 temps** :
+
+1. **Constat** : à la clôture de l'exercice, on observe que les capitaux propres sont devenus inférieurs à la moitié du capital social.
+2. **AGE** : dans les **4 mois** suivant l'AG ordinaire d'approbation des comptes, les associés doivent se réunir en Assemblée Générale Extraordinaire pour décider :
+   - soit de **dissoudre immédiatement** la société,
+   - soit de **poursuivre l'activité** malgré les pertes.
+3. **Régularisation** : si poursuite, la situation des capitaux propres doit être régularisée **au plus tard à la clôture du deuxième exercice** suivant celui où les pertes ont été constatées.
 
 > 📌 **Entreprises concernées**
 >
@@ -864,22 +764,14 @@ Une fois en cessation de paiement, le dirigeant a **45 jours** pour déclarer la
 
 ### 2.2 La sauvegarde : prévention
 
-```
-┌─────────────────────────────────────────────────────────┐
-│  PROCÉDURE DE SAUVEGARDE                                │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  Conditions cumulées :                                  │
-│   ✓ Difficultés que l'entreprise ne peut surmonter      │
-│   ✓ PAS encore en cessation de paiement                 │
-│                                                         │
-│  Effet : suspension des poursuites, période             │
-│  d'observation pour bâtir un plan de sauvegarde         │
-│                                                         │
-│  Avantage : maintien de l'activité ET de l'emploi       │
-│                                                         │
-└─────────────────────────────────────────────────────────┘
-```
+La procédure de sauvegarde est ouverte **uniquement** si **deux conditions cumulatives** sont remplies :
+
+- L'entreprise rencontre des **difficultés qu'elle ne peut surmonter** seule.
+- Elle **n'est PAS encore en cessation de paiement** (l'actif disponible couvre encore le passif exigible).
+
+**Effet** : ouverture d'une période d'observation, **suspension des poursuites** des créanciers, élaboration d'un **plan de sauvegarde** validé par le tribunal.
+
+**Avantage clé** : maintien de l'**activité** et de l'**emploi**, contrairement au redressement (qui peut aboutir à une cessation) ou à la liquidation (dissolution).
 
 ### 2.3 La conciliation : avant la procédure
 
@@ -914,16 +806,10 @@ Il juge :
 
 ### 3.3 Voies de recours
 
-```
-   Tribunal de commerce
-        │
-        ├──→ Cour d'appel (litige > 5 000 €)
-        │       │
-        │       └──→ Cour de cassation (en droit, pas en fait)
-        │
-        └──→ Pas d'appel possible si litige ≤ 5 000 €
-            (jugement en dernier ressort)
-```
+| Montant du litige | Voie de recours |
+|---|---|
+| **≤ 5 000 €** | Jugement en **dernier ressort** : pas d'appel possible. Seul le pourvoi en cassation sur une question de droit reste ouvert. |
+| **> 5 000 €** | Appel possible devant la **Cour d'appel** dans le mois suivant la signification. Puis, ensuite, pourvoi possible en **Cour de cassation** (uniquement sur des questions de droit, jamais sur les faits). |
 
 ---
 
