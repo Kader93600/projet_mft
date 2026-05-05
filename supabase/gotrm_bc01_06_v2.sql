@@ -1312,7 +1312,7 @@ La télématique reste licite et utile, mais son déploiement doit respecter str
   WHERE source_ref IN ('mft-2026-gotrm:bc01-06:qcm:3','mft-2026-gotrm:bc01-06:qcm:11','mft-2026-gotrm:bc01-06:qcm:13','mft-2026-gotrm:bc01-06:qcm:14','mft-2026-gotrm:bc01-06:qcm:15','mft-2026-gotrm:bc01-06:qcm:16','mft-2026-gotrm:bc01-06:qcm:17','mft-2026-gotrm:bc01-06:qcm:18','mft-2026-gotrm:bc01-06:qcm:21','mft-2026-gotrm:bc01-06:qcm:25');
 
   INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
-  VALUES (v_module, 'Examen blanc — BC01-06 Planification tournées', '15 QCM en 30 min, seuil 50 %.', 'examen_blanc', 1800, 50)
+  VALUES (v_module, 'Examen blanc — BC01-06 Planification tournées', '15 QCM en 30 min, seuil 50 %.', 'examen', 1800, 50)
   RETURNING id INTO v_quiz_eb;
 
   INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)

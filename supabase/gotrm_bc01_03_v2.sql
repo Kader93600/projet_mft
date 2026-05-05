@@ -802,7 +802,7 @@ Mantra : « Je ne baisse jamais un prix sans contrepartie qui me redonne au moin
   WHERE source_ref IN ('mft-2026-gotrm:bc01-03:qcm:12','mft-2026-gotrm:bc01-03:qcm:13','mft-2026-gotrm:bc01-03:qcm:14','mft-2026-gotrm:bc01-03:qcm:15','mft-2026-gotrm:bc01-03:qcm:16','mft-2026-gotrm:bc01-03:qcm:17','mft-2026-gotrm:bc01-03:qcm:25','mft-2026-gotrm:bc01-03:qcm:28');
 
   INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
-  VALUES (v_module, 'Examen blanc — BC01-03 Cotation et offre', '12 QCM en 25 min, seuil 50 %. Synthèse du module.', 'examen_blanc', 1500, 50)
+  VALUES (v_module, 'Examen blanc — BC01-03 Cotation et offre', '12 QCM en 25 min, seuil 50 %. Synthèse du module.', 'examen', 1500, 50)
   RETURNING id INTO v_quiz_eb;
 
   INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)

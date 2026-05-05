@@ -1040,7 +1040,7 @@ Conséquences en cas de défaut :
   WHERE source_ref IN ('mft-2026-gotrm:bc01-05:qcm:15','mft-2026-gotrm:bc01-05:qcm:16','mft-2026-gotrm:bc01-05:qcm:17','mft-2026-gotrm:bc01-05:qcm:18','mft-2026-gotrm:bc01-05:qcm:19','mft-2026-gotrm:bc01-05:qcm:20','mft-2026-gotrm:bc01-05:qcm:24','mft-2026-gotrm:bc01-05:qcm:28');
 
   INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
-  VALUES (v_module, 'Examen blanc — BC01-05 Documents et douane', '12 QCM en 25 min, seuil 50 %. Synthèse documentaire et douanière.', 'examen_blanc', 1500, 50)
+  VALUES (v_module, 'Examen blanc — BC01-05 Documents et douane', '12 QCM en 25 min, seuil 50 %. Synthèse documentaire et douanière.', 'examen', 1500, 50)
   RETURNING id INTO v_quiz_eb;
 
   INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)

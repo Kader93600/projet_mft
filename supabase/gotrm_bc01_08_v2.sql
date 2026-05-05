@@ -1251,7 +1251,7 @@ Conclusion stratégique : un client toxique de 600 k€ qui en réalité ne rapp
   WHERE source_ref IN ('mft-2026-gotrm:bc01-08:qcm:15','mft-2026-gotrm:bc01-08:qcm:16','mft-2026-gotrm:bc01-08:qcm:17','mft-2026-gotrm:bc01-08:qcm:18','mft-2026-gotrm:bc01-08:qcm:19','mft-2026-gotrm:bc01-08:qcm:20','mft-2026-gotrm:bc01-08:qcm:21','mft-2026-gotrm:bc01-08:qcm:25');
 
   INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
-  VALUES (v_module, 'Examen blanc — BC01-08 Relation client', '12 QCM en 25 min, seuil 50 %.', 'examen_blanc', 1500, 50)
+  VALUES (v_module, 'Examen blanc — BC01-08 Relation client', '12 QCM en 25 min, seuil 50 %.', 'examen', 1500, 50)
   RETURNING id INTO v_quiz_eb;
   INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_eb, id, ROW_NUMBER() OVER (ORDER BY source_ref)

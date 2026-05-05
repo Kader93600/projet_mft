@@ -1283,7 +1283,7 @@ Pour une PME de transport carburant :
   WHERE source_ref IN ('mft-2026-gotrm:bc01-07:qcm:21','mft-2026-gotrm:bc01-07:qcm:22','mft-2026-gotrm:bc01-07:qcm:23','mft-2026-gotrm:bc01-07:qcm:24','mft-2026-gotrm:bc01-07:qcm:25','mft-2026-gotrm:bc01-07:qcm:26');
 
   INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
-  VALUES (v_module, 'Examen blanc — BC01-07 Transports spécifiques', '15 QCM en 30 min, seuil 50 %.', 'examen_blanc', 1800, 50)
+  VALUES (v_module, 'Examen blanc — BC01-07 Transports spécifiques', '15 QCM en 30 min, seuil 50 %.', 'examen', 1800, 50)
   RETURNING id INTO v_quiz_eb;
   INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_eb, id, ROW_NUMBER() OVER (ORDER BY source_ref)

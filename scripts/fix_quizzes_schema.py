@@ -83,7 +83,7 @@ def transform_quiz_block(values_str, var_name):
 
     # Map is_mock_exam → type
     if is_mock_exam.strip() == "true":
-        quiz_type = "'examen_blanc'"
+        quiz_type = "'examen'"
     else:
         quiz_type = "'entrainement'"
 

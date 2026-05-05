@@ -961,7 +961,7 @@ Bonus : système d''alerte temps réel via télématique embarquée
   WHERE source_ref IN ('mft-2026-gotrm:bc01-04:qcm:15','mft-2026-gotrm:bc01-04:qcm:16','mft-2026-gotrm:bc01-04:qcm:17','mft-2026-gotrm:bc01-04:qcm:18','mft-2026-gotrm:bc01-04:qcm:19','mft-2026-gotrm:bc01-04:qcm:20','mft-2026-gotrm:bc01-04:qcm:22','mft-2026-gotrm:bc01-04:qcm:24','mft-2026-gotrm:bc01-04:qcm:30');
 
   INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
-  VALUES (v_module, 'Examen blanc — BC01-04 R561 et AETR', '15 QCM en 30 min, seuil 50 %. Synthèse du module.', 'examen_blanc', 1800, 50)
+  VALUES (v_module, 'Examen blanc — BC01-04 R561 et AETR', '15 QCM en 30 min, seuil 50 %. Synthèse du module.', 'examen', 1800, 50)
   RETURNING id INTO v_quiz_eb;
 
   INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
