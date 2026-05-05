@@ -173,11 +173,161 @@
   .prose-lesson code {
     @apply font-mono text-[0.85em] px-1.5 py-0.5 rounded bg-navy-50 text-navy-800 border border-navy-100;
   }
+
+  /* ===== Code block premium — fond sombre, bandeau langage ===== */
   .prose-lesson pre {
-    @apply my-6 p-4 rounded-xl bg-navy-50 border border-navy-100 overflow-x-auto;
+    @apply my-7 rounded-2xl overflow-hidden border border-navy-900/30 shadow-soft;
+    background: linear-gradient(180deg, #0E1240 0%, #131746 100%);
+    position: relative;
+  }
+  .prose-lesson pre[data-lang]:not([data-lang=""])::before {
+    content: attr(data-lang);
+    @apply font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-signal-500/80;
+    position: absolute;
+    top: 0.75rem;
+    right: 1rem;
+    pointer-events: none;
   }
   .prose-lesson pre code {
-    @apply bg-transparent border-0 p-0;
+    @apply block bg-transparent border-0 p-5 md:p-6 overflow-x-auto;
+    color: #E8ECF8;
+    font-family: var(--font-jetbrains, ui-monospace, SFMono-Regular, Menlo, monospace);
+    font-size: 0.875rem;
+    line-height: 1.7;
+    font-feature-settings: "calt", "ss01";
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+  }
+
+  /* Table wrap — permet le scroll horizontal sur mobile sans casser le layout */
+  .prose-lesson .table-wrap {
+    @apply my-8 -mx-4 md:mx-0 overflow-x-auto rounded-xl;
+    -webkit-overflow-scrolling: touch;
+  }
+  .prose-lesson .table-wrap > table {
+    @apply my-0 mx-4 md:mx-0;
+    min-width: max-content;
+  }
+
+  /* ===== Callouts pédagogiques — refonte premium ===== */
+  /* Base */
+  .prose-lesson .callout {
+    @apply my-7 rounded-2xl border overflow-hidden;
+    background-color: var(--callout-bg);
+    border-color: var(--callout-border);
+  }
+  .prose-lesson .callout__header {
+    @apply flex items-center gap-3 px-5 md:px-6 pt-4 pb-3;
+  }
+  .prose-lesson .callout__emoji {
+    @apply text-[20px] leading-none flex items-center justify-center rounded-lg;
+    width: 2rem;
+    height: 2rem;
+    background: var(--callout-emoji-bg);
+    flex-shrink: 0;
+  }
+  .prose-lesson .callout__title {
+    @apply font-display text-[15px] font-semibold tracking-tight;
+    color: var(--callout-title-color);
+  }
+  .prose-lesson .callout__body {
+    @apply px-5 md:px-6 pb-5;
+  }
+  .prose-lesson .callout__body > p {
+    @apply my-0 mb-3 last:mb-0;
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: var(--callout-text-color);
+    max-width: none;
+  }
+  .prose-lesson .callout__body > ul,
+  .prose-lesson .callout__body > ol {
+    @apply my-2 space-y-1.5;
+  }
+  .prose-lesson .callout__body > ul > li,
+  .prose-lesson .callout__body > ol > li {
+    color: var(--callout-text-color);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+  .prose-lesson .callout__body > ul > li::before {
+    background-color: var(--callout-bullet, currentColor);
+  }
+  .prose-lesson .callout__body strong {
+    color: var(--callout-title-color);
+  }
+
+  /* Variants — chaque variant définit ses 4 variables CSS */
+  .prose-lesson .callout--objectifs {
+    --callout-bg: rgba(159, 226, 32, 0.08);
+    --callout-border: rgba(159, 226, 32, 0.30);
+    --callout-emoji-bg: rgba(159, 226, 32, 0.18);
+    --callout-title-color: #5A8112;
+    --callout-text-color: #1f2937;
+    --callout-bullet: #5A8112;
+  }
+  .prose-lesson .callout--important {
+    --callout-bg: rgba(37, 48, 217, 0.06);
+    --callout-border: rgba(37, 48, 217, 0.20);
+    --callout-emoji-bg: rgba(37, 48, 217, 0.14);
+    --callout-title-color: #1F2A99;
+    --callout-text-color: #1f2937;
+    --callout-bullet: #2530D9;
+  }
+  .prose-lesson .callout--attention {
+    --callout-bg: rgba(245, 158, 11, 0.08);
+    --callout-border: rgba(245, 158, 11, 0.30);
+    --callout-emoji-bg: rgba(245, 158, 11, 0.18);
+    --callout-title-color: #B45309;
+    --callout-text-color: #1f2937;
+    --callout-bullet: #D97706;
+  }
+  .prose-lesson .callout--astuce {
+    --callout-bg: rgba(14, 165, 233, 0.06);
+    --callout-border: rgba(14, 165, 233, 0.22);
+    --callout-emoji-bg: rgba(14, 165, 233, 0.16);
+    --callout-title-color: #0369A1;
+    --callout-text-color: #1f2937;
+    --callout-bullet: #0EA5E9;
+  }
+  .prose-lesson .callout--synthese {
+    --callout-bg: rgba(16, 185, 129, 0.06);
+    --callout-border: rgba(16, 185, 129, 0.22);
+    --callout-emoji-bg: rgba(16, 185, 129, 0.16);
+    --callout-title-color: #047857;
+    --callout-text-color: #1f2937;
+    --callout-bullet: #10B981;
+  }
+  .prose-lesson .callout--focus {
+    --callout-bg: rgba(100, 116, 139, 0.07);
+    --callout-border: rgba(100, 116, 139, 0.22);
+    --callout-emoji-bg: rgba(100, 116, 139, 0.15);
+    --callout-title-color: #334155;
+    --callout-text-color: #1f2937;
+    --callout-bullet: #475569;
+  }
+  .prose-lesson .callout--piege {
+    --callout-bg: rgba(244, 63, 94, 0.06);
+    --callout-border: rgba(244, 63, 94, 0.22);
+    --callout-emoji-bg: rgba(244, 63, 94, 0.15);
+    --callout-title-color: #BE123C;
+    --callout-text-color: #1f2937;
+    --callout-bullet: #E11D48;
+  }
+  .prose-lesson .callout--ressource {
+    --callout-bg: rgba(99, 102, 241, 0.06);
+    --callout-border: rgba(99, 102, 241, 0.22);
+    --callout-emoji-bg: rgba(99, 102, 241, 0.16);
+    --callout-title-color: #4338CA;
+    --callout-text-color: #1f2937;
+    --callout-bullet: #6366F1;
+  }
+  .prose-lesson .callout--examen {
+    --callout-bg: rgba(245, 158, 11, 0.10);
+    --callout-border: rgba(245, 158, 11, 0.32);
+    --callout-emoji-bg: rgba(245, 158, 11, 0.20);
+    --callout-title-color: #92400E;
+    --callout-text-color: #1f2937;
+    --callout-bullet: #B45309;
   }
   .prose-lesson a:not(.no-prose) {
     @apply text-brand-700 underline decoration-brand-200 hover:decoration-brand-500;
