@@ -15,6 +15,9 @@ import {
   Play,
   FileText,
   GraduationCap,
+  Sparkles,
+  Trophy,
+  Flame,
 } from "lucide-react";
 
 /**
@@ -279,6 +282,79 @@ export function ModuleCard({ module: m }: { module: ModuleCardData }) {
           </div>
         </div>
       </div>
+
+      {/*
+        Hover overlay — slide-in depuis le bas avec une vue enrichie.
+        Apparaît UNIQUEMENT au hover/focus. Sur mobile (pas de hover),
+        le contenu reste accessible via les stats inline ci-dessus.
+        prefers-reduced-motion : on dégrade en simple fade sans translate.
+      */}
+      <div
+        aria-hidden
+        className={cn(
+          "pointer-events-none absolute inset-x-0 bottom-0 px-5 md:px-6 pt-3 pb-4",
+          "border-t backdrop-blur-[2px]",
+          state === "done"
+            ? "border-emerald-100 bg-gradient-to-b from-white/95 via-white to-emerald-50/40"
+            : state === "in-progress"
+              ? "border-brand-100 bg-gradient-to-b from-white/95 via-white to-brand-50/40"
+              : "border-navy-100 bg-gradient-to-b from-white/95 via-white to-navy-50/40",
+          "transition-[transform,opacity] duration-[260ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
+          "motion-reduce:transition-opacity motion-reduce:duration-150",
+          hovered
+            ? "translate-y-0 opacity-100 motion-reduce:translate-y-0"
+            : "translate-y-full opacity-0 motion-reduce:translate-y-0"
+        )}
+      >
+        {/* Tagline / accroche */}
+        <div className="flex items-start gap-2">
+          {state === "done" ? (
+            <Trophy
+              className="h-3.5 w-3.5 shrink-0 mt-0.5 text-emerald-600"
+              strokeWidth={2.2}
+            />
+          ) : state === "in-progress" ? (
+            <Flame
+              className="h-3.5 w-3.5 shrink-0 mt-0.5 text-brand-600"
+              strokeWidth={2.2}
+            />
+          ) : (
+            <Sparkles
+              className="h-3.5 w-3.5 shrink-0 mt-0.5"
+              style={{ color: accentText }}
+              strokeWidth={2.2}
+            />
+          )}
+          <p className="text-[12.5px] leading-snug text-slate-700 font-medium">
+            {buildOverlayTagline(m, state, percent)}
+          </p>
+        </div>
+
+        {/* Stats détaillées en pied d'overlay */}
+        <div className="mt-2.5 flex items-center gap-3.5 text-[11px] text-slate-600 tabular-nums">
+          {typeof m.lessons_count === "number" && m.lessons_count > 0 && (
+            <span className="inline-flex items-center gap-1">
+              <BookOpen className="h-3 w-3" />
+              {typeof m.lessons_done === "number"
+                ? `${m.lessons_done}/${m.lessons_count}`
+                : m.lessons_count}
+              <span className="text-slate-400">leçons</span>
+            </span>
+          )}
+          {typeof m.quizzes_count === "number" && m.quizzes_count > 0 && (
+            <span className="inline-flex items-center gap-1">
+              <ListChecks className="h-3 w-3" />
+              {m.quizzes_count}
+              <span className="text-slate-400">quiz</span>
+            </span>
+          )}
+          {m.duration_min ? (
+            <span className="inline-flex items-center gap-1 ml-auto">
+              <Clock className="h-3 w-3" />~{Math.round(m.duration_min / 60)} h
+            </span>
+          ) : null}
+        </div>
+      </div>
     </Link>
   );
 }
@@ -332,6 +408,32 @@ function buildAriaLabel(m: ModuleCardData, state: ModuleState, percent: number) 
         ? `en cours, ${percent} pour cent`
         : "à commencer";
   return `${m.title} — ${stateText}. Cliquez pour ouvrir le module.`;
+}
+
+/**
+ * Phrase d'accroche révélée au hover. Diffère selon l'état pour donner
+ * du contexte plutôt que de répéter le summary déjà visible.
+ */
+function buildOverlayTagline(
+  m: ModuleCardData,
+  state: ModuleState,
+  percent: number
+): string {
+  if (state === "done") {
+    return "Module terminé. Revisitez les notions clés ou refaites un quiz.";
+  }
+  if (state === "in-progress") {
+    if (percent >= 75) return `Plus que ${100 - percent} % avant de boucler ce module.`;
+    if (percent >= 40) return "Belle progression. Continuez sur votre lancée.";
+    return "Reprenez là où vous vous êtes arrêté.";
+  }
+  // not-started : on prend le tagline ou une troncature courte du summary
+  if (m.tagline) return m.tagline;
+  if (m.summary) {
+    const trimmed = m.summary.trim();
+    return trimmed.length > 130 ? trimmed.slice(0, 127) + "…" : trimmed;
+  }
+  return "Démarrez ce module et progressez à votre rythme.";
 }
 
 function clamp(n: number, min: number, max: number) {
