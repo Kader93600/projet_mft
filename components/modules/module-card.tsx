@@ -3,35 +3,37 @@
 import Link from "next/link";
 import { useState } from "react";
 import { findFormation } from "@/lib/formations-config";
+import type { ModuleState, ModuleKind } from "@/lib/module-progress";
 import { cn } from "@/lib/utils";
 import {
   ArrowRight,
   Clock,
   BookOpen,
   ListChecks,
-  Sparkles,
+  Lock,
+  Check,
+  Play,
+  FileText,
+  GraduationCap,
 } from "lucide-react";
 
 /**
  * Card module — surface premium réutilisable.
  *
+ * Refonte 2026-05 : intègre les 4 états de progression (done, in-progress,
+ * not-started, locked) avec un traitement visuel discret mais sans ambiguïté.
+ *
  * Design (DESIGN.md) :
  *  - Bg blanc, border navy-100, rounded-2xl, shadow-soft
  *  - Stripe 4px gradient couleur formation en haut
- *  - Header : code formation (chip) + durée
- *  - Titre h3 (Bricolage Grotesque)
- *  - Summary 2 lignes (line-clamp)
- *  - Footer : difficulty + "Ouvrir →"
- *
- * Hover :
- *  - Translate-y -2px + shadow-raised
- *  - Stripe passe en gradient plus opaque
- *  - Overlay info en bas slide-in (translateY 100% → 0, 200ms ease-out-expo)
- *    avec phrase d'accroche + 3 stats (leçons, quiz, niveau)
+ *  - Header : code formation (chip) + durée + indicateur d'état (top right)
+ *  - Titre h3 (font-display, Bricolage Grotesque)
+ *  - Footer : barre de progression fine + difficulty + CTA contextuel
  *
  * Accessibilité :
- *  - Tile entièrement cliquable (le Link englobe la card)
- *  - prefers-reduced-motion désactive translate + slide-in
+ *  - Tile cliquable (Link englobe la card) sauf si locked → div + cadenas
+ *  - prefers-reduced-motion désactive translate
+ *  - aria-label complet (titre + état + progression)
  */
 export interface ModuleCardData {
   id: string;
@@ -47,53 +49,125 @@ export interface ModuleCardData {
   quizzes_count?: number;
   /** Phrase d'accroche révélée au hover. Si absent, on dérive du summary. */
   tagline?: string | null;
+  /** État de progression — défaut: not-started si non précisé. */
+  state?: ModuleState;
+  /** Type dérivé du slug — défaut: 'course' */
+  kind?: ModuleKind;
+  /** Pourcentage 0-100 de complétion. */
+  percent?: number;
+  /** Nb de leçons complétées (pour afficher "3 / 4 leçons"). */
+  lessons_done?: number;
 }
+
+const difficultyLabel: Record<string, string> = {
+  debutant: "Débutant",
+  intermediaire: "Intermédiaire",
+  avance: "Avancé",
+};
 
 export function ModuleCard({ module: m }: { module: ModuleCardData }) {
   const [hovered, setHovered] = useState(false);
   const formation = m.formation_slug ? findFormation(m.formation_slug) : null;
   const accent = formation?.accent ?? "#9FE220";
+  const state: ModuleState = m.state ?? "not-started";
+  const kind: ModuleKind = m.kind ?? "course";
+  const percent = clamp(m.percent ?? 0, 0, 100);
 
-  const difficultyLabel: Record<string, string> = {
-    debutant: "Débutant",
-    intermediaire: "Intermédiaire",
-    avance: "Avancé",
-  };
+  // ----- Locked : div statique, pas de Link
+  if (state === "locked") {
+    return (
+      <div
+        aria-disabled="true"
+        aria-label={`${m.title} (verrouillé, terminez le module précédent pour débloquer)`}
+        className={cn(
+          "relative block overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/60",
+          "transition-colors duration-200 select-none cursor-not-allowed"
+        )}
+      >
+        <div
+          aria-hidden
+          className="absolute inset-x-0 top-0 h-1 bg-slate-200"
+        />
+        <div className="p-5 md:p-6 flex flex-col h-full min-h-[210px] opacity-60">
+          <div className="flex items-start justify-between gap-3">
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 border border-slate-200">
+              {formation?.code ?? "Module"}
+            </span>
+            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 shrink-0">
+              <Lock className="h-3 w-3" />
+              Verrouillé
+            </span>
+          </div>
+          <h3 className="mt-4 font-display text-[17px] md:text-[18px] font-semibold text-slate-700 leading-snug tracking-tight">
+            {m.title}
+          </h3>
+          {m.summary && (
+            <p className="mt-2 text-[13.5px] text-slate-500 leading-relaxed line-clamp-2">
+              {m.summary}
+            </p>
+          )}
+          <div className="mt-auto pt-5 text-[12px] text-slate-500 leading-snug">
+            Terminez le module précédent pour débloquer celui-ci.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ----- Done / in-progress / not-started : Link cliquable
+
+  const stateBadge = renderStateBadge(state, kind);
+  const accentText = shadeForText(accent);
+  const ariaLabel = buildAriaLabel(m, state, percent);
 
   return (
     <Link
       href={`/modules/${m.slug}`}
+      aria-label={ariaLabel}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onFocus={() => setHovered(true)}
       onBlur={() => setHovered(false)}
       className={cn(
-        "group relative block overflow-hidden rounded-2xl border border-navy-100 bg-white",
+        "group relative block overflow-hidden rounded-2xl border bg-white",
+        state === "done"
+          ? "border-emerald-100/80"
+          : state === "in-progress"
+            ? "border-brand-100"
+            : "border-navy-100",
         "shadow-soft transition-[transform,box-shadow,border-color] duration-200",
-        "hover:-translate-y-0.5 hover:shadow-raised hover:border-navy-200",
+        "hover:-translate-y-0.5 hover:shadow-raised",
+        state === "done"
+          ? "hover:border-emerald-200"
+          : state === "in-progress"
+            ? "hover:border-brand-200"
+            : "hover:border-navy-200",
         "motion-reduce:hover:translate-y-0 motion-reduce:transition-none",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-500/40"
       )}
     >
-      {/* Stripe formation 4 px, opacité augmentée au hover */}
+      {/* Stripe formation 4px, opacité augmentée au hover */}
       <div
         aria-hidden
         className="absolute inset-x-0 top-0 h-1 transition-opacity duration-200"
         style={{
-          background: `linear-gradient(90deg, ${accent}, ${accent}80)`,
+          background:
+            state === "done"
+              ? "linear-gradient(90deg, #10b981, #6ee7b7)"
+              : `linear-gradient(90deg, ${accent}, ${accent}80)`,
           opacity: hovered ? 1 : 0.85,
         }}
       />
 
       <div className="p-5 md:p-6 flex flex-col h-full min-h-[210px]">
-        {/* Header : code formation + durée */}
+        {/* Header : code formation + état + durée */}
         <div className="flex items-start justify-between gap-3">
           {formation ? (
             <span
               className="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em]"
               style={{
                 background: `${accent}1A`,
-                color: shadeForText(accent),
+                color: accentText,
                 border: `1px solid ${accent}40`,
               }}
             >
@@ -105,12 +179,15 @@ export function ModuleCard({ module: m }: { module: ModuleCardData }) {
             </span>
           )}
 
-          {m.duration_min ? (
-            <span className="inline-flex items-center gap-1 text-[12px] text-slate-500 shrink-0">
-              <Clock className="h-3 w-3" />
-              {m.duration_min} min
-            </span>
-          ) : null}
+          <div className="flex items-center gap-2 shrink-0">
+            {stateBadge}
+            {m.duration_min ? (
+              <span className="inline-flex items-center gap-1 text-[12px] text-slate-500">
+                <Clock className="h-3 w-3" />
+                {m.duration_min} min
+              </span>
+            ) : null}
+          </div>
         </div>
 
         {/* Titre */}
@@ -125,101 +202,155 @@ export function ModuleCard({ module: m }: { module: ModuleCardData }) {
           </p>
         ) : null}
 
-        {/* Footer : difficulty + Ouvrir */}
-        <div className="mt-auto pt-5 flex items-center justify-between">
-          {m.difficulty ? (
-            <span className="text-[10px] uppercase tracking-[0.14em] font-semibold text-slate-500">
-              {difficultyLabel[m.difficulty] ?? m.difficulty}
-            </span>
-          ) : (
-            <span />
-          )}
-          <span
-            className="inline-flex items-center gap-1 text-[13px] font-medium text-navy-900 transition-colors"
-            style={{
-              color: hovered ? shadeForText(accent) : undefined,
-            }}
-          >
-            Ouvrir
-            <ArrowRight
-              className={cn(
-                "h-3.5 w-3.5 transition-transform",
-                "group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
-              )}
-            />
-          </span>
-        </div>
-      </div>
-
-      {/* Hover overlay — slide-in depuis le bas avec stats + accroche */}
-      <div
-        aria-hidden
-        className={cn(
-          "absolute inset-x-0 bottom-0 px-5 md:px-6 pt-4 pb-5",
-          "border-t border-navy-100 bg-gradient-to-b from-white via-white to-navy-50/40",
-          "transition-[transform,opacity] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
-          "motion-reduce:transition-none motion-reduce:translate-y-0",
-          hovered
-            ? "translate-y-0 opacity-100"
-            : "translate-y-full opacity-0 pointer-events-none"
-        )}
-      >
-        {/* Phrase d'accroche */}
-        {(m.tagline || m.summary) && (
-          <div className="flex items-start gap-2">
-            <Sparkles
-              className="h-3.5 w-3.5 shrink-0 mt-0.5"
-              style={{ color: shadeForText(accent) }}
-            />
-            <p className="text-[12.5px] leading-snug text-slate-700 font-medium">
-              {m.tagline ?? m.summary}
-            </p>
-          </div>
-        )}
-
-        {/* Stats compactes */}
-        <div className="mt-3 flex items-center gap-4 text-[11px] text-slate-600">
-          {typeof m.lessons_count === "number" && (
+        {/* Stats inline (toujours visibles, pas de hover) */}
+        <div className="mt-4 flex items-center gap-4 text-[11.5px] text-slate-500">
+          {typeof m.lessons_count === "number" && m.lessons_count > 0 && (
             <span className="inline-flex items-center gap-1">
               <BookOpen className="h-3 w-3" />
-              {m.lessons_count} leçon{m.lessons_count > 1 ? "s" : ""}
+              {typeof m.lessons_done === "number" && state !== "not-started"
+                ? `${m.lessons_done} / ${m.lessons_count} leçons`
+                : `${m.lessons_count} leçon${m.lessons_count > 1 ? "s" : ""}`}
             </span>
           )}
-          {typeof m.quizzes_count === "number" && (
+          {typeof m.quizzes_count === "number" && m.quizzes_count > 0 && (
             <span className="inline-flex items-center gap-1">
               <ListChecks className="h-3 w-3" />
               {m.quizzes_count} quiz
             </span>
           )}
-          {m.duration_min ? (
-            <span className="inline-flex items-center gap-1 ml-auto">
-              <Clock className="h-3 w-3" />~{Math.round(m.duration_min / 60)} h
+        </div>
+
+        {/* Footer : barre progression + difficulty + CTA */}
+        <div className="mt-auto pt-4">
+          {/* Barre de progression — visible si in-progress ou done */}
+          {(state === "in-progress" || state === "done") && (
+            <div className="mb-3">
+              <div
+                className="h-1 w-full overflow-hidden rounded-full bg-navy-50"
+                role="progressbar"
+                aria-valuenow={percent}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label={`Progression : ${percent} %`}
+              >
+                <div
+                  className="h-full rounded-full transition-[width] duration-500 ease-out"
+                  style={{
+                    width: `${percent}%`,
+                    background:
+                      state === "done"
+                        ? "linear-gradient(90deg, #10b981, #34d399)"
+                        : "linear-gradient(90deg, #2530D9, #4f46e5)",
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between">
+            {m.difficulty ? (
+              <span className="text-[10px] uppercase tracking-[0.14em] font-semibold text-slate-500">
+                {difficultyLabel[m.difficulty] ?? m.difficulty}
+              </span>
+            ) : (
+              <span />
+            )}
+            <span
+              className={cn(
+                "inline-flex items-center gap-1 text-[13px] font-medium transition-colors",
+                state === "done" ? "text-emerald-700" : "text-navy-900"
+              )}
+              style={{
+                color: hovered && state !== "done" ? accentText : undefined,
+              }}
+            >
+              {state === "done"
+                ? "Revoir"
+                : state === "in-progress"
+                  ? "Continuer"
+                  : "Commencer"}
+              <ArrowRight
+                className={cn(
+                  "h-3.5 w-3.5 transition-transform",
+                  "group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
+                )}
+              />
             </span>
-          ) : null}
+          </div>
         </div>
       </div>
     </Link>
   );
 }
 
+// ---------------------------------------------------------------------
+// Helpers internes
+// ---------------------------------------------------------------------
+
+function renderStateBadge(state: ModuleState, kind: ModuleKind) {
+  if (state === "done") {
+    return (
+      <span className="inline-flex h-5 items-center gap-1 rounded-full bg-emerald-50 px-1.5 text-[10px] font-semibold text-emerald-700 border border-emerald-100">
+        <Check className="h-3 w-3" />
+        Terminé
+      </span>
+    );
+  }
+  if (state === "in-progress") {
+    return (
+      <span className="inline-flex h-5 items-center gap-1 rounded-full bg-brand-50 px-1.5 text-[10px] font-semibold text-brand-700 border border-brand-100">
+        <Play className="h-2.5 w-2.5 fill-current" />
+        En cours
+      </span>
+    );
+  }
+  // not-started : on n'affiche un picto que pour les types "exam" / "final"
+  if (kind === "exam") {
+    return (
+      <span className="inline-flex h-5 items-center gap-1 rounded-full bg-amber-50 px-1.5 text-[10px] font-semibold text-amber-700 border border-amber-100">
+        <FileText className="h-2.5 w-2.5" />
+        Examen blanc
+      </span>
+    );
+  }
+  if (kind === "final") {
+    return (
+      <span className="inline-flex h-5 items-center gap-1 rounded-full bg-amber-100 px-1.5 text-[10px] font-semibold text-amber-800 border border-amber-200">
+        <GraduationCap className="h-2.5 w-2.5" />
+        Soutenance
+      </span>
+    );
+  }
+  return null;
+}
+
+function buildAriaLabel(m: ModuleCardData, state: ModuleState, percent: number) {
+  const stateText =
+    state === "done"
+      ? "terminé"
+      : state === "in-progress"
+        ? `en cours, ${percent} pour cent`
+        : "à commencer";
+  return `${m.title} — ${stateText}. Cliquez pour ouvrir le module.`;
+}
+
+function clamp(n: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, n));
+}
+
 /**
- * Pour les chips et accents textuels, on assombrit le hex de base de
+ * Pour les chips et accents textuels : on assombrit le hex de base de
  * façon à garantir la lisibilité sur fond clair (WCAG AA).
- *
- * En pratique pour nos couleurs formation (toutes situées dans la zone
- * mid-saturation), on retire ~15 % de luminosité.
  */
 function shadeForText(hex: string): string {
-  // Conversion grossière hex → HSL → assombrissement → hex
   const h = hex.replace("#", "");
   if (h.length < 6) return hex;
   const r = parseInt(h.slice(0, 2), 16);
   const g = parseInt(h.slice(2, 4), 16);
   const b = parseInt(h.slice(4, 6), 16);
-  // Pour signal-green (#9FE220) la version texte est signal-700 ≈ #5D8A0F
-  // On applique un facteur d'assombrissement adaptatif selon la luminosité.
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
   const factor = luminance > 0.7 ? 0.55 : luminance > 0.5 ? 0.7 : 0.85;
-  const dark = (c: number) => Math.max(0, Math.round(c * factor)).toString(16).padStart(2, "0");
+  const dark = (c: number) =>
+    Math.max(0, Math.round(c * factor)).toString(16).padStart(2, "0");
   return `#${dark(r)}${dark(g)}${dark(b)}`;
 }
