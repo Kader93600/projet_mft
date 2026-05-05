@@ -1,153 +1,586 @@
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { Card, CardBody } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Clock, Target, ArrowRight, Trophy, Dumbbell, ShieldAlert, Lock } from "lucide-react";
+import { FormationBadge } from "@/components/formation/formation-badge";
+import { FormationProgress } from "@/components/modules/formation-progress";
+import { QuizCard, type QuizCardData } from "@/components/quiz/quiz-card";
+import { QuizContinueCard } from "@/components/quiz/quiz-continue-card";
+import { ModuleQuizAccordion } from "@/components/quiz/module-quiz-accordion";
+import { findFormation, FORMATIONS } from "@/lib/formations-config";
+import {
+  computeQuizProgress,
+  pickNextQuiz,
+  type QuizProgress,
+} from "@/lib/quiz-progress";
+import {
+  applyLinearLocking,
+  computeModulePercent,
+  computeModuleState,
+  getModuleKind,
+  type ModuleProgress,
+} from "@/lib/module-progress";
+import {
+  AlertCircle,
+  Dumbbell,
+  GraduationCap,
+  Lock,
+  Sparkles,
+} from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
+/**
+ * Quiz & Examens — refonte 2026-05.
+ *
+ * Pivot stratégique : la page n'est plus un mur plat de 75 quiz mais
+ * un cockpit organisé par formation puis par type d'exercice.
+ *
+ *  - Hero personnalisé "Bonjour [Prénom], vos quiz et examens."
+ *  - QuizContinueCard : reprend le quiz en cours OU le dernier raté
+ *  - Par formation :
+ *      • Header (badge + progression nb quiz réussis)
+ *      • "Préparer l'examen final" : examens blancs synthèse, MSP, banque
+ *        entretien — verrouillés grisés tant que les modules de cours ne
+ *        sont pas tous terminés
+ *      • "Entraînement par module" : accordéons collapsibles par module
+ *        (1er ouvert par défaut)
+ *  - États visuels par quiz : passed / failed / in-progress / todo /
+ *    blocked-attempts / blocked-delay / locked
+ */
 export default async function QuizListPage() {
   const supabase = createClient();
-  const { data: quizzes } = await supabase
-    .from("quizzes")
-    .select("*, modules(title, slug)")
-    .order("type", { ascending: false });
 
-  // Récupère l'état de tentative pour chaque quiz (tentatives utilisées / délai)
-  const states: Record<string, any> = {};
-  await Promise.all(
-    (quizzes || []).map(async (q: any) => {
-      const { data } = await supabase.rpc("quiz_attempt_state", { p_quiz_id: q.id });
-      states[q.id] = data;
-    })
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Profil pour le prénom
+  let firstName: string | null = null;
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", user.id)
+      .maybeSingle();
+    firstName = extractFirstName(profile?.full_name ?? null);
+  }
+
+  // Formation active (1 seule par stagiaire)
+  let activeFormationSlug: string | null = null;
+  if (user) {
+    const { data: enrollment } = await supabase
+      .from("enrollments")
+      .select("formation_slug")
+      .eq("user_id", user.id)
+      .not("status", "in", "(refuse,abandon)")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    activeFormationSlug = (enrollment as any)?.formation_slug ?? null;
+  }
+
+  // Données catalogue
+  const [
+    { data: quizzesRaw },
+    { data: modulesRaw },
+    { data: links },
+    { data: lessonsRaw },
+  ] = await Promise.all([
+    supabase
+      .from("quizzes")
+      .select(
+        "id, title, description, type, is_mock_exam, pass_threshold, time_limit_s, max_attempts, retake_delay_hours, module_id, modules(title, slug)"
+      )
+      .order("type", { ascending: false }),
+    supabase.from("modules").select("id, slug, title, summary").order("order"),
+    supabase
+      .from("formation_modules")
+      .select("module_id, display_order, formation:formations(slug)"),
+    supabase.from("lessons").select("id, module_id"),
+  ]);
+
+  // Tentatives utilisateur (1 requête, agrégée côté JS)
+  let userAttempts: any[] = [];
+  let userLessonViews: { lesson_id: string; completed: boolean }[] = [];
+  if (user) {
+    const [{ data: attempts }, { data: views }] = await Promise.all([
+      supabase
+        .from("quiz_attempts")
+        .select("id, quiz_id, percentage, passed, started_at, finished_at")
+        .eq("user_id", user.id),
+      supabase
+        .from("lesson_views")
+        .select("lesson_id, completed")
+        .eq("user_id", user.id)
+        .eq("completed", true),
+    ]);
+    userAttempts = attempts ?? [];
+    userLessonViews = views ?? [];
+  }
+
+  // Index module → formation, module → ordre
+  const formationByModule = new Map<string, string>();
+  const orderByModule = new Map<string, number>();
+  (links ?? []).forEach((l: any) => {
+    if (l.formation?.slug && !formationByModule.has(l.module_id)) {
+      formationByModule.set(l.module_id, l.formation.slug);
+    }
+    if (l.display_order != null && !orderByModule.has(l.module_id)) {
+      orderByModule.set(l.module_id, l.display_order);
+    }
+  });
+
+  // Index module → lessons (pour calculer module state pour le verrouillage)
+  const lessonsByModule = new Map<string, string[]>();
+  (lessonsRaw ?? []).forEach((l: any) => {
+    if (!lessonsByModule.has(l.module_id)) lessonsByModule.set(l.module_id, []);
+    lessonsByModule.get(l.module_id)!.push(l.id);
+  });
+  const completedLessonIds = new Set(userLessonViews.map((v) => v.lesson_id));
+
+  // Index module → quizzes
+  const quizzesByModule = new Map<string, any[]>();
+  (quizzesRaw ?? []).forEach((q: any) => {
+    if (!quizzesByModule.has(q.module_id))
+      quizzesByModule.set(q.module_id, []);
+    quizzesByModule.get(q.module_id)!.push(q);
+  });
+
+  // Pour le verrouillage des examens synthèse/final : on a besoin du
+  // ModuleProgress de chaque module pour savoir si tous les "course" sont done.
+  const modulesProgress: ModuleProgress[] = (modulesRaw ?? []).map((m: any) => {
+    const lessonIds = lessonsByModule.get(m.id) ?? [];
+    const quizIds = (quizzesByModule.get(m.id) ?? []).map((q: any) => q.id);
+    const lessonsTotal = lessonIds.length;
+    const lessonsDone = lessonIds.filter((id) =>
+      completedLessonIds.has(id)
+    ).length;
+    const quizzesTotal = quizIds.length;
+    const passedQuizIds = new Set(
+      userAttempts.filter((a) => a.passed).map((a) => a.quiz_id)
+    );
+    const quizzesPassed = quizIds.filter((id: string) =>
+      passedQuizIds.has(id)
+    ).length;
+    const hasAnyAttempt =
+      lessonsDone > 0 ||
+      quizzesPassed > 0 ||
+      lessonIds.some((id) => completedLessonIds.has(id)) ||
+      quizIds.some((id: string) =>
+        userAttempts.some((a) => a.quiz_id === id)
+      );
+    const baseState = computeModuleState({
+      lessonsTotal,
+      lessonsDone,
+      quizzesTotal,
+      quizzesPassed,
+      hasAnyAttempt,
+    });
+    return {
+      slug: m.slug,
+      id: m.id,
+      kind: getModuleKind(m.slug),
+      order: orderByModule.get(m.id) ?? 0,
+      lessonsTotal,
+      lessonsDone,
+      quizzesTotal,
+      quizzesPassed,
+      percent: computeModulePercent({
+        lessonsTotal,
+        lessonsDone,
+        quizzesTotal,
+        quizzesPassed,
+      }),
+      state: baseState,
+      lastTouchedAt: null,
+    };
+  });
+
+  // Verrouillage linéaire par formation
+  const moduleStateById = new Map<string, ModuleProgress["state"]>();
+  for (const f of FORMATIONS) {
+    const inForm = modulesProgress.filter(
+      (m) => formationByModule.get(m.id) === f.slug
+    );
+    const locked = applyLinearLocking(inForm);
+    locked.forEach((m) => moduleStateById.set(m.id, m.state));
+  }
+
+  // Maintenant on construit, pour chaque quiz, son QuizCardData + QuizProgress
+  // en sachant si l'examen synthèse/final est verrouillé (parcours).
+  type EnrichedQuiz = {
+    quiz: QuizCardData & {
+      module_id: string | null;
+      module_title: string | null;
+      module_slug: string | null;
+      module_order: number;
+    };
+    progress: QuizProgress;
+  };
+
+  const enrichedQuizzes: EnrichedQuiz[] = (quizzesRaw ?? []).map((q: any) => {
+    const moduleSlug: string | null = q.modules?.slug ?? null;
+    const moduleId: string | null = q.module_id ?? null;
+    const formationSlug = moduleId ? formationByModule.get(moduleId) ?? null : null;
+    const moduleKind = moduleSlug ? getModuleKind(moduleSlug) : "course";
+
+    // Détermination du exam_kind fonctionnel
+    let exam_kind: QuizCardData["exam_kind"] = null;
+    if (moduleKind === "final" && moduleSlug?.includes("dossier-pro")) {
+      exam_kind = "entretien";
+    } else if (moduleKind === "final") {
+      exam_kind = "msp";
+    } else if (moduleKind === "exam") {
+      exam_kind = "synthese";
+    } else if (q.type === "examen" || q.is_mock_exam) {
+      exam_kind = "module-exam";
+    }
+
+    // Verrouillage parcours : un quiz est verrouillé si son module est verrouillé
+    const moduleState = moduleId ? moduleStateById.get(moduleId) : undefined;
+    const lockedByCurriculum = moduleState === "locked";
+
+    const progress = computeQuizProgress(
+      {
+        id: q.id,
+        max_attempts: q.max_attempts ?? null,
+        retake_delay_hours: q.retake_delay_hours ?? null,
+      },
+      userAttempts,
+      lockedByCurriculum
+    );
+
+    const quiz: EnrichedQuiz["quiz"] = {
+      id: q.id,
+      title: q.title,
+      description: q.description ?? null,
+      type: q.type,
+      is_mock_exam: q.is_mock_exam ?? null,
+      pass_threshold: q.pass_threshold,
+      time_limit_s: q.time_limit_s ?? null,
+      formation_slug: formationSlug,
+      exam_kind,
+      module_id: moduleId,
+      module_title: q.modules?.title ?? null,
+      module_slug: moduleSlug,
+      module_order: moduleId ? orderByModule.get(moduleId) ?? 0 : 0,
+    };
+
+    return { quiz, progress };
+  });
+
+  // Continue card : choisit le quiz à reprendre (toutes formations confondues)
+  const continueCandidate = pickNextQuiz(
+    enrichedQuizzes
+      .filter((eq) => eq.progress.state === "in-progress" || eq.progress.state === "failed")
+      .map((eq) => eq.progress)
   );
+  const continueQuiz = continueCandidate
+    ? enrichedQuizzes.find((eq) => eq.progress.quiz_id === continueCandidate.quiz_id)
+    : null;
 
-  const entrainement = quizzes?.filter((q) => q.type === "entrainement") || [];
-  const examen = quizzes?.filter((q) => q.type === "examen") || [];
+  // Groupement par formation, puis par module pour l'entraînement
+  const grouped = FORMATIONS.map((f) => {
+    const ofFormation = enrichedQuizzes.filter(
+      (eq) => eq.quiz.formation_slug === f.slug
+    );
+
+    // Quiz "examen final" : modules de type final/exam
+    const examFinal = ofFormation.filter(
+      (eq) =>
+        eq.quiz.exam_kind === "synthese" ||
+        eq.quiz.exam_kind === "msp" ||
+        eq.quiz.exam_kind === "entretien"
+    );
+
+    // Quiz "entraînement + examen blanc module" : restent par module
+    const trainings = ofFormation.filter(
+      (eq) =>
+        eq.quiz.exam_kind !== "synthese" &&
+        eq.quiz.exam_kind !== "msp" &&
+        eq.quiz.exam_kind !== "entretien"
+    );
+
+    // Regroupement par module (id + ordre + titre)
+    const byModule = new Map<
+      string,
+      {
+        moduleId: string;
+        moduleTitle: string;
+        moduleSlug: string;
+        moduleOrder: number;
+        items: EnrichedQuiz[];
+      }
+    >();
+    trainings.forEach((eq) => {
+      if (!eq.quiz.module_id || !eq.quiz.module_title) return;
+      const key = eq.quiz.module_id;
+      if (!byModule.has(key)) {
+        byModule.set(key, {
+          moduleId: eq.quiz.module_id,
+          moduleTitle: eq.quiz.module_title,
+          moduleSlug: eq.quiz.module_slug ?? "",
+          moduleOrder: eq.quiz.module_order,
+          items: [],
+        });
+      }
+      byModule.get(key)!.items.push(eq);
+    });
+    const trainingModules = Array.from(byModule.values()).sort(
+      (a, b) => a.moduleOrder - b.moduleOrder
+    );
+
+    // Comptes pour la barre de progression formation
+    const totalQuizzes = ofFormation.length;
+    const passedQuizzes = ofFormation.filter(
+      (eq) => eq.progress.state === "passed"
+    ).length;
+
+    return {
+      formation: f,
+      examFinal,
+      trainingModules,
+      totalQuizzes,
+      passedQuizzes,
+    };
+  }).filter((g) => g.totalQuizzes > 0);
+
+  // Tri : formation active en premier
+  if (activeFormationSlug) {
+    grouped.sort((a, b) => {
+      if (a.formation.slug === activeFormationSlug) return -1;
+      if (b.formation.slug === activeFormationSlug) return 1;
+      return 0;
+    });
+  }
+
+  // Quizzes orphelins (sans formation rattachée)
+  const orphans = enrichedQuizzes.filter((eq) => !eq.quiz.formation_slug);
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-10 md:space-y-12">
+      {/* ----- Hero personnalisé ----- */}
       <header>
-        <span className="eyebrow text-gold-700">Évaluation</span>
-        <h1 className="mt-2 font-display text-3xl md:text-4xl font-semibold text-navy-950 tracking-tight">
-          Quiz & Examens
+        <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-signal-700">
+          Évaluation
+        </span>
+        <h1 className="mt-2 font-display text-[28px] md:text-4xl font-semibold text-navy-950 tracking-tight leading-tight">
+          {firstName ? `Bonjour ${firstName},` : "Bonjour,"}{" "}
+          <span className="text-slate-600 font-normal">
+            vos quiz et examens.
+          </span>
         </h1>
-        <p className="mt-2 text-slate-600 max-w-2xl">
-          Mesurez votre maîtrise avec des entraînements ciblés ou confrontez-vous à une
-          simulation fidèle au format officiel du jury.
+        <p className="mt-2 max-w-2xl text-[14px] text-slate-600 leading-relaxed">
+          Mesurez votre maîtrise avec des entraînements ciblés ou confrontez-vous
+          aux examens blancs au format de l&rsquo;épreuve réelle.
         </p>
       </header>
 
-      {examen.length > 0 && (
-        <section>
-          <div className="flex items-center gap-2 mb-5">
-            <Trophy className="h-4 w-4 text-gold-600" />
-            <h2 className="font-display text-xl font-semibold text-navy-900 tracking-tight">
-              Examens blancs
-            </h2>
+      {/* ----- Continue Card ----- */}
+      {continueQuiz && (
+        <QuizContinueCard
+          progress={continueQuiz.progress}
+          quiz={{
+            id: continueQuiz.quiz.id,
+            title: continueQuiz.quiz.title,
+            description: continueQuiz.quiz.description,
+            pass_threshold: continueQuiz.quiz.pass_threshold,
+            time_limit_s: continueQuiz.quiz.time_limit_s,
+            formation_slug: continueQuiz.quiz.formation_slug ?? null,
+            module_title: continueQuiz.quiz.module_title,
+          }}
+        />
+      )}
+
+      {/* ----- Sections par formation ----- */}
+      {grouped.map((g, gi) => (
+        <FormationQuizSection
+          key={g.formation.slug}
+          formationSlug={g.formation.slug}
+          examFinal={g.examFinal}
+          trainingModules={g.trainingModules}
+          totalQuizzes={g.totalQuizzes}
+          passedQuizzes={g.passedQuizzes}
+          isFirst={gi === 0}
+          sectionIdx={gi}
+        />
+      ))}
+
+      {/* ----- Orphelins (admin) ----- */}
+      {orphans.length > 0 && (
+        <section className="space-y-4">
+          <div className="flex items-start gap-3 rounded-2xl bg-amber-50 border border-amber-200 px-4 py-3">
+            <AlertCircle className="h-4 w-4 mt-0.5 text-amber-700 shrink-0" />
+            <div className="text-[13px] text-amber-900">
+              <strong>
+                {orphans.length} quiz non rattaché{orphans.length > 1 ? "s" : ""}{" "}
+                à une formation
+              </strong>
+              . Visible uniquement par le staff.
+            </div>
           </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            {examen.map((q: any) => (
-              <QuizCard key={q.id} quiz={q} state={states[q.id]} />
+          <div className="space-y-2">
+            {orphans.map(({ quiz, progress }) => (
+              <QuizCard
+                key={quiz.id}
+                quiz={quiz}
+                progress={progress}
+                variant="compact"
+              />
             ))}
           </div>
         </section>
       )}
 
-      <section>
-        <div className="flex items-center gap-2 mb-5">
-          <Dumbbell className="h-4 w-4 text-navy-700" />
-          <h2 className="font-display text-xl font-semibold text-navy-900 tracking-tight">
-            Entraînement par module
+      {/* ----- État vide global ----- */}
+      {grouped.length === 0 && orphans.length === 0 && (
+        <div className="rounded-3xl border border-navy-100 bg-white px-8 py-16 text-center shadow-soft">
+          <Sparkles className="mx-auto h-8 w-8 text-slate-300" />
+          <h2 className="mt-4 font-display text-xl font-semibold text-navy-900">
+            Aucun quiz disponible
           </h2>
+          <p className="mt-2 text-sm text-slate-600 max-w-md mx-auto">
+            Les quiz seront publiés progressivement par votre équipe pédagogique.
+          </p>
         </div>
-        <div className="grid md:grid-cols-2 gap-4">
-          {entrainement.map((q: any) => (
-            <QuizCard key={q.id} quiz={q} state={states[q.id]} />
-          ))}
-        </div>
-      </section>
+      )}
     </div>
   );
 }
 
-function QuizCard({ quiz, state }: { quiz: any; state: any }) {
-  const isMock = !!quiz.is_mock_exam;
-  const isExam = quiz.type === "examen" || isMock;
-  const blocked = state && state.allowed === false;
-  const attemptsLeft =
-    state?.attempts_max != null
-      ? Math.max(0, state.attempts_max - state.attempts_used)
-      : null;
+// ---------------------------------------------------------------------
+// Section formation — examens finaux + entraînements par module
+// ---------------------------------------------------------------------
+
+function FormationQuizSection({
+  formationSlug,
+  examFinal,
+  trainingModules,
+  totalQuizzes,
+  passedQuizzes,
+  isFirst,
+  sectionIdx,
+}: {
+  formationSlug: string;
+  examFinal: { quiz: any; progress: QuizProgress }[];
+  trainingModules: {
+    moduleId: string;
+    moduleTitle: string;
+    moduleSlug: string;
+    items: { quiz: any; progress: QuizProgress }[];
+  }[];
+  totalQuizzes: number;
+  passedQuizzes: number;
+  isFirst: boolean;
+  sectionIdx: number;
+}) {
+  const f = findFormation(formationSlug);
+  if (!f) return null;
+  const allFinalLocked =
+    examFinal.length > 0 &&
+    examFinal.every((q) => q.progress.state === "locked");
+
   return (
-    <Link href={`/quiz/${quiz.id}`} className="group">
-      <Card
-        variant={isExam ? "gold" : "default"}
-        className="h-full group-hover:-translate-y-0.5 group-hover:shadow-raised transition-all"
-      >
-        <CardBody className="flex flex-col h-full">
-          <div className="flex items-center justify-between gap-2">
-            {isMock ? (
-              <Badge tone="gold" size="sm">
-                <ShieldAlert className="h-3 w-3" /> Examen blanc
-              </Badge>
-            ) : quiz.type === "examen" ? (
-              <Badge tone="gold" size="sm">Mode examen</Badge>
-            ) : (
-              <Badge tone="navy" size="sm">Entraînement</Badge>
-            )}
-            {quiz.modules?.title && (
-              <span className="text-[11px] uppercase tracking-wider text-slate-500 truncate max-w-[50%]">
-                {quiz.modules.title}
+    <section
+      className="space-y-6"
+      style={{
+        animation: `fade-up 0.5s ease-out ${sectionIdx * 80}ms both`,
+      }}
+    >
+      {/* Header formation */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div className="min-w-0">
+          <FormationBadge slug={formationSlug} size="md" icon withTitle />
+          {f.tagline && (
+            <p className="mt-2 text-[14px] text-slate-600 leading-relaxed max-w-2xl">
+              {f.tagline}
+            </p>
+          )}
+        </div>
+        <div className="md:w-72 shrink-0">
+          <FormationProgress
+            formationSlug={formationSlug}
+            modulesTotal={totalQuizzes}
+            modulesDone={passedQuizzes}
+          />
+          <span className="mt-1.5 inline-block text-[11px] text-slate-500">
+            {passedQuizzes} quiz réussis sur {totalQuizzes}
+          </span>
+        </div>
+      </div>
+
+      {/* Préparer l'examen final */}
+      {examFinal.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-baseline justify-between gap-3">
+            <h3 className="font-display text-[15px] font-semibold text-navy-900 tracking-tight inline-flex items-center gap-1.5">
+              <GraduationCap className="h-4 w-4 text-amber-700" />
+              Préparer l&rsquo;examen final
+            </h3>
+            {allFinalLocked && (
+              <span className="inline-flex items-center gap-1.5 text-[12px] text-slate-500">
+                <Lock className="h-3 w-3" />
+                Disponibles après les modules de cours
               </span>
             )}
           </div>
-          <h3 className="mt-4 font-display text-lg font-semibold text-navy-900 leading-snug">
-            {quiz.title}
-          </h3>
-          {quiz.description && (
-            <p className="mt-1.5 text-sm text-slate-600 line-clamp-2">{quiz.description}</p>
-          )}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-5">
+            {examFinal.map(({ quiz, progress }) => (
+              <QuizCard
+                key={quiz.id}
+                quiz={quiz}
+                progress={progress}
+                variant="featured"
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
-          {(attemptsLeft !== null || blocked) && (
-            <div className="mt-3 flex items-center flex-wrap gap-2 text-xs">
-              {attemptsLeft !== null && !blocked && (
-                <span className="rounded-md bg-ivory border border-navy-100 px-2 py-0.5 text-navy-800">
-                  {attemptsLeft} tentative{attemptsLeft > 1 ? "s" : ""} restante{attemptsLeft > 1 ? "s" : ""}
-                </span>
-              )}
-              {blocked && state?.reason === "max_attempts" && (
-                <span className="inline-flex items-center gap-1 rounded-md bg-rose-50 border border-rose-200 px-2 py-0.5 text-rose-800">
-                  <Lock className="h-3 w-3" /> Plus de tentative
-                </span>
-              )}
-              {blocked && state?.reason === "retake_delay" && state?.next_available_at && (
-                <span className="inline-flex items-center gap-1 rounded-md bg-rose-50 border border-rose-200 px-2 py-0.5 text-rose-800">
-                  <Clock className="h-3 w-3" />
-                  Disponible {new Date(state.next_available_at).toLocaleDateString("fr-FR", {
-                    day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
-                  })}
-                </span>
-              )}
-            </div>
-          )}
-
-          <div className="mt-auto pt-5 flex items-center justify-between">
-            <div className="flex items-center gap-4 text-xs text-slate-500">
-              {quiz.time_limit_s && (
-                <span className="inline-flex items-center gap-1">
-                  <Clock className="w-3 h-3" /> {Math.round(quiz.time_limit_s / 60)} min
-                </span>
-              )}
-              <span className="inline-flex items-center gap-1">
-                <Target className="w-3 h-3" /> Seuil {quiz.pass_threshold}%
-              </span>
-            </div>
-            <span className="inline-flex items-center gap-1 text-sm font-medium text-navy-900 group-hover:text-gold-700 transition-colors">
-              {blocked ? "Détails" : "Démarrer"}
-              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+      {/* Entraînement par module */}
+      {trainingModules.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-baseline gap-2">
+            <h3 className="font-display text-[15px] font-semibold text-navy-900 tracking-tight inline-flex items-center gap-1.5">
+              <Dumbbell className="h-4 w-4 text-navy-700" />
+              Entraînement par module
+            </h3>
+            <span className="text-[12px] text-slate-500">
+              {trainingModules.length} module
+              {trainingModules.length > 1 ? "s" : ""}
             </span>
           </div>
-        </CardBody>
-      </Card>
-    </Link>
+          <div className="space-y-2.5">
+            {trainingModules.map((mod, i) => (
+              <ModuleQuizAccordion
+                key={mod.moduleId}
+                moduleTitle={mod.moduleTitle}
+                moduleSlug={mod.moduleSlug}
+                quizzes={mod.items.map((it) => ({
+                  quiz: it.quiz,
+                  progress: it.progress,
+                }))}
+                defaultOpen={isFirst && i === 0}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </section>
   );
+}
+
+// ---------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------
+
+function extractFirstName(fullName: string | null): string | null {
+  if (!fullName) return null;
+  const trimmed = fullName.trim();
+  if (!trimmed) return null;
+  const first = trimmed.split(/\s+/)[0];
+  if (!first) return null;
+  return first
+    .toLowerCase()
+    .split("-")
+    .map((p) => (p ? p[0].toUpperCase() + p.slice(1) : p))
+    .join("-");
 }
