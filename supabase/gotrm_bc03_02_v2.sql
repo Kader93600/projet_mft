@@ -1044,292 +1044,39 @@ $lesson4$,
   -- =================================================================
   -- 25 QCM
   -- =================================================================
-  INSERT INTO public.question_bank (formation_id, source_ref, type, prompt, choices, correct, explanation, difficulty, tags) VALUES
+  INSERT INTO public.question_bank (formation_id, type, statement, choices, max_score, difficulty, tags, source_ref, active, explanation) VALUES
+  (v_formation, 'qcm', 'La RSE comporte combien de piliers principaux ?', '[{"id":"a","label":"2 (économique et social)","is_correct":false},{"id":"b","label":"3 (environnemental, social, gouvernance)","is_correct":true},{"id":"c","label":"5","is_correct":false},{"id":"d","label":"7","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['rse','piliers'], 'mft-2026-gotrm:bc03-02:qcm:1', true, 'RSE = Responsabilité Sociétale des Entreprises avec 3 piliers : Environnemental (CO2, énergie), Social (conditions de travail, formation), Gouvernance (éthique, transparence). Aussi appelée ESG (Environment, Social, Governance).'),
+  (v_formation, 'qcm', 'Le bilan carbone Scope 1 inclut :', '[{"id":"a","label":"Les émissions de la chaîne d''approvisionnement","is_correct":false},{"id":"b","label":"Les émissions directes (carburant véhicules, gaz locaux)","is_correct":true},{"id":"c","label":"Les émissions liées à l''électricité achetée","is_correct":false},{"id":"d","label":"Les émissions clients","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['bilan-carbone','scope'], 'mft-2026-gotrm:bc03-02:qcm:2', true, 'Scope 1 = émissions directes (carburant véhicules, gaz chauffage locaux). Scope 2 = émissions indirectes liées à l''énergie achetée (électricité). Scope 3 = autres émissions indirectes (déplacements, achats, sous-traitance).'),
+  (v_formation, 'qcm', 'Le facteur d''émission CO2 du gazole est de :', '[{"id":"a","label":"0,52 kg CO2eq/L","is_correct":false},{"id":"b","label":"2,52 kg CO2eq/L","is_correct":true},{"id":"c","label":"5,52 kg CO2eq/L","is_correct":false},{"id":"d","label":"10 kg CO2eq/L","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['co2','gazole'], 'mft-2026-gotrm:bc03-02:qcm:3', true, 'Facteur d''émission gazole : 2,52 kg CO2eq/L (combustion). Pour un porteur 19 t à 28 L/100 km × 110 000 km/an : 30 800 L × 2,52 = 77,6 tCO2eq/véhicule/an.'),
+  (v_formation, 'qcm', 'La certification "Objectif CO2" est portée par :', '[{"id":"a","label":"L''ONU","is_correct":false},{"id":"b","label":"FNTR + ADEME","is_correct":true},{"id":"c","label":"L''Union européenne","is_correct":false},{"id":"d","label":"Chacun seul","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['objectif-co2','certification'], 'mft-2026-gotrm:bc03-02:qcm:4', true, 'Objectif CO2 = charte volontaire portée par la FNTR (Fédération Nationale des Transports Routiers) et l''ADEME. Plus de 1 600 entreprises signataires en 2025. Engagement sur 3 ans avec plan d''action 4 axes.'),
+  (v_formation, 'qcm', 'EcoVadis est :', '[{"id":"a","label":"Un transporteur","is_correct":false},{"id":"b","label":"Une plateforme d''évaluation RSE des fournisseurs (note sur 100)","is_correct":true},{"id":"c","label":"Une banque verte","is_correct":false},{"id":"d","label":"Un type de véhicule électrique","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['ecovadis'], 'mft-2026-gotrm:bc03-02:qcm:5', true, 'EcoVadis = plateforme d''évaluation RSE des fournisseurs (cabinet international). Note sur 100, niveaux : Bronze, Silver, Gold, Platinum. Demandé par les chargeurs grands comptes pour appels d''offres. Renouvellement annuel.'),
+  (v_formation, 'qcm', 'L''autonomie typique d''un véhicule électrique poids lourd en 2026 est de :', '[{"id":"a","label":"50-100 km","is_correct":false},{"id":"b","label":"200-450 km","is_correct":true},{"id":"c","label":"800-1 200 km","is_correct":false},{"id":"d","label":"2 000 km","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['electrique','autonomie'], 'mft-2026-gotrm:bc03-02:qcm:6', true, 'Autonomie électrique 2026 : 200-450 km selon batterie. Distribution urbaine et péri-urbaine = idéal. Lignes longue distance = pas encore adapté. Hydrogène ou GNV pour ces usages.'),
+  (v_formation, 'qcm', 'Le bioGNV permet une réduction des émissions CO2 par rapport au diesel de :', '[{"id":"a","label":"5 %","is_correct":false},{"id":"b","label":"15-20 %","is_correct":false},{"id":"c","label":"60 %","is_correct":false},{"id":"d","label":"~ 85 %","is_correct":true}]'::jsonb, 1, 'difficile', ARRAY['biognv','emissions'], 'mft-2026-gotrm:bc03-02:qcm:7', true, 'BioGNV (gaz naturel d''origine renouvelable) : ~ 85 % de réduction CO2 vs diesel. GNV "fossile" : -15 à -20 %. Le bioGNV est une excellente solution RSE avec autonomie et infrastructure adaptées.'),
+  (v_formation, 'qcm', 'Le suramortissement véhicules propres permet une déduction supplémentaire de :', '[{"id":"a","label":"10 %","is_correct":false},{"id":"b","label":"40 %","is_correct":true},{"id":"c","label":"80 %","is_correct":false},{"id":"d","label":"100 %","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['suramortissement'], 'mft-2026-gotrm:bc03-02:qcm:8', true, 'Suramortissement véhicules propres (gaz, électrique, hydrogène) : 40 % de la valeur d''origine en déduction supplémentaire, étalée sur la durée d''amortissement. Valable jusqu''en 2030 (à confirmer chaque loi de finances).'),
+  (v_formation, 'qcm', 'L''hydrogène pour véhicules industriels est aujourd''hui :', '[{"id":"a","label":"Une technologie mature","is_correct":false},{"id":"b","label":"Une technologie naissante (réseau limité, prix élevé)","is_correct":true},{"id":"c","label":"Interdite en France","is_correct":false},{"id":"d","label":"Disponible uniquement pour les voitures particulières","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['hydrogene','maturite'], 'mft-2026-gotrm:bc03-02:qcm:9', true, 'Hydrogène = technologie naissante : peu de modèles disponibles, prix +200-300 % vs diesel, réseau de stations très limité (10-20 en France 2026, 100+ prévus à 2030). Avenir prometteur mais à différer pour la plupart des PME aujourd''hui.'),
+  (v_formation, 'qcm', 'L''ADEME peut accorder une aide pour acquisition de véhicule propre de :', '[{"id":"a","label":"Aucune aide","is_correct":false},{"id":"b","label":"5-25 k€ par véhicule selon type","is_correct":true},{"id":"c","label":"100 % du prix","is_correct":false},{"id":"d","label":"Uniquement pour les vélos","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['ademe','aide'], 'mft-2026-gotrm:bc03-02:qcm:10', true, 'Programme ADEME EcoEnergie Transports : aides 5-25 k€ par véhicule selon type (électrique, GNV, hydrogène). Cumulables avec suramortissement et aides régionales. Conditions sur ancienneté et caractéristiques.'),
+  (v_formation, 'qcm', 'Une ZFE (Zone à Faibles Émissions) est :', '[{"id":"a","label":"Une zone industrielle","is_correct":false},{"id":"b","label":"Une zone géographique avec restrictions de circulation selon vignettes Crit''Air","is_correct":true},{"id":"c","label":"Une zone fiscale franche","is_correct":false},{"id":"d","label":"Une zone agricole","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['zfe','definition'], 'mft-2026-gotrm:bc03-02:qcm:11', true, 'ZFE = Zone à Faibles Émissions, zone géographique délimitée (souvent les centres urbains) avec restrictions de circulation selon les vignettes Crit''Air. Loi LOM 2019 + Climat 2021. 11 métropoles obligatoires à 2025, 33 à 2030.'),
+  (v_formation, 'qcm', 'La vignette Crit''Air E correspond à :', '[{"id":"a","label":"Diesel récent","is_correct":false},{"id":"b","label":"Véhicule électrique ou hydrogène","is_correct":true},{"id":"c","label":"Véhicule essence ancien","is_correct":false},{"id":"d","label":"Véhicule sans catalyseur","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['critair','e'], 'mft-2026-gotrm:bc03-02:qcm:12', true, 'Crit''Air E (couleur verte) : véhicules zéro émission directe (électrique, hydrogène). Crit''Air 1 (violette) : hybride rechargeable, gaz, hybride essence récent. Diesels = Crit''Air 2 à 5 selon ancienneté.'),
+  (v_formation, 'qcm', 'À l''horizon 2030, dans les grandes métropoles ZFE, les véhicules autorisés seront typiquement :', '[{"id":"a","label":"Tous Crit''Air","is_correct":false},{"id":"b","label":"Crit''Air 5 et plus récents","is_correct":false},{"id":"c","label":"Crit''Air E uniquement (zéro émission)","is_correct":true},{"id":"d","label":"Aucun véhicule","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['zfe','2030'], 'mft-2026-gotrm:bc03-02:qcm:13', true, 'À 2030, la plupart des grandes métropoles (Paris, Lyon, Marseille, etc.) prévoient l''interdiction des Crit''Air 1, 2, 3, 4, 5. Seuls les Crit''Air E (zéro émission) seront autorisés. Calendriers évolutifs à vérifier régulièrement.'),
+  (v_formation, 'qcm', 'Le "dernier kilomètre" en distribution urbaine représente typiquement :', '[{"id":"a","label":"5 % du coût d''une livraison","is_correct":false},{"id":"b","label":"50 % du coût d''une livraison","is_correct":true},{"id":"c","label":"Aucun impact","is_correct":false},{"id":"d","label":"100 % du coût","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['dernier-km','cout'], 'mft-2026-gotrm:bc03-02:qcm:14', true, 'Le dernier kilomètre représente ~ 50 % du coût total d''une livraison (parking, accès difficile, créneaux). Solutions : vélos cargo, triporteurs électriques, hubs urbains de cross-docking, livraisons nocturnes.'),
+  (v_formation, 'qcm', 'La directive CSRD (Corporate Sustainability Reporting Directive) de l''UE :', '[{"id":"a","label":"Est facultative","is_correct":false},{"id":"b","label":"Impose un reporting détaillé sur 12 thèmes ESG, audit obligatoire","is_correct":true},{"id":"c","label":"Concerne uniquement les TPE","is_correct":false},{"id":"d","label":"S''applique uniquement à 2050","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['csrd'], 'mft-2026-gotrm:bc03-02:qcm:15', true, 'CSRD = directive UE 2024 : reporting ESG détaillé sur 12 thèmes, audit obligatoire, sanctions administratives. Application progressive : 2024 grandes entreprises cotées, 2025 et plus pour PME selon critères. Anticiper dès maintenant.'),
+  (v_formation, 'qcm', 'Le Bilan Carbone est obligatoire (BEGES) pour les entreprises de :', '[{"id":"a","label":"> 50 salariés","is_correct":false},{"id":"b","label":"> 500 salariés","is_correct":true},{"id":"c","label":"Toutes","is_correct":false},{"id":"d","label":"Aucune","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['beges'], 'mft-2026-gotrm:bc03-02:qcm:16', true, 'BEGES (Bilan d''Émissions de Gaz à Effet de Serre) : obligatoire pour entreprises > 500 salariés (DROM > 250). Tous les 4 ans. Scope 1 et 2 minimum. Loi Climat 2021 prévoit une extension progressive à > 50 salariés à partir de 2025.'),
+  (v_formation, 'qcm', 'L''interdiction des véhicules thermiques neufs en UE est prévue pour :', '[{"id":"a","label":"2028","is_correct":false},{"id":"b","label":"2035","is_correct":true},{"id":"c","label":"2050","is_correct":false},{"id":"d","label":"Pas d''interdiction prévue","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['2035','thermique'], 'mft-2026-gotrm:bc03-02:qcm:17', true, '2035 : interdiction prévue de la vente de véhicules thermiques neufs en UE (cars, voitures particulières, utilitaires légers). Pour les poids lourds, calendrier différent (en cours de discussion). Préparer la transition dès maintenant.'),
+  (v_formation, 'qcm', 'L''ISO 14001 est :', '[{"id":"a","label":"Une norme financière","is_correct":false},{"id":"b","label":"Une certification de système de management environnemental","is_correct":true},{"id":"c","label":"Une norme RH","is_correct":false},{"id":"d","label":"Une certification cybersécurité","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['iso-14001'], 'mft-2026-gotrm:bc03-02:qcm:18', true, 'ISO 14001 = certification de système de management environnemental. Engagement direction, identification aspects environnementaux, conformité réglementaire, programmes amélioration continue, audit annuel. De plus en plus demandée par les chargeurs.'),
+  (v_formation, 'qcm', 'L''indice de référence pour la diversité de genre dans une entreprise est :', '[{"id":"a","label":"Index égalité H/F (DGCCRF)","is_correct":true},{"id":"b","label":"Indice CAC 40","is_correct":false},{"id":"c","label":"PIB","is_correct":false},{"id":"d","label":"Aucun","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['egalite','index'], 'mft-2026-gotrm:bc03-02:qcm:19', true, 'Index égalité H/F (DGCCRF) : note sur 100, mesure les écarts de salaire, augmentation, promotion, retour congé maternité, présence dans les top 10 rémunérations. Cible > 75/100. Entreprises < 75 doivent prendre des actions correctives.'),
+  (v_formation, 'qcm', 'Pour les véhicules en distribution urbaine en 2030, l''énergie la plus adaptée sera typiquement :', '[{"id":"a","label":"Diesel","is_correct":false},{"id":"b","label":"Électrique","is_correct":true},{"id":"c","label":"Hydrogène uniquement","is_correct":false},{"id":"d","label":"Toutes équivalentes","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['distribution','electrique'], 'mft-2026-gotrm:bc03-02:qcm:20', true, 'Distribution urbaine 2030 : électrique idéal (autonomie 200-450 km suffisante, ZFE imposent zéro émission, infrastructure de recharge en ville développée). Hydrogène plus adapté longue distance.'),
+  (v_formation, 'qcm', 'L''argument "premium vert" sur le tarif de transport peut atteindre :', '[{"id":"a","label":"Pas de premium possible","is_correct":false},{"id":"b","label":"+5 à +15 % sur prix standard","is_correct":true},{"id":"c","label":"+50 %","is_correct":false},{"id":"d","label":"+100 %","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['premium','vert'], 'mft-2026-gotrm:bc03-02:qcm:21', true, 'Premium "vert" : +5 à +15 % sur prix standard pour transport en véhicules propres (E, GNV, etc.). Justifications : économies fiscales pour le client, image, traçabilité CO2, anticipation réglementaire. À développer en démarchant les chargeurs RSE.'),
+  (v_formation, 'qcm', 'La trajectoire de neutralité carbone européenne vise :', '[{"id":"a","label":"2025","is_correct":false},{"id":"b","label":"2050","is_correct":true},{"id":"c","label":"2100","is_correct":false},{"id":"d","label":"Aucun objectif","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['neutralite','2050'], 'mft-2026-gotrm:bc03-02:qcm:22', true, '2050 : objectif de neutralité carbone de l''Union Européenne (Fit for 55, Pacte Vert). Implique réduction massive des émissions et compensation. Préparer la trajectoire dès maintenant via les bilans carbone et plans d''action.'),
+  (v_formation, 'qcm', 'Le rapport RSE annuel d''une entreprise comporte typiquement :', '[{"id":"a","label":"1 page","is_correct":false},{"id":"b","label":"10-30 pages","is_correct":true},{"id":"c","label":"100 pages obligatoirement","is_correct":false},{"id":"d","label":"Aucune structure","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['rapport-rse','format'], 'mft-2026-gotrm:bc03-02:qcm:23', true, 'Rapport RSE intégré type : 10-30 pages avec mot direction, présentation entreprise, stratégie ESG, performance environnementale, performance sociale, gouvernance, parties prenantes, tableau de bord. Lisible et engageant.'),
+  (v_formation, 'qcm', 'Pour une PME 25 véhicules, le coût annuel d''une démarche RSE structurée est typiquement :', '[{"id":"a","label":"500 €","is_correct":false},{"id":"b","label":"50-85 k€ an 1, 30-50 k€ années suivantes","is_correct":true},{"id":"c","label":"500 k€/an","is_correct":false},{"id":"d","label":"Aucun coût","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['rse','cout'], 'mft-2026-gotrm:bc03-02:qcm:24', true, 'PME 25 véhicules : démarche RSE coût an 1 ~ 50-85 k€ (diagnostic, certification, plan actions, communication). Années suivantes : 30-50 k€ récurrents. ROI 2-4 ans typiquement (économies, premium commercial, réduction turnover, anticipation réglementaire).'),
+  (v_formation, 'qcm', 'Le suivi du KPI "intensité CO2 par tonne.km" permet :', '[{"id":"a","label":"De mesurer la rentabilité","is_correct":false},{"id":"b","label":"De comparer la performance environnementale par unité de service","is_correct":true},{"id":"c","label":"De calculer le prix de vente","is_correct":false},{"id":"d","label":"D''économiser le carburant","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['kpi','intensite-co2'], 'mft-2026-gotrm:bc03-02:qcm:25', true, 'Intensité CO2 par tonne.km = gCO2 / (tonnes transportées × km) = vraie mesure de la performance environnementale par unité de service. Permet la comparaison entre entreprises, types de véhicules, modes de transport. Standard du secteur.');
 
-  (v_formation, 'mft-2026-gotrm:bc03-02:qcm:1', 'qcm',
-   'La RSE comporte combien de piliers principaux ?',
-   jsonb '[
-     {"key":"a","label":"2 (économique et social)"},
-     {"key":"b","label":"3 (environnemental, social, gouvernance)"},
-     {"key":"c","label":"5"},
-     {"key":"d","label":"7"}
-   ]', '["b"]'::jsonb,
-   'RSE = Responsabilité Sociétale des Entreprises avec 3 piliers : Environnemental (CO2, énergie), Social (conditions de travail, formation), Gouvernance (éthique, transparence). Aussi appelée ESG (Environment, Social, Governance).',
-   'facile', '{rse,piliers}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qcm:2', 'qcm',
-   'Le bilan carbone Scope 1 inclut :',
-   jsonb '[
-     {"key":"a","label":"Les émissions de la chaîne d''approvisionnement"},
-     {"key":"b","label":"Les émissions directes (carburant véhicules, gaz locaux)"},
-     {"key":"c","label":"Les émissions liées à l''électricité achetée"},
-     {"key":"d","label":"Les émissions clients"}
-   ]', '["b"]'::jsonb,
-   'Scope 1 = émissions directes (carburant véhicules, gaz chauffage locaux). Scope 2 = émissions indirectes liées à l''énergie achetée (électricité). Scope 3 = autres émissions indirectes (déplacements, achats, sous-traitance).',
-   'moyenne', '{bilan-carbone,scope}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qcm:3', 'qcm',
-   'Le facteur d''émission CO2 du gazole est de :',
-   jsonb '[
-     {"key":"a","label":"0,52 kg CO2eq/L"},
-     {"key":"b","label":"2,52 kg CO2eq/L"},
-     {"key":"c","label":"5,52 kg CO2eq/L"},
-     {"key":"d","label":"10 kg CO2eq/L"}
-   ]', '["b"]'::jsonb,
-   'Facteur d''émission gazole : 2,52 kg CO2eq/L (combustion). Pour un porteur 19 t à 28 L/100 km × 110 000 km/an : 30 800 L × 2,52 = 77,6 tCO2eq/véhicule/an.',
-   'difficile', '{co2,gazole}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qcm:4', 'qcm',
-   'La certification "Objectif CO2" est portée par :',
-   jsonb '[
-     {"key":"a","label":"L''ONU"},
-     {"key":"b","label":"FNTR + ADEME"},
-     {"key":"c","label":"L''Union européenne"},
-     {"key":"d","label":"Chacun seul"}
-   ]', '["b"]'::jsonb,
-   'Objectif CO2 = charte volontaire portée par la FNTR (Fédération Nationale des Transports Routiers) et l''ADEME. Plus de 1 600 entreprises signataires en 2025. Engagement sur 3 ans avec plan d''action 4 axes.',
-   'moyenne', '{objectif-co2,certification}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qcm:5', 'qcm',
-   'EcoVadis est :',
-   jsonb '[
-     {"key":"a","label":"Un transporteur"},
-     {"key":"b","label":"Une plateforme d''évaluation RSE des fournisseurs (note sur 100)"},
-     {"key":"c","label":"Une banque verte"},
-     {"key":"d","label":"Un type de véhicule électrique"}
-   ]', '["b"]'::jsonb,
-   'EcoVadis = plateforme d''évaluation RSE des fournisseurs (cabinet international). Note sur 100, niveaux : Bronze, Silver, Gold, Platinum. Demandé par les chargeurs grands comptes pour appels d''offres. Renouvellement annuel.',
-   'moyenne', '{ecovadis}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qcm:6', 'qcm',
-   'L''autonomie typique d''un véhicule électrique poids lourd en 2026 est de :',
-   jsonb '[
-     {"key":"a","label":"50-100 km"},
-     {"key":"b","label":"200-450 km"},
-     {"key":"c","label":"800-1 200 km"},
-     {"key":"d","label":"2 000 km"}
-   ]', '["b"]'::jsonb,
-   'Autonomie électrique 2026 : 200-450 km selon batterie. Distribution urbaine et péri-urbaine = idéal. Lignes longue distance = pas encore adapté. Hydrogène ou GNV pour ces usages.',
-   'facile', '{electrique,autonomie}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qcm:7', 'qcm',
-   'Le bioGNV permet une réduction des émissions CO2 par rapport au diesel de :',
-   jsonb '[
-     {"key":"a","label":"5 %"},
-     {"key":"b","label":"15-20 %"},
-     {"key":"c","label":"60 %"},
-     {"key":"d","label":"~ 85 %"}
-   ]', '["d"]'::jsonb,
-   'BioGNV (gaz naturel d''origine renouvelable) : ~ 85 % de réduction CO2 vs diesel. GNV "fossile" : -15 à -20 %. Le bioGNV est une excellente solution RSE avec autonomie et infrastructure adaptées.',
-   'difficile', '{biognv,emissions}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qcm:8', 'qcm',
-   'Le suramortissement véhicules propres permet une déduction supplémentaire de :',
-   jsonb '[
-     {"key":"a","label":"10 %"},
-     {"key":"b","label":"40 %"},
-     {"key":"c","label":"80 %"},
-     {"key":"d","label":"100 %"}
-   ]', '["b"]'::jsonb,
-   'Suramortissement véhicules propres (gaz, électrique, hydrogène) : 40 % de la valeur d''origine en déduction supplémentaire, étalée sur la durée d''amortissement. Valable jusqu''en 2030 (à confirmer chaque loi de finances).',
-   'moyenne', '{suramortissement}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qcm:9', 'qcm',
-   'L''hydrogène pour véhicules industriels est aujourd''hui :',
-   jsonb '[
-     {"key":"a","label":"Une technologie mature"},
-     {"key":"b","label":"Une technologie naissante (réseau limité, prix élevé)"},
-     {"key":"c","label":"Interdite en France"},
-     {"key":"d","label":"Disponible uniquement pour les voitures particulières"}
-   ]', '["b"]'::jsonb,
-   'Hydrogène = technologie naissante : peu de modèles disponibles, prix +200-300 % vs diesel, réseau de stations très limité (10-20 en France 2026, 100+ prévus à 2030). Avenir prometteur mais à différer pour la plupart des PME aujourd''hui.',
-   'moyenne', '{hydrogene,maturite}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qcm:10', 'qcm',
-   'L''ADEME peut accorder une aide pour acquisition de véhicule propre de :',
-   jsonb '[
-     {"key":"a","label":"Aucune aide"},
-     {"key":"b","label":"5-25 k€ par véhicule selon type"},
-     {"key":"c","label":"100 % du prix"},
-     {"key":"d","label":"Uniquement pour les vélos"}
-   ]', '["b"]'::jsonb,
-   'Programme ADEME EcoEnergie Transports : aides 5-25 k€ par véhicule selon type (électrique, GNV, hydrogène). Cumulables avec suramortissement et aides régionales. Conditions sur ancienneté et caractéristiques.',
-   'moyenne', '{ademe,aide}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qcm:11', 'qcm',
-   'Une ZFE (Zone à Faibles Émissions) est :',
-   jsonb '[
-     {"key":"a","label":"Une zone industrielle"},
-     {"key":"b","label":"Une zone géographique avec restrictions de circulation selon vignettes Crit''Air"},
-     {"key":"c","label":"Une zone fiscale franche"},
-     {"key":"d","label":"Une zone agricole"}
-   ]', '["b"]'::jsonb,
-   'ZFE = Zone à Faibles Émissions, zone géographique délimitée (souvent les centres urbains) avec restrictions de circulation selon les vignettes Crit''Air. Loi LOM 2019 + Climat 2021. 11 métropoles obligatoires à 2025, 33 à 2030.',
-   'facile', '{zfe,definition}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qcm:12', 'qcm',
-   'La vignette Crit''Air E correspond à :',
-   jsonb '[
-     {"key":"a","label":"Diesel récent"},
-     {"key":"b","label":"Véhicule électrique ou hydrogène"},
-     {"key":"c","label":"Véhicule essence ancien"},
-     {"key":"d","label":"Véhicule sans catalyseur"}
-   ]', '["b"]'::jsonb,
-   'Crit''Air E (couleur verte) : véhicules zéro émission directe (électrique, hydrogène). Crit''Air 1 (violette) : hybride rechargeable, gaz, hybride essence récent. Diesels = Crit''Air 2 à 5 selon ancienneté.',
-   'moyenne', '{critair,e}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qcm:13', 'qcm',
-   'À l''horizon 2030, dans les grandes métropoles ZFE, les véhicules autorisés seront typiquement :',
-   jsonb '[
-     {"key":"a","label":"Tous Crit''Air"},
-     {"key":"b","label":"Crit''Air 5 et plus récents"},
-     {"key":"c","label":"Crit''Air E uniquement (zéro émission)"},
-     {"key":"d","label":"Aucun véhicule"}
-   ]', '["c"]'::jsonb,
-   'À 2030, la plupart des grandes métropoles (Paris, Lyon, Marseille, etc.) prévoient l''interdiction des Crit''Air 1, 2, 3, 4, 5. Seuls les Crit''Air E (zéro émission) seront autorisés. Calendriers évolutifs à vérifier régulièrement.',
-   'moyenne', '{zfe,2030}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qcm:14', 'qcm',
-   'Le "dernier kilomètre" en distribution urbaine représente typiquement :',
-   jsonb '[
-     {"key":"a","label":"5 % du coût d''une livraison"},
-     {"key":"b","label":"50 % du coût d''une livraison"},
-     {"key":"c","label":"Aucun impact"},
-     {"key":"d","label":"100 % du coût"}
-   ]', '["b"]'::jsonb,
-   'Le dernier kilomètre représente ~ 50 % du coût total d''une livraison (parking, accès difficile, créneaux). Solutions : vélos cargo, triporteurs électriques, hubs urbains de cross-docking, livraisons nocturnes.',
-   'difficile', '{dernier-km,cout}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qcm:15', 'qcm',
-   'La directive CSRD (Corporate Sustainability Reporting Directive) de l''UE :',
-   jsonb '[
-     {"key":"a","label":"Est facultative"},
-     {"key":"b","label":"Impose un reporting détaillé sur 12 thèmes ESG, audit obligatoire"},
-     {"key":"c","label":"Concerne uniquement les TPE"},
-     {"key":"d","label":"S''applique uniquement à 2050"}
-   ]', '["b"]'::jsonb,
-   'CSRD = directive UE 2024 : reporting ESG détaillé sur 12 thèmes, audit obligatoire, sanctions administratives. Application progressive : 2024 grandes entreprises cotées, 2025 et plus pour PME selon critères. Anticiper dès maintenant.',
-   'difficile', '{csrd}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qcm:16', 'qcm',
-   'Le Bilan Carbone est obligatoire (BEGES) pour les entreprises de :',
-   jsonb '[
-     {"key":"a","label":"> 50 salariés"},
-     {"key":"b","label":"> 500 salariés"},
-     {"key":"c","label":"Toutes"},
-     {"key":"d","label":"Aucune"}
-   ]', '["b"]'::jsonb,
-   'BEGES (Bilan d''Émissions de Gaz à Effet de Serre) : obligatoire pour entreprises > 500 salariés (DROM > 250). Tous les 4 ans. Scope 1 et 2 minimum. Loi Climat 2021 prévoit une extension progressive à > 50 salariés à partir de 2025.',
-   'difficile', '{beges}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qcm:17', 'qcm',
-   'L''interdiction des véhicules thermiques neufs en UE est prévue pour :',
-   jsonb '[
-     {"key":"a","label":"2028"},
-     {"key":"b","label":"2035"},
-     {"key":"c","label":"2050"},
-     {"key":"d","label":"Pas d''interdiction prévue"}
-   ]', '["b"]'::jsonb,
-   '2035 : interdiction prévue de la vente de véhicules thermiques neufs en UE (cars, voitures particulières, utilitaires légers). Pour les poids lourds, calendrier différent (en cours de discussion). Préparer la transition dès maintenant.',
-   'moyenne', '{2035,thermique}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qcm:18', 'qcm',
-   'L''ISO 14001 est :',
-   jsonb '[
-     {"key":"a","label":"Une norme financière"},
-     {"key":"b","label":"Une certification de système de management environnemental"},
-     {"key":"c","label":"Une norme RH"},
-     {"key":"d","label":"Une certification cybersécurité"}
-   ]', '["b"]'::jsonb,
-   'ISO 14001 = certification de système de management environnemental. Engagement direction, identification aspects environnementaux, conformité réglementaire, programmes amélioration continue, audit annuel. De plus en plus demandée par les chargeurs.',
-   'moyenne', '{iso-14001}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qcm:19', 'qcm',
-   'L''indice de référence pour la diversité de genre dans une entreprise est :',
-   jsonb '[
-     {"key":"a","label":"Index égalité H/F (DGCCRF)"},
-     {"key":"b","label":"Indice CAC 40"},
-     {"key":"c","label":"PIB"},
-     {"key":"d","label":"Aucun"}
-   ]', '["a"]'::jsonb,
-   'Index égalité H/F (DGCCRF) : note sur 100, mesure les écarts de salaire, augmentation, promotion, retour congé maternité, présence dans les top 10 rémunérations. Cible > 75/100. Entreprises < 75 doivent prendre des actions correctives.',
-   'difficile', '{egalite,index}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qcm:20', 'qcm',
-   'Pour les véhicules en distribution urbaine en 2030, l''énergie la plus adaptée sera typiquement :',
-   jsonb '[
-     {"key":"a","label":"Diesel"},
-     {"key":"b","label":"Électrique"},
-     {"key":"c","label":"Hydrogène uniquement"},
-     {"key":"d","label":"Toutes équivalentes"}
-   ]', '["b"]'::jsonb,
-   'Distribution urbaine 2030 : électrique idéal (autonomie 200-450 km suffisante, ZFE imposent zéro émission, infrastructure de recharge en ville développée). Hydrogène plus adapté longue distance.',
-   'facile', '{distribution,electrique}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qcm:21', 'qcm',
-   'L''argument "premium vert" sur le tarif de transport peut atteindre :',
-   jsonb '[
-     {"key":"a","label":"Pas de premium possible"},
-     {"key":"b","label":"+5 à +15 % sur prix standard"},
-     {"key":"c","label":"+50 %"},
-     {"key":"d","label":"+100 %"}
-   ]', '["b"]'::jsonb,
-   'Premium "vert" : +5 à +15 % sur prix standard pour transport en véhicules propres (E, GNV, etc.). Justifications : économies fiscales pour le client, image, traçabilité CO2, anticipation réglementaire. À développer en démarchant les chargeurs RSE.',
-   'moyenne', '{premium,vert}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qcm:22', 'qcm',
-   'La trajectoire de neutralité carbone européenne vise :',
-   jsonb '[
-     {"key":"a","label":"2025"},
-     {"key":"b","label":"2050"},
-     {"key":"c","label":"2100"},
-     {"key":"d","label":"Aucun objectif"}
-   ]', '["b"]'::jsonb,
-   '2050 : objectif de neutralité carbone de l''Union Européenne (Fit for 55, Pacte Vert). Implique réduction massive des émissions et compensation. Préparer la trajectoire dès maintenant via les bilans carbone et plans d''action.',
-   'moyenne', '{neutralite,2050}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qcm:23', 'qcm',
-   'Le rapport RSE annuel d''une entreprise comporte typiquement :',
-   jsonb '[
-     {"key":"a","label":"1 page"},
-     {"key":"b","label":"10-30 pages"},
-     {"key":"c","label":"100 pages obligatoirement"},
-     {"key":"d","label":"Aucune structure"}
-   ]', '["b"]'::jsonb,
-   'Rapport RSE intégré type : 10-30 pages avec mot direction, présentation entreprise, stratégie ESG, performance environnementale, performance sociale, gouvernance, parties prenantes, tableau de bord. Lisible et engageant.',
-   'moyenne', '{rapport-rse,format}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qcm:24', 'qcm',
-   'Pour une PME 25 véhicules, le coût annuel d''une démarche RSE structurée est typiquement :',
-   jsonb '[
-     {"key":"a","label":"500 €"},
-     {"key":"b","label":"50-85 k€ an 1, 30-50 k€ années suivantes"},
-     {"key":"c","label":"500 k€/an"},
-     {"key":"d","label":"Aucun coût"}
-   ]', '["b"]'::jsonb,
-   'PME 25 véhicules : démarche RSE coût an 1 ~ 50-85 k€ (diagnostic, certification, plan actions, communication). Années suivantes : 30-50 k€ récurrents. ROI 2-4 ans typiquement (économies, premium commercial, réduction turnover, anticipation réglementaire).',
-   'moyenne', '{rse,cout}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qcm:25', 'qcm',
-   'Le suivi du KPI "intensité CO2 par tonne.km" permet :',
-   jsonb '[
-     {"key":"a","label":"De mesurer la rentabilité"},
-     {"key":"b","label":"De comparer la performance environnementale par unité de service"},
-     {"key":"c","label":"De calculer le prix de vente"},
-     {"key":"d","label":"D''économiser le carburant"}
-   ]', '["b"]'::jsonb,
-   'Intensité CO2 par tonne.km = gCO2 / (tonnes transportées × km) = vraie mesure de la performance environnementale par unité de service. Permet la comparaison entre entreprises, types de véhicules, modes de transport. Standard du secteur.',
-   'difficile', '{kpi,intensite-co2}');
 
   -- =================================================================
   -- 4 QR
   -- =================================================================
-  INSERT INTO public.question_bank (formation_id, source_ref, type, prompt, choices, correct, explanation, difficulty, tags) VALUES
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qr:1', 'qr',
-   'Construisez la démarche RSE complète sur 18 mois pour une PME de 30 véhicules. Détaillez les 5 phases, les actions par pilier (environnemental, social, gouvernance), les indicateurs de mesure, le budget et le ROI attendu.',
-   '[]'::jsonb, '[]'::jsonb,
-   'DÉMARCHE RSE 18 MOIS — PME 30 VÉHICULES
+  INSERT INTO public.question_bank (formation_id, type, statement, choices, max_score, difficulty, tags, source_ref, active, explanation) VALUES
+  (v_formation, 'qr', 'Construisez la démarche RSE complète sur 18 mois pour une PME de 30 véhicules. Détaillez les 5 phases, les actions par pilier (environnemental, social, gouvernance), les indicateurs de mesure, le budget et le ROI attendu.', NULL, 1, 'difficile', ARRAY['rse','demarche','18-mois'], 'mft-2026-gotrm:bc03-02:qr:1', true, 'DÉMARCHE RSE 18 MOIS — PME 30 VÉHICULES
 
 OBJECTIF : Démarche structurée alignée avec les obligations réglementaires et les attentes des chargeurs grands comptes. Obtention d''une certification (Objectif CO2 + EcoVadis Bronze minimum) à 18 mois.
 
@@ -1539,13 +1286,8 @@ BÉNÉFICES INTANGIBLES
 - Engagement des équipes (sentiment d''utilité)
 - Différenciation commerciale durable
 
-Le ROI brut est positif sur 30 mois, mais les bénéfices intangibles et la pérennité de l''entreprise face aux évolutions réglementaires justifient pleinement la démarche dès aujourd''hui. Les chargeurs grands comptes vont de plus en plus exiger ces démarches, et les retardataires perdront mécaniquement leur place.',
-   'difficile', '{rse,demarche,18-mois}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qr:2', 'qr',
-   'Vous devez choisir entre 4 options de transition énergétique pour 5 véhicules à renouveler : tout diesel, mix diesel/électrique, mix électrique/GNV/hydrogène, ou tout zéro émission. Comparez en termes d''investissement, autonomie, ROI 5 ans, et impacts RSE.',
-   '[]'::jsonb, '[]'::jsonb,
-   'COMPARAISON DES 4 OPTIONS — 5 VÉHICULES À RENOUVELER
+Le ROI brut est positif sur 30 mois, mais les bénéfices intangibles et la pérennité de l''entreprise face aux évolutions réglementaires justifient pleinement la démarche dès aujourd''hui. Les chargeurs grands comptes vont de plus en plus exiger ces démarches, et les retardataires perdront mécaniquement leur place.'),
+  (v_formation, 'qr', 'Vous devez choisir entre 4 options de transition énergétique pour 5 véhicules à renouveler : tout diesel, mix diesel/électrique, mix électrique/GNV/hydrogène, ou tout zéro émission. Comparez en termes d''investissement, autonomie, ROI 5 ans, et impacts RSE.', NULL, 1, 'difficile', ARRAY['transition','arbitrage','energie'], 'mft-2026-gotrm:bc03-02:qr:2', true, 'COMPARAISON DES 4 OPTIONS — 5 VÉHICULES À RENOUVELER
 
 OPTION 1 — TOUT DIESEL (5 véhicules diesel)
 
@@ -1705,13 +1447,8 @@ Cette stratégie progressive permet :
 
 CONCLUSION
 
-L''option 2 (mix diesel/électrique) est le meilleur compromis pour la majorité des PME en 2026 : ROI immédiat, image RSE, anticipation réglementaire, risque maîtrisé. Elle constitue le tremplin idéal vers une flotte plus largement décarbonée à l''horizon 2030-2035.',
-   'difficile', '{transition,arbitrage,energie}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qr:3', 'qr',
-   'Décrivez l''adaptation complète de votre flotte aux ZFE sur 5 ans (12 véhicules dont 5 livrent quotidiennement Paris/Lyon centres). Plan d''adaptation, investissements, opportunités commerciales et bilan ROI.',
-   '[]'::jsonb, '[]'::jsonb,
-   'PLAN D''ADAPTATION ZFE — FLOTTE 12 VÉHICULES SUR 5 ANS
+L''option 2 (mix diesel/électrique) est le meilleur compromis pour la majorité des PME en 2026 : ROI immédiat, image RSE, anticipation réglementaire, risque maîtrisé. Elle constitue le tremplin idéal vers une flotte plus largement décarbonée à l''horizon 2030-2035.'),
+  (v_formation, 'qr', 'Décrivez l''adaptation complète de votre flotte aux ZFE sur 5 ans (12 véhicules dont 5 livrent quotidiennement Paris/Lyon centres). Plan d''adaptation, investissements, opportunités commerciales et bilan ROI.', NULL, 1, 'difficile', ARRAY['zfe','plan-5-ans','roi'], 'mft-2026-gotrm:bc03-02:qr:3', true, 'PLAN D''ADAPTATION ZFE — FLOTTE 12 VÉHICULES SUR 5 ANS
 
 CONTEXTE INITIAL
 
@@ -1883,13 +1620,8 @@ Cette stratégie d''adaptation aux ZFE sur 5 ans transforme une menace réglemen
 
 Sans cette stratégie, l''entreprise perdrait mécaniquement son accès aux ZFE et 30-50 % de son chiffre d''affaires d''ici 2028-2030. C''est un investissement de survie autant qu''une opportunité de leadership.
 
-L''ADAPTATION AUX ZFE N''EST PAS UNE CHARGE — C''EST UNE OBLIGATION STRATÉGIQUE PROFITABLE.',
-   'difficile', '{zfe,plan-5-ans,roi}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-02:qr:4', 'qr',
-   'Construisez un tableau de bord ESG complet pour votre PME 30 véhicules avec 12 KPI répartis sur les 3 piliers, leurs cibles, sources de données, fréquences de mesure et plans d''action en cas d''écart.',
-   '[]'::jsonb, '[]'::jsonb,
-   'TABLEAU DE BORD ESG COMPLET — PME 30 VÉHICULES
+L''ADAPTATION AUX ZFE N''EST PAS UNE CHARGE — C''EST UNE OBLIGATION STRATÉGIQUE PROFITABLE.'),
+  (v_formation, 'qr', 'Construisez un tableau de bord ESG complet pour votre PME 30 véhicules avec 12 KPI répartis sur les 3 piliers, leurs cibles, sources de données, fréquences de mesure et plans d''action en cas d''écart.', NULL, 1, 'difficile', ARRAY['tableau-bord','esg','kpi'], 'mft-2026-gotrm:bc03-02:qr:4', true, 'TABLEAU DE BORD ESG COMPLET — PME 30 VÉHICULES
 
 12 KPI ESG ESSENTIELS
 
@@ -2090,8 +1822,8 @@ Ce tableau de bord ESG :
 - Différencie commercialement
 - Prépare aux certifications
 
-Sa qualité de mise en œuvre détermine la maturité RSE de l''entreprise. Bien construit, il devient un outil stratégique majeur pour l''évolution de l''entreprise vers un modèle plus durable et performant.',
-   'difficile', '{tableau-bord,esg,kpi}');
+Sa qualité de mise en œuvre détermine la maturité RSE de l''entreprise. Bien construit, il devient un outil stratégique majeur pour l''évolution de l''entreprise vers un modèle plus durable et performant.');
+
 
   -- =================================================================
   -- QUIZZES

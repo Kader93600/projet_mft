@@ -1022,329 +1022,46 @@ $lesson4$,
   -- =================================================================
   -- 28 QCM
   -- =================================================================
-  INSERT INTO public.question_bank (formation_id, source_ref, type, prompt, choices, correct, explanation, difficulty, tags) VALUES
+  INSERT INTO public.question_bank (formation_id, type, statement, choices, max_score, difficulty, tags, source_ref, active, explanation) VALUES
+  (v_formation, 'qcm', 'L''article L. 133-1 du Code de commerce établit que le transporteur :', '[{"id":"a","label":"Est libre de toute responsabilité","is_correct":false},{"id":"b","label":"A une obligation de moyens","is_correct":false},{"id":"c","label":"A une obligation de résultat (présomption de responsabilité)","is_correct":true},{"id":"d","label":"N''est responsable que sur preuve de faute par le client","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['responsabilite','L133-1'], 'mft-2026-gotrm:bc01-09:qcm:1', true, 'L. 133-1 : "Le voiturier est garant de la perte des objets à transporter, hors les cas de force majeure". Obligation de résultat = présomption de responsabilité. C''est au transporteur de prouver une cause d''exonération.'),
+  (v_formation, 'qcm', 'Les 3 critères cumulatifs de la force majeure sont :', '[{"id":"a","label":"Public, médiatisé, validé par préfecture","is_correct":false},{"id":"b","label":"Extérieur, imprévisible, irrésistible","is_correct":true},{"id":"c","label":"Soudain, grave, exceptionnel","is_correct":false},{"id":"d","label":"Reconnu, documenté, attesté","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['force-majeure'], 'mft-2026-gotrm:bc01-09:qcm:2', true, 'Force majeure = événement extérieur (pas lié à l''activité), imprévisible (anticipation impossible), irrésistible (conséquences inévitables). Critères cumulatifs interprétés strictement par les juges.'),
+  (v_formation, 'qcm', 'Une panne mécanique du véhicule est-elle un cas de force majeure ?', '[{"id":"a","label":"Oui, par principe","is_correct":false},{"id":"b","label":"Non, c''est un risque inhérent à l''activité du transporteur","is_correct":true},{"id":"c","label":"Oui si récente","is_correct":false},{"id":"d","label":"Oui si véhicule en bon état général","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['force-majeure','panne'], 'mft-2026-gotrm:bc01-09:qcm:3', true, 'Une panne mécanique n''est pas extérieure à l''activité du transporteur (entretien et bon état du parc lui incombent). Elle peut atténuer (en cas de retard) mais pas exonérer.'),
+  (v_formation, 'qcm', 'Le plafond d''indemnisation national pour avarie/perte est de :', '[{"id":"a","label":"33 €/kg ou 1 000 €/colis (le moindre des deux)","is_correct":true},{"id":"b","label":"100 €/kg uniformément","is_correct":false},{"id":"c","label":"500 €/kg ou 5 000 €/colis","is_correct":false},{"id":"d","label":"Aucun plafond","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['plafond','national'], 'mft-2026-gotrm:bc01-09:qcm:4', true, 'Contrat-type général (décret 99-269 art. 21) : plafond de 33 €/kg OU 1 000 €/colis, le plus faible des deux étant retenu. À distinguer du plafond CMR (8,33 DTS/kg).'),
+  (v_formation, 'qcm', 'Le plafond CMR international est de :', '[{"id":"a","label":"33 €/kg","is_correct":false},{"id":"b","label":"8,33 DTS/kg (~ 10,80 €/kg)","is_correct":true},{"id":"c","label":"100 DTS/kg","is_correct":false},{"id":"d","label":"1 000 € par expédition","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['plafond','cmr'], 'mft-2026-gotrm:bc01-09:qcm:5', true, 'Article 23 §3 CMR : 8,33 DTS/kg de marchandise manquante ou avariée. En 2026, 1 DTS ≈ 1,30 € soit ~ 10,80 €/kg. Le DTS varie quotidiennement.'),
+  (v_formation, 'qcm', 'L''indemnisation pour retard est généralement plafonnée à :', '[{"id":"a","label":"100 % du prix du transport","is_correct":false},{"id":"b","label":"50 % du prix de la marchandise","is_correct":false},{"id":"c","label":"Le prix du transport (sauf intérêt spécial à la livraison)","is_correct":true},{"id":"d","label":"Aucun plafond","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['retard','plafond'], 'mft-2026-gotrm:bc01-09:qcm:6', true, 'Pour le retard, l''indemnité est limitée au prix du transport (sauf déclaration d''intérêt spécial à la livraison qui peut élargir). Cela vaut tant en national qu''en CMR.'),
+  (v_formation, 'qcm', 'Pour 200 kg de marchandise endommagée en transport national (10 colis de 20 kg), le plafond d''indemnisation est :', '[{"id":"a","label":"6 600 €","is_correct":true},{"id":"b","label":"10 000 €","is_correct":false},{"id":"c","label":"33 €/kg sans limite","is_correct":false},{"id":"d","label":"500 €/colis fixé","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['plafond','calcul'], 'mft-2026-gotrm:bc01-09:qcm:7', true, 'Calcul : poids = 200 × 33 = 6 600 € ; colis = 10 × 1 000 = 10 000 €. Le moindre des deux est 6 600 €. C''est le plafond légal applicable.'),
+  (v_formation, 'qcm', 'En cas de faute lourde ou de dol du transporteur :', '[{"id":"a","label":"Les plafonds restent applicables","is_correct":false},{"id":"b","label":"Les plafonds sautent et l''indemnisation devient intégrale","is_correct":true},{"id":"c","label":"Le transport est annulé","is_correct":false},{"id":"d","label":"Le client perd toute indemnisation","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['faute-lourde','article-29'], 'mft-2026-gotrm:bc01-09:qcm:8', true, 'Faute lourde / dol (CMR art. 29, jurisprudence française) = les plafonds légaux et contractuels sautent. Indemnisation intégrale = valeur réelle du préjudice. Prescription passe à 3 ans (CMR) ou 5 ans (national).'),
+  (v_formation, 'qcm', 'La déclaration de valeur sur la lettre de voiture permet :', '[{"id":"a","label":"De réduire le prix du transport","is_correct":false},{"id":"b","label":"D''augmenter le plafond d''indemnisation au-delà du plafond légal moyennant supplément","is_correct":true},{"id":"c","label":"D''éviter les douanes","is_correct":false},{"id":"d","label":"De renoncer aux délais de réserves","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['declaration-valeur'], 'mft-2026-gotrm:bc01-09:qcm:9', true, 'Déclaration de valeur (art. 24 CMR ou clause nationale) : permet, contre supplément (~ 0,5 à 2 % de la valeur), de fixer un plafond supérieur. Doit figurer expressément sur la CMR/LV.'),
+  (v_formation, 'qcm', 'Le délai de prescription d''une action contre le transporteur (régime national standard) est de :', '[{"id":"a","label":"6 mois","is_correct":false},{"id":"b","label":"1 an","is_correct":true},{"id":"c","label":"3 ans","is_correct":false},{"id":"d","label":"5 ans","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['prescription','national'], 'mft-2026-gotrm:bc01-09:qcm:10', true, 'Article L. 133-6 du Code de commerce : prescription de 1 an pour les actions liées au transport. Passe à 5 ans en cas de dol prouvé. À ne pas confondre avec la prescription civile générale.'),
+  (v_formation, 'qcm', 'Le délai de prescription d''une action sous CMR avec faute lourde est de :', '[{"id":"a","label":"6 mois","is_correct":false},{"id":"b","label":"1 an","is_correct":false},{"id":"c","label":"3 ans","is_correct":true},{"id":"d","label":"10 ans","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['cmr','prescription','faute-lourde'], 'mft-2026-gotrm:bc01-09:qcm:11', true, 'Article 32 CMR : 1 an de prescription standard, 3 ans en cas de dol ou de faute considérée comme équivalente par le droit applicable. À distinguer du droit national (5 ans en cas de dol).'),
+  (v_formation, 'qcm', 'En CMR, une réclamation écrite envoyée au transporteur :', '[{"id":"a","label":"Court la prescription","is_correct":false},{"id":"b","label":"Suspend la prescription jusqu''à la réponse du transporteur","is_correct":true},{"id":"c","label":"Annule la prescription","is_correct":false},{"id":"d","label":"N''a aucun effet","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['cmr','prescription','suspension'], 'mft-2026-gotrm:bc01-09:qcm:12', true, 'Art. 32 §2 CMR : la réclamation écrite suspend la prescription jusqu''à la réponse du transporteur. Le client peut donc préserver ses droits en envoyant simplement une lettre RAR avant le délai d''un an.'),
+  (v_formation, 'qcm', 'Le délai pour formuler une réserve sur une avarie non apparente en transport national est de :', '[{"id":"a","label":"24 heures","is_correct":false},{"id":"b","label":"3 jours ouvrés","is_correct":true},{"id":"c","label":"7 jours ouvrés","is_correct":false},{"id":"d","label":"30 jours","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['reserves','national'], 'mft-2026-gotrm:bc01-09:qcm:13', true, '3 jours ouvrés en transport national pour les avaries non apparentes. À distinguer du CMR (7 jours). Au-delà, la marchandise est présumée livrée conforme.'),
+  (v_formation, 'qcm', 'Le délai pour formuler une réserve sur une avarie non apparente en CMR est de :', '[{"id":"a","label":"3 jours","is_correct":false},{"id":"b","label":"7 jours ouvrés","is_correct":true},{"id":"c","label":"21 jours","is_correct":false},{"id":"d","label":"30 jours","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['cmr','reserves'], 'mft-2026-gotrm:bc01-09:qcm:14', true, 'Article 30 §1 CMR : 7 jours ouvrés pour les avaries non apparentes. 21 jours pour le retard. 30 jours après le délai convenu pour la perte présumée (ou 60 jours après prise en charge).'),
+  (v_formation, 'qcm', 'Une réserve « sous réserve de déballage » est :', '[{"id":"a","label":"Toujours valable","is_correct":false},{"id":"b","label":"Souvent jugée trop vague et inopposable au transporteur","is_correct":true},{"id":"c","label":"Valable seulement sur les denrées","is_correct":false},{"id":"d","label":"Valable si signée d''un huissier","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['reserves','validite'], 'mft-2026-gotrm:bc01-09:qcm:15', true, 'Une réserve générique sans description précise de l''anomalie (« sous réserve de déballage », « sous réserve d''inventaire ») est régulièrement écartée par les tribunaux. Préférer : « Carton n° X, dim. Y, enfoncé sur la face Z, traces d''humidité ».'),
+  (v_formation, 'qcm', 'Le tribunal compétent en cas de litige entre 2 commerçants est :', '[{"id":"a","label":"Tribunal judiciaire (TJ)","is_correct":false},{"id":"b","label":"Tribunal de commerce","is_correct":true},{"id":"c","label":"Conseil des prud''hommes","is_correct":false},{"id":"d","label":"Cour administrative d''appel","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['juridiction','B2B'], 'mft-2026-gotrm:bc01-09:qcm:16', true, 'B2B = Tribunal de commerce. B2C (consommateur) = Tribunal judiciaire. Prud''hommes = litiges salariés/employeurs. Administrative = relations avec puissance publique.'),
+  (v_formation, 'qcm', 'L''article 31 CMR prévoit que pour un litige international, le tribunal compétent peut être :', '[{"id":"a","label":"Uniquement celui du domicile du transporteur","is_correct":false},{"id":"b","label":"Uniquement celui du destinataire","is_correct":false},{"id":"c","label":"Domicile défendeur, lieu de prise en charge ou lieu de livraison","is_correct":true},{"id":"d","label":"Le tribunal de l''État émetteur de la CMR uniquement","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['cmr','article-31'], 'mft-2026-gotrm:bc01-09:qcm:17', true, 'Article 31 §1 CMR : 4 options de tribunal compétent : domicile du défendeur, lieu de prise en charge, lieu de livraison, ou tribunal désigné par accord des parties. Le demandeur choisit.'),
+  (v_formation, 'qcm', 'La durée moyenne d''un procès en première instance au tribunal de commerce est de :', '[{"id":"a","label":"3-6 mois","is_correct":false},{"id":"b","label":"6-12 mois","is_correct":false},{"id":"c","label":"18-30 mois","is_correct":true},{"id":"d","label":"5 ans","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['procedure','duree'], 'mft-2026-gotrm:bc01-09:qcm:18', true, 'Procédure standard tribunal de commerce : 18-30 mois (échanges d''écritures, expertise éventuelle, audience, délibéré). À cela peut s''ajouter un appel (12-18 mois supplémentaires).'),
+  (v_formation, 'qcm', 'Le coût moyen d''un avocat pour une procédure de 1ère instance en transport est de :', '[{"id":"a","label":"500-1 000 € HT","is_correct":false},{"id":"b","label":"4 000-12 000 € HT","is_correct":true},{"id":"c","label":"50 000-100 000 € HT","is_correct":false},{"id":"d","label":"Toujours gratuit","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['avocat','cout'], 'mft-2026-gotrm:bc01-09:qcm:19', true, 'Coût avocat 1ère instance pour litige transport : 4 000-12 000 € HT selon complexité. À cela s''ajoutent huissier (800-2 000 €), expertise judiciaire éventuelle (3-10 k€), greffe (~ 100 €).'),
+  (v_formation, 'qcm', 'La RC Pro (Responsabilité Civile Professionnelle) du transporteur :', '[{"id":"a","label":"Couvre toujours les fautes lourdes","is_correct":false},{"id":"b","label":"Couvre les avaries/pertes/retards dans les plafonds légaux + frais de défense","is_correct":true},{"id":"c","label":"Remplace les plafonds légaux","is_correct":false},{"id":"d","label":"Est facultative","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['rc-pro','couverture'], 'mft-2026-gotrm:bc01-09:qcm:20', true, 'RC Pro couvre la responsabilité contractuelle (avaries, pertes, retards) dans les plafonds légaux + frais de défense (avocat, expertise). Elle ne couvre PAS les fautes lourdes ou le dol du transporteur.'),
+  (v_formation, 'qcm', 'La RC marchandises étendue est utile :', '[{"id":"a","label":"Pour les transports en zone rurale","is_correct":false},{"id":"b","label":"Pour couvrir au-delà des plafonds légaux (marchandises de valeur)","is_correct":true},{"id":"c","label":"Pour remplacer la RC Pro","is_correct":false},{"id":"d","label":"Uniquement pour les transports internationaux","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['rc-marchandises','etendue'], 'mft-2026-gotrm:bc01-09:qcm:21', true, 'RC marchandises étendue couvre au-delà des plafonds légaux (jusqu''à 100 000 € à 1 M€ ou plus). Indispensable pour les marchandises de valeur (high-tech, parfumerie, vins fins) où les plafonds légaux sont insuffisants.'),
+  (v_formation, 'qcm', 'Une transaction (article 2044 Code civil) :', '[{"id":"a","label":"Est un simple accord verbal","is_correct":false},{"id":"b","label":"Implique des concessions réciproques, doit être écrite, et vaut décision de justice","is_correct":true},{"id":"c","label":"Peut être annulée à tout moment","is_correct":false},{"id":"d","label":"Ne nécessite pas de signature","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['transaction','2044'], 'mft-2026-gotrm:bc01-09:qcm:22', true, 'Article 2044 CC : la transaction met fin ou prévient un litige par concessions réciproques. Forme écrite obligatoire, force exécutoire (vaut décision de justice), non révision sauf erreur, dol, violence.'),
+  (v_formation, 'qcm', 'La subrogation en assurance signifie :', '[{"id":"a","label":"L''assurance refuse le sinistre","is_correct":false},{"id":"b","label":"L''assureur paie l''assuré, puis se substitue à lui pour récupérer l''argent du vrai responsable","is_correct":true},{"id":"c","label":"L''assuré paie sa franchise","is_correct":false},{"id":"d","label":"L''assurance est annulée","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['subrogation','assurance'], 'mft-2026-gotrm:bc01-09:qcm:23', true, 'Subrogation : l''assureur indemnise l''assuré, puis exerce les droits de l''assuré contre le tiers responsable (vol identifié, sous-traitant, etc.). Permet de minimiser le coût final pour l''assureur.'),
+  (v_formation, 'qcm', 'En cas de vol d''une marchandise CMR sous prétexte de pause R561, l''argument de défense le plus solide est :', '[{"id":"a","label":"Aucun, on est forcément responsable","is_correct":false},{"id":"b","label":"Démontrer la diligence : aire sécurisée, antivol activé, procédure interne respectée","is_correct":true},{"id":"c","label":"Prouver que la marchandise valait peu","is_correct":false},{"id":"d","label":"Plaider l''ignorance","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['vol','defense','diligence'], 'mft-2026-gotrm:bc01-09:qcm:24', true, 'Pour s''exonérer de la faute lourde, il faut démontrer la diligence : aire sécurisée (TOP-IRU, CTPark), antivol GPS activé, procédure interne suivie, pause R561 imposée par la loi. Les éléments matériels sont déterminants.'),
+  (v_formation, 'qcm', 'La franchise dans une assurance transport est :', '[{"id":"a","label":"Le montant maximum couvert","is_correct":false},{"id":"b","label":"La part du sinistre que le transporteur conserve à sa charge","is_correct":true},{"id":"c","label":"Le délai de prescription","is_correct":false},{"id":"d","label":"Le coût de la souscription","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['franchise','assurance'], 'mft-2026-gotrm:bc01-09:qcm:25', true, 'Franchise = part du sinistre à la charge de l''assuré. Typiquement 1 000 - 5 000 € par sinistre transport. Plus la franchise est élevée, moins la prime est chère.'),
+  (v_formation, 'qcm', 'Une réserve est dite « apparente » si :', '[{"id":"a","label":"Elle est visible immédiatement au déchargement (carton enfoncé, palette mouillée)","is_correct":true},{"id":"b","label":"Elle est documentée par expert","is_correct":false},{"id":"c","label":"Elle est validée par la direction","is_correct":false},{"id":"d","label":"Elle est jointe au CMR","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['reserves','apparente'], 'mft-2026-gotrm:bc01-09:qcm:26', true, 'Réserve apparente = anomalie visible immédiatement à la livraison (sans déballage). Elle doit être mentionnée le jour même sur le BL ou la CMR pour être valable. À distinguer des réserves non apparentes (3 j national, 7 j CMR).'),
+  (v_formation, 'qcm', 'Un client réclame 50 000 € sur un sinistre limité à 6 000 € par le plafond légal. La meilleure stratégie est généralement :', '[{"id":"a","label":"Accepter pour préserver la relation","is_correct":false},{"id":"b","label":"Refuser sèchement et attendre le procès","is_correct":false},{"id":"c","label":"Proposer une transaction au plafond + un geste commercial (ex : 7 500 €) pour clore","is_correct":true},{"id":"d","label":"Proposer 50 000 € en avoir transport","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['transaction','strategie'], 'mft-2026-gotrm:bc01-09:qcm:27', true, 'Stratégie équilibrée : transaction au plafond légal + 15-25 % de geste commercial, en échange d''abandon de toute autre réclamation et confidentialité. Évite un procès long et coûteux, préserve la relation.'),
+  (v_formation, 'qcm', 'Le dol en droit du transport désigne :', '[{"id":"a","label":"Une faute légère","is_correct":false},{"id":"b","label":"Une faute intentionnelle (ex : vol par le conducteur, falsification documents)","is_correct":true},{"id":"c","label":"Une simple négligence","is_correct":false},{"id":"d","label":"Un cas de force majeure","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['dol','definition'], 'mft-2026-gotrm:bc01-09:qcm:28', true, 'Dol = faute intentionnelle. Distinct de la faute lourde (négligence si grave qu''elle équivaut au dol). Tous deux font sauter les plafonds d''indemnisation et la couverture RC Pro.');
 
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:1', 'qcm',
-   'L''article L. 133-1 du Code de commerce établit que le transporteur :',
-   jsonb '[
-     {"key":"a","label":"Est libre de toute responsabilité"},
-     {"key":"b","label":"A une obligation de moyens"},
-     {"key":"c","label":"A une obligation de résultat (présomption de responsabilité)"},
-     {"key":"d","label":"N''est responsable que sur preuve de faute par le client"}
-   ]', '["c"]'::jsonb,
-   'L. 133-1 : "Le voiturier est garant de la perte des objets à transporter, hors les cas de force majeure". Obligation de résultat = présomption de responsabilité. C''est au transporteur de prouver une cause d''exonération.',
-   'moyenne', '{responsabilite,L133-1}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:2', 'qcm',
-   'Les 3 critères cumulatifs de la force majeure sont :',
-   jsonb '[
-     {"key":"a","label":"Public, médiatisé, validé par préfecture"},
-     {"key":"b","label":"Extérieur, imprévisible, irrésistible"},
-     {"key":"c","label":"Soudain, grave, exceptionnel"},
-     {"key":"d","label":"Reconnu, documenté, attesté"}
-   ]', '["b"]'::jsonb,
-   'Force majeure = événement extérieur (pas lié à l''activité), imprévisible (anticipation impossible), irrésistible (conséquences inévitables). Critères cumulatifs interprétés strictement par les juges.',
-   'moyenne', '{force-majeure}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:3', 'qcm',
-   'Une panne mécanique du véhicule est-elle un cas de force majeure ?',
-   jsonb '[
-     {"key":"a","label":"Oui, par principe"},
-     {"key":"b","label":"Non, c''est un risque inhérent à l''activité du transporteur"},
-     {"key":"c","label":"Oui si récente"},
-     {"key":"d","label":"Oui si véhicule en bon état général"}
-   ]', '["b"]'::jsonb,
-   'Une panne mécanique n''est pas extérieure à l''activité du transporteur (entretien et bon état du parc lui incombent). Elle peut atténuer (en cas de retard) mais pas exonérer.',
-   'moyenne', '{force-majeure,panne}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:4', 'qcm',
-   'Le plafond d''indemnisation national pour avarie/perte est de :',
-   jsonb '[
-     {"key":"a","label":"33 €/kg ou 1 000 €/colis (le moindre des deux)"},
-     {"key":"b","label":"100 €/kg uniformément"},
-     {"key":"c","label":"500 €/kg ou 5 000 €/colis"},
-     {"key":"d","label":"Aucun plafond"}
-   ]', '["a"]'::jsonb,
-   'Contrat-type général (décret 99-269 art. 21) : plafond de 33 €/kg OU 1 000 €/colis, le plus faible des deux étant retenu. À distinguer du plafond CMR (8,33 DTS/kg).',
-   'facile', '{plafond,national}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:5', 'qcm',
-   'Le plafond CMR international est de :',
-   jsonb '[
-     {"key":"a","label":"33 €/kg"},
-     {"key":"b","label":"8,33 DTS/kg (~ 10,80 €/kg)"},
-     {"key":"c","label":"100 DTS/kg"},
-     {"key":"d","label":"1 000 € par expédition"}
-   ]', '["b"]'::jsonb,
-   'Article 23 §3 CMR : 8,33 DTS/kg de marchandise manquante ou avariée. En 2026, 1 DTS ≈ 1,30 € soit ~ 10,80 €/kg. Le DTS varie quotidiennement.',
-   'facile', '{plafond,cmr}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:6', 'qcm',
-   'L''indemnisation pour retard est généralement plafonnée à :',
-   jsonb '[
-     {"key":"a","label":"100 % du prix du transport"},
-     {"key":"b","label":"50 % du prix de la marchandise"},
-     {"key":"c","label":"Le prix du transport (sauf intérêt spécial à la livraison)"},
-     {"key":"d","label":"Aucun plafond"}
-   ]', '["c"]'::jsonb,
-   'Pour le retard, l''indemnité est limitée au prix du transport (sauf déclaration d''intérêt spécial à la livraison qui peut élargir). Cela vaut tant en national qu''en CMR.',
-   'moyenne', '{retard,plafond}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:7', 'qcm',
-   'Pour 200 kg de marchandise endommagée en transport national (10 colis de 20 kg), le plafond d''indemnisation est :',
-   jsonb '[
-     {"key":"a","label":"6 600 €"},
-     {"key":"b","label":"10 000 €"},
-     {"key":"c","label":"33 €/kg sans limite"},
-     {"key":"d","label":"500 €/colis fixé"}
-   ]', '["a"]'::jsonb,
-   'Calcul : poids = 200 × 33 = 6 600 € ; colis = 10 × 1 000 = 10 000 €. Le moindre des deux est 6 600 €. C''est le plafond légal applicable.',
-   'difficile', '{plafond,calcul}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:8', 'qcm',
-   'En cas de faute lourde ou de dol du transporteur :',
-   jsonb '[
-     {"key":"a","label":"Les plafonds restent applicables"},
-     {"key":"b","label":"Les plafonds sautent et l''indemnisation devient intégrale"},
-     {"key":"c","label":"Le transport est annulé"},
-     {"key":"d","label":"Le client perd toute indemnisation"}
-   ]', '["b"]'::jsonb,
-   'Faute lourde / dol (CMR art. 29, jurisprudence française) = les plafonds légaux et contractuels sautent. Indemnisation intégrale = valeur réelle du préjudice. Prescription passe à 3 ans (CMR) ou 5 ans (national).',
-   'moyenne', '{faute-lourde,article-29}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:9', 'qcm',
-   'La déclaration de valeur sur la lettre de voiture permet :',
-   jsonb '[
-     {"key":"a","label":"De réduire le prix du transport"},
-     {"key":"b","label":"D''augmenter le plafond d''indemnisation au-delà du plafond légal moyennant supplément"},
-     {"key":"c","label":"D''éviter les douanes"},
-     {"key":"d","label":"De renoncer aux délais de réserves"}
-   ]', '["b"]'::jsonb,
-   'Déclaration de valeur (art. 24 CMR ou clause nationale) : permet, contre supplément (~ 0,5 à 2 % de la valeur), de fixer un plafond supérieur. Doit figurer expressément sur la CMR/LV.',
-   'moyenne', '{declaration-valeur}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:10', 'qcm',
-   'Le délai de prescription d''une action contre le transporteur (régime national standard) est de :',
-   jsonb '[
-     {"key":"a","label":"6 mois"},
-     {"key":"b","label":"1 an"},
-     {"key":"c","label":"3 ans"},
-     {"key":"d","label":"5 ans"}
-   ]', '["b"]'::jsonb,
-   'Article L. 133-6 du Code de commerce : prescription de 1 an pour les actions liées au transport. Passe à 5 ans en cas de dol prouvé. À ne pas confondre avec la prescription civile générale.',
-   'moyenne', '{prescription,national}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:11', 'qcm',
-   'Le délai de prescription d''une action sous CMR avec faute lourde est de :',
-   jsonb '[
-     {"key":"a","label":"6 mois"},
-     {"key":"b","label":"1 an"},
-     {"key":"c","label":"3 ans"},
-     {"key":"d","label":"10 ans"}
-   ]', '["c"]'::jsonb,
-   'Article 32 CMR : 1 an de prescription standard, 3 ans en cas de dol ou de faute considérée comme équivalente par le droit applicable. À distinguer du droit national (5 ans en cas de dol).',
-   'difficile', '{cmr,prescription,faute-lourde}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:12', 'qcm',
-   'En CMR, une réclamation écrite envoyée au transporteur :',
-   jsonb '[
-     {"key":"a","label":"Court la prescription"},
-     {"key":"b","label":"Suspend la prescription jusqu''à la réponse du transporteur"},
-     {"key":"c","label":"Annule la prescription"},
-     {"key":"d","label":"N''a aucun effet"}
-   ]', '["b"]'::jsonb,
-   'Art. 32 §2 CMR : la réclamation écrite suspend la prescription jusqu''à la réponse du transporteur. Le client peut donc préserver ses droits en envoyant simplement une lettre RAR avant le délai d''un an.',
-   'difficile', '{cmr,prescription,suspension}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:13', 'qcm',
-   'Le délai pour formuler une réserve sur une avarie non apparente en transport national est de :',
-   jsonb '[
-     {"key":"a","label":"24 heures"},
-     {"key":"b","label":"3 jours ouvrés"},
-     {"key":"c","label":"7 jours ouvrés"},
-     {"key":"d","label":"30 jours"}
-   ]', '["b"]'::jsonb,
-   '3 jours ouvrés en transport national pour les avaries non apparentes. À distinguer du CMR (7 jours). Au-delà, la marchandise est présumée livrée conforme.',
-   'facile', '{reserves,national}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:14', 'qcm',
-   'Le délai pour formuler une réserve sur une avarie non apparente en CMR est de :',
-   jsonb '[
-     {"key":"a","label":"3 jours"},
-     {"key":"b","label":"7 jours ouvrés"},
-     {"key":"c","label":"21 jours"},
-     {"key":"d","label":"30 jours"}
-   ]', '["b"]'::jsonb,
-   'Article 30 §1 CMR : 7 jours ouvrés pour les avaries non apparentes. 21 jours pour le retard. 30 jours après le délai convenu pour la perte présumée (ou 60 jours après prise en charge).',
-   'facile', '{cmr,reserves}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:15', 'qcm',
-   'Une réserve « sous réserve de déballage » est :',
-   jsonb '[
-     {"key":"a","label":"Toujours valable"},
-     {"key":"b","label":"Souvent jugée trop vague et inopposable au transporteur"},
-     {"key":"c","label":"Valable seulement sur les denrées"},
-     {"key":"d","label":"Valable si signée d''un huissier"}
-   ]', '["b"]'::jsonb,
-   'Une réserve générique sans description précise de l''anomalie (« sous réserve de déballage », « sous réserve d''inventaire ») est régulièrement écartée par les tribunaux. Préférer : « Carton n° X, dim. Y, enfoncé sur la face Z, traces d''humidité ».',
-   'moyenne', '{reserves,validite}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:16', 'qcm',
-   'Le tribunal compétent en cas de litige entre 2 commerçants est :',
-   jsonb '[
-     {"key":"a","label":"Tribunal judiciaire (TJ)"},
-     {"key":"b","label":"Tribunal de commerce"},
-     {"key":"c","label":"Conseil des prud''hommes"},
-     {"key":"d","label":"Cour administrative d''appel"}
-   ]', '["b"]'::jsonb,
-   'B2B = Tribunal de commerce. B2C (consommateur) = Tribunal judiciaire. Prud''hommes = litiges salariés/employeurs. Administrative = relations avec puissance publique.',
-   'facile', '{juridiction,B2B}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:17', 'qcm',
-   'L''article 31 CMR prévoit que pour un litige international, le tribunal compétent peut être :',
-   jsonb '[
-     {"key":"a","label":"Uniquement celui du domicile du transporteur"},
-     {"key":"b","label":"Uniquement celui du destinataire"},
-     {"key":"c","label":"Domicile défendeur, lieu de prise en charge ou lieu de livraison"},
-     {"key":"d","label":"Le tribunal de l''État émetteur de la CMR uniquement"}
-   ]', '["c"]'::jsonb,
-   'Article 31 §1 CMR : 4 options de tribunal compétent : domicile du défendeur, lieu de prise en charge, lieu de livraison, ou tribunal désigné par accord des parties. Le demandeur choisit.',
-   'difficile', '{cmr,article-31}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:18', 'qcm',
-   'La durée moyenne d''un procès en première instance au tribunal de commerce est de :',
-   jsonb '[
-     {"key":"a","label":"3-6 mois"},
-     {"key":"b","label":"6-12 mois"},
-     {"key":"c","label":"18-30 mois"},
-     {"key":"d","label":"5 ans"}
-   ]', '["c"]'::jsonb,
-   'Procédure standard tribunal de commerce : 18-30 mois (échanges d''écritures, expertise éventuelle, audience, délibéré). À cela peut s''ajouter un appel (12-18 mois supplémentaires).',
-   'moyenne', '{procedure,duree}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:19', 'qcm',
-   'Le coût moyen d''un avocat pour une procédure de 1ère instance en transport est de :',
-   jsonb '[
-     {"key":"a","label":"500-1 000 € HT"},
-     {"key":"b","label":"4 000-12 000 € HT"},
-     {"key":"c","label":"50 000-100 000 € HT"},
-     {"key":"d","label":"Toujours gratuit"}
-   ]', '["b"]'::jsonb,
-   'Coût avocat 1ère instance pour litige transport : 4 000-12 000 € HT selon complexité. À cela s''ajoutent huissier (800-2 000 €), expertise judiciaire éventuelle (3-10 k€), greffe (~ 100 €).',
-   'moyenne', '{avocat,cout}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:20', 'qcm',
-   'La RC Pro (Responsabilité Civile Professionnelle) du transporteur :',
-   jsonb '[
-     {"key":"a","label":"Couvre toujours les fautes lourdes"},
-     {"key":"b","label":"Couvre les avaries/pertes/retards dans les plafonds légaux + frais de défense"},
-     {"key":"c","label":"Remplace les plafonds légaux"},
-     {"key":"d","label":"Est facultative"}
-   ]', '["b"]'::jsonb,
-   'RC Pro couvre la responsabilité contractuelle (avaries, pertes, retards) dans les plafonds légaux + frais de défense (avocat, expertise). Elle ne couvre PAS les fautes lourdes ou le dol du transporteur.',
-   'moyenne', '{rc-pro,couverture}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:21', 'qcm',
-   'La RC marchandises étendue est utile :',
-   jsonb '[
-     {"key":"a","label":"Pour les transports en zone rurale"},
-     {"key":"b","label":"Pour couvrir au-delà des plafonds légaux (marchandises de valeur)"},
-     {"key":"c","label":"Pour remplacer la RC Pro"},
-     {"key":"d","label":"Uniquement pour les transports internationaux"}
-   ]', '["b"]'::jsonb,
-   'RC marchandises étendue couvre au-delà des plafonds légaux (jusqu''à 100 000 € à 1 M€ ou plus). Indispensable pour les marchandises de valeur (high-tech, parfumerie, vins fins) où les plafonds légaux sont insuffisants.',
-   'moyenne', '{rc-marchandises,etendue}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:22', 'qcm',
-   'Une transaction (article 2044 Code civil) :',
-   jsonb '[
-     {"key":"a","label":"Est un simple accord verbal"},
-     {"key":"b","label":"Implique des concessions réciproques, doit être écrite, et vaut décision de justice"},
-     {"key":"c","label":"Peut être annulée à tout moment"},
-     {"key":"d","label":"Ne nécessite pas de signature"}
-   ]', '["b"]'::jsonb,
-   'Article 2044 CC : la transaction met fin ou prévient un litige par concessions réciproques. Forme écrite obligatoire, force exécutoire (vaut décision de justice), non révision sauf erreur, dol, violence.',
-   'moyenne', '{transaction,2044}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:23', 'qcm',
-   'La subrogation en assurance signifie :',
-   jsonb '[
-     {"key":"a","label":"L''assurance refuse le sinistre"},
-     {"key":"b","label":"L''assureur paie l''assuré, puis se substitue à lui pour récupérer l''argent du vrai responsable"},
-     {"key":"c","label":"L''assuré paie sa franchise"},
-     {"key":"d","label":"L''assurance est annulée"}
-   ]', '["b"]'::jsonb,
-   'Subrogation : l''assureur indemnise l''assuré, puis exerce les droits de l''assuré contre le tiers responsable (vol identifié, sous-traitant, etc.). Permet de minimiser le coût final pour l''assureur.',
-   'moyenne', '{subrogation,assurance}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:24', 'qcm',
-   'En cas de vol d''une marchandise CMR sous prétexte de pause R561, l''argument de défense le plus solide est :',
-   jsonb '[
-     {"key":"a","label":"Aucun, on est forcément responsable"},
-     {"key":"b","label":"Démontrer la diligence : aire sécurisée, antivol activé, procédure interne respectée"},
-     {"key":"c","label":"Prouver que la marchandise valait peu"},
-     {"key":"d","label":"Plaider l''ignorance"}
-   ]', '["b"]'::jsonb,
-   'Pour s''exonérer de la faute lourde, il faut démontrer la diligence : aire sécurisée (TOP-IRU, CTPark), antivol GPS activé, procédure interne suivie, pause R561 imposée par la loi. Les éléments matériels sont déterminants.',
-   'difficile', '{vol,defense,diligence}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:25', 'qcm',
-   'La franchise dans une assurance transport est :',
-   jsonb '[
-     {"key":"a","label":"Le montant maximum couvert"},
-     {"key":"b","label":"La part du sinistre que le transporteur conserve à sa charge"},
-     {"key":"c","label":"Le délai de prescription"},
-     {"key":"d","label":"Le coût de la souscription"}
-   ]', '["b"]'::jsonb,
-   'Franchise = part du sinistre à la charge de l''assuré. Typiquement 1 000 - 5 000 € par sinistre transport. Plus la franchise est élevée, moins la prime est chère.',
-   'facile', '{franchise,assurance}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:26', 'qcm',
-   'Une réserve est dite « apparente » si :',
-   jsonb '[
-     {"key":"a","label":"Elle est visible immédiatement au déchargement (carton enfoncé, palette mouillée)"},
-     {"key":"b","label":"Elle est documentée par expert"},
-     {"key":"c","label":"Elle est validée par la direction"},
-     {"key":"d","label":"Elle est jointe au CMR"}
-   ]', '["a"]'::jsonb,
-   'Réserve apparente = anomalie visible immédiatement à la livraison (sans déballage). Elle doit être mentionnée le jour même sur le BL ou la CMR pour être valable. À distinguer des réserves non apparentes (3 j national, 7 j CMR).',
-   'facile', '{reserves,apparente}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:27', 'qcm',
-   'Un client réclame 50 000 € sur un sinistre limité à 6 000 € par le plafond légal. La meilleure stratégie est généralement :',
-   jsonb '[
-     {"key":"a","label":"Accepter pour préserver la relation"},
-     {"key":"b","label":"Refuser sèchement et attendre le procès"},
-     {"key":"c","label":"Proposer une transaction au plafond + un geste commercial (ex : 7 500 €) pour clore"},
-     {"key":"d","label":"Proposer 50 000 € en avoir transport"}
-   ]', '["c"]'::jsonb,
-   'Stratégie équilibrée : transaction au plafond légal + 15-25 % de geste commercial, en échange d''abandon de toute autre réclamation et confidentialité. Évite un procès long et coûteux, préserve la relation.',
-   'moyenne', '{transaction,strategie}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qcm:28', 'qcm',
-   'Le dol en droit du transport désigne :',
-   jsonb '[
-     {"key":"a","label":"Une faute légère"},
-     {"key":"b","label":"Une faute intentionnelle (ex : vol par le conducteur, falsification documents)"},
-     {"key":"c","label":"Une simple négligence"},
-     {"key":"d","label":"Un cas de force majeure"}
-   ]', '["b"]'::jsonb,
-   'Dol = faute intentionnelle. Distinct de la faute lourde (négligence si grave qu''elle équivaut au dol). Tous deux font sauter les plafonds d''indemnisation et la couverture RC Pro.',
-   'moyenne', '{dol,definition}');
 
   -- =================================================================
   -- 5 QR
   -- =================================================================
-  INSERT INTO public.question_bank (formation_id, source_ref, type, prompt, choices, correct, explanation, difficulty, tags) VALUES
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qr:1', 'qr',
-   'Calculez l''indemnité maximale légale pour les sinistres suivants et identifiez le régime applicable :
+  INSERT INTO public.question_bank (formation_id, type, statement, choices, max_score, difficulty, tags, source_ref, active, explanation) VALUES
+  (v_formation, 'qr', 'Calculez l''indemnité maximale légale pour les sinistres suivants et identifiez le régime applicable :
 a) Avarie de 8 palettes (poids unitaire 350 kg) sur trajet Lille-Marseille
 b) Perte totale de 2 t en transport Lyon-Hambourg (CMR)
 c) Retard de 3 jours sur une livraison express, prix transport 1 200 €
-d) Vol de marchandises high-tech (1 200 kg, valeur 180 000 €) avec antivol GPS désactivé volontairement par le conducteur',
-   '[]'::jsonb, '[]'::jsonb,
-   'Calculs détaillés :
+d) Vol de marchandises high-tech (1 200 kg, valeur 180 000 €) avec antivol GPS désactivé volontairement par le conducteur', NULL, 1, 'difficile', ARRAY['calcul','plafonds','cas-pratique'], 'mft-2026-gotrm:bc01-09:qr:1', true, 'Calculs détaillés :
 
 a) Avarie 8 palettes 350 kg national :
 - Régime : national (Lille-Marseille) → contrat-type général 99-269
@@ -1398,13 +1115,8 @@ Recommandations :
 
 3. Pour le vol : politique stricte sur le stationnement (aires TOP-IRU uniquement la nuit), antivol GPS systématique avec contrôle aléatoire, sanctions internes en cas de désactivation.
 
-4. Pour les avaries colis : photos systématiques avant/après chargement, réserves précises au déchargement.',
-   'difficile', '{calcul,plafonds,cas-pratique}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qr:2', 'qr',
-   'Un client envoie une réclamation pour une avarie : 4 cartons écrasés sur 80 livrés. Il réclame 12 500 €. Vous estimez votre responsabilité limitée à 2 800 €. Décrivez votre stratégie de gestion en 5 étapes, incluant la rédaction de la lettre de réponse.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Stratégie en 5 étapes :
+4. Pour les avaries colis : photos systématiques avant/après chargement, réserves précises au déchargement.'),
+  (v_formation, 'qr', 'Un client envoie une réclamation pour une avarie : 4 cartons écrasés sur 80 livrés. Il réclame 12 500 €. Vous estimez votre responsabilité limitée à 2 800 €. Décrivez votre stratégie de gestion en 5 étapes, incluant la rédaction de la lettre de réponse.', NULL, 1, 'difficile', ARRAY['strategie','gestion-litige','lettre'], 'mft-2026-gotrm:bc01-09:qr:2', true, 'Stratégie en 5 étapes :
 
 ÉTAPE 1 — Accusé de réception et collecte (J+0 à J+1)
 
@@ -1458,8 +1170,8 @@ Recommandé avec accusé de réception
 
 Madame/Monsieur,
 
-Suite à votre courrier du [date] concernant l'avarie constatée
-sur la livraison de [date], nous avons procédé à l'analyse
+Suite à votre courrier du [date] concernant l''avarie constatée
+sur la livraison de [date], nous avons procédé à l''analyse
 détaillée du dossier.
 
 1. RAPPEL DES FAITS
@@ -1470,13 +1182,13 @@ matériels collectés.]
 
 2. POSITION JURIDIQUE
 
-L'opération relevait du contrat-type général (décret 99-269 du
+L''opération relevait du contrat-type général (décret 99-269 du
 6 avril 1999, modifié). Conformément à son article 21,
-l'indemnisation est plafonnée au moindre des deux montants
+l''indemnisation est plafonnée au moindre des deux montants
 suivants : 33 €/kg de marchandise endommagée OU 1 000 €/colis.
 
 Sur la base des éléments du dossier (4 cartons, poids unitaire
-21 kg), le plafond légal s'établit à 2 800 €.
+21 kg), le plafond légal s''établit à 2 800 €.
 
 3. ÉLÉMENTS À PRENDRE EN COMPTE
 
@@ -1489,11 +1201,11 @@ afin de maintenir notre relation commerciale dans les meilleures
 conditions, nous vous proposons :
 
 - Une indemnité globale de 3 220 €, comprenant le plafond légal
-  (2 800 €) majoré d'un geste commercial (420 €).
+  (2 800 €) majoré d''un geste commercial (420 €).
 - Cette proposition est exclusive de toute autre réclamation
   ultérieure sur ce dossier.
 - Engagement de notre part : un audit interne sera diligenté pour
-  prévenir la récurrence d'incidents similaires. Nous vous
+  prévenir la récurrence d''incidents similaires. Nous vous
   communiquerons les actions mises en œuvre sous 30 jours.
 
 Cette proposition est valable 30 jours à compter de la présente.
@@ -1508,15 +1220,15 @@ Cordialement,
 ÉTAPE 5 — Négociation et clôture (J+10 à J+45)
 
 Si le client accepte :
-- Rédaction d'une transaction écrite (article 2044 CC)
+- Rédaction d''une transaction écrite (article 2044 CC)
 - Concessions réciproques mentionnées
 - Clause de non-renouvellement de la réclamation
 - Clause de confidentialité
 - Signature des deux parties
-- Versement de l'indemnité sous 10 jours
+- Versement de l''indemnité sous 10 jours
 
 Si le client refuse :
-- Marge de négociation : monter jusqu'à 4 200 € (50 % du geste)
+- Marge de négociation : monter jusqu''à 4 200 € (50 % du geste)
 - Au-delà : proposer médiation CCI
 - Sinon : préparer dossier judiciaire (mais sachant que le tribunal appliquera le plafond légal de 2 800 €, avec frais et délais à anticiper)
 
@@ -1528,13 +1240,8 @@ Actions correctives en interne :
 4. Suivi mensuel des incidents similaires
 5. Communication de l''engagement au client à J+30 (lettre de suivi avec actions menées)
 
-Boucler la boucle : revenir vers le client à J+30 avec les actions concrètes prises = transformation possible d''un détracteur en client fidèle (paradoxe de la récupération).',
-   'difficile', '{strategie,gestion-litige,lettre}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qr:3', 'qr',
-   'Un de vos conducteurs a fait l''objet d''un vol de marchandises pour 80 000 €. Le client envisage de plaider la faute lourde. Listez les 8 éléments à examiner pour évaluer la solidité de cette qualification, et déterminez la stratégie défensive.',
-   '[]'::jsonb, '[]'::jsonb,
-   '8 éléments à examiner pour qualifier (ou non) la faute lourde :
+Boucler la boucle : revenir vers le client à J+30 avec les actions concrètes prises = transformation possible d''un détracteur en client fidèle (paradoxe de la récupération).'),
+  (v_formation, 'qr', 'Un de vos conducteurs a fait l''objet d''un vol de marchandises pour 80 000 €. Le client envisage de plaider la faute lourde. Listez les 8 éléments à examiner pour évaluer la solidité de cette qualification, et déterminez la stratégie défensive.', NULL, 1, 'difficile', ARRAY['vol','faute-lourde','strategie'], 'mft-2026-gotrm:bc01-09:qr:3', true, '8 éléments à examiner pour qualifier (ou non) la faute lourde :
 
 1. NATURE DE L''AIRE DE STATIONNEMENT
 - L''aire choisie était-elle sécurisée ?
@@ -1634,13 +1341,8 @@ Mesures internes correctives :
 3. Renforcement antivol (alarme désactivation, suivi temps réel)
 4. Formation refresher tous les conducteurs
 5. Sanction interne si manquement individuel avéré (avertissement, voire procédure disciplinaire)
-6. Communication interne anonyme : « voici ce qui s''est passé, voici ce qu''on change »',
-   'difficile', '{vol,faute-lourde,strategie}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qr:4', 'qr',
-   'Comparez RC Pro et RC marchandises étendue pour une PME de transport ayant 25 véhicules dont 5 dédiés au transport de produits cosmétiques de luxe (valeur moyenne 200 000 €/chargement). Pourquoi et comment souscrire ? Coûts indicatifs ?',
-   '[]'::jsonb, '[]'::jsonb,
-   'Comparaison RC Pro vs RC marchandises étendue :
+6. Communication interne anonyme : « voici ce qui s''est passé, voici ce qu''on change »'),
+  (v_formation, 'qr', 'Comparez RC Pro et RC marchandises étendue pour une PME de transport ayant 25 véhicules dont 5 dédiés au transport de produits cosmétiques de luxe (valeur moyenne 200 000 €/chargement). Pourquoi et comment souscrire ? Coûts indicatifs ?', NULL, 1, 'difficile', ARRAY['assurance','couverture','roi'], 'mft-2026-gotrm:bc01-09:qr:4', true, 'Comparaison RC Pro vs RC marchandises étendue :
 
 RC PRO (Responsabilité Civile Professionnelle) — Standard
 
@@ -1741,13 +1443,8 @@ Sur un CA estimé à 5 M€ (25 véhicules × 200 k€/an), cela représente 0,7
 ROI de la stratégie :
 - Sinistres évités estimés : 100 000 €/an
 - Surcoût investissement : 18 000 €/an
-- Net : 82 000 €/an d''économie + sérénité opérationnelle.',
-   'difficile', '{assurance,couverture,roi}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-09:qr:5', 'qr',
-   'Listez 8 mesures préventives concrètes à mettre en place dans une entreprise de transport pour réduire significativement le risque de litiges et de sinistres. Pour chacune, précisez le coût indicatif et le bénéfice attendu.',
-   '[]'::jsonb, '[]'::jsonb,
-   '8 mesures préventives concrètes :
+- Net : 82 000 €/an d''économie + sérénité opérationnelle.'),
+  (v_formation, 'qr', 'Listez 8 mesures préventives concrètes à mettre en place dans une entreprise de transport pour réduire significativement le risque de litiges et de sinistres. Pour chacune, précisez le coût indicatif et le bénéfice attendu.', NULL, 1, 'difficile', ARRAY['prevention','plan','roi'], 'mft-2026-gotrm:bc01-09:qr:5', true, '8 mesures préventives concrètes :
 
 1. PROCÉDURE DE PRISE EN CHARGE STANDARDISÉE
 - Action : photo systématique de chaque palette/colis au chargement
@@ -1837,8 +1534,8 @@ Mise en place :
 - Année 1 : déploiement progressif, mesures urgentes (1, 3, 6)
 - Année 2 : montée en puissance (2, 4, 5)
 - Année 3 : optimisation (7, 8) et capitalisation
-- Bilan annuel pour ajuster les investissements selon ROI réel.',
-   'difficile', '{prevention,plan,roi}');
+- Bilan annuel pour ajuster les investissements selon ROI réel.');
+
 
   -- =================================================================
   -- QUIZZES

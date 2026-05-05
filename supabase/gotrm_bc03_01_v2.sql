@@ -1053,323 +1053,42 @@ $lesson4$,
   -- =================================================================
   -- 28 QCM
   -- =================================================================
-  INSERT INTO public.question_bank (formation_id, source_ref, type, prompt, choices, correct, explanation, difficulty, tags) VALUES
+  INSERT INTO public.question_bank (formation_id, type, statement, choices, max_score, difficulty, tags, source_ref, active, explanation) VALUES
+  (v_formation, 'qcm', 'Le coût d''un porteur 19 t neuf est typiquement de :', '[{"id":"a","label":"30 000 €","is_correct":false},{"id":"b","label":"95 000 €","is_correct":true},{"id":"c","label":"250 000 €","is_correct":false},{"id":"d","label":"500 000 €","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['couts','acquisition'], 'mft-2026-gotrm:bc03-01:qcm:1', true, 'Coût acquisition porteur 19 t neuf : 95 000 € HT typiquement (variable selon options). Tracteur 44 t : ~ 130 000 €. Distribution 12 t : ~ 78 000 €. VUL 3,5 t : ~ 35 000 €.'),
+  (v_formation, 'qcm', 'Le poste qui pèse le plus dans le coût de revient kilométrique d''un porteur 19 t est :', '[{"id":"a","label":"L''amortissement","is_correct":false},{"id":"b","label":"Carburant et conducteur (à parité, ~ 30 % chacun)","is_correct":true},{"id":"c","label":"Les assurances","is_correct":false},{"id":"d","label":"Les pneumatiques","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['couts','decomposition'], 'mft-2026-gotrm:bc03-01:qcm:2', true, 'Carburant ~ 30 % et conducteur ~ 30 % du coût total. Suivent : structure (~ 8 %), amortissement (~ 8 %), entretien et pneus (~ 8 %), assurances/taxes (~ 4 %), péages (~ 5 %), lubrifiants (~ 3 %).'),
+  (v_formation, 'qcm', 'L''amortissement d''un porteur 19 t (acquisition 95 k€, valeur résiduelle 25 % à 6 ans, 120 000 km/an) donne :', '[{"id":"a","label":"0,066 €/km","is_correct":false},{"id":"b","label":"0,099 €/km","is_correct":true},{"id":"c","label":"0,158 €/km","is_correct":false},{"id":"d","label":"0,250 €/km","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['calcul','amortissement'], 'mft-2026-gotrm:bc03-01:qcm:3', true, 'Base amortissable = 95 000 - 23 750 = 71 250 €. Amortissement annuel = 71 250 / 6 = 11 875 €. Coût km = 11 875 / 120 000 = 0,099 €/km.'),
+  (v_formation, 'qcm', 'Pour 28 L/100 km à 1,42 €/L HT, le coût carburant kilométrique est :', '[{"id":"a","label":"0,200 €/km","is_correct":false},{"id":"b","label":"0,300 €/km","is_correct":false},{"id":"c","label":"0,398 €/km","is_correct":true},{"id":"d","label":"0,500 €/km","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['calcul','carburant'], 'mft-2026-gotrm:bc03-01:qcm:4', true, '28 × 1,42 / 100 = 0,3976 €/km, arrondi 0,398 €/km. C''est le calcul standard du coût carburant : Consommation × Prix gazole HT / 100.'),
+  (v_formation, 'qcm', 'Le coût employeur annuel d''un conducteur PL expérimenté (CDI, coefficient 138M) est typiquement :', '[{"id":"a","label":"15 000 €","is_correct":false},{"id":"b","label":"30 000 €","is_correct":false},{"id":"c","label":"47 000 €","is_correct":true},{"id":"d","label":"80 000 €","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['couts','conducteur'], 'mft-2026-gotrm:bc03-01:qcm:5', true, 'Coût employeur ~ 47 000 €/an : salaire brut 27 000 + heures sup 4 080 + indemnités 3 360 + primes 1 200 + charges patronales (~ 42 %) 12 960 = 47 400 €.'),
+  (v_formation, 'qcm', 'Pour un conducteur à 25,6 €/h et une vitesse moyenne de 65 km/h, le coût km conducteur est :', '[{"id":"a","label":"0,256 €/km","is_correct":false},{"id":"b","label":"0,394 €/km","is_correct":true},{"id":"c","label":"0,512 €/km","is_correct":false},{"id":"d","label":"0,650 €/km","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['calcul','conducteur'], 'mft-2026-gotrm:bc03-01:qcm:6', true, '25,6 / 65 = 0,394 €/km. Coût horaire / Vitesse moyenne. Pour un porteur urbain (vitesse moyenne 30 km/h) : 25,6 / 30 = 0,853 €/km, soit beaucoup plus cher en distribution urbaine.'),
+  (v_formation, 'qcm', 'Le coût km variable typique d''un porteur 19 t (carburant + entretien + péages + lubrifiants) est :', '[{"id":"a","label":"~ 0,30 €/km","is_correct":false},{"id":"b","label":"~ 0,59 €/km","is_correct":true},{"id":"c","label":"~ 1,00 €/km","is_correct":false},{"id":"d","label":"~ 1,50 €/km","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['calcul','variable'], 'mft-2026-gotrm:bc03-01:qcm:7', true, 'Coût km variable porteur 19 t = ~ 0,59 €/km. Décomposition : carburant 0,40 + entretien 0,10 + péages 0,07 + lubrifiants 0,02 = 0,59 €/km. À distinguer du coût total (incluant fixes) ~ 1,22-1,30 €/km.'),
+  (v_formation, 'qcm', 'Le coût horaire fixe d''un porteur 19 t (conducteur + amortissement + assurances + structure) est typiquement :', '[{"id":"a","label":"~ 15 €/h","is_correct":false},{"id":"b","label":"~ 41,5 €/h","is_correct":true},{"id":"c","label":"~ 100 €/h","is_correct":false},{"id":"d","label":"~ 250 €/h","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['calcul','horaire'], 'mft-2026-gotrm:bc03-01:qcm:8', true, 'Coût horaire fixe ~ 41,5 €/h : conducteur 25,6 + amortissement 6,4 + assurances 2,7 + structure 6,8 = 41,5 €/h. Multiplié par les heures de service de la mission.'),
+  (v_formation, 'qcm', 'La formule CRT (Coût de Revient Transport) standard est :', '[{"id":"a","label":"Coût km × Km totaux uniquement","is_correct":false},{"id":"b","label":"(Km × coût km variable) + (Heures × coût horaire fixe) + coûts spécifiques","is_correct":true},{"id":"c","label":"CA - Charges variables","is_correct":false},{"id":"d","label":"Coût total annuel / 12","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['crt','formule'], 'mft-2026-gotrm:bc03-01:qcm:9', true, 'CRT = (km × coût km variable) + (heures × coût horaire fixe) + coûts spécifiques mission. Méthode standard d''évaluation rapide d''une mission. Distinct du coût annuel global divisé par km.'),
+  (v_formation, 'qcm', 'Pour une mission Bordeaux-Toulouse (250 km commerciaux + 250 km à vide, 8 h totales), CRT avec coefficients standard ~ :', '[{"id":"a","label":"200 €","is_correct":false},{"id":"b","label":"425 €","is_correct":false},{"id":"c","label":"626 €","is_correct":true},{"id":"d","label":"1 000 €","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['calcul','crt'], 'mft-2026-gotrm:bc03-01:qcm:10', true, 'CRT = (500 × 0,588) + (8 × 41,52) = 294 + 332 = 626 €. C''est le calcul standard pour une mission FTL régionale avec retour à vide.'),
+  (v_formation, 'qcm', 'Si un véhicule a 50 % de retour à vide, son coût km commercial est :', '[{"id":"a","label":"Égal au coût km total","is_correct":false},{"id":"b","label":"Doublé par rapport au coût km total","is_correct":true},{"id":"c","label":"Réduit de moitié","is_correct":false},{"id":"d","label":"Identique","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['retour-vide','calcul'], 'mft-2026-gotrm:bc03-01:qcm:11', true, '50 % de retour à vide signifie que tous les coûts (sur 100 % des km) sont absorbés par seulement 50 % des km commerciaux. Coût km commercial = Coût km total × 2.'),
+  (v_formation, 'qcm', 'Pour calculer le prix de vente avec marge nette 10 %, la formule est :', '[{"id":"a","label":"Prix = CRT × 1,10","is_correct":false},{"id":"b","label":"Prix = CRT / (1 - 0,10)","is_correct":true},{"id":"c","label":"Prix = CRT + 10 €","is_correct":false},{"id":"d","label":"Prix = CRT × 0,90","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['prix','marge'], 'mft-2026-gotrm:bc03-01:qcm:12', true, 'Prix = CRT / (1 - taux marge nette). Pour CRT 626 € avec marge 10 % : Prix = 626 / 0,90 = 695,56 €. CRT × 1,10 donnerait 9 % de marge réelle (erreur classique).'),
+  (v_formation, 'qcm', 'L''option "achat d''un véhicule" se caractérise par :', '[{"id":"a","label":"Pas de propriété","is_correct":false},{"id":"b","label":"Propriété dès le départ + amortissement déductible","is_correct":true},{"id":"c","label":"Loyers entièrement déductibles","is_correct":false},{"id":"d","label":"Service inclus","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['achat','caracteristiques'], 'mft-2026-gotrm:bc03-01:qcm:13', true, 'Achat = propriété immédiate, financement par crédit possible, amortissement déductible (linéaire ou dégressif), inscription à l''actif. Le suramortissement véhicules propres (40 %) est un avantage majeur jusqu''en 2030.'),
+  (v_formation, 'qcm', 'Le crédit-bail (leasing financier) implique :', '[{"id":"a","label":"Propriété immédiate de l''entreprise","is_correct":false},{"id":"b","label":"Loyers déductibles + option d''achat à la fin de la période","is_correct":true},{"id":"c","label":"Service entretien systématiquement inclus","is_correct":false},{"id":"d","label":"Pas de loyer pendant 6 ans","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['credit-bail'], 'mft-2026-gotrm:bc03-01:qcm:14', true, 'Crédit-bail : loueur propriétaire, l''entreprise paie des loyers (100 % déductibles), peut lever une option d''achat à la fin (1-5 % de la valeur résiduelle). Distinct de la LLD (pas d''option d''achat).'),
+  (v_formation, 'qcm', 'La LLD (Location Longue Durée) se distingue par :', '[{"id":"a","label":"L''option d''achat à la fin","is_correct":false},{"id":"b","label":"Le service entretien souvent inclus + restitution sans propriété finale","is_correct":true},{"id":"c","label":"L''absence de loyers","is_correct":false},{"id":"d","label":"L''inscription au bilan","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['lld'], 'mft-2026-gotrm:bc03-01:qcm:15', true, 'LLD : pas de propriété finale, restitution à la fin, mais service entretien et pneus souvent inclus. Idéal pour renouvellement régulier du parc et simplification de la gestion.'),
+  (v_formation, 'qcm', 'Le suramortissement véhicules propres (jusqu''en 2030) permet :', '[{"id":"a","label":"Aucun avantage","is_correct":false},{"id":"b","label":"+40 % d''amortissement déductible","is_correct":true},{"id":"c","label":"-50 % de TVA","is_correct":false},{"id":"d","label":"Une réduction de la prime d''assurance","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['suramortissement'], 'mft-2026-gotrm:bc03-01:qcm:16', true, 'Suramortissement véhicules propres (gaz naturel, électrique, hydrogène) : déduction supplémentaire de 40 % de la valeur d''origine, étalée sur la durée d''amortissement. Avantage fiscal majeur (jusqu''en 2030 actuellement).'),
+  (v_formation, 'qcm', 'Le ROI simple d''un investissement de 60 000 € qui génère 80 000 € de bénéfice annuel est :', '[{"id":"a","label":"75 %","is_correct":false},{"id":"b","label":"107 %","is_correct":false},{"id":"c","label":"133 %","is_correct":true},{"id":"d","label":"200 %","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['roi','calcul'], 'mft-2026-gotrm:bc03-01:qcm:17', true, 'ROI = 80 000 / 60 000 × 100 = 133 % par an. Excellent ROI (payback < 1 an).'),
+  (v_formation, 'qcm', 'Le payback (période de retour) d''un investissement de 95 000 € avec bénéfice annuel de 18 500 € est :', '[{"id":"a","label":"3 ans","is_correct":false},{"id":"b","label":"5,1 ans","is_correct":true},{"id":"c","label":"8 ans","is_correct":false},{"id":"d","label":"12 ans","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['payback','calcul'], 'mft-2026-gotrm:bc03-01:qcm:18', true, '95 000 / 18 500 = 5,13 ans. Pour un véhicule amorti sur 6 ans, c''est acceptable (l''investissement est récupéré avant la fin de l''amortissement).'),
+  (v_formation, 'qcm', 'Une VAN positive d''un projet signifie que :', '[{"id":"a","label":"Le projet est non rentable","is_correct":false},{"id":"b","label":"Le projet crée de la valeur (au-delà du coût du capital)","is_correct":true},{"id":"c","label":"Il faut augmenter le taux d''actualisation","is_correct":false},{"id":"d","label":"L''investissement initial est insuffisant","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['van','interpretation'], 'mft-2026-gotrm:bc03-01:qcm:19', true, 'VAN positive = la somme actualisée des cash flows futurs dépasse l''investissement initial. Le projet crée donc de la valeur au-delà du coût du capital. C''est un indicateur clé pour les investisseurs.'),
+  (v_formation, 'qcm', 'Le TRI (Taux de Rentabilité Interne) est :', '[{"id":"a","label":"Le taux d''intérêt bancaire","is_correct":false},{"id":"b","label":"Le taux d''actualisation pour lequel la VAN est nulle","is_correct":true},{"id":"c","label":"Le taux de marge brute","is_correct":false},{"id":"d","label":"Le taux de TVA applicable","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['tri','definition'], 'mft-2026-gotrm:bc03-01:qcm:20', true, 'TRI = taux d''actualisation pour lequel VAN = 0. C''est le rendement intrinsèque du projet. Si TRI > coût du capital (ex : 5 %), le projet est rentable.'),
+  (v_formation, 'qcm', 'Sur un véhicule de 6 ans d''utilisation, l''acquisition représente typiquement quelle part du TCO ?', '[{"id":"a","label":"5 %","is_correct":false},{"id":"b","label":"15-25 %","is_correct":true},{"id":"c","label":"50 %","is_correct":false},{"id":"d","label":"80 %","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['tco','decomposition'], 'mft-2026-gotrm:bc03-01:qcm:21', true, 'Sur 6 ans, l''acquisition représente 15-25 % du TCO total. Les coûts d''exploitation (carburant, conducteur, entretien) représentent 75-85 %. Optimiser l''exploitation a un impact bien supérieur à négocier le prix d''achat.'),
+  (v_formation, 'qcm', 'Pour comparer plusieurs investissements, le critère le plus complet est :', '[{"id":"a","label":"Le ROI simple","is_correct":false},{"id":"b","label":"La VAN (avec un taux d''actualisation cohérent)","is_correct":true},{"id":"c","label":"Le coût initial","is_correct":false},{"id":"d","label":"La durée d''amortissement","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['van','comparaison'], 'mft-2026-gotrm:bc03-01:qcm:22', true, 'La VAN (Valeur Actuelle Nette) est le critère le plus complet : elle prend en compte la valeur temporelle de l''argent et permet de comparer des projets de durées et profils différents sur une base homogène.'),
+  (v_formation, 'qcm', 'Un dossier d''investissement structuré comprend typiquement :', '[{"id":"a","label":"1 page de synthèse uniquement","is_correct":false},{"id":"b","label":"10-15 pages avec analyse économique, risques et plan de mise en œuvre","is_correct":true},{"id":"c","label":"50 pages obligatoirement","is_correct":false},{"id":"d","label":"Aucune structure imposée","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['dossier-investissement'], 'mft-2026-gotrm:bc03-01:qcm:23', true, '10-15 pages : synthèse exécutive (1), contexte (1), description (2), analyse économique (3-4), risques (1-2), stratégie (1), plan mise en œuvre (1-2), conclusion (1). Format efficace pour décision.'),
+  (v_formation, 'qcm', 'L''éco-conduite peut typiquement réduire la consommation de carburant de :', '[{"id":"a","label":"0,5 %","is_correct":false},{"id":"b","label":"5-12 %","is_correct":true},{"id":"c","label":"30-40 %","is_correct":false},{"id":"d","label":"50-60 %","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['eco-conduite'], 'mft-2026-gotrm:bc03-01:qcm:24', true, 'Éco-conduite par formation et coaching : -5 à -12 % de carburant. Sur un porteur 19 t à 28 L/100 km, c''est 1,5 à 3,5 L/100 km gagnés, soit 0,02-0,05 €/km. Pour 110 000 km/an : 2 200-5 500 € économisés/an/véhicule.'),
+  (v_formation, 'qcm', 'Quelle option de financement préserve le mieux la capacité d''endettement future ?', '[{"id":"a","label":"Achat avec crédit bancaire","is_correct":false},{"id":"b","label":"LLD (Location Longue Durée)","is_correct":true},{"id":"c","label":"Achat comptant","is_correct":false},{"id":"d","label":"Achat avec apport élevé","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['lld','bilan'], 'mft-2026-gotrm:bc03-01:qcm:25', true, 'LLD préserve la capacité d''endettement car les loyers sont en compte de résultat (charges 100 % déductibles), pas de crédit au passif. Le crédit-bail aussi (mais retraitement IFRS pour sociétés cotées). L''achat avec crédit mobilise la capacité d''endettement.'),
+  (v_formation, 'qcm', 'Pour les véhicules « cœur » à fort kilométrage et vision long terme (> 8 ans), le mode de financement le plus adapté est :', '[{"id":"a","label":"LLD 3 ans","is_correct":false},{"id":"b","label":"Achat (souvent avec suramortissement)","is_correct":true},{"id":"c","label":"Crédit-bail 4 ans","is_correct":false},{"id":"d","label":"Location courte durée","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['achat','strategie'], 'mft-2026-gotrm:bc03-01:qcm:26', true, 'Pour les véhicules cœur à fort kilométrage : achat préférable. Avantages : amortissement déductible, suramortissement véhicules propres, propriété, possibilité de revente avec plus-value, vision long terme.'),
+  (v_formation, 'qcm', 'Pour les véhicules à renouveler régulièrement (utilitaires, voitures direction), le mode le plus adapté est :', '[{"id":"a","label":"Achat avec amortissement long","is_correct":false},{"id":"b","label":"LLD avec service inclus","is_correct":true},{"id":"c","label":"Crédit-bail 10 ans","is_correct":false},{"id":"d","label":"Location courte sur 24 ans","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['lld','strategie'], 'mft-2026-gotrm:bc03-01:qcm:27', true, 'LLD pour les véhicules à renouveler régulièrement : pas de propriété, service entretien inclus, simplicité opérationnelle, renouvellement facile (3-5 ans). Idéal pour utilitaires VUL, voitures direction.'),
+  (v_formation, 'qcm', 'Le coût km global d''un porteur 19 t en 2026 (toutes charges incluses) est typiquement :', '[{"id":"a","label":"0,50 €/km","is_correct":false},{"id":"b","label":"1,22-1,30 €/km","is_correct":true},{"id":"c","label":"2,50 €/km","is_correct":false},{"id":"d","label":"5 €/km","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['cout-km','reference'], 'mft-2026-gotrm:bc03-01:qcm:28', true, 'Coût km total porteur 19 t en 2026 : ~ 1,22-1,30 €/km (variable selon profil exploitation, frais de structure, etc.). Le prix de vente cible doit être supérieur (typiquement 1,40 €/km commercial pour marge nette 8-10 %).');
 
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:1', 'qcm',
-   'Le coût d''un porteur 19 t neuf est typiquement de :',
-   jsonb '[
-     {"key":"a","label":"30 000 €"},
-     {"key":"b","label":"95 000 €"},
-     {"key":"c","label":"250 000 €"},
-     {"key":"d","label":"500 000 €"}
-   ]', '["b"]'::jsonb,
-   'Coût acquisition porteur 19 t neuf : 95 000 € HT typiquement (variable selon options). Tracteur 44 t : ~ 130 000 €. Distribution 12 t : ~ 78 000 €. VUL 3,5 t : ~ 35 000 €.',
-   'facile', '{couts,acquisition}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:2', 'qcm',
-   'Le poste qui pèse le plus dans le coût de revient kilométrique d''un porteur 19 t est :',
-   jsonb '[
-     {"key":"a","label":"L''amortissement"},
-     {"key":"b","label":"Carburant et conducteur (à parité, ~ 30 % chacun)"},
-     {"key":"c","label":"Les assurances"},
-     {"key":"d","label":"Les pneumatiques"}
-   ]', '["b"]'::jsonb,
-   'Carburant ~ 30 % et conducteur ~ 30 % du coût total. Suivent : structure (~ 8 %), amortissement (~ 8 %), entretien et pneus (~ 8 %), assurances/taxes (~ 4 %), péages (~ 5 %), lubrifiants (~ 3 %).',
-   'moyenne', '{couts,decomposition}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:3', 'qcm',
-   'L''amortissement d''un porteur 19 t (acquisition 95 k€, valeur résiduelle 25 % à 6 ans, 120 000 km/an) donne :',
-   jsonb '[
-     {"key":"a","label":"0,066 €/km"},
-     {"key":"b","label":"0,099 €/km"},
-     {"key":"c","label":"0,158 €/km"},
-     {"key":"d","label":"0,250 €/km"}
-   ]', '["b"]'::jsonb,
-   'Base amortissable = 95 000 - 23 750 = 71 250 €. Amortissement annuel = 71 250 / 6 = 11 875 €. Coût km = 11 875 / 120 000 = 0,099 €/km.',
-   'moyenne', '{calcul,amortissement}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:4', 'qcm',
-   'Pour 28 L/100 km à 1,42 €/L HT, le coût carburant kilométrique est :',
-   jsonb '[
-     {"key":"a","label":"0,200 €/km"},
-     {"key":"b","label":"0,300 €/km"},
-     {"key":"c","label":"0,398 €/km"},
-     {"key":"d","label":"0,500 €/km"}
-   ]', '["c"]'::jsonb,
-   '28 × 1,42 / 100 = 0,3976 €/km, arrondi 0,398 €/km. C''est le calcul standard du coût carburant : Consommation × Prix gazole HT / 100.',
-   'facile', '{calcul,carburant}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:5', 'qcm',
-   'Le coût employeur annuel d''un conducteur PL expérimenté (CDI, coefficient 138M) est typiquement :',
-   jsonb '[
-     {"key":"a","label":"15 000 €"},
-     {"key":"b","label":"30 000 €"},
-     {"key":"c","label":"47 000 €"},
-     {"key":"d","label":"80 000 €"}
-   ]', '["c"]'::jsonb,
-   'Coût employeur ~ 47 000 €/an : salaire brut 27 000 + heures sup 4 080 + indemnités 3 360 + primes 1 200 + charges patronales (~ 42 %) 12 960 = 47 400 €.',
-   'moyenne', '{couts,conducteur}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:6', 'qcm',
-   'Pour un conducteur à 25,6 €/h et une vitesse moyenne de 65 km/h, le coût km conducteur est :',
-   jsonb '[
-     {"key":"a","label":"0,256 €/km"},
-     {"key":"b","label":"0,394 €/km"},
-     {"key":"c","label":"0,512 €/km"},
-     {"key":"d","label":"0,650 €/km"}
-   ]', '["b"]'::jsonb,
-   '25,6 / 65 = 0,394 €/km. Coût horaire / Vitesse moyenne. Pour un porteur urbain (vitesse moyenne 30 km/h) : 25,6 / 30 = 0,853 €/km, soit beaucoup plus cher en distribution urbaine.',
-   'moyenne', '{calcul,conducteur}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:7', 'qcm',
-   'Le coût km variable typique d''un porteur 19 t (carburant + entretien + péages + lubrifiants) est :',
-   jsonb '[
-     {"key":"a","label":"~ 0,30 €/km"},
-     {"key":"b","label":"~ 0,59 €/km"},
-     {"key":"c","label":"~ 1,00 €/km"},
-     {"key":"d","label":"~ 1,50 €/km"}
-   ]', '["b"]'::jsonb,
-   'Coût km variable porteur 19 t = ~ 0,59 €/km. Décomposition : carburant 0,40 + entretien 0,10 + péages 0,07 + lubrifiants 0,02 = 0,59 €/km. À distinguer du coût total (incluant fixes) ~ 1,22-1,30 €/km.',
-   'moyenne', '{calcul,variable}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:8', 'qcm',
-   'Le coût horaire fixe d''un porteur 19 t (conducteur + amortissement + assurances + structure) est typiquement :',
-   jsonb '[
-     {"key":"a","label":"~ 15 €/h"},
-     {"key":"b","label":"~ 41,5 €/h"},
-     {"key":"c","label":"~ 100 €/h"},
-     {"key":"d","label":"~ 250 €/h"}
-   ]', '["b"]'::jsonb,
-   'Coût horaire fixe ~ 41,5 €/h : conducteur 25,6 + amortissement 6,4 + assurances 2,7 + structure 6,8 = 41,5 €/h. Multiplié par les heures de service de la mission.',
-   'difficile', '{calcul,horaire}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:9', 'qcm',
-   'La formule CRT (Coût de Revient Transport) standard est :',
-   jsonb '[
-     {"key":"a","label":"Coût km × Km totaux uniquement"},
-     {"key":"b","label":"(Km × coût km variable) + (Heures × coût horaire fixe) + coûts spécifiques"},
-     {"key":"c","label":"CA - Charges variables"},
-     {"key":"d","label":"Coût total annuel / 12"}
-   ]', '["b"]'::jsonb,
-   'CRT = (km × coût km variable) + (heures × coût horaire fixe) + coûts spécifiques mission. Méthode standard d''évaluation rapide d''une mission. Distinct du coût annuel global divisé par km.',
-   'moyenne', '{crt,formule}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:10', 'qcm',
-   'Pour une mission Bordeaux-Toulouse (250 km commerciaux + 250 km à vide, 8 h totales), CRT avec coefficients standard ~ :',
-   jsonb '[
-     {"key":"a","label":"200 €"},
-     {"key":"b","label":"425 €"},
-     {"key":"c","label":"626 €"},
-     {"key":"d","label":"1 000 €"}
-   ]', '["c"]'::jsonb,
-   'CRT = (500 × 0,588) + (8 × 41,52) = 294 + 332 = 626 €. C''est le calcul standard pour une mission FTL régionale avec retour à vide.',
-   'difficile', '{calcul,crt}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:11', 'qcm',
-   'Si un véhicule a 50 % de retour à vide, son coût km commercial est :',
-   jsonb '[
-     {"key":"a","label":"Égal au coût km total"},
-     {"key":"b","label":"Doublé par rapport au coût km total"},
-     {"key":"c","label":"Réduit de moitié"},
-     {"key":"d","label":"Identique"}
-   ]', '["b"]'::jsonb,
-   '50 % de retour à vide signifie que tous les coûts (sur 100 % des km) sont absorbés par seulement 50 % des km commerciaux. Coût km commercial = Coût km total × 2.',
-   'moyenne', '{retour-vide,calcul}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:12', 'qcm',
-   'Pour calculer le prix de vente avec marge nette 10 %, la formule est :',
-   jsonb '[
-     {"key":"a","label":"Prix = CRT × 1,10"},
-     {"key":"b","label":"Prix = CRT / (1 - 0,10)"},
-     {"key":"c","label":"Prix = CRT + 10 €"},
-     {"key":"d","label":"Prix = CRT × 0,90"}
-   ]', '["b"]'::jsonb,
-   'Prix = CRT / (1 - taux marge nette). Pour CRT 626 € avec marge 10 % : Prix = 626 / 0,90 = 695,56 €. CRT × 1,10 donnerait 9 % de marge réelle (erreur classique).',
-   'moyenne', '{prix,marge}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:13', 'qcm',
-   'L''option "achat d''un véhicule" se caractérise par :',
-   jsonb '[
-     {"key":"a","label":"Pas de propriété"},
-     {"key":"b","label":"Propriété dès le départ + amortissement déductible"},
-     {"key":"c","label":"Loyers entièrement déductibles"},
-     {"key":"d","label":"Service inclus"}
-   ]', '["b"]'::jsonb,
-   'Achat = propriété immédiate, financement par crédit possible, amortissement déductible (linéaire ou dégressif), inscription à l''actif. Le suramortissement véhicules propres (40 %) est un avantage majeur jusqu''en 2030.',
-   'facile', '{achat,caracteristiques}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:14', 'qcm',
-   'Le crédit-bail (leasing financier) implique :',
-   jsonb '[
-     {"key":"a","label":"Propriété immédiate de l''entreprise"},
-     {"key":"b","label":"Loyers déductibles + option d''achat à la fin de la période"},
-     {"key":"c","label":"Service entretien systématiquement inclus"},
-     {"key":"d","label":"Pas de loyer pendant 6 ans"}
-   ]', '["b"]'::jsonb,
-   'Crédit-bail : loueur propriétaire, l''entreprise paie des loyers (100 % déductibles), peut lever une option d''achat à la fin (1-5 % de la valeur résiduelle). Distinct de la LLD (pas d''option d''achat).',
-   'moyenne', '{credit-bail}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:15', 'qcm',
-   'La LLD (Location Longue Durée) se distingue par :',
-   jsonb '[
-     {"key":"a","label":"L''option d''achat à la fin"},
-     {"key":"b","label":"Le service entretien souvent inclus + restitution sans propriété finale"},
-     {"key":"c","label":"L''absence de loyers"},
-     {"key":"d","label":"L''inscription au bilan"}
-   ]', '["b"]'::jsonb,
-   'LLD : pas de propriété finale, restitution à la fin, mais service entretien et pneus souvent inclus. Idéal pour renouvellement régulier du parc et simplification de la gestion.',
-   'moyenne', '{lld}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:16', 'qcm',
-   'Le suramortissement véhicules propres (jusqu''en 2030) permet :',
-   jsonb '[
-     {"key":"a","label":"Aucun avantage"},
-     {"key":"b","label":"+40 % d''amortissement déductible"},
-     {"key":"c","label":"-50 % de TVA"},
-     {"key":"d","label":"Une réduction de la prime d''assurance"}
-   ]', '["b"]'::jsonb,
-   'Suramortissement véhicules propres (gaz naturel, électrique, hydrogène) : déduction supplémentaire de 40 % de la valeur d''origine, étalée sur la durée d''amortissement. Avantage fiscal majeur (jusqu''en 2030 actuellement).',
-   'difficile', '{suramortissement}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:17', 'qcm',
-   'Le ROI simple d''un investissement de 60 000 € qui génère 80 000 € de bénéfice annuel est :',
-   jsonb '[
-     {"key":"a","label":"75 %"},
-     {"key":"b","label":"107 %"},
-     {"key":"c","label":"133 %"},
-     {"key":"d","label":"200 %"}
-   ]', '["c"]'::jsonb,
-   'ROI = 80 000 / 60 000 × 100 = 133 % par an. Excellent ROI (payback < 1 an).',
-   'moyenne', '{roi,calcul}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:18', 'qcm',
-   'Le payback (période de retour) d''un investissement de 95 000 € avec bénéfice annuel de 18 500 € est :',
-   jsonb '[
-     {"key":"a","label":"3 ans"},
-     {"key":"b","label":"5,1 ans"},
-     {"key":"c","label":"8 ans"},
-     {"key":"d","label":"12 ans"}
-   ]', '["b"]'::jsonb,
-   '95 000 / 18 500 = 5,13 ans. Pour un véhicule amorti sur 6 ans, c''est acceptable (l''investissement est récupéré avant la fin de l''amortissement).',
-   'moyenne', '{payback,calcul}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:19', 'qcm',
-   'Une VAN positive d''un projet signifie que :',
-   jsonb '[
-     {"key":"a","label":"Le projet est non rentable"},
-     {"key":"b","label":"Le projet crée de la valeur (au-delà du coût du capital)"},
-     {"key":"c","label":"Il faut augmenter le taux d''actualisation"},
-     {"key":"d","label":"L''investissement initial est insuffisant"}
-   ]', '["b"]'::jsonb,
-   'VAN positive = la somme actualisée des cash flows futurs dépasse l''investissement initial. Le projet crée donc de la valeur au-delà du coût du capital. C''est un indicateur clé pour les investisseurs.',
-   'difficile', '{van,interpretation}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:20', 'qcm',
-   'Le TRI (Taux de Rentabilité Interne) est :',
-   jsonb '[
-     {"key":"a","label":"Le taux d''intérêt bancaire"},
-     {"key":"b","label":"Le taux d''actualisation pour lequel la VAN est nulle"},
-     {"key":"c","label":"Le taux de marge brute"},
-     {"key":"d","label":"Le taux de TVA applicable"}
-   ]', '["b"]'::jsonb,
-   'TRI = taux d''actualisation pour lequel VAN = 0. C''est le rendement intrinsèque du projet. Si TRI > coût du capital (ex : 5 %), le projet est rentable.',
-   'difficile', '{tri,definition}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:21', 'qcm',
-   'Sur un véhicule de 6 ans d''utilisation, l''acquisition représente typiquement quelle part du TCO ?',
-   jsonb '[
-     {"key":"a","label":"5 %"},
-     {"key":"b","label":"15-25 %"},
-     {"key":"c","label":"50 %"},
-     {"key":"d","label":"80 %"}
-   ]', '["b"]'::jsonb,
-   'Sur 6 ans, l''acquisition représente 15-25 % du TCO total. Les coûts d''exploitation (carburant, conducteur, entretien) représentent 75-85 %. Optimiser l''exploitation a un impact bien supérieur à négocier le prix d''achat.',
-   'difficile', '{tco,decomposition}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:22', 'qcm',
-   'Pour comparer plusieurs investissements, le critère le plus complet est :',
-   jsonb '[
-     {"key":"a","label":"Le ROI simple"},
-     {"key":"b","label":"La VAN (avec un taux d''actualisation cohérent)"},
-     {"key":"c","label":"Le coût initial"},
-     {"key":"d","label":"La durée d''amortissement"}
-   ]', '["b"]'::jsonb,
-   'La VAN (Valeur Actuelle Nette) est le critère le plus complet : elle prend en compte la valeur temporelle de l''argent et permet de comparer des projets de durées et profils différents sur une base homogène.',
-   'difficile', '{van,comparaison}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:23', 'qcm',
-   'Un dossier d''investissement structuré comprend typiquement :',
-   jsonb '[
-     {"key":"a","label":"1 page de synthèse uniquement"},
-     {"key":"b","label":"10-15 pages avec analyse économique, risques et plan de mise en œuvre"},
-     {"key":"c","label":"50 pages obligatoirement"},
-     {"key":"d","label":"Aucune structure imposée"}
-   ]', '["b"]'::jsonb,
-   '10-15 pages : synthèse exécutive (1), contexte (1), description (2), analyse économique (3-4), risques (1-2), stratégie (1), plan mise en œuvre (1-2), conclusion (1). Format efficace pour décision.',
-   'moyenne', '{dossier-investissement}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:24', 'qcm',
-   'L''éco-conduite peut typiquement réduire la consommation de carburant de :',
-   jsonb '[
-     {"key":"a","label":"0,5 %"},
-     {"key":"b","label":"5-12 %"},
-     {"key":"c","label":"30-40 %"},
-     {"key":"d","label":"50-60 %"}
-   ]', '["b"]'::jsonb,
-   'Éco-conduite par formation et coaching : -5 à -12 % de carburant. Sur un porteur 19 t à 28 L/100 km, c''est 1,5 à 3,5 L/100 km gagnés, soit 0,02-0,05 €/km. Pour 110 000 km/an : 2 200-5 500 € économisés/an/véhicule.',
-   'moyenne', '{eco-conduite}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:25', 'qcm',
-   'Quelle option de financement préserve le mieux la capacité d''endettement future ?',
-   jsonb '[
-     {"key":"a","label":"Achat avec crédit bancaire"},
-     {"key":"b","label":"LLD (Location Longue Durée)"},
-     {"key":"c","label":"Achat comptant"},
-     {"key":"d","label":"Achat avec apport élevé"}
-   ]', '["b"]'::jsonb,
-   'LLD préserve la capacité d''endettement car les loyers sont en compte de résultat (charges 100 % déductibles), pas de crédit au passif. Le crédit-bail aussi (mais retraitement IFRS pour sociétés cotées). L''achat avec crédit mobilise la capacité d''endettement.',
-   'moyenne', '{lld,bilan}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:26', 'qcm',
-   'Pour les véhicules « cœur » à fort kilométrage et vision long terme (> 8 ans), le mode de financement le plus adapté est :',
-   jsonb '[
-     {"key":"a","label":"LLD 3 ans"},
-     {"key":"b","label":"Achat (souvent avec suramortissement)"},
-     {"key":"c","label":"Crédit-bail 4 ans"},
-     {"key":"d","label":"Location courte durée"}
-   ]', '["b"]'::jsonb,
-   'Pour les véhicules cœur à fort kilométrage : achat préférable. Avantages : amortissement déductible, suramortissement véhicules propres, propriété, possibilité de revente avec plus-value, vision long terme.',
-   'moyenne', '{achat,strategie}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:27', 'qcm',
-   'Pour les véhicules à renouveler régulièrement (utilitaires, voitures direction), le mode le plus adapté est :',
-   jsonb '[
-     {"key":"a","label":"Achat avec amortissement long"},
-     {"key":"b","label":"LLD avec service inclus"},
-     {"key":"c","label":"Crédit-bail 10 ans"},
-     {"key":"d","label":"Location courte sur 24 ans"}
-   ]', '["b"]'::jsonb,
-   'LLD pour les véhicules à renouveler régulièrement : pas de propriété, service entretien inclus, simplicité opérationnelle, renouvellement facile (3-5 ans). Idéal pour utilitaires VUL, voitures direction.',
-   'facile', '{lld,strategie}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qcm:28', 'qcm',
-   'Le coût km global d''un porteur 19 t en 2026 (toutes charges incluses) est typiquement :',
-   jsonb '[
-     {"key":"a","label":"0,50 €/km"},
-     {"key":"b","label":"1,22-1,30 €/km"},
-     {"key":"c","label":"2,50 €/km"},
-     {"key":"d","label":"5 €/km"}
-   ]', '["b"]'::jsonb,
-   'Coût km total porteur 19 t en 2026 : ~ 1,22-1,30 €/km (variable selon profil exploitation, frais de structure, etc.). Le prix de vente cible doit être supérieur (typiquement 1,40 €/km commercial pour marge nette 8-10 %).',
-   'moyenne', '{cout-km,reference}');
 
   -- =================================================================
   -- 5 QR
   -- =================================================================
-  INSERT INTO public.question_bank (formation_id, source_ref, type, prompt, choices, correct, explanation, difficulty, tags) VALUES
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qr:1', 'qr',
-   'Calculez le coût de revient kilométrique complet d''un porteur 19 t à partir des données suivantes :
+  INSERT INTO public.question_bank (formation_id, type, statement, choices, max_score, difficulty, tags, source_ref, active, explanation) VALUES
+  (v_formation, 'qr', 'Calculez le coût de revient kilométrique complet d''un porteur 19 t à partir des données suivantes :
 - Acquisition 95 000 €, valeur résiduelle 25 % à 6 ans, 110 000 km totaux/an
 - Carburant 28 L/100 km à 1,42 €/L
 - Conducteur : coût employeur 47 400 €/an, 1 850 h travaillées
@@ -1378,9 +1097,7 @@ $lesson4$,
 - Assurances et taxes 5 040 €/an
 - Frais de structure 12 800 €/an
 
-Détaillez les 8 postes et concluez sur la rentabilité par rapport à un prix de vente moyen de 1,38 €/km commercial avec 22 % de retour à vide.',
-   '[]'::jsonb, '[]'::jsonb,
-   'CALCUL DÉTAILLÉ DU CRT KM
+Détaillez les 8 postes et concluez sur la rentabilité par rapport à un prix de vente moyen de 1,38 €/km commercial avec 22 % de retour à vide.', NULL, 1, 'difficile', ARRAY['calcul','crt','rentabilite'], 'mft-2026-gotrm:bc03-01:qr:1', true, 'CALCUL DÉTAILLÉ DU CRT KM
 
 POSTE 1 — AMORTISSEMENT
 - Base amortissable : 95 000 - (25 % × 95 000) = 71 250 €
@@ -1521,13 +1238,8 @@ Si après 6 mois d''actions correctives le véhicule reste en perte significativ
 - Vente / leasing pour libérer de la trésorerie
 - Remplacement par un véhicule mieux dimensionné (porteur 12 t en distribution)
 
-Cet exercice doit être fait par véhicule pour identifier ceux qui plombent les résultats.',
-   'difficile', '{calcul,crt,rentabilite}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qr:2', 'qr',
-   'Comparez économiquement l''achat, le crédit-bail et la LLD pour un porteur 19 t (acquisition 95 k€, durée 6 ans). Détaillez les avantages, inconvénients, coûts totaux, impacts fiscaux et bilanciels. Recommandation pour une PME 15 véhicules.',
-   '[]'::jsonb, '[]'::jsonb,
-   'COMPARAISON DÉTAILLÉE — PORTEUR 19 T SUR 6 ANS
+Cet exercice doit être fait par véhicule pour identifier ceux qui plombent les résultats.'),
+  (v_formation, 'qr', 'Comparez économiquement l''achat, le crédit-bail et la LLD pour un porteur 19 t (acquisition 95 k€, durée 6 ans). Détaillez les avantages, inconvénients, coûts totaux, impacts fiscaux et bilanciels. Recommandation pour une PME 15 véhicules.', NULL, 1, 'difficile', ARRAY['achat','credit-bail','lld','comparaison'], 'mft-2026-gotrm:bc03-01:qr:2', true, 'COMPARAISON DÉTAILLÉE — PORTEUR 19 T SUR 6 ANS
 
 OPTION 1 — ACHAT (CRÉDIT BANCAIRE 7 ANS, TAUX 5 %)
 
@@ -1689,13 +1401,8 @@ CHIFFRAGE GLOBAL DU MIX (15 véhicules)
 - Mais mobilisation de trésorerie + capacité d''endettement plus élevée
 - Et gestion entretien plus complexe
 
-Conclusion : le mix est légèrement plus cher (~ 15 %), mais offre flexibilité, simplicité et préservation de la capacité d''endettement, ce qui en fait le choix gagnant pour une PME en croissance.',
-   'difficile', '{achat,credit-bail,lld,comparaison}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qr:3', 'qr',
-   'Construisez le dossier d''investissement complet pour un projet TMS de 80 000 € (achat + intégration + formation). Détaillez bénéfices attendus, ROI, risques et plan de mise en œuvre.',
-   '[]'::jsonb, '[]'::jsonb,
-   'DOSSIER D''INVESTISSEMENT — PROJET TMS
+Conclusion : le mix est légèrement plus cher (~ 15 %), mais offre flexibilité, simplicité et préservation de la capacité d''endettement, ce qui en fait le choix gagnant pour une PME en croissance.'),
+  (v_formation, 'qr', 'Construisez le dossier d''investissement complet pour un projet TMS de 80 000 € (achat + intégration + formation). Détaillez bénéfices attendus, ROI, risques et plan de mise en œuvre.', NULL, 1, 'difficile', ARRAY['dossier-investissement','roi','tms'], 'mft-2026-gotrm:bc03-01:qr:3', true, 'DOSSIER D''INVESTISSEMENT — PROJET TMS
 
 1. SYNTHÈSE EXÉCUTIVE
 
@@ -1897,19 +1604,14 @@ Validation requise du Conseil de Direction.
 - Analyse SWOT du projet
 - Calculs financiers détaillés (Excel)
 
-FIN DU DOSSIER',
-   'difficile', '{dossier-investissement,roi,tms}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qr:4', 'qr',
-   'Une PME de 25 véhicules dispose de 250 000 € à investir. 4 projets concurrents :
+FIN DU DOSSIER'),
+  (v_formation, 'qr', 'Une PME de 25 véhicules dispose de 250 000 € à investir. 4 projets concurrents :
 A. Renouvellement 2 véhicules diesel : 190 k€, bénéfice annuel 35 k€
 B. TMS + télématique : 80 k€, bénéfice 95 k€/an
 C. 1 véhicule électrique avec subvention : 130 k€ net, bénéfice 25 k€/an + image
 D. Atelier maintenance interne : 150 k€, bénéfice 30 k€/an
 
-Comparez par ROI/Payback/VAN, choisissez et justifiez. Que faire avec le solde ?',
-   '[]'::jsonb, '[]'::jsonb,
-   'COMPARAISON DES 4 PROJETS
+Comparez par ROI/Payback/VAN, choisissez et justifiez. Que faire avec le solde ?', NULL, 1, 'difficile', ARRAY['decision','arbitrage','multi-projets'], 'mft-2026-gotrm:bc03-01:qr:4', true, 'COMPARAISON DES 4 PROJETS
 
 CALCULS PRÉLIMINAIRES
 
@@ -2031,13 +1733,8 @@ Cette stratégie diversifiée :
 - Positionne l''entreprise sur la transition énergétique (électrique)
 - Préserve la capacité d''emprunt pour les futurs investissements stratégiques (atelier)
 
-C''est une décision équilibrée qui combine performance économique et vision stratégique, alignée avec le positionnement durable d''une PME en croissance dans le secteur transport.',
-   'difficile', '{decision,arbitrage,multi-projets}'),
-
-  (v_formation, 'mft-2026-gotrm:bc03-01:qr:5', 'qr',
-   'Calculez le coût km commercial actuel de votre flotte et proposez 5 leviers d''amélioration concrets, chiffrés, avec actions, échéances et impact attendu sur 12 mois.',
-   '[]'::jsonb, '[]'::jsonb,
-   'CALCUL DU COÛT KM COMMERCIAL ACTUEL ET LEVIERS D''AMÉLIORATION
+C''est une décision équilibrée qui combine performance économique et vision stratégique, alignée avec le positionnement durable d''une PME en croissance dans le secteur transport.'),
+  (v_formation, 'qr', 'Calculez le coût km commercial actuel de votre flotte et proposez 5 leviers d''amélioration concrets, chiffrés, avec actions, échéances et impact attendu sur 12 mois.', NULL, 1, 'difficile', ARRAY['plan-action','leviers','roi-global'], 'mft-2026-gotrm:bc03-01:qr:5', true, 'CALCUL DU COÛT KM COMMERCIAL ACTUEL ET LEVIERS D''AMÉLIORATION
 
 ÉTAPE 1 — CALCUL DU COÛT KM COMMERCIAL ACTUEL
 
@@ -2203,8 +1900,8 @@ CONCLUSION
 
 Ce plan d''amélioration multi-leviers transforme la flotte d''une situation déficitaire à une rentabilité saine et durable. Les 5 leviers se renforcent mutuellement (synergie) et offrent une marge de sécurité face aux aléas (variation carburant, pression tarifaire client).
 
-La direction doit valider ce plan, allouer les ressources et nommer un porteur global. Les bénéfices attendus dépassent largement les investissements et positionnent l''entreprise pour une croissance future maîtrisée.',
-   'difficile', '{plan-action,leviers,roi-global}');
+La direction doit valider ce plan, allouer les ressources et nommer un porteur global. Les bénéfices attendus dépassent largement les investissements et positionnent l''entreprise pour une croissance future maîtrisée.');
+
 
   -- =================================================================
   -- QUIZZES

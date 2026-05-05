@@ -1034,298 +1034,45 @@ $lesson4$,
   -- =================================================================
   -- 25 QCM
   -- =================================================================
-  INSERT INTO public.question_bank (formation_id, source_ref, type, prompt, choices, correct, explanation, difficulty, tags) VALUES
+  INSERT INTO public.question_bank (formation_id, type, statement, choices, max_score, difficulty, tags, source_ref, active, explanation) VALUES
+  (v_formation, 'qcm', 'Le taux de remplissage doit être mesuré :', '[{"id":"a","label":"En poids uniquement","is_correct":false},{"id":"b","label":"En volume uniquement","is_correct":false},{"id":"c","label":"En poids ET en volume (le maximum des deux)","is_correct":true},{"id":"d","label":"En nombre de palettes","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['remplissage'], 'mft-2026-gotrm:bc01-10:qcm:1', true, 'Le véhicule est plein dès qu''une dimension (poids OU volume) atteint 100 %. Surveiller le maximum des deux : pour de la mousse, c''est le volume qui sature, pour des granulats, c''est le poids.'),
+  (v_formation, 'qcm', 'Une cible de remplissage standard en TRM longue distance est :', '[{"id":"a","label":"> 60 %","is_correct":false},{"id":"b","label":"> 75 %","is_correct":false},{"id":"c","label":"> 85 %","is_correct":true},{"id":"d","label":"> 95 %","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['remplissage','cible'], 'mft-2026-gotrm:bc01-10:qcm:2', true, 'TRM longue distance : > 85 %. LTL régional : > 75 %. Distribution urbaine : > 65 % (souvent contrainte par cubage). 95 % est un objectif d''excellence rare en pratique.'),
+  (v_formation, 'qcm', 'Une ponctualité < 90 % entraîne statistiquement :', '[{"id":"a","label":"Une augmentation de la marge","is_correct":false},{"id":"b","label":"Un risque élevé de churn (~ 65 % de départ client en 12 mois)","is_correct":true},{"id":"c","label":"Une baisse de carburant","is_correct":false},{"id":"d","label":"Aucun impact","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['ponctualite','churn'], 'mft-2026-gotrm:bc01-10:qcm:3', true, 'Statistiquement, un client recevant < 90 % de ponctualité a 65 % de probabilité de partir dans les 12 mois. Au-dessus de 96 %, fidélisation > 85 %. La ponctualité est un levier majeur de rétention.'),
+  (v_formation, 'qcm', 'Le taux de retour à vide en TRM longue distance "bon" est :', '[{"id":"a","label":"< 5 %","is_correct":false},{"id":"b","label":"10-15 %","is_correct":true},{"id":"c","label":"25-30 %","is_correct":false},{"id":"d","label":"50 %","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['retour-vide','cible'], 'mft-2026-gotrm:bc01-10:qcm:4', true, '10-15 % est considéré bon en TRM longue distance. < 10 % est excellent (rare en FTL pure). > 25 % critique. La distribution urbaine a souvent 100 % de retour à vide par nature.'),
+  (v_formation, 'qcm', 'Une consommation cible pour un porteur 19 t en cycle régional est de :', '[{"id":"a","label":"15-20 L/100 km","is_correct":false},{"id":"b","label":"26-30 L/100 km","is_correct":true},{"id":"c","label":"40-45 L/100 km","is_correct":false},{"id":"d","label":"60-70 L/100 km","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['conso','porteur'], 'mft-2026-gotrm:bc01-10:qcm:5', true, 'Porteur 19 t cycle régional : 26-30 L/100 km. Tracteur 44 t longue distance : 28-33 L. Distribution urbaine 12 t : 22-28 L. VUL : 8-12 L. Variations selon profil et conducteur.'),
+  (v_formation, 'qcm', 'L''éco-conduite peut typiquement faire baisser la consommation de :', '[{"id":"a","label":"5 à 12 %","is_correct":true},{"id":"b","label":"30 à 50 %","is_correct":false},{"id":"c","label":"75 %","is_correct":false},{"id":"d","label":"Aucune incidence","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['eco-conduite'], 'mft-2026-gotrm:bc01-10:qcm:6', true, 'L''éco-conduite via formation et coaching baisse de 5 à 12 % la consommation. C''est un levier majeur, à coût modéré (formation ~ 200 €/conducteur). ROI < 6 mois sur les véhicules longue distance.'),
+  (v_formation, 'qcm', 'La marge nette en transport TRM longue distance est typiquement de :', '[{"id":"a","label":"Moins de 1 %","is_correct":false},{"id":"b","label":"4-8 %","is_correct":true},{"id":"c","label":"15-25 %","is_correct":false},{"id":"d","label":"Plus de 30 %","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['marge','nette'], 'mft-2026-gotrm:bc01-10:qcm:7', true, 'TRM longue distance : 4-8 % de marge nette. LTL régional : 6-12 %. Distribution urbaine : 8-15 %. Spécifique (ADR/ATP) : 10-18 %. Ces marges restent fragiles : un sinistre peut effacer plusieurs mois.'),
+  (v_formation, 'qcm', 'Une marge nette < 4 % indique :', '[{"id":"a","label":"Excellente performance","is_correct":false},{"id":"b","label":"Une fragilité structurelle face à tout incident","is_correct":true},{"id":"c","label":"Une situation normale","is_correct":false},{"id":"d","label":"Un excès de rentabilité","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['marge','fragilite'], 'mft-2026-gotrm:bc01-10:qcm:8', true, 'Une marge nette < 4 % rend l''entreprise fragile : un sinistre, une hausse carburant, un départ conducteur peut compromettre l''équilibre. < 2 % = activité en danger structurel.'),
+  (v_formation, 'qcm', 'Le coût km commercial cible pour un tracteur 44 t en 2026 est :', '[{"id":"a","label":"0,5 - 0,8 €/km","is_correct":false},{"id":"b","label":"1,30 - 1,55 €/km","is_correct":true},{"id":"c","label":"2,5 - 3,0 €/km","is_correct":false},{"id":"d","label":"5 €/km","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['cout-km','2026'], 'mft-2026-gotrm:bc01-10:qcm:9', true, 'Tracteur 44 t longue distance 2026 : 1,30-1,55 €/km. Porteur 19 t régional : 1,20-1,45 €. Distribution 12 t : 1,40-1,75 €. VUL 3,5 t : 1,15-1,40 €. À comparer au prix de vente.'),
+  (v_formation, 'qcm', 'Le BFR (Besoin en Fonds de Roulement) en transport est principalement composé de :', '[{"id":"a","label":"Stocks de marchandises","is_correct":false},{"id":"b","label":"Créances clients - Dettes fournisseurs","is_correct":true},{"id":"c","label":"Capital social","is_correct":false},{"id":"d","label":"Trésorerie disponible","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['bfr'], 'mft-2026-gotrm:bc01-10:qcm:10', true, 'En transport (peu de stocks), le BFR ≈ Créances clients - Dettes fournisseurs. Plus le DSO est élevé et le DPO faible, plus le BFR est gourmand en trésorerie.'),
+  (v_formation, 'qcm', 'Un DSO (Days Sales Outstanding) de 50 jours signifie :', '[{"id":"a","label":"L''entreprise paie ses fournisseurs en 50 j","is_correct":false},{"id":"b","label":"Le délai moyen de paiement par les clients est de 50 jours","is_correct":true},{"id":"c","label":"Le stock dort 50 jours","is_correct":false},{"id":"d","label":"50 jours de chiffre d''affaires","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['dso'], 'mft-2026-gotrm:bc01-10:qcm:11', true, 'DSO = Days Sales Outstanding = délai moyen de paiement par les clients. Un DSO de 50 j signifie que les clients paient en 50 j en moyenne. Cible secteur : < 45 j.'),
+  (v_formation, 'qcm', 'L''EBE (Excédent Brut d''Exploitation) mesure :', '[{"id":"a","label":"La marge dégagée par l''activité avant amortissements et frais financiers","is_correct":true},{"id":"b","label":"Le bénéfice après impôt","is_correct":false},{"id":"c","label":"Le chiffre d''affaires brut","is_correct":false},{"id":"d","label":"Les dividendes versés","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['ebe'], 'mft-2026-gotrm:bc01-10:qcm:12', true, 'EBE = CA - Achats consommés - Charges externes - Charges de personnel - Impôts/taxes. C''est le vrai indicateur de performance opérationnelle, indépendant de la politique d''amortissement et de financement.'),
+  (v_formation, 'qcm', 'Un taux d''EBE en transport routier marchandises bien géré est de :', '[{"id":"a","label":"1-3 %","is_correct":false},{"id":"b","label":"8-15 %","is_correct":true},{"id":"c","label":"25-40 %","is_correct":false},{"id":"d","label":"> 50 %","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['ebe','cible'], 'mft-2026-gotrm:bc01-10:qcm:13', true, 'EBE / CA bien géré : 8-15 % en TRM. PME bien gérée : 12-18 %. Affrètement (marges plus faibles) : 4-8 %. Banquiers et investisseurs scrutent ce ratio en priorité.'),
+  (v_formation, 'qcm', 'La CAF (Capacité d''Autofinancement) se calcule comme :', '[{"id":"a","label":"Bénéfice net + Amortissements + Provisions","is_correct":true},{"id":"b","label":"CA - Charges variables","is_correct":false},{"id":"c","label":"Marge nette × 1,5","is_correct":false},{"id":"d","label":"EBE - Impôts","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['caf'], 'mft-2026-gotrm:bc01-10:qcm:14', true, 'CAF = Bénéfice net + Amortissements + Provisions. Indique la capacité de l''entreprise à financer ses investissements avec ses propres ressources. CAF/CA > 10 % = bonne santé financière.'),
+  (v_formation, 'qcm', 'Un taux de litiges considéré comme "bon" en transport est :', '[{"id":"a","label":"> 5 %","is_correct":false},{"id":"b","label":"2-5 %","is_correct":false},{"id":"c","label":"0,3-1 %","is_correct":true},{"id":"d","label":"Pas de cible","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['litiges','taux'], 'mft-2026-gotrm:bc01-10:qcm:15', true, 'Taux de litiges bon : 0,3-1 %. Excellent : < 0,3 %. Au-delà de 2 % : critique. Le coût de la non-qualité représente typiquement 0,5-1,5 % du CA.'),
+  (v_formation, 'qcm', 'Le NPS moyen secteur transport B2B en France est de :', '[{"id":"a","label":"-20","is_correct":false},{"id":"b","label":"20-30","is_correct":true},{"id":"c","label":"60-80","is_correct":false},{"id":"d","label":"100","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['nps','benchmark'], 'mft-2026-gotrm:bc01-10:qcm:16', true, 'NPS moyen secteur transport B2B France : 20-30. Top quartile : > 40. Excellent : > 50. Au-dessous de 0, il y a plus de détracteurs que de promoteurs.'),
+  (v_formation, 'qcm', 'Un taux de churn annuel acceptable en transport B2B est de :', '[{"id":"a","label":"< 8 %","is_correct":true},{"id":"b","label":"15-20 %","is_correct":false},{"id":"c","label":"30-40 %","is_correct":false},{"id":"d","label":"> 50 %","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['churn'], 'mft-2026-gotrm:bc01-10:qcm:17', true, 'Cible churn annuel : < 8 % (fidélisation > 92 %). Un churn de 15 % signale un problème structurel. > 25 % = entreprise toxique ou marché en crise.'),
+  (v_formation, 'qcm', 'Le coût typique de remplacement d''un conducteur PL est :', '[{"id":"a","label":"500 €","is_correct":false},{"id":"b","label":"8 000 - 15 000 €","is_correct":true},{"id":"c","label":"50 000 €","is_correct":false},{"id":"d","label":"100 000 €","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['turnover','cout'], 'mft-2026-gotrm:bc01-10:qcm:18', true, 'Remplacer un conducteur PL : 8-15 k€ (recrutement, formation, baisse productivité initiale 2-3 mois, FCO si nouveau). C''est pourquoi la fidélisation conducteur est un enjeu majeur.'),
+  (v_formation, 'qcm', 'Un turnover conducteurs > 25 % indique généralement :', '[{"id":"a","label":"Une excellente performance","is_correct":false},{"id":"b","label":"Une situation critique (entreprise toxique ou sous-rémunération)","is_correct":true},{"id":"c","label":"Un secteur en croissance","is_correct":false},{"id":"d","label":"Une politique RH normale","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['turnover','critique'], 'mft-2026-gotrm:bc01-10:qcm:19', true, 'Turnover > 25 % conducteurs PL = signal d''alerte rouge. Causes typiques : management, rémunération, conditions de travail, climat. À traiter d''urgence avant cercle vicieux.'),
+  (v_formation, 'qcm', 'Le taux de fréquence (TF) des accidents du travail se calcule comme :', '[{"id":"a","label":"Nombre d''accidents par an","is_correct":false},{"id":"b","label":"(Accidents avec arrêt × 1 000 000) / heures travaillées","is_correct":true},{"id":"c","label":"% d''absentéisme","is_correct":false},{"id":"d","label":"Nombre d''accidents / effectif","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['accidents','tf'], 'mft-2026-gotrm:bc01-10:qcm:20', true, 'TF = (Accidents avec arrêt × 1 000 000) / Heures travaillées. Cible TRM : < 25. Norme secteur : ~ 35. Un TF élevé signale problèmes de prévention, formation, équipements.'),
+  (v_formation, 'qcm', 'Le tableau de bord intégré recommandé suit combien de dimensions ?', '[{"id":"a","label":"1 (financière)","is_correct":false},{"id":"b","label":"4 (opérationnel, financier, client, RH)","is_correct":true},{"id":"c","label":"10","is_correct":false},{"id":"d","label":"Aucune","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['tableau-bord','4-dimensions'], 'mft-2026-gotrm:bc01-10:qcm:21', true, 'La matrice 4x4 recommandée : 4 dimensions (op., fin., cli., RH), 4-5 KPI par dimension. Évite la tunnel vision financière et permet d''anticiper les cercles vicieux multidimensionnels.'),
+  (v_formation, 'qcm', 'Une réunion de pilotage mensuelle efficace dure typiquement :', '[{"id":"a","label":"15 min","is_correct":false},{"id":"b","label":"60 min","is_correct":true},{"id":"c","label":"3 heures","is_correct":false},{"id":"d","label":"Une journée entière","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['reunion','duree'], 'mft-2026-gotrm:bc01-10:qcm:22', true, 'Réunion de pilotage idéale : 60 min (15 min revue KPI, 15 min écarts, 10 min actions en cours, 15 min nouvelles décisions, 5 min conclusion). Au-delà de 90 min, désengagement.'),
+  (v_formation, 'qcm', 'Le PDCA (cycle d''amélioration continue) signifie :', '[{"id":"a","label":"Plan / Do / Check / Act","is_correct":true},{"id":"b","label":"Procurement / Delivery / Control / Audit","is_correct":false},{"id":"c","label":"Plan / Distribute / Calculate / Adjust","is_correct":false},{"id":"d","label":"Process / Decide / Confirm / Apply","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['pdca'], 'mft-2026-gotrm:bc01-10:qcm:23', true, 'PDCA (W. E. Deming) : Plan (planifier le changement), Do (exécuter pilote), Check (vérifier résultats), Act (standardiser ou ajuster). Cycle universel d''amélioration continue.'),
+  (v_formation, 'qcm', 'Power BI Pro coûte typiquement :', '[{"id":"a","label":"Gratuit","is_correct":false},{"id":"b","label":"Environ 10 €/utilisateur/mois","is_correct":true},{"id":"c","label":"500 €/mois","is_correct":false},{"id":"d","label":"5 000 €/an","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['power-bi','cout'], 'mft-2026-gotrm:bc01-10:qcm:24', true, 'Power BI Pro : ~ 10 €/utilisateur/mois (Microsoft). Looker Studio (Google) : gratuit avec limites. Tableau et Qlik : plus chers (50-100 €/utilisateur/mois). Module BI TMS : 50-150 €/mois.'),
+  (v_formation, 'qcm', 'Pour engager les équipes autour des KPI, la pratique recommandée est :', '[{"id":"a","label":"Cacher les chiffres aux conducteurs","is_correct":false},{"id":"b","label":"Afficher les KPI, les individualiser et les récompenser","is_correct":true},{"id":"c","label":"Sanctionner uniquement les mauvais résultats","is_correct":false},{"id":"d","label":"Ne pas en parler","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['engagement','kpi'], 'mft-2026-gotrm:bc01-10:qcm:25', true, 'Engager les équipes = afficher les KPI dans les locaux, individualiser les performances (éco-conduite, ponctualité), récompenser symboliquement (challenges, primes). La transparence + reconnaissance = motivation.');
 
-  (v_formation, 'mft-2026-gotrm:bc01-10:qcm:1', 'qcm',
-   'Le taux de remplissage doit être mesuré :',
-   jsonb '[
-     {"key":"a","label":"En poids uniquement"},
-     {"key":"b","label":"En volume uniquement"},
-     {"key":"c","label":"En poids ET en volume (le maximum des deux)"},
-     {"key":"d","label":"En nombre de palettes"}
-   ]', '["c"]'::jsonb,
-   'Le véhicule est plein dès qu''une dimension (poids OU volume) atteint 100 %. Surveiller le maximum des deux : pour de la mousse, c''est le volume qui sature, pour des granulats, c''est le poids.',
-   'moyenne', '{remplissage}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qcm:2', 'qcm',
-   'Une cible de remplissage standard en TRM longue distance est :',
-   jsonb '[
-     {"key":"a","label":"> 60 %"},
-     {"key":"b","label":"> 75 %"},
-     {"key":"c","label":"> 85 %"},
-     {"key":"d","label":"> 95 %"}
-   ]', '["c"]'::jsonb,
-   'TRM longue distance : > 85 %. LTL régional : > 75 %. Distribution urbaine : > 65 % (souvent contrainte par cubage). 95 % est un objectif d''excellence rare en pratique.',
-   'moyenne', '{remplissage,cible}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qcm:3', 'qcm',
-   'Une ponctualité < 90 % entraîne statistiquement :',
-   jsonb '[
-     {"key":"a","label":"Une augmentation de la marge"},
-     {"key":"b","label":"Un risque élevé de churn (~ 65 % de départ client en 12 mois)"},
-     {"key":"c","label":"Une baisse de carburant"},
-     {"key":"d","label":"Aucun impact"}
-   ]', '["b"]'::jsonb,
-   'Statistiquement, un client recevant < 90 % de ponctualité a 65 % de probabilité de partir dans les 12 mois. Au-dessus de 96 %, fidélisation > 85 %. La ponctualité est un levier majeur de rétention.',
-   'difficile', '{ponctualite,churn}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qcm:4', 'qcm',
-   'Le taux de retour à vide en TRM longue distance "bon" est :',
-   jsonb '[
-     {"key":"a","label":"< 5 %"},
-     {"key":"b","label":"10-15 %"},
-     {"key":"c","label":"25-30 %"},
-     {"key":"d","label":"50 %"}
-   ]', '["b"]'::jsonb,
-   '10-15 % est considéré bon en TRM longue distance. < 10 % est excellent (rare en FTL pure). > 25 % critique. La distribution urbaine a souvent 100 % de retour à vide par nature.',
-   'moyenne', '{retour-vide,cible}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qcm:5', 'qcm',
-   'Une consommation cible pour un porteur 19 t en cycle régional est de :',
-   jsonb '[
-     {"key":"a","label":"15-20 L/100 km"},
-     {"key":"b","label":"26-30 L/100 km"},
-     {"key":"c","label":"40-45 L/100 km"},
-     {"key":"d","label":"60-70 L/100 km"}
-   ]', '["b"]'::jsonb,
-   'Porteur 19 t cycle régional : 26-30 L/100 km. Tracteur 44 t longue distance : 28-33 L. Distribution urbaine 12 t : 22-28 L. VUL : 8-12 L. Variations selon profil et conducteur.',
-   'facile', '{conso,porteur}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qcm:6', 'qcm',
-   'L''éco-conduite peut typiquement faire baisser la consommation de :',
-   jsonb '[
-     {"key":"a","label":"5 à 12 %"},
-     {"key":"b","label":"30 à 50 %"},
-     {"key":"c","label":"75 %"},
-     {"key":"d","label":"Aucune incidence"}
-   ]', '["a"]'::jsonb,
-   'L''éco-conduite via formation et coaching baisse de 5 à 12 % la consommation. C''est un levier majeur, à coût modéré (formation ~ 200 €/conducteur). ROI < 6 mois sur les véhicules longue distance.',
-   'moyenne', '{eco-conduite}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qcm:7', 'qcm',
-   'La marge nette en transport TRM longue distance est typiquement de :',
-   jsonb '[
-     {"key":"a","label":"Moins de 1 %"},
-     {"key":"b","label":"4-8 %"},
-     {"key":"c","label":"15-25 %"},
-     {"key":"d","label":"Plus de 30 %"}
-   ]', '["b"]'::jsonb,
-   'TRM longue distance : 4-8 % de marge nette. LTL régional : 6-12 %. Distribution urbaine : 8-15 %. Spécifique (ADR/ATP) : 10-18 %. Ces marges restent fragiles : un sinistre peut effacer plusieurs mois.',
-   'moyenne', '{marge,nette}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qcm:8', 'qcm',
-   'Une marge nette < 4 % indique :',
-   jsonb '[
-     {"key":"a","label":"Excellente performance"},
-     {"key":"b","label":"Une fragilité structurelle face à tout incident"},
-     {"key":"c","label":"Une situation normale"},
-     {"key":"d","label":"Un excès de rentabilité"}
-   ]', '["b"]'::jsonb,
-   'Une marge nette < 4 % rend l''entreprise fragile : un sinistre, une hausse carburant, un départ conducteur peut compromettre l''équilibre. < 2 % = activité en danger structurel.',
-   'moyenne', '{marge,fragilite}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qcm:9', 'qcm',
-   'Le coût km commercial cible pour un tracteur 44 t en 2026 est :',
-   jsonb '[
-     {"key":"a","label":"0,5 - 0,8 €/km"},
-     {"key":"b","label":"1,30 - 1,55 €/km"},
-     {"key":"c","label":"2,5 - 3,0 €/km"},
-     {"key":"d","label":"5 €/km"}
-   ]', '["b"]'::jsonb,
-   'Tracteur 44 t longue distance 2026 : 1,30-1,55 €/km. Porteur 19 t régional : 1,20-1,45 €. Distribution 12 t : 1,40-1,75 €. VUL 3,5 t : 1,15-1,40 €. À comparer au prix de vente.',
-   'moyenne', '{cout-km,2026}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qcm:10', 'qcm',
-   'Le BFR (Besoin en Fonds de Roulement) en transport est principalement composé de :',
-   jsonb '[
-     {"key":"a","label":"Stocks de marchandises"},
-     {"key":"b","label":"Créances clients - Dettes fournisseurs"},
-     {"key":"c","label":"Capital social"},
-     {"key":"d","label":"Trésorerie disponible"}
-   ]', '["b"]'::jsonb,
-   'En transport (peu de stocks), le BFR ≈ Créances clients - Dettes fournisseurs. Plus le DSO est élevé et le DPO faible, plus le BFR est gourmand en trésorerie.',
-   'moyenne', '{bfr}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qcm:11', 'qcm',
-   'Un DSO (Days Sales Outstanding) de 50 jours signifie :',
-   jsonb '[
-     {"key":"a","label":"L''entreprise paie ses fournisseurs en 50 j"},
-     {"key":"b","label":"Le délai moyen de paiement par les clients est de 50 jours"},
-     {"key":"c","label":"Le stock dort 50 jours"},
-     {"key":"d","label":"50 jours de chiffre d''affaires"}
-   ]', '["b"]'::jsonb,
-   'DSO = Days Sales Outstanding = délai moyen de paiement par les clients. Un DSO de 50 j signifie que les clients paient en 50 j en moyenne. Cible secteur : < 45 j.',
-   'moyenne', '{dso}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qcm:12', 'qcm',
-   'L''EBE (Excédent Brut d''Exploitation) mesure :',
-   jsonb '[
-     {"key":"a","label":"La marge dégagée par l''activité avant amortissements et frais financiers"},
-     {"key":"b","label":"Le bénéfice après impôt"},
-     {"key":"c","label":"Le chiffre d''affaires brut"},
-     {"key":"d","label":"Les dividendes versés"}
-   ]', '["a"]'::jsonb,
-   'EBE = CA - Achats consommés - Charges externes - Charges de personnel - Impôts/taxes. C''est le vrai indicateur de performance opérationnelle, indépendant de la politique d''amortissement et de financement.',
-   'moyenne', '{ebe}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qcm:13', 'qcm',
-   'Un taux d''EBE en transport routier marchandises bien géré est de :',
-   jsonb '[
-     {"key":"a","label":"1-3 %"},
-     {"key":"b","label":"8-15 %"},
-     {"key":"c","label":"25-40 %"},
-     {"key":"d","label":"> 50 %"}
-   ]', '["b"]'::jsonb,
-   'EBE / CA bien géré : 8-15 % en TRM. PME bien gérée : 12-18 %. Affrètement (marges plus faibles) : 4-8 %. Banquiers et investisseurs scrutent ce ratio en priorité.',
-   'moyenne', '{ebe,cible}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qcm:14', 'qcm',
-   'La CAF (Capacité d''Autofinancement) se calcule comme :',
-   jsonb '[
-     {"key":"a","label":"Bénéfice net + Amortissements + Provisions"},
-     {"key":"b","label":"CA - Charges variables"},
-     {"key":"c","label":"Marge nette × 1,5"},
-     {"key":"d","label":"EBE - Impôts"}
-   ]', '["a"]'::jsonb,
-   'CAF = Bénéfice net + Amortissements + Provisions. Indique la capacité de l''entreprise à financer ses investissements avec ses propres ressources. CAF/CA > 10 % = bonne santé financière.',
-   'difficile', '{caf}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qcm:15', 'qcm',
-   'Un taux de litiges considéré comme "bon" en transport est :',
-   jsonb '[
-     {"key":"a","label":"> 5 %"},
-     {"key":"b","label":"2-5 %"},
-     {"key":"c","label":"0,3-1 %"},
-     {"key":"d","label":"Pas de cible"}
-   ]', '["c"]'::jsonb,
-   'Taux de litiges bon : 0,3-1 %. Excellent : < 0,3 %. Au-delà de 2 % : critique. Le coût de la non-qualité représente typiquement 0,5-1,5 % du CA.',
-   'moyenne', '{litiges,taux}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qcm:16', 'qcm',
-   'Le NPS moyen secteur transport B2B en France est de :',
-   jsonb '[
-     {"key":"a","label":"-20"},
-     {"key":"b","label":"20-30"},
-     {"key":"c","label":"60-80"},
-     {"key":"d","label":"100"}
-   ]', '["b"]'::jsonb,
-   'NPS moyen secteur transport B2B France : 20-30. Top quartile : > 40. Excellent : > 50. Au-dessous de 0, il y a plus de détracteurs que de promoteurs.',
-   'difficile', '{nps,benchmark}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qcm:17', 'qcm',
-   'Un taux de churn annuel acceptable en transport B2B est de :',
-   jsonb '[
-     {"key":"a","label":"< 8 %"},
-     {"key":"b","label":"15-20 %"},
-     {"key":"c","label":"30-40 %"},
-     {"key":"d","label":"> 50 %"}
-   ]', '["a"]'::jsonb,
-   'Cible churn annuel : < 8 % (fidélisation > 92 %). Un churn de 15 % signale un problème structurel. > 25 % = entreprise toxique ou marché en crise.',
-   'moyenne', '{churn}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qcm:18', 'qcm',
-   'Le coût typique de remplacement d''un conducteur PL est :',
-   jsonb '[
-     {"key":"a","label":"500 €"},
-     {"key":"b","label":"8 000 - 15 000 €"},
-     {"key":"c","label":"50 000 €"},
-     {"key":"d","label":"100 000 €"}
-   ]', '["b"]'::jsonb,
-   'Remplacer un conducteur PL : 8-15 k€ (recrutement, formation, baisse productivité initiale 2-3 mois, FCO si nouveau). C''est pourquoi la fidélisation conducteur est un enjeu majeur.',
-   'moyenne', '{turnover,cout}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qcm:19', 'qcm',
-   'Un turnover conducteurs > 25 % indique généralement :',
-   jsonb '[
-     {"key":"a","label":"Une excellente performance"},
-     {"key":"b","label":"Une situation critique (entreprise toxique ou sous-rémunération)"},
-     {"key":"c","label":"Un secteur en croissance"},
-     {"key":"d","label":"Une politique RH normale"}
-   ]', '["b"]'::jsonb,
-   'Turnover > 25 % conducteurs PL = signal d''alerte rouge. Causes typiques : management, rémunération, conditions de travail, climat. À traiter d''urgence avant cercle vicieux.',
-   'moyenne', '{turnover,critique}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qcm:20', 'qcm',
-   'Le taux de fréquence (TF) des accidents du travail se calcule comme :',
-   jsonb '[
-     {"key":"a","label":"Nombre d''accidents par an"},
-     {"key":"b","label":"(Accidents avec arrêt × 1 000 000) / heures travaillées"},
-     {"key":"c","label":"% d''absentéisme"},
-     {"key":"d","label":"Nombre d''accidents / effectif"}
-   ]', '["b"]'::jsonb,
-   'TF = (Accidents avec arrêt × 1 000 000) / Heures travaillées. Cible TRM : < 25. Norme secteur : ~ 35. Un TF élevé signale problèmes de prévention, formation, équipements.',
-   'difficile', '{accidents,tf}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qcm:21', 'qcm',
-   'Le tableau de bord intégré recommandé suit combien de dimensions ?',
-   jsonb '[
-     {"key":"a","label":"1 (financière)"},
-     {"key":"b","label":"4 (opérationnel, financier, client, RH)"},
-     {"key":"c","label":"10"},
-     {"key":"d","label":"Aucune"}
-   ]', '["b"]'::jsonb,
-   'La matrice 4x4 recommandée : 4 dimensions (op., fin., cli., RH), 4-5 KPI par dimension. Évite la tunnel vision financière et permet d''anticiper les cercles vicieux multidimensionnels.',
-   'moyenne', '{tableau-bord,4-dimensions}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qcm:22', 'qcm',
-   'Une réunion de pilotage mensuelle efficace dure typiquement :',
-   jsonb '[
-     {"key":"a","label":"15 min"},
-     {"key":"b","label":"60 min"},
-     {"key":"c","label":"3 heures"},
-     {"key":"d","label":"Une journée entière"}
-   ]', '["b"]'::jsonb,
-   'Réunion de pilotage idéale : 60 min (15 min revue KPI, 15 min écarts, 10 min actions en cours, 15 min nouvelles décisions, 5 min conclusion). Au-delà de 90 min, désengagement.',
-   'moyenne', '{reunion,duree}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qcm:23', 'qcm',
-   'Le PDCA (cycle d''amélioration continue) signifie :',
-   jsonb '[
-     {"key":"a","label":"Plan / Do / Check / Act"},
-     {"key":"b","label":"Procurement / Delivery / Control / Audit"},
-     {"key":"c","label":"Plan / Distribute / Calculate / Adjust"},
-     {"key":"d","label":"Process / Decide / Confirm / Apply"}
-   ]', '["a"]'::jsonb,
-   'PDCA (W. E. Deming) : Plan (planifier le changement), Do (exécuter pilote), Check (vérifier résultats), Act (standardiser ou ajuster). Cycle universel d''amélioration continue.',
-   'facile', '{pdca}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qcm:24', 'qcm',
-   'Power BI Pro coûte typiquement :',
-   jsonb '[
-     {"key":"a","label":"Gratuit"},
-     {"key":"b","label":"Environ 10 €/utilisateur/mois"},
-     {"key":"c","label":"500 €/mois"},
-     {"key":"d","label":"5 000 €/an"}
-   ]', '["b"]'::jsonb,
-   'Power BI Pro : ~ 10 €/utilisateur/mois (Microsoft). Looker Studio (Google) : gratuit avec limites. Tableau et Qlik : plus chers (50-100 €/utilisateur/mois). Module BI TMS : 50-150 €/mois.',
-   'facile', '{power-bi,cout}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qcm:25', 'qcm',
-   'Pour engager les équipes autour des KPI, la pratique recommandée est :',
-   jsonb '[
-     {"key":"a","label":"Cacher les chiffres aux conducteurs"},
-     {"key":"b","label":"Afficher les KPI, les individualiser et les récompenser"},
-     {"key":"c","label":"Sanctionner uniquement les mauvais résultats"},
-     {"key":"d","label":"Ne pas en parler"}
-   ]', '["b"]'::jsonb,
-   'Engager les équipes = afficher les KPI dans les locaux, individualiser les performances (éco-conduite, ponctualité), récompenser symboliquement (challenges, primes). La transparence + reconnaissance = motivation.',
-   'moyenne', '{engagement,kpi}');
 
   -- =================================================================
   -- 4 QR
   -- =================================================================
-  INSERT INTO public.question_bank (formation_id, source_ref, type, prompt, choices, correct, explanation, difficulty, tags) VALUES
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qr:1', 'qr',
-   'Une PME de 20 véhicules, CA 4,5 M€, présente ces KPI au T1 :
+  INSERT INTO public.question_bank (formation_id, type, statement, choices, max_score, difficulty, tags, source_ref, active, explanation) VALUES
+  (v_formation, 'qr', 'Une PME de 20 véhicules, CA 4,5 M€, présente ces KPI au T1 :
 - Marge nette 4,1 %, EBE 9,2 %, DSO 56 j, DPO 28 j
 - Taux remplissage 73 %, Ponctualité 92 %, Retour à vide 23 %, Conso 30,5 L/100 km
 - NPS 5, Litiges 1,8 %, Churn 14 %
 - Turnover 27 %, Absentéisme 8 %
 
-Diagnostiquez la situation, identifiez les priorités d''action et chiffrez le ROI attendu d''un plan 12 mois.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Diagnostic systémique :
+Diagnostiquez la situation, identifiez les priorités d''action et chiffrez le ROI attendu d''un plan 12 mois.', NULL, 1, 'difficile', ARRAY['diagnostic','plan','roi'], 'mft-2026-gotrm:bc01-10:qr:1', true, 'Diagnostic systémique :
 
 1. Indicateurs au rouge :
 - Marge nette 4,1 % (< 6 % cible) → fragilité
@@ -1412,13 +1159,8 @@ Risques de l''inaction :
 - Risque cessation paiements à 18-24 mois si DSO continue de s''étirer
 - Perte clients en cascade (NPS bas)
 
-Conclusion : le plan est urgent et son ROI est très favorable. La direction doit allouer un comité de pilotage dédié et un budget initial de ~ 220 k€ sur 12 mois.',
-   'difficile', '{diagnostic,plan,roi}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qr:2', 'qr',
-   'Vous devez construire un dashboard mensuel intégré pour la direction de votre PME (28 véhicules). Listez les 16 KPI essentiels (4 par dimension : opérationnel, financier, client, RH), avec leurs cibles, périodicité de mesure et source de données.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Dashboard mensuel intégré — 16 KPI essentiels :
+Conclusion : le plan est urgent et son ROI est très favorable. La direction doit allouer un comité de pilotage dédié et un budget initial de ~ 220 k€ sur 12 mois.'),
+  (v_formation, 'qr', 'Vous devez construire un dashboard mensuel intégré pour la direction de votre PME (28 véhicules). Listez les 16 KPI essentiels (4 par dimension : opérationnel, financier, client, RH), avec leurs cibles, périodicité de mesure et source de données.', NULL, 1, 'difficile', ARRAY['dashboard','kpi','construction'], 'mft-2026-gotrm:bc01-10:qr:2', true, 'Dashboard mensuel intégré — 16 KPI essentiels :
 
 DIMENSION OPÉRATIONNEL (4 KPI)
 
@@ -1551,11 +1293,8 @@ ROI typique d''un dashboard intégré :
 - Gain de temps consolidation : 8-12 h/mois économisées
 - Décisions plus rapides : effet sur ponctualité +1-2 pts, marge +0,5 pt
 - Engagement équipes : +effet sur turnover et NPS
-- Total estimé : 30-50 k€/an de bénéfice pour un investissement de 5-10 k€/an.',
-   'difficile', '{dashboard,kpi,construction}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qr:3', 'qr',
-   'Calculez le coût km commercial d''un porteur 19 t sur la base des données suivantes :
+- Total estimé : 30-50 k€/an de bénéfice pour un investissement de 5-10 k€/an.'),
+  (v_formation, 'qr', 'Calculez le coût km commercial d''un porteur 19 t sur la base des données suivantes :
 - Acquisition véhicule : 95 000 € HT, valeur résiduelle 25 % à 6 ans
 - Km annuels : 110 000 km totaux, dont 88 000 commerciaux
 - Carburant : 28 L/100 km à 1,42 €/L HT
@@ -1566,9 +1305,7 @@ ROI typique d''un dashboard intégré :
 - Frais de structure imputés : 12 800 €/an
 - Lubrifiants, AdBlue : 2 200 €/an
 
-Détaillez les calculs et concluez sur la rentabilité par rapport à un prix de vente moyen de 1,38 €/km commercial.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Calcul détaillé du coût km commercial :
+Détaillez les calculs et concluez sur la rentabilité par rapport à un prix de vente moyen de 1,38 €/km commercial.', NULL, 1, 'difficile', ARRAY['cout-km','calcul','rentabilite'], 'mft-2026-gotrm:bc01-10:qr:3', true, 'Calcul détaillé du coût km commercial :
 
 ÉTAPE 1 — Calcul des coûts annuels totaux
 
@@ -1683,13 +1420,8 @@ Recommandations :
 2. Plan d''action ciblé sur le retour à vide (priorité absolue)
 3. Revue commerciale des prix avec les chargeurs
 4. Plan éco-conduite généralisé
-5. Mesure trimestrielle des KPI véhicule par véhicule.',
-   'difficile', '{cout-km,calcul,rentabilite}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-10:qr:4', 'qr',
-   'Vous animez la réunion mensuelle de pilotage. Décrivez la structure de la réunion (60 min), les documents préparés en amont, les techniques pour traiter un KPI rouge (exemple : retour à vide à 24 % au lieu de 16 %), et le format du compte rendu.',
-   '[]'::jsonb, '[]'::jsonb,
-   'STRUCTURE DE LA RÉUNION (60 minutes)
+5. Mesure trimestrielle des KPI véhicule par véhicule.'),
+  (v_formation, 'qr', 'Vous animez la réunion mensuelle de pilotage. Décrivez la structure de la réunion (60 min), les documents préparés en amont, les techniques pour traiter un KPI rouge (exemple : retour à vide à 24 % au lieu de 16 %), et le format du compte rendu.', NULL, 1, 'difficile', ARRAY['reunion','structure','methodes'], 'mft-2026-gotrm:bc01-10:qr:4', true, 'STRUCTURE DE LA RÉUNION (60 minutes)
 
 Étape 1 — Accueil et tour de table (5 min)
 - Validation des présents
@@ -1850,8 +1582,8 @@ La réunion mensuelle s''insère dans une chaîne de pilotage à 4 niveaux :
 - Trimestriel : conseil d''administration
 - Annuel : bilan stratégique
 
-L''alimentation de la réunion mensuelle vient des outils en place (TMS, BI, CRM, paie) et alimente à son tour les niveaux trimestriel et annuel par les tendances, les actions structurantes et les décisions stratégiques.',
-   'difficile', '{reunion,structure,methodes}');
+L''alimentation de la réunion mensuelle vient des outils en place (TMS, BI, CRM, paie) et alimente à son tour les niveaux trimestriel et annuel par les tendances, les actions structurantes et les décisions stratégiques.');
+
 
   -- =================================================================
   -- QUIZZES

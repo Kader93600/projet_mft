@@ -883,325 +883,42 @@ $lesson4$,
   -- =================================================================
   -- 28 QCM
   -- =================================================================
-  INSERT INTO public.question_bank (formation_id, source_ref, type, prompt, choices, correct, explanation, difficulty, tags) VALUES
+  INSERT INTO public.question_bank (formation_id, type, statement, choices, max_score, difficulty, tags, source_ref, active, explanation) VALUES
+  (v_formation, 'qcm', 'L''ADR est un accord :', '[{"id":"a","label":"International signé à Genève en 1957","is_correct":true},{"id":"b","label":"Exclusivement français de 1992","is_correct":false},{"id":"c","label":"Européen de 2007 limité à l''UE","is_correct":false},{"id":"d","label":"Mondial de l''ONU sans force juridique","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['adr','cadre'], 'mft-2026-gotrm:bc01-07:qcm:1', true, 'L''ADR (Accord européen relatif au transport international des marchandises Dangereuses par Route) a été signé à Genève en 1957, ratifié par 53 pays. Mises à jour bisannuelles (années impaires).'),
+  (v_formation, 'qcm', 'Combien de classes de matières dangereuses compte l''ADR ?', '[{"id":"a","label":"5","is_correct":false},{"id":"b","label":"7","is_correct":false},{"id":"c","label":"9","is_correct":true},{"id":"d","label":"12","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['adr','classes'], 'mft-2026-gotrm:bc01-07:qcm:2', true, 'L''ADR distingue 9 classes principales (1-explosifs, 2-gaz, 3-liquides inflammables, 4-solides inflammables, 5-comburants, 6-toxiques, 7-radioactifs, 8-corrosifs, 9-divers).'),
+  (v_formation, 'qcm', 'Le numéro UN1203 désigne :', '[{"id":"a","label":"L''oxygène liquide","is_correct":false},{"id":"b","label":"L''essence","is_correct":true},{"id":"c","label":"L''ammoniac","is_correct":false},{"id":"d","label":"Les batteries lithium","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['adr','numeros-un'], 'mft-2026-gotrm:bc01-07:qcm:3', true, 'UN1203 = essence (carburant moteur). Chaque matière dangereuse a un numéro ONU unique à 4 chiffres permettant son identification universelle (UN1202 = gazole, UN1789 = acide chlorhydrique, UN3480 = batteries lithium-ion).'),
+  (v_formation, 'qcm', 'Sur un panneau orange ADR portant 33/1203, le 33 signifie :', '[{"id":"a","label":"Numéro de classe ADR","is_correct":false},{"id":"b","label":"Code danger : liquide très inflammable (intensification)","is_correct":true},{"id":"c","label":"Volume en hectolitres","is_correct":false},{"id":"d","label":"Date d''expiration de l''autorisation","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['adr','panneau-orange'], 'mft-2026-gotrm:bc01-07:qcm:4', true, 'Le code danger (chiffre du haut) indique la nature et l''intensité du risque : 3 = liquide inflammable, 33 = liquide très inflammable (doublement = intensification). Le 1203 (chiffre du bas) = numéro ONU de l''essence.'),
+  (v_formation, 'qcm', 'L''exemption ADR « 1.1.3.6 » permet :', '[{"id":"a","label":"De transporter sans aucune contrainte","is_correct":false},{"id":"b","label":"Un allègement partiel pour des quantités limitées par catégorie","is_correct":true},{"id":"c","label":"De transporter uniquement en agglomération","is_correct":false},{"id":"d","label":"D''éviter le permis PL","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['adr','exemption'], 'mft-2026-gotrm:bc01-07:qcm:5', true, 'L''exemption 1.1.3.6 ADR allège partiellement le régime pour des transports liés à l''activité principale, dans la limite de quantités définies par catégorie de transport (0 à 4). Elle ne dispense pas de toutes les obligations.'),
+  (v_formation, 'qcm', 'Le conseiller à la sécurité (CSTMD) est obligatoire :', '[{"id":"a","label":"Pour toute entreprise de transport","is_correct":false},{"id":"b","label":"Pour les entreprises qui chargent, déchargent ou transportent des MD au-delà des seuils d''exemption","is_correct":true},{"id":"c","label":"Uniquement pour le transport de classe 1 (explosifs)","is_correct":false},{"id":"d","label":"Uniquement pour les transports internationaux","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['adr','cstmd'], 'mft-2026-gotrm:bc01-07:qcm:6', true, 'Article 1.8.3 ADR : toute entreprise impliquée dans le chargement, déchargement ou transport de MD au-delà des seuils d''exemption doit désigner un CSTMD. Sanction : amende administrative jusqu''à 15 000 €.'),
+  (v_formation, 'qcm', 'L''attestation conducteur ADR a une validité de :', '[{"id":"a","label":"1 an","is_correct":false},{"id":"b","label":"3 ans","is_correct":false},{"id":"c","label":"5 ans","is_correct":true},{"id":"d","label":"10 ans","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['adr','attestation-conducteur'], 'mft-2026-gotrm:bc01-07:qcm:7', true, 'L''attestation ADR conducteur (base, citerne, classe 1, classe 7) est valable 5 ans. Le recyclage de 13 h doit être fait avant l''expiration pour éviter de repasser la formation initiale (18 h base).'),
+  (v_formation, 'qcm', 'L''ATP est un accord signé à Genève en :', '[{"id":"a","label":"1957","is_correct":false},{"id":"b","label":"1970","is_correct":true},{"id":"c","label":"1985","is_correct":false},{"id":"d","label":"2006","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['atp','cadre'], 'mft-2026-gotrm:bc01-07:qcm:8', true, 'L''Accord ATP (Accord sur les Transports Périssables) a été signé à Genève en 1970, applicable depuis 1976. Il couvre les transports internationaux et inspire les règles nationales de transport sous température dirigée.'),
+  (v_formation, 'qcm', 'Dans le code véhicule ATP « FRC », la lettre F signifie :', '[{"id":"a","label":"Fixe","is_correct":false},{"id":"b","label":"Frigorifique (avec groupe mécanique)","is_correct":true},{"id":"c","label":"Forcé","is_correct":false},{"id":"d","label":"Fluvial","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['atp','categorie-vehicule'], 'mft-2026-gotrm:bc01-07:qcm:9', true, 'F = Frigorifique, c''est-à-dire véhicule avec groupe frigorifique mécanique. I = Isotherme (sans froid), R = Réfrigérant (froid passif type glace). FRC = Frigorifique Renforcé classe C (-20 à +12 °C).'),
+  (v_formation, 'qcm', 'Un véhicule FRC est capable de maintenir des températures de :', '[{"id":"a","label":"0 à +12 °C uniquement","is_correct":false},{"id":"b","label":"-20 à +12 °C (le plus polyvalent)","is_correct":true},{"id":"c","label":"-30 °C minimum","is_correct":false},{"id":"d","label":"+12 à +25 °C uniquement","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['atp','frc'], 'mft-2026-gotrm:bc01-07:qcm:10', true, 'Le FRC (Frigorifique Renforcé classe C) descend à -20 °C minimum et peut monter à +12 °C. C''est le standard polyvalent du marché : un seul véhicule pour surgelés ET frais.'),
+  (v_formation, 'qcm', 'La température maximale admise pour le transport de viandes hachées est :', '[{"id":"a","label":"+8 °C","is_correct":false},{"id":"b","label":"+4 °C","is_correct":false},{"id":"c","label":"+2 °C","is_correct":true},{"id":"d","label":"0 °C","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['atp','temperatures'], 'mft-2026-gotrm:bc01-07:qcm:11', true, 'Les viandes hachées sont les produits réfrigérés les plus exigeants : +2 °C maximum. Cela est dû à la surface développée par le hachage qui multiplie les risques bactériens.'),
+  (v_formation, 'qcm', 'L''attestation ATP d''un véhicule est valable :', '[{"id":"a","label":"6 ans initialement, puis 3 ans renouvelable","is_correct":true},{"id":"b","label":"10 ans sans renouvellement","is_correct":false},{"id":"c","label":"5 ans toujours","is_correct":false},{"id":"d","label":"À vie","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['atp','validite'], 'mft-2026-gotrm:bc01-07:qcm:12', true, 'L''attestation ATP est délivrée pour 6 ans initialement, puis renouvelée par périodes de 3 ans après nouveau test thermique en centre agréé (Cemafroid en France).'),
+  (v_formation, 'qcm', 'L''enregistrement de température en transport ATP doit être conservé pendant au minimum :', '[{"id":"a","label":"3 mois","is_correct":false},{"id":"b","label":"6 mois","is_correct":false},{"id":"c","label":"12 mois","is_correct":true},{"id":"d","label":"5 ans","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['atp','enregistrement'], 'mft-2026-gotrm:bc01-07:qcm:13', true, 'Les enregistrements de température doivent être conservés au moins 12 mois (article 1 et arrêté du 21 décembre 2009). Les chargeurs grande distribution exigent souvent un accès direct aux données.'),
+  (v_formation, 'qcm', 'En droit commun (sans transport exceptionnel), la longueur maximale d''une semi-remorque articulée est :', '[{"id":"a","label":"12 m","is_correct":false},{"id":"b","label":"16,5 m","is_correct":true},{"id":"c","label":"18,75 m","is_correct":false},{"id":"d","label":"22 m","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['exceptionnel','gabarit'], 'mft-2026-gotrm:bc01-07:qcm:14', true, 'La longueur maximale d''une semi-remorque articulée est 16,50 m. Pour un train double (camion-remorque), la limite est 18,75 m. Au-delà : transport exceptionnel.'),
+  (v_formation, 'qcm', 'La largeur maximale d''un véhicule routier en droit commun est :', '[{"id":"a","label":"2,30 m","is_correct":false},{"id":"b","label":"2,55 m (2,60 m pour véhicules ATP)","is_correct":true},{"id":"c","label":"3,00 m","is_correct":false},{"id":"d","label":"3,50 m","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['exceptionnel','largeur'], 'mft-2026-gotrm:bc01-07:qcm:15', true, 'La largeur standard est 2,55 m, portée à 2,60 m pour les véhicules ATP (parois isolantes plus épaisses). Au-delà : transport exceptionnel selon catégorie.'),
+  (v_formation, 'qcm', 'Un convoi de 22 m de long, 3,5 m de large et 55 t de masse relève de la catégorie :', '[{"id":"a","label":"Catégorie 1","is_correct":false},{"id":"b","label":"Catégorie 2","is_correct":true},{"id":"c","label":"Catégorie 3","is_correct":false},{"id":"d","label":"Pas un transport exceptionnel","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['exceptionnel','categorie'], 'mft-2026-gotrm:bc01-07:qcm:16', true, 'Cat. 1 : ≤ 20 m / 3 m / 48 t. Cat. 2 : 20 < L ≤ 25 m, 3 < l ≤ 4 m, 48 < M ≤ 72 t. Cat. 3 : au-delà. Ici 22 m + 3,5 m + 55 t = catégorie 2 (toutes les valeurs sont dans les seuils cat. 2).'),
+  (v_formation, 'qcm', 'Le téléservice utilisé pour les demandes de transport exceptionnel s''appelle :', '[{"id":"a","label":"NSTI","is_correct":false},{"id":"b","label":"TIE-PI","is_correct":true},{"id":"c","label":"DELTA-XI","is_correct":false},{"id":"d","label":"PORTNET","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['tie-pi','exceptionnel'], 'mft-2026-gotrm:bc01-07:qcm:17', true, 'TIE-PI = Transports Intérieurs Exceptionnels - Procédure Informatisée. C''est le téléservice de l''État pour déposer les demandes d''autorisation. Délais : 4-6 sem cat. 2, 8-12 sem cat. 3.'),
+  (v_formation, 'qcm', 'Un transport exceptionnel de catégorie 3 nécessite généralement :', '[{"id":"a","label":"Aucune escorte","is_correct":false},{"id":"b","label":"1 voiture pilote","is_correct":false},{"id":"c","label":"2 voitures pilotes + souvent escorte gendarmerie","is_correct":true},{"id":"d","label":"Uniquement un gyrophare","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['exceptionnel','accompagnement'], 'mft-2026-gotrm:bc01-07:qcm:18', true, 'Catégorie 3 = au-delà de 25 m, 4 m ou 72 t. Accompagnement généralement par 2 voitures pilotes + escorte gendarmerie sur zones sensibles. Frais à la charge du transporteur.'),
+  (v_formation, 'qcm', 'La vitesse maximale typique d''un convoi exceptionnel hors agglomération est de :', '[{"id":"a","label":"40 km/h","is_correct":false},{"id":"b","label":"60 km/h","is_correct":true},{"id":"c","label":"80 km/h","is_correct":false},{"id":"d","label":"90 km/h","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['exceptionnel','vitesse'], 'mft-2026-gotrm:bc01-07:qcm:19', true, 'Hors agglomération, la vitesse maximale d''un convoi exceptionnel est typiquement 60 km/h, et 30 km/h en agglomération. Ces vitesses sont fixées dans l''arrêté préfectoral d''autorisation et peuvent être plus restrictives selon le convoi.'),
+  (v_formation, 'qcm', 'Le délai d''anticipation recommandé pour un transport exceptionnel catégorie 3 est de :', '[{"id":"a","label":"2 semaines","is_correct":false},{"id":"b","label":"1 mois","is_correct":false},{"id":"c","label":"3 à 4 mois","is_correct":true},{"id":"d","label":"1 an","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['exceptionnel','anticipation'], 'mft-2026-gotrm:bc01-07:qcm:20', true, 'Pour un transport cat. 3, anticiper 3 à 4 mois est nécessaire : étude itinéraire (cabinet spécialisé), instruction TIE-PI (8-12 sem), réservation accompagnement, coordination ENEDIS/gendarmerie. Une demande à 4 sem est mission impossible.'),
+  (v_formation, 'qcm', 'Parmi cet équipement, lequel n''est PAS obligatoire en transport ADR ?', '[{"id":"a","label":"Extincteurs (2 minimum)","is_correct":false},{"id":"b","label":"Gilet HV par membre d''équipage","is_correct":false},{"id":"c","label":"Détecteur de gaz portable","is_correct":true},{"id":"d","label":"Lampe portative","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['adr','equipement'], 'mft-2026-gotrm:bc01-07:qcm:21', true, 'Le détecteur de gaz portable n''est pas obligatoire ADR (sauf cas spécifiques classe 2 en citerne). Les équipements de base ADR sont : extincteurs, gilets HV, lampe, gants chimiques, lunettes, lave-œil, cale de roue, trousse premiers secours.'),
+  (v_formation, 'qcm', 'Les consignes écrites ADR (article 5.4.3) doivent être :', '[{"id":"a","label":"Conservées au siège de l''entreprise","is_correct":false},{"id":"b","label":"À bord du véhicule, accessibles au conducteur et aux secours","is_correct":true},{"id":"c","label":"Affichées au point de chargement","is_correct":false},{"id":"d","label":"Envoyées à la préfecture","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['adr','consignes'], 'mft-2026-gotrm:bc01-07:qcm:22', true, 'Les consignes écrites en cas d''accident (« tritan » dans le jargon) doivent être à bord du véhicule, dans la cabine, accessibles immédiatement par le conducteur et les services de secours. En français + langue du conducteur.'),
+  (v_formation, 'qcm', 'En cas de rupture de chaîne du froid en ATP (température dépassée pendant 1 h sur viande hachée) :', '[{"id":"a","label":"Le transporteur peut livrer en silence si la marchandise semble ok","is_correct":false},{"id":"b","label":"Le transporteur doit documenter, alerter le client AVANT livraison et constituer un dossier","is_correct":true},{"id":"c","label":"Le transporteur peut effacer les enregistrements","is_correct":false},{"id":"d","label":"Aucune action particulière","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['atp','rupture-chaine-froid'], 'mft-2026-gotrm:bc01-07:qcm:23', true, 'Toute rupture significative doit être documentée (photos, capture des données, heure exacte), évaluée (durée, amplitude), et le client doit être prévenu AVANT la livraison. La modification ou suppression d''enregistrements est une fraude pénalement sanctionnée.'),
+  (v_formation, 'qcm', 'En cas d''incident ADR avec déversement, l''ordre des actions est :', '[{"id":"a","label":"Notifier la préfecture, puis sécuriser, puis alerter les secours","is_correct":false},{"id":"b","label":"Sécuriser la zone, alerter les secours (112), présenter les consignes écrites","is_correct":true},{"id":"c","label":"Tenter d''arrêter la fuite avant tout","is_correct":false},{"id":"d","label":"Reprendre la route si la fuite est faible","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['adr','incident'], 'mft-2026-gotrm:bc01-07:qcm:24', true, 'Ordre prioritaire : 1) Sécuriser la zone (balisage, gilet HV) ; 2) Alerter les secours (112 ou 18) ; 3) Présenter les consignes écrites aux pompiers/gendarmes pour qu''ils connaissent le risque ; 4) Notifier le CSTMD ; 5) Rapport d''incident sous 5 jours.'),
+  (v_formation, 'qcm', 'Pour combien d''années la formation FCO de la CQC est-elle valable ?', '[{"id":"a","label":"3 ans","is_correct":false},{"id":"b","label":"5 ans","is_correct":true},{"id":"c","label":"7 ans","is_correct":false},{"id":"d","label":"10 ans","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['cqc','fco'], 'mft-2026-gotrm:bc01-07:qcm:25', true, 'La FCO (Formation Continue Obligatoire) de 35 h doit être suivie tous les 5 ans pour maintenir la CQC (Carte de Qualification Conducteur) valide. Une FCO périmée invalide la CQC et empêche la conduite professionnelle PL.'),
+  (v_formation, 'qcm', 'Une plaque ATP indique sur le véhicule :', '[{"id":"a","label":"Le numéro d''immatriculation et le PTAC","is_correct":false},{"id":"b","label":"Le code de classification (ex : FRC), date d''émission, date d''expiration, numéro et centre agréé","is_correct":true},{"id":"c","label":"La marque du groupe frigorifique","is_correct":false},{"id":"d","label":"Le coût de l''attestation","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['atp','plaque'], 'mft-2026-gotrm:bc01-07:qcm:26', true, 'La plaque ATP métallique fixée à l''extérieur du véhicule porte 4 informations clés : code de classification (IN, FRC, etc.), date d''émission, date d''expiration, numéro d''identification + centre agréé émetteur (Cemafroid en France).'),
+  (v_formation, 'qcm', 'Le « régime des quantités limitées » (LQ) en ADR permet :', '[{"id":"a","label":"De ne pas avoir d''attestation conducteur ADR pour ces colis","is_correct":true},{"id":"b","label":"De doubler les quantités transportables","is_correct":false},{"id":"c","label":"De supprimer les étiquettes","is_correct":false},{"id":"d","label":"De ne pas immatriculer le véhicule","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['adr','lq'], 'mft-2026-gotrm:bc01-07:qcm:27', true, 'Le régime LQ (Limited Quantities, chap. 3.4 ADR) permet, pour des colis sous des seuils définis par matière, de ne pas exiger l''attestation conducteur ADR ni le panneau orange (sauf si le véhicule transporte plus de 8 t en LQ). Marquage spécifique : losange noir et blanc avec « UN ».'),
+  (v_formation, 'qcm', 'Une voiture pilote pour transports exceptionnels doit être équipée :', '[{"id":"a","label":"D''un gyrophare bleu et d''une sirène","is_correct":false},{"id":"b","label":"De gyrophare(s) orange, panneau « Convoi exceptionnel » et radio VHF","is_correct":true},{"id":"c","label":"D''une flèche lumineuse","is_correct":false},{"id":"d","label":"D''aucun équipement particulier","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['exceptionnel','voiture-pilote'], 'mft-2026-gotrm:bc01-07:qcm:28', true, 'Une voiture pilote (≤ 3,5 t) est équipée de gyrophare(s) orange, panneau « Convoi exceptionnel » avant et arrière, et d''une radio VHF pour la communication avec le convoi. Le chauffeur doit avoir suivi le stage initial 14 h et recyclage 7 h tous les 5 ans.');
 
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:1', 'qcm',
-   'L''ADR est un accord :',
-   jsonb '[
-     {"key":"a","label":"International signé à Genève en 1957"},
-     {"key":"b","label":"Exclusivement français de 1992"},
-     {"key":"c","label":"Européen de 2007 limité à l''UE"},
-     {"key":"d","label":"Mondial de l''ONU sans force juridique"}
-   ]', '["a"]'::jsonb,
-   'L''ADR (Accord européen relatif au transport international des marchandises Dangereuses par Route) a été signé à Genève en 1957, ratifié par 53 pays. Mises à jour bisannuelles (années impaires).',
-   'facile', '{adr,cadre}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:2', 'qcm',
-   'Combien de classes de matières dangereuses compte l''ADR ?',
-   jsonb '[
-     {"key":"a","label":"5"},
-     {"key":"b","label":"7"},
-     {"key":"c","label":"9"},
-     {"key":"d","label":"12"}
-   ]', '["c"]'::jsonb,
-   'L''ADR distingue 9 classes principales (1-explosifs, 2-gaz, 3-liquides inflammables, 4-solides inflammables, 5-comburants, 6-toxiques, 7-radioactifs, 8-corrosifs, 9-divers).',
-   'facile', '{adr,classes}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:3', 'qcm',
-   'Le numéro UN1203 désigne :',
-   jsonb '[
-     {"key":"a","label":"L''oxygène liquide"},
-     {"key":"b","label":"L''essence"},
-     {"key":"c","label":"L''ammoniac"},
-     {"key":"d","label":"Les batteries lithium"}
-   ]', '["b"]'::jsonb,
-   'UN1203 = essence (carburant moteur). Chaque matière dangereuse a un numéro ONU unique à 4 chiffres permettant son identification universelle (UN1202 = gazole, UN1789 = acide chlorhydrique, UN3480 = batteries lithium-ion).',
-   'moyenne', '{adr,numeros-un}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:4', 'qcm',
-   'Sur un panneau orange ADR portant 33/1203, le 33 signifie :',
-   jsonb '[
-     {"key":"a","label":"Numéro de classe ADR"},
-     {"key":"b","label":"Code danger : liquide très inflammable (intensification)"},
-     {"key":"c","label":"Volume en hectolitres"},
-     {"key":"d","label":"Date d''expiration de l''autorisation"}
-   ]', '["b"]'::jsonb,
-   'Le code danger (chiffre du haut) indique la nature et l''intensité du risque : 3 = liquide inflammable, 33 = liquide très inflammable (doublement = intensification). Le 1203 (chiffre du bas) = numéro ONU de l''essence.',
-   'moyenne', '{adr,panneau-orange}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:5', 'qcm',
-   'L''exemption ADR « 1.1.3.6 » permet :',
-   jsonb '[
-     {"key":"a","label":"De transporter sans aucune contrainte"},
-     {"key":"b","label":"Un allègement partiel pour des quantités limitées par catégorie"},
-     {"key":"c","label":"De transporter uniquement en agglomération"},
-     {"key":"d","label":"D''éviter le permis PL"}
-   ]', '["b"]'::jsonb,
-   'L''exemption 1.1.3.6 ADR allège partiellement le régime pour des transports liés à l''activité principale, dans la limite de quantités définies par catégorie de transport (0 à 4). Elle ne dispense pas de toutes les obligations.',
-   'moyenne', '{adr,exemption}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:6', 'qcm',
-   'Le conseiller à la sécurité (CSTMD) est obligatoire :',
-   jsonb '[
-     {"key":"a","label":"Pour toute entreprise de transport"},
-     {"key":"b","label":"Pour les entreprises qui chargent, déchargent ou transportent des MD au-delà des seuils d''exemption"},
-     {"key":"c","label":"Uniquement pour le transport de classe 1 (explosifs)"},
-     {"key":"d","label":"Uniquement pour les transports internationaux"}
-   ]', '["b"]'::jsonb,
-   'Article 1.8.3 ADR : toute entreprise impliquée dans le chargement, déchargement ou transport de MD au-delà des seuils d''exemption doit désigner un CSTMD. Sanction : amende administrative jusqu''à 15 000 €.',
-   'moyenne', '{adr,cstmd}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:7', 'qcm',
-   'L''attestation conducteur ADR a une validité de :',
-   jsonb '[
-     {"key":"a","label":"1 an"},
-     {"key":"b","label":"3 ans"},
-     {"key":"c","label":"5 ans"},
-     {"key":"d","label":"10 ans"}
-   ]', '["c"]'::jsonb,
-   'L''attestation ADR conducteur (base, citerne, classe 1, classe 7) est valable 5 ans. Le recyclage de 13 h doit être fait avant l''expiration pour éviter de repasser la formation initiale (18 h base).',
-   'facile', '{adr,attestation-conducteur}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:8', 'qcm',
-   'L''ATP est un accord signé à Genève en :',
-   jsonb '[
-     {"key":"a","label":"1957"},
-     {"key":"b","label":"1970"},
-     {"key":"c","label":"1985"},
-     {"key":"d","label":"2006"}
-   ]', '["b"]'::jsonb,
-   'L''Accord ATP (Accord sur les Transports Périssables) a été signé à Genève en 1970, applicable depuis 1976. Il couvre les transports internationaux et inspire les règles nationales de transport sous température dirigée.',
-   'facile', '{atp,cadre}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:9', 'qcm',
-   'Dans le code véhicule ATP « FRC », la lettre F signifie :',
-   jsonb '[
-     {"key":"a","label":"Fixe"},
-     {"key":"b","label":"Frigorifique (avec groupe mécanique)"},
-     {"key":"c","label":"Forcé"},
-     {"key":"d","label":"Fluvial"}
-   ]', '["b"]'::jsonb,
-   'F = Frigorifique, c''est-à-dire véhicule avec groupe frigorifique mécanique. I = Isotherme (sans froid), R = Réfrigérant (froid passif type glace). FRC = Frigorifique Renforcé classe C (-20 à +12 °C).',
-   'moyenne', '{atp,categorie-vehicule}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:10', 'qcm',
-   'Un véhicule FRC est capable de maintenir des températures de :',
-   jsonb '[
-     {"key":"a","label":"0 à +12 °C uniquement"},
-     {"key":"b","label":"-20 à +12 °C (le plus polyvalent)"},
-     {"key":"c","label":"-30 °C minimum"},
-     {"key":"d","label":"+12 à +25 °C uniquement"}
-   ]', '["b"]'::jsonb,
-   'Le FRC (Frigorifique Renforcé classe C) descend à -20 °C minimum et peut monter à +12 °C. C''est le standard polyvalent du marché : un seul véhicule pour surgelés ET frais.',
-   'moyenne', '{atp,frc}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:11', 'qcm',
-   'La température maximale admise pour le transport de viandes hachées est :',
-   jsonb '[
-     {"key":"a","label":"+8 °C"},
-     {"key":"b","label":"+4 °C"},
-     {"key":"c","label":"+2 °C"},
-     {"key":"d","label":"0 °C"}
-   ]', '["c"]'::jsonb,
-   'Les viandes hachées sont les produits réfrigérés les plus exigeants : +2 °C maximum. Cela est dû à la surface développée par le hachage qui multiplie les risques bactériens.',
-   'difficile', '{atp,temperatures}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:12', 'qcm',
-   'L''attestation ATP d''un véhicule est valable :',
-   jsonb '[
-     {"key":"a","label":"6 ans initialement, puis 3 ans renouvelable"},
-     {"key":"b","label":"10 ans sans renouvellement"},
-     {"key":"c","label":"5 ans toujours"},
-     {"key":"d","label":"À vie"}
-   ]', '["a"]'::jsonb,
-   'L''attestation ATP est délivrée pour 6 ans initialement, puis renouvelée par périodes de 3 ans après nouveau test thermique en centre agréé (Cemafroid en France).',
-   'moyenne', '{atp,validite}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:13', 'qcm',
-   'L''enregistrement de température en transport ATP doit être conservé pendant au minimum :',
-   jsonb '[
-     {"key":"a","label":"3 mois"},
-     {"key":"b","label":"6 mois"},
-     {"key":"c","label":"12 mois"},
-     {"key":"d","label":"5 ans"}
-   ]', '["c"]'::jsonb,
-   'Les enregistrements de température doivent être conservés au moins 12 mois (article 1 et arrêté du 21 décembre 2009). Les chargeurs grande distribution exigent souvent un accès direct aux données.',
-   'moyenne', '{atp,enregistrement}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:14', 'qcm',
-   'En droit commun (sans transport exceptionnel), la longueur maximale d''une semi-remorque articulée est :',
-   jsonb '[
-     {"key":"a","label":"12 m"},
-     {"key":"b","label":"16,5 m"},
-     {"key":"c","label":"18,75 m"},
-     {"key":"d","label":"22 m"}
-   ]', '["b"]'::jsonb,
-   'La longueur maximale d''une semi-remorque articulée est 16,50 m. Pour un train double (camion-remorque), la limite est 18,75 m. Au-delà : transport exceptionnel.',
-   'facile', '{exceptionnel,gabarit}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:15', 'qcm',
-   'La largeur maximale d''un véhicule routier en droit commun est :',
-   jsonb '[
-     {"key":"a","label":"2,30 m"},
-     {"key":"b","label":"2,55 m (2,60 m pour véhicules ATP)"},
-     {"key":"c","label":"3,00 m"},
-     {"key":"d","label":"3,50 m"}
-   ]', '["b"]'::jsonb,
-   'La largeur standard est 2,55 m, portée à 2,60 m pour les véhicules ATP (parois isolantes plus épaisses). Au-delà : transport exceptionnel selon catégorie.',
-   'moyenne', '{exceptionnel,largeur}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:16', 'qcm',
-   'Un convoi de 22 m de long, 3,5 m de large et 55 t de masse relève de la catégorie :',
-   jsonb '[
-     {"key":"a","label":"Catégorie 1"},
-     {"key":"b","label":"Catégorie 2"},
-     {"key":"c","label":"Catégorie 3"},
-     {"key":"d","label":"Pas un transport exceptionnel"}
-   ]', '["b"]'::jsonb,
-   'Cat. 1 : ≤ 20 m / 3 m / 48 t. Cat. 2 : 20 < L ≤ 25 m, 3 < l ≤ 4 m, 48 < M ≤ 72 t. Cat. 3 : au-delà. Ici 22 m + 3,5 m + 55 t = catégorie 2 (toutes les valeurs sont dans les seuils cat. 2).',
-   'difficile', '{exceptionnel,categorie}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:17', 'qcm',
-   'Le téléservice utilisé pour les demandes de transport exceptionnel s''appelle :',
-   jsonb '[
-     {"key":"a","label":"NSTI"},
-     {"key":"b","label":"TIE-PI"},
-     {"key":"c","label":"DELTA-XI"},
-     {"key":"d","label":"PORTNET"}
-   ]', '["b"]'::jsonb,
-   'TIE-PI = Transports Intérieurs Exceptionnels - Procédure Informatisée. C''est le téléservice de l''État pour déposer les demandes d''autorisation. Délais : 4-6 sem cat. 2, 8-12 sem cat. 3.',
-   'moyenne', '{tie-pi,exceptionnel}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:18', 'qcm',
-   'Un transport exceptionnel de catégorie 3 nécessite généralement :',
-   jsonb '[
-     {"key":"a","label":"Aucune escorte"},
-     {"key":"b","label":"1 voiture pilote"},
-     {"key":"c","label":"2 voitures pilotes + souvent escorte gendarmerie"},
-     {"key":"d","label":"Uniquement un gyrophare"}
-   ]', '["c"]'::jsonb,
-   'Catégorie 3 = au-delà de 25 m, 4 m ou 72 t. Accompagnement généralement par 2 voitures pilotes + escorte gendarmerie sur zones sensibles. Frais à la charge du transporteur.',
-   'moyenne', '{exceptionnel,accompagnement}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:19', 'qcm',
-   'La vitesse maximale typique d''un convoi exceptionnel hors agglomération est de :',
-   jsonb '[
-     {"key":"a","label":"40 km/h"},
-     {"key":"b","label":"60 km/h"},
-     {"key":"c","label":"80 km/h"},
-     {"key":"d","label":"90 km/h"}
-   ]', '["b"]'::jsonb,
-   'Hors agglomération, la vitesse maximale d''un convoi exceptionnel est typiquement 60 km/h, et 30 km/h en agglomération. Ces vitesses sont fixées dans l''arrêté préfectoral d''autorisation et peuvent être plus restrictives selon le convoi.',
-   'moyenne', '{exceptionnel,vitesse}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:20', 'qcm',
-   'Le délai d''anticipation recommandé pour un transport exceptionnel catégorie 3 est de :',
-   jsonb '[
-     {"key":"a","label":"2 semaines"},
-     {"key":"b","label":"1 mois"},
-     {"key":"c","label":"3 à 4 mois"},
-     {"key":"d","label":"1 an"}
-   ]', '["c"]'::jsonb,
-   'Pour un transport cat. 3, anticiper 3 à 4 mois est nécessaire : étude itinéraire (cabinet spécialisé), instruction TIE-PI (8-12 sem), réservation accompagnement, coordination ENEDIS/gendarmerie. Une demande à 4 sem est mission impossible.',
-   'difficile', '{exceptionnel,anticipation}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:21', 'qcm',
-   'Parmi cet équipement, lequel n''est PAS obligatoire en transport ADR ?',
-   jsonb '[
-     {"key":"a","label":"Extincteurs (2 minimum)"},
-     {"key":"b","label":"Gilet HV par membre d''équipage"},
-     {"key":"c","label":"Détecteur de gaz portable"},
-     {"key":"d","label":"Lampe portative"}
-   ]', '["c"]'::jsonb,
-   'Le détecteur de gaz portable n''est pas obligatoire ADR (sauf cas spécifiques classe 2 en citerne). Les équipements de base ADR sont : extincteurs, gilets HV, lampe, gants chimiques, lunettes, lave-œil, cale de roue, trousse premiers secours.',
-   'difficile', '{adr,equipement}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:22', 'qcm',
-   'Les consignes écrites ADR (article 5.4.3) doivent être :',
-   jsonb '[
-     {"key":"a","label":"Conservées au siège de l''entreprise"},
-     {"key":"b","label":"À bord du véhicule, accessibles au conducteur et aux secours"},
-     {"key":"c","label":"Affichées au point de chargement"},
-     {"key":"d","label":"Envoyées à la préfecture"}
-   ]', '["b"]'::jsonb,
-   'Les consignes écrites en cas d''accident (« tritan » dans le jargon) doivent être à bord du véhicule, dans la cabine, accessibles immédiatement par le conducteur et les services de secours. En français + langue du conducteur.',
-   'moyenne', '{adr,consignes}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:23', 'qcm',
-   'En cas de rupture de chaîne du froid en ATP (température dépassée pendant 1 h sur viande hachée) :',
-   jsonb '[
-     {"key":"a","label":"Le transporteur peut livrer en silence si la marchandise semble ok"},
-     {"key":"b","label":"Le transporteur doit documenter, alerter le client AVANT livraison et constituer un dossier"},
-     {"key":"c","label":"Le transporteur peut effacer les enregistrements"},
-     {"key":"d","label":"Aucune action particulière"}
-   ]', '["b"]'::jsonb,
-   'Toute rupture significative doit être documentée (photos, capture des données, heure exacte), évaluée (durée, amplitude), et le client doit être prévenu AVANT la livraison. La modification ou suppression d''enregistrements est une fraude pénalement sanctionnée.',
-   'moyenne', '{atp,rupture-chaine-froid}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:24', 'qcm',
-   'En cas d''incident ADR avec déversement, l''ordre des actions est :',
-   jsonb '[
-     {"key":"a","label":"Notifier la préfecture, puis sécuriser, puis alerter les secours"},
-     {"key":"b","label":"Sécuriser la zone, alerter les secours (112), présenter les consignes écrites"},
-     {"key":"c","label":"Tenter d''arrêter la fuite avant tout"},
-     {"key":"d","label":"Reprendre la route si la fuite est faible"}
-   ]', '["b"]'::jsonb,
-   'Ordre prioritaire : 1) Sécuriser la zone (balisage, gilet HV) ; 2) Alerter les secours (112 ou 18) ; 3) Présenter les consignes écrites aux pompiers/gendarmes pour qu''ils connaissent le risque ; 4) Notifier le CSTMD ; 5) Rapport d''incident sous 5 jours.',
-   'moyenne', '{adr,incident}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:25', 'qcm',
-   'Pour combien d''années la formation FCO de la CQC est-elle valable ?',
-   jsonb '[
-     {"key":"a","label":"3 ans"},
-     {"key":"b","label":"5 ans"},
-     {"key":"c","label":"7 ans"},
-     {"key":"d","label":"10 ans"}
-   ]', '["b"]'::jsonb,
-   'La FCO (Formation Continue Obligatoire) de 35 h doit être suivie tous les 5 ans pour maintenir la CQC (Carte de Qualification Conducteur) valide. Une FCO périmée invalide la CQC et empêche la conduite professionnelle PL.',
-   'facile', '{cqc,fco}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:26', 'qcm',
-   'Une plaque ATP indique sur le véhicule :',
-   jsonb '[
-     {"key":"a","label":"Le numéro d''immatriculation et le PTAC"},
-     {"key":"b","label":"Le code de classification (ex : FRC), date d''émission, date d''expiration, numéro et centre agréé"},
-     {"key":"c","label":"La marque du groupe frigorifique"},
-     {"key":"d","label":"Le coût de l''attestation"}
-   ]', '["b"]'::jsonb,
-   'La plaque ATP métallique fixée à l''extérieur du véhicule porte 4 informations clés : code de classification (IN, FRC, etc.), date d''émission, date d''expiration, numéro d''identification + centre agréé émetteur (Cemafroid en France).',
-   'moyenne', '{atp,plaque}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:27', 'qcm',
-   'Le « régime des quantités limitées » (LQ) en ADR permet :',
-   jsonb '[
-     {"key":"a","label":"De ne pas avoir d''attestation conducteur ADR pour ces colis"},
-     {"key":"b","label":"De doubler les quantités transportables"},
-     {"key":"c","label":"De supprimer les étiquettes"},
-     {"key":"d","label":"De ne pas immatriculer le véhicule"}
-   ]', '["a"]'::jsonb,
-   'Le régime LQ (Limited Quantities, chap. 3.4 ADR) permet, pour des colis sous des seuils définis par matière, de ne pas exiger l''attestation conducteur ADR ni le panneau orange (sauf si le véhicule transporte plus de 8 t en LQ). Marquage spécifique : losange noir et blanc avec « UN ».',
-   'difficile', '{adr,lq}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qcm:28', 'qcm',
-   'Une voiture pilote pour transports exceptionnels doit être équipée :',
-   jsonb '[
-     {"key":"a","label":"D''un gyrophare bleu et d''une sirène"},
-     {"key":"b","label":"De gyrophare(s) orange, panneau « Convoi exceptionnel » et radio VHF"},
-     {"key":"c","label":"D''une flèche lumineuse"},
-     {"key":"d","label":"D''aucun équipement particulier"}
-   ]', '["b"]'::jsonb,
-   'Une voiture pilote (≤ 3,5 t) est équipée de gyrophare(s) orange, panneau « Convoi exceptionnel » avant et arrière, et d''une radio VHF pour la communication avec le convoi. Le chauffeur doit avoir suivi le stage initial 14 h et recyclage 7 h tous les 5 ans.',
-   'moyenne', '{exceptionnel,voiture-pilote}');
 
   -- =================================================================
   -- 5 QR
   -- =================================================================
-  INSERT INTO public.question_bank (formation_id, source_ref, type, prompt, choices, correct, explanation, difficulty, tags) VALUES
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qr:1', 'qr',
-   'Vous devez organiser le transport de 800 L d''acide chlorhydrique (UN1789, classe 8, groupe d''emballage II) en bidons de 25 L. Détaillez les obligations ADR : conducteur, véhicule, documents, équipement, étiquetage.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Analyse :
+  INSERT INTO public.question_bank (formation_id, type, statement, choices, max_score, difficulty, tags, source_ref, active, explanation) VALUES
+  (v_formation, 'qr', 'Vous devez organiser le transport de 800 L d''acide chlorhydrique (UN1789, classe 8, groupe d''emballage II) en bidons de 25 L. Détaillez les obligations ADR : conducteur, véhicule, documents, équipement, étiquetage.', NULL, 1, 'difficile', ARRAY['adr','cas-pratique','acide'], 'mft-2026-gotrm:bc01-07:qr:1', true, 'Analyse :
 
 UN1789 = acide chlorhydrique
 Classe 8 (corrosifs)
@@ -1258,13 +975,8 @@ Obligations :
 - Trousse anti-éclaboussure
 - Douche d''urgence à proximité du chargement (chez l''expéditeur)
 
-Sanction si non-respect : amende ADR (catégorie GI ou TGI selon manquement) + immobilisation immédiate possible.',
-   'difficile', '{adr,cas-pratique,acide}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qr:2', 'qr',
-   'Un de vos camions FRC livre 6 t de glaces (-18 °C requis) à une grande surface. À l''ouverture, le client constate -8 °C dans le compartiment et refuse la marchandise. L''enregistreur montre une température remontée à -8 °C pendant 4 heures la nuit. Analysez la situation et listez vos actions.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Analyse de la situation :
+Sanction si non-respect : amende ADR (catégorie GI ou TGI selon manquement) + immobilisation immédiate possible.'),
+  (v_formation, 'qr', 'Un de vos camions FRC livre 6 t de glaces (-18 °C requis) à une grande surface. À l''ouverture, le client constate -8 °C dans le compartiment et refuse la marchandise. L''enregistreur montre une température remontée à -8 °C pendant 4 heures la nuit. Analysez la situation et listez vos actions.', NULL, 1, 'difficile', ARRAY['atp','rupture','plan-action'], 'mft-2026-gotrm:bc01-07:qr:2', true, 'Analyse de la situation :
 
 1. Constat technique :
 - Température cible : -18 °C minimum (glaces)
@@ -1332,13 +1044,8 @@ Aspect juridique :
 
 Mesure préventive globale :
 
-Mettre en place un protocole « chaîne du froid » écrit, signé par chaque conducteur, avec engagement de ne jamais couper le groupe frigorifique pendant les coupures (même nocturnes), sauf urgence ou consigne expresse de l''exploitation.',
-   'difficile', '{atp,rupture,plan-action}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qr:3', 'qr',
-   'Vous devez organiser le transport d''une éolienne (3 sections, dont la nacelle de 4 m de large × 4,5 m de haut × 78 t) entre le port de La Rochelle et un site éolien proche de Bergerac (190 km). Le client souhaite une livraison sous 5 semaines. Réaliste ? Détaillez les démarches et calculez le coût total estimé.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Analyse de la demande :
+Mettre en place un protocole « chaîne du froid » écrit, signé par chaque conducteur, avec engagement de ne jamais couper le groupe frigorifique pendant les coupures (même nocturnes), sauf urgence ou consigne expresse de l''exploitation.'),
+  (v_formation, 'qr', 'Vous devez organiser le transport d''une éolienne (3 sections, dont la nacelle de 4 m de large × 4,5 m de haut × 78 t) entre le port de La Rochelle et un site éolien proche de Bergerac (190 km). Le client souhaite une livraison sous 5 semaines. Réaliste ? Détaillez les démarches et calculez le coût total estimé.', NULL, 1, 'difficile', ARRAY['exceptionnel','delais','couts'], 'mft-2026-gotrm:bc01-07:qr:3', true, 'Analyse de la demande :
 
 Caractéristiques convoi :
 - Largeur : 4 m → catégorie 3 (>4 m approche limite mais reste bord catégorie 2 selon arrondi)
@@ -1418,13 +1125,8 @@ Coût total estimé :
 
 À ajouter : assurance valeur déclarée nacelle (à la charge du chargeur typiquement, ou refacturé).
 
-Conseil au client : si le budget est contraint, négocier avec le chargeur la livraison directement par mer jusqu''à un port plus proche (Bordeaux), ou aérien (rare et coûteux). Sinon, anticiper le timing nécessaire.',
-   'difficile', '{exceptionnel,delais,couts}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qr:4', 'qr',
-   'Vous reprenez la direction d''exploitation d''une PME de 25 véhicules dont 8 ADR (citernes carburant) et 6 ATP (FRC distribution alimentaire). Identifiez les 8 points de conformité critiques à vérifier dans les 30 premiers jours et listez les actions correctives types.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Audit conformité 30 jours — 8 points critiques :
+Conseil au client : si le budget est contraint, négocier avec le chargeur la livraison directement par mer jusqu''à un port plus proche (Bordeaux), ou aérien (rare et coûteux). Sinon, anticiper le timing nécessaire.'),
+  (v_formation, 'qr', 'Vous reprenez la direction d''exploitation d''une PME de 25 véhicules dont 8 ADR (citernes carburant) et 6 ATP (FRC distribution alimentaire). Identifiez les 8 points de conformité critiques à vérifier dans les 30 premiers jours et listez les actions correctives types.', NULL, 1, 'difficile', ARRAY['audit','conformite','plan-30-jours'], 'mft-2026-gotrm:bc01-07:qr:4', true, 'Audit conformité 30 jours — 8 points critiques :
 
 1. CSTMD (Conseiller à la Sécurité TMD) — ADR
 - Vérification : existe-t-il un conseiller désigné ? Rapport annuel à jour ?
@@ -1481,13 +1183,8 @@ Tableau de bord 30 jours :
 | 7. Équipement véhicules | À auditer | Audit physique | J+10 | Exploit |
 | 8. Documents/procédures | À auditer | Kit standardisé | J+30 | QHSE |
 
-Investissement estimé pour mise en conformité 30 jours : 35 - 50 k€ (formations, équipement, tests Cemafroid, contrats). À comparer aux risques : amendes 15-30 k€ par manquement majeur + perte clients en cas d''incident médiatisé.',
-   'difficile', '{audit,conformite,plan-30-jours}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-07:qr:5', 'qr',
-   'Comparez le transport ADR en colis vs en citerne pour le même produit (gazole UN1202). Différences en termes de réglementation, attestation conducteur, équipement, coûts et applicabilité de l''exemption 1.1.3.6.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Comparaison transport ADR colis vs citerne pour UN1202 (gazole) :
+Investissement estimé pour mise en conformité 30 jours : 35 - 50 k€ (formations, équipement, tests Cemafroid, contrats). À comparer aux risques : amendes 15-30 k€ par manquement majeur + perte clients en cas d''incident médiatisé.'),
+  (v_formation, 'qr', 'Comparez le transport ADR en colis vs en citerne pour le même produit (gazole UN1202). Différences en termes de réglementation, attestation conducteur, équipement, coûts et applicabilité de l''exemption 1.1.3.6.', NULL, 1, 'difficile', ARRAY['adr','colis-citerne','comparaison'], 'mft-2026-gotrm:bc01-07:qr:5', true, 'Comparaison transport ADR colis vs citerne pour UN1202 (gazole) :
 
 | Critère | Transport en colis (fûts, IBC 1000 L) | Transport en citerne |
 |---|---|---|
@@ -1547,8 +1244,8 @@ Recommandation business :
 Pour une PME de transport carburant :
 - Citernes pour les clients réguliers à fort volume (stations, exploitations agricoles, BTP)
 - Quelques porteurs avec capacité fûts/IBC pour le marché ponctuel et les artisans (en utilisant 1.1.3.6 pour ces derniers)
-- Investissement : citerne 15 000 L = 80-110 k€, vs porteur 19 t = 95 k€ (mais polyvalent au-delà du carburant)',
-   'difficile', '{adr,colis-citerne,comparaison}');
+- Investissement : citerne 15 000 L = 80-110 k€, vs porteur 19 t = 95 k€ (mais polyvalent au-delà du carburant)');
+
 
   -- =================================================================
   -- QUIZZES

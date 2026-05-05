@@ -948,325 +948,42 @@ $lesson4$,
   -- =================================================================
   -- 28 QCM REFORMULÉS
   -- =================================================================
-  INSERT INTO public.question_bank (formation_id, source_ref, type, prompt, choices, correct, explanation, difficulty, tags) VALUES
+  INSERT INTO public.question_bank (formation_id, type, statement, choices, max_score, difficulty, tags, source_ref, active, explanation) VALUES
+  (v_formation, 'qcm', 'Une tournée FTL (Full Truck Load) se caractérise par :', '[{"id":"a","label":"Plusieurs petits chargements regroupés","is_correct":false},{"id":"b","label":"Un seul chargement remplissant le véhicule, 1 origine 1 destination","is_correct":true},{"id":"c","label":"Une distribution multi-points en centre-ville","is_correct":false},{"id":"d","label":"Une navette quotidienne sur trajet fixe","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['ftl','types-tournees'], 'mft-2026-gotrm:bc01-06:qcm:1', true, 'Le FTL (Full Truck Load) est un lot complet : un seul chargement remplit le véhicule, généralement entre une origine unique et une destination unique sur longue distance. Distinct du LTL (lot partiel) et de la distribution.'),
+  (v_formation, 'qcm', 'Le sigle VRP en planification de tournées signifie :', '[{"id":"a","label":"Vehicle Routing Problem","is_correct":true},{"id":"b","label":"Vehicle Resource Planning","is_correct":false},{"id":"c","label":"Visite Régionale Prévisionnelle","is_correct":false},{"id":"d","label":"Variable Routing Procedure","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['vrp','vocabulaire'], 'mft-2026-gotrm:bc01-06:qcm:2', true, 'VRP = Vehicle Routing Problem. C''est le modèle mathématique qui formalise le problème de planification de tournées. Le VRPTW (Time Windows) ajoute les créneaux horaires.'),
+  (v_formation, 'qcm', 'Pour un retour à vide en TRM longue distance, le taux considéré comme "bon" est :', '[{"id":"a","label":"Inférieur à 5 %","is_correct":false},{"id":"b","label":"Entre 10 % et 15 %","is_correct":true},{"id":"c","label":"Entre 25 % et 35 %","is_correct":false},{"id":"d","label":"Entre 40 % et 50 %","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['kpi','retour-vide'], 'mft-2026-gotrm:bc01-06:qcm:3', true, 'En TRM longue distance, un taux de retour à vide entre 10 et 15 % est considéré comme bon. Au-delà de 25 %, la rentabilité est compromise. Sous 10 %, c''est excellent (rare en FTL pure).'),
+  (v_formation, 'qcm', 'L''algorithme du "plus proche voisin" en planification consiste à :', '[{"id":"a","label":"Affecter chaque tournée au véhicule le plus proche","is_correct":false},{"id":"b","label":"À chaque étape, aller au point non visité le plus proche du dernier point","is_correct":true},{"id":"c","label":"Affecter les commandes par ordre chronologique","is_correct":false},{"id":"d","label":"Minimiser le poids transporté par véhicule","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['algorithme','plus-proche-voisin'], 'mft-2026-gotrm:bc01-06:qcm:4', true, 'Le plus proche voisin (nearest neighbor) est une heuristique simple : à chaque étape, on choisit le point non visité le plus proche du dernier point parcouru. Rapide mais sous-optimal (15-25 % d''écart à l''optimum).'),
+  (v_formation, 'qcm', 'L''algorithme "savings" de Clarke-Wright consiste à :', '[{"id":"a","label":"Économiser du carburant en limitant la vitesse","is_correct":false},{"id":"b","label":"Regrouper deux clients dans une tournée si l''économie de distance le justifie","is_correct":true},{"id":"c","label":"Diminuer les coûts de structure","is_correct":false},{"id":"d","label":"Choisir des transporteurs moins chers","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['algorithme','savings'], 'mft-2026-gotrm:bc01-06:qcm:5', true, 'Savings = méthode des économies. On calcule pour chaque paire (i,j) : Économie = d(dépôt,i) + d(dépôt,j) - d(i,j). On regroupe les paires par économie décroissante tant que la capacité véhicule le permet. Standard dans les TMS.'),
+  (v_formation, 'qcm', 'La méthode des "clusters" en distribution multi-stops consiste à :', '[{"id":"a","label":"Regrouper les véhicules sur le parking dépôt","is_correct":false},{"id":"b","label":"Découper la zone en sous-zones et affecter chaque sous-zone à un véhicule","is_correct":true},{"id":"c","label":"Augmenter le nombre de véhicules","is_correct":false},{"id":"d","label":"Doubler les conducteurs","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['clusters','distribution'], 'mft-2026-gotrm:bc01-06:qcm:6', true, 'La méthode des clusters découpe géographiquement la zone à couvrir en sous-ensembles, chaque cluster étant traité par un véhicule. Réduit la complexité combinatoire et donne rapidement des solutions proches de l''optimum.'),
+  (v_formation, 'qcm', 'Une marge de sécurité standard à intégrer dans une planification pour absorber les aléas est de :', '[{"id":"a","label":"5 %","is_correct":false},{"id":"b","label":"15 %","is_correct":true},{"id":"c","label":"30 %","is_correct":false},{"id":"d","label":"50 %","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['planification','marge'], 'mft-2026-gotrm:bc01-06:qcm:7', true, 'Une marge de 15 % du temps total est généralement recommandée pour absorber les aléas (trafic, attente, formalités). Trop faible, le planning explose au moindre incident ; trop élevée, on sous-utilise les ressources.'),
+  (v_formation, 'qcm', 'Un TMS (Transport Management System) couvre principalement :', '[{"id":"a","label":"Uniquement la facturation","is_correct":false},{"id":"b","label":"6 fonctions : orders, planning, dispatching, tracking, documents, reporting","is_correct":true},{"id":"c","label":"La gestion RH des conducteurs","is_correct":false},{"id":"d","label":"Uniquement la planification","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['tms','fonctions'], 'mft-2026-gotrm:bc01-06:qcm:8', true, 'Un TMS complet couvre les 6 fonctions clés du transport : saisie commandes, planning des tournées, dispatching véhicules/conducteurs, tracking GPS, génération documents (CMR/LV/BL), reporting et facturation.'),
+  (v_formation, 'qcm', 'La télématique embarquée permet typiquement :', '[{"id":"a","label":"De remplacer le tachygraphe officiel","is_correct":false},{"id":"b","label":"De géolocaliser, mesurer la conduite, télécharger le tachygraphe à distance","is_correct":true},{"id":"c","label":"D''augmenter la vitesse maximale du véhicule","is_correct":false},{"id":"d","label":"De supprimer la carte conducteur","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['telematique','fonctions'], 'mft-2026-gotrm:bc01-06:qcm:9', true, 'La télématique apporte : géolocalisation temps réel, mesure de la conduite (éco-conduite), téléchargement tachygraphe à distance (gain de temps), alertes sécurité, données moteur. Elle ne remplace ni le tachygraphe ni la carte, qui restent obligatoires.'),
+  (v_formation, 'qcm', 'Parmi ces plateformes, laquelle est une bourse de fret ?', '[{"id":"a","label":"FleetBoard","is_correct":false},{"id":"b","label":"Teleroute","is_correct":true},{"id":"c","label":"Optitrans","is_correct":false},{"id":"d","label":"PTV Map&Guide","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['bourses-fret'], 'mft-2026-gotrm:bc01-06:qcm:10', true, 'Teleroute est une bourse de fret européenne historique (1985, groupe Wolters Kluwer). FleetBoard est une télématique Mercedes, Optitrans un TMS, PTV Map&Guide un calculateur d''itinéraires PL.'),
+  (v_formation, 'qcm', 'Pour un porteur 19 t en cycle régional, la consommation moyenne attendue est de :', '[{"id":"a","label":"15 - 20 L/100 km","is_correct":false},{"id":"b","label":"26 - 30 L/100 km","is_correct":true},{"id":"c","label":"40 - 45 L/100 km","is_correct":false},{"id":"d","label":"55 - 60 L/100 km","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['conso','porteur'], 'mft-2026-gotrm:bc01-06:qcm:11', true, 'Un porteur 19 t en cycle régional consomme typiquement 26-30 L/100 km. Un tracteur+remorque longue distance : 28-33 L. Une distribution urbaine 12 t : 22-28 L. Variation selon profil de route, charge, conducteur.'),
+  (v_formation, 'qcm', 'Une fenêtre RDV stricte signifie :', '[{"id":"a","label":"Un horaire indicatif modifiable librement","is_correct":false},{"id":"b","label":"Un créneau horaire imposé par le client (ex : 8h-10h)","is_correct":true},{"id":"c","label":"Le repos journalier du conducteur","is_correct":false},{"id":"d","label":"Une réunion d''exploitation hebdomadaire","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['rdv','creneau'], 'mft-2026-gotrm:bc01-06:qcm:12', true, 'Un slot ou créneau RDV est une fenêtre horaire imposée par le client (typiquement 30 min à 4 h). Le respecter est essentiel : un retard peut entraîner refus de livraison, retour, et pénalités contractuelles.'),
+  (v_formation, 'qcm', 'Le taux de remplissage en volume d''un véhicule se calcule comme :', '[{"id":"a","label":"Volume transporté / PTAC × 100","is_correct":false},{"id":"b","label":"Volume transporté / Volume utile × 100","is_correct":true},{"id":"c","label":"Poids transporté / Volume utile × 100","is_correct":false},{"id":"d","label":"Nombre de palettes / Surface au sol","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['kpi','remplissage'], 'mft-2026-gotrm:bc01-06:qcm:13', true, 'Taux de remplissage volume = Volume transporté / Volume utile × 100. À ne pas confondre avec le taux de remplissage poids (qui rapporte au PTAC). Le KPI réel est le maximum des deux : le véhicule est plein dès qu''une dimension atteint 100 %.'),
+  (v_formation, 'qcm', 'En ponctualité de livraison, un seuil considéré comme "critique" et risque pour la fidélisation client est :', '[{"id":"a","label":"Inférieur à 99 %","is_correct":false},{"id":"b","label":"Inférieur à 90 %","is_correct":true},{"id":"c","label":"Inférieur à 80 %","is_correct":false},{"id":"d","label":"Inférieur à 50 %","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['kpi','ponctualite'], 'mft-2026-gotrm:bc01-06:qcm:14', true, 'Un taux de ponctualité < 90 % met sérieusement en péril la relation client : pénalités contractuelles, refus de livraisons, perte d''appels d''offres. Cible standard : > 95 %, excellent : > 98 %.'),
+  (v_formation, 'qcm', 'Le cycle PDCA en amélioration continue désigne :', '[{"id":"a","label":"Plan / Do / Check / Act","is_correct":true},{"id":"b","label":"Procurement / Delivery / Control / Audit","is_correct":false},{"id":"c","label":"Plan / Distribute / Calculate / Adjust","is_correct":false},{"id":"d","label":"Process / Decide / Confirm / Apply","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['pdca','amelioration'], 'mft-2026-gotrm:bc01-06:qcm:15', true, 'PDCA = Plan (planifier le changement), Do (exécuter sur un pilote), Check (vérifier les résultats), Act (standardiser ou ajuster). Méthode universelle d''amélioration continue (W. E. Deming).'),
+  (v_formation, 'qcm', 'Le diagramme de Pareto repose sur l''idée que :', '[{"id":"a","label":"Toutes les causes ont le même poids","is_correct":false},{"id":"b","label":"20 % des causes expliquent 80 % des effets","is_correct":true},{"id":"c","label":"Les problèmes sont aléatoires","is_correct":false},{"id":"d","label":"Il faut tout traiter en même temps","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['pareto','80-20'], 'mft-2026-gotrm:bc01-06:qcm:16', true, 'Le principe de Pareto (loi 80/20) postule que 20 % des causes produisent 80 % des effets. En planification : 20 % des clients génèrent 80 % du CA, 20 % des problèmes causent 80 % des retards.'),
+  (v_formation, 'qcm', 'Le diagramme d''Ishikawa classe les causes selon les "5M". Lequel n''en fait PAS partie ?', '[{"id":"a","label":"Main d''œuvre","is_correct":false},{"id":"b","label":"Méthode","is_correct":false},{"id":"c","label":"Marketing","is_correct":true},{"id":"d","label":"Milieu","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['ishikawa','5m'], 'mft-2026-gotrm:bc01-06:qcm:17', true, 'Les 5M sont : Main d''œuvre, Matériel, Méthode, Milieu, Mesure. Marketing n''en fait pas partie. Ishikawa (arête de poisson) sert à identifier toutes les causes possibles d''un problème.'),
+  (v_formation, 'qcm', 'La méthode des "5 pourquoi" sert à :', '[{"id":"a","label":"Lister 5 problèmes prioritaires","is_correct":false},{"id":"b","label":"Trouver la cause racine d''un problème en posant 5 fois la question pourquoi","is_correct":true},{"id":"c","label":"Faire 5 réunions de débrief","is_correct":false},{"id":"d","label":"Demander 5 devis avant achat","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['5-pourquoi','cause-racine'], 'mft-2026-gotrm:bc01-06:qcm:18', true, 'Les 5 pourquoi (Toyota) consistent à demander itérativement « pourquoi ? » jusqu''à atteindre la cause racine. Souvent 5 itérations suffisent pour passer du symptôme à la cause profonde.'),
+  (v_formation, 'qcm', 'En cabotage UE, un transporteur étranger peut effectuer dans un pays UE :', '[{"id":"a","label":"Un nombre illimité d''opérations","is_correct":false},{"id":"b","label":"Maximum 3 opérations dans les 7 jours suivant le déchargement international","is_correct":true},{"id":"c","label":"Une seule opération par mois","is_correct":false},{"id":"d","label":"Aucune opération autorisée","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['cabotage','reglementation'], 'mft-2026-gotrm:bc01-06:qcm:19', true, 'Le cabotage en UE est limité à 3 opérations dans les 7 jours suivant un transport international (règlement 1072/2009). Au-delà, c''est du transport intérieur soumis à licence locale.'),
+  (v_formation, 'qcm', 'Le RGPD s''applique-t-il à la télématique embarquée des véhicules ?', '[{"id":"a","label":"Non, c''est de la simple gestion de flotte","is_correct":false},{"id":"b","label":"Oui, car des données personnelles du conducteur sont collectées (géolocalisation, conduite)","is_correct":true},{"id":"c","label":"Uniquement si l''entreprise dépasse 250 salariés","is_correct":false},{"id":"d","label":"Uniquement à l''export hors UE","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['rgpd','telematique'], 'mft-2026-gotrm:bc01-06:qcm:20', true, 'La télématique collecte des données personnelles du conducteur (géolocalisation, comportement, temps). Le RGPD s''applique : information préalable, consultation CSE, registre des traitements, finalité légitime, durée conservation limitée.'),
+  (v_formation, 'qcm', 'En distribution urbaine, une productivité standard attendue est de :', '[{"id":"a","label":"0,5 - 1 point/heure","is_correct":false},{"id":"b","label":"1 - 2 points/heure","is_correct":false},{"id":"c","label":"4 - 6 points/heure","is_correct":true},{"id":"d","label":"15 - 20 points/heure","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['kpi','productivite'], 'mft-2026-gotrm:bc01-06:qcm:21', true, 'En distribution urbaine, on attend 4 à 6 points livrés par heure de service. En périurbain : 2,5-4. En régional : 1-2. La densité urbaine compense les distances courtes par la difficulté de stationnement et de circulation.'),
+  (v_formation, 'qcm', 'L''avantage principal du modèle "hub-and-spoke" est :', '[{"id":"a","label":"Éliminer le besoin de véhicules","is_correct":false},{"id":"b","label":"Mutualiser les flux par un hub central pour optimiser la consolidation","is_correct":true},{"id":"c","label":"Supprimer les conducteurs","is_correct":false},{"id":"d","label":"Faire baisser le carburant à la pompe","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['hub-spoke','reseau'], 'mft-2026-gotrm:bc01-06:qcm:22', true, 'Le modèle hub-and-spoke (étoile) consolide les flux de plusieurs origines vers un hub central, puis redistribue depuis ce hub vers les destinations finales. Optimise le remplissage, mutualise les ressources, baisse les coûts unitaires.'),
+  (v_formation, 'qcm', 'Le cross-docking se définit comme :', '[{"id":"a","label":"Un croisement de deux véhicules sur une voie étroite","is_correct":false},{"id":"b","label":"Un transbordement direct au quai sans stockage intermédiaire","is_correct":true},{"id":"c","label":"Un passage de douanes accéléré","is_correct":false},{"id":"d","label":"Une procédure d''embarquement maritime","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['cross-docking'], 'mft-2026-gotrm:bc01-06:qcm:23', true, 'Cross-docking = transbordement direct quai à quai sans passer par un stock. La marchandise arrive d''un côté, est triée, et repart de l''autre côté sous quelques heures. Optimise le BFR et accélère la chaîne logistique.'),
+  (v_formation, 'qcm', 'Pour 22 livraisons en zone urbaine avec créneaux RDV stricts, le modèle de planification le plus adapté est :', '[{"id":"a","label":"Plus proche voisin simple","is_correct":false},{"id":"b","label":"VRPTW (Vehicle Routing Problem with Time Windows)","is_correct":true},{"id":"c","label":"FTL (Full Truck Load)","is_correct":false},{"id":"d","label":"Hub-and-spoke","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['vrptw','distribution'], 'mft-2026-gotrm:bc01-06:qcm:24', true, 'Le VRPTW intègre les créneaux horaires comme contrainte forte. C''est le modèle dominant en distribution multi-stops avec RDV. Le plus proche voisin seul ignorerait les fenêtres et générerait des retards.'),
+  (v_formation, 'qcm', 'Le ratio km commercial / km total cible en TRM longue distance est :', '[{"id":"a","label":"> 50 %","is_correct":false},{"id":"b","label":"> 70 %","is_correct":false},{"id":"c","label":"> 85 %","is_correct":true},{"id":"d","label":"> 99 %","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['kpi','ratio'], 'mft-2026-gotrm:bc01-06:qcm:25', true, 'En TRM longue distance, on vise un ratio km commercial / km total > 85 %. En distribution, > 70 % est un bon objectif. Plus le ratio est élevé, moins de km sont à vide ou de repositionnement.'),
+  (v_formation, 'qcm', 'Quel outil n''est PAS un TMS ?', '[{"id":"a","label":"Optitrans","is_correct":false},{"id":"b","label":"AlpegaTMS","is_correct":false},{"id":"c","label":"Mapotempo","is_correct":false},{"id":"d","label":"Trans.eu","is_correct":true}]'::jsonb, 1, 'moyen', ARRAY['tms','distinction'], 'mft-2026-gotrm:bc01-06:qcm:26', true, 'Trans.eu est une bourse de fret (Pologne / UE), pas un TMS. Optitrans, AlpegaTMS et Mapotempo sont des TMS. Le TMS gère le cycle complet du transport, la bourse de fret met en relation chargeurs et transporteurs.'),
+  (v_formation, 'qcm', 'Le ROI moyen d''une solution de télématique embarquée est de :', '[{"id":"a","label":"1 mois","is_correct":false},{"id":"b","label":"6 à 12 mois","is_correct":true},{"id":"c","label":"3 à 5 ans","is_correct":false},{"id":"d","label":"Plus de 10 ans","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['telematique','roi'], 'mft-2026-gotrm:bc01-06:qcm:27', true, 'Le ROI typique d''une solution télématique est de 6 à 12 mois grâce aux gains : éco-conduite (-5 à -12 % carburant), productivité, prévention vols, baisse maintenance, gain de temps administratif (téléchargement à distance).'),
+  (v_formation, 'qcm', 'Lors d''une utilisation de bourse de fret, la pratique LA MOINS recommandée est :', '[{"id":"a","label":"Vérifier KBIS et licence du transporteur","is_correct":false},{"id":"b","label":"Charger sans demander l''attestation d''assurance RC","is_correct":true},{"id":"c","label":"Conserver photos et CMR signée","is_correct":false},{"id":"d","label":"Privilégier les abonnements payants","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['bourses-fret','vigilance'], 'mft-2026-gotrm:bc01-06:qcm:28', true, 'Charger sans vérifier l''attestation d''assurance RC est une faute lourde de gestion : en cas de sinistre, l''entreprise peut être tenue responsable et privée d''indemnisation. Toujours demander assurance, licence transport et KBIS avant de confier une marchandise.');
 
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:1', 'qcm',
-   'Une tournée FTL (Full Truck Load) se caractérise par :',
-   jsonb '[
-     {"key":"a","label":"Plusieurs petits chargements regroupés"},
-     {"key":"b","label":"Un seul chargement remplissant le véhicule, 1 origine 1 destination"},
-     {"key":"c","label":"Une distribution multi-points en centre-ville"},
-     {"key":"d","label":"Une navette quotidienne sur trajet fixe"}
-   ]', '["b"]'::jsonb,
-   'Le FTL (Full Truck Load) est un lot complet : un seul chargement remplit le véhicule, généralement entre une origine unique et une destination unique sur longue distance. Distinct du LTL (lot partiel) et de la distribution.',
-   'facile', '{ftl,types-tournees}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:2', 'qcm',
-   'Le sigle VRP en planification de tournées signifie :',
-   jsonb '[
-     {"key":"a","label":"Vehicle Routing Problem"},
-     {"key":"b","label":"Vehicle Resource Planning"},
-     {"key":"c","label":"Visite Régionale Prévisionnelle"},
-     {"key":"d","label":"Variable Routing Procedure"}
-   ]', '["a"]'::jsonb,
-   'VRP = Vehicle Routing Problem. C''est le modèle mathématique qui formalise le problème de planification de tournées. Le VRPTW (Time Windows) ajoute les créneaux horaires.',
-   'moyenne', '{vrp,vocabulaire}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:3', 'qcm',
-   'Pour un retour à vide en TRM longue distance, le taux considéré comme "bon" est :',
-   jsonb '[
-     {"key":"a","label":"Inférieur à 5 %"},
-     {"key":"b","label":"Entre 10 % et 15 %"},
-     {"key":"c","label":"Entre 25 % et 35 %"},
-     {"key":"d","label":"Entre 40 % et 50 %"}
-   ]', '["b"]'::jsonb,
-   'En TRM longue distance, un taux de retour à vide entre 10 et 15 % est considéré comme bon. Au-delà de 25 %, la rentabilité est compromise. Sous 10 %, c''est excellent (rare en FTL pure).',
-   'moyenne', '{kpi,retour-vide}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:4', 'qcm',
-   'L''algorithme du "plus proche voisin" en planification consiste à :',
-   jsonb '[
-     {"key":"a","label":"Affecter chaque tournée au véhicule le plus proche"},
-     {"key":"b","label":"À chaque étape, aller au point non visité le plus proche du dernier point"},
-     {"key":"c","label":"Affecter les commandes par ordre chronologique"},
-     {"key":"d","label":"Minimiser le poids transporté par véhicule"}
-   ]', '["b"]'::jsonb,
-   'Le plus proche voisin (nearest neighbor) est une heuristique simple : à chaque étape, on choisit le point non visité le plus proche du dernier point parcouru. Rapide mais sous-optimal (15-25 % d''écart à l''optimum).',
-   'moyenne', '{algorithme,plus-proche-voisin}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:5', 'qcm',
-   'L''algorithme "savings" de Clarke-Wright consiste à :',
-   jsonb '[
-     {"key":"a","label":"Économiser du carburant en limitant la vitesse"},
-     {"key":"b","label":"Regrouper deux clients dans une tournée si l''économie de distance le justifie"},
-     {"key":"c","label":"Diminuer les coûts de structure"},
-     {"key":"d","label":"Choisir des transporteurs moins chers"}
-   ]', '["b"]'::jsonb,
-   'Savings = méthode des économies. On calcule pour chaque paire (i,j) : Économie = d(dépôt,i) + d(dépôt,j) - d(i,j). On regroupe les paires par économie décroissante tant que la capacité véhicule le permet. Standard dans les TMS.',
-   'difficile', '{algorithme,savings}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:6', 'qcm',
-   'La méthode des "clusters" en distribution multi-stops consiste à :',
-   jsonb '[
-     {"key":"a","label":"Regrouper les véhicules sur le parking dépôt"},
-     {"key":"b","label":"Découper la zone en sous-zones et affecter chaque sous-zone à un véhicule"},
-     {"key":"c","label":"Augmenter le nombre de véhicules"},
-     {"key":"d","label":"Doubler les conducteurs"}
-   ]', '["b"]'::jsonb,
-   'La méthode des clusters découpe géographiquement la zone à couvrir en sous-ensembles, chaque cluster étant traité par un véhicule. Réduit la complexité combinatoire et donne rapidement des solutions proches de l''optimum.',
-   'moyenne', '{clusters,distribution}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:7', 'qcm',
-   'Une marge de sécurité standard à intégrer dans une planification pour absorber les aléas est de :',
-   jsonb '[
-     {"key":"a","label":"5 %"},
-     {"key":"b","label":"15 %"},
-     {"key":"c","label":"30 %"},
-     {"key":"d","label":"50 %"}
-   ]', '["b"]'::jsonb,
-   'Une marge de 15 % du temps total est généralement recommandée pour absorber les aléas (trafic, attente, formalités). Trop faible, le planning explose au moindre incident ; trop élevée, on sous-utilise les ressources.',
-   'moyenne', '{planification,marge}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:8', 'qcm',
-   'Un TMS (Transport Management System) couvre principalement :',
-   jsonb '[
-     {"key":"a","label":"Uniquement la facturation"},
-     {"key":"b","label":"6 fonctions : orders, planning, dispatching, tracking, documents, reporting"},
-     {"key":"c","label":"La gestion RH des conducteurs"},
-     {"key":"d","label":"Uniquement la planification"}
-   ]', '["b"]'::jsonb,
-   'Un TMS complet couvre les 6 fonctions clés du transport : saisie commandes, planning des tournées, dispatching véhicules/conducteurs, tracking GPS, génération documents (CMR/LV/BL), reporting et facturation.',
-   'moyenne', '{tms,fonctions}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:9', 'qcm',
-   'La télématique embarquée permet typiquement :',
-   jsonb '[
-     {"key":"a","label":"De remplacer le tachygraphe officiel"},
-     {"key":"b","label":"De géolocaliser, mesurer la conduite, télécharger le tachygraphe à distance"},
-     {"key":"c","label":"D''augmenter la vitesse maximale du véhicule"},
-     {"key":"d","label":"De supprimer la carte conducteur"}
-   ]', '["b"]'::jsonb,
-   'La télématique apporte : géolocalisation temps réel, mesure de la conduite (éco-conduite), téléchargement tachygraphe à distance (gain de temps), alertes sécurité, données moteur. Elle ne remplace ni le tachygraphe ni la carte, qui restent obligatoires.',
-   'facile', '{telematique,fonctions}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:10', 'qcm',
-   'Parmi ces plateformes, laquelle est une bourse de fret ?',
-   jsonb '[
-     {"key":"a","label":"FleetBoard"},
-     {"key":"b","label":"Teleroute"},
-     {"key":"c","label":"Optitrans"},
-     {"key":"d","label":"PTV Map&Guide"}
-   ]', '["b"]'::jsonb,
-   'Teleroute est une bourse de fret européenne historique (1985, groupe Wolters Kluwer). FleetBoard est une télématique Mercedes, Optitrans un TMS, PTV Map&Guide un calculateur d''itinéraires PL.',
-   'facile', '{bourses-fret}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:11', 'qcm',
-   'Pour un porteur 19 t en cycle régional, la consommation moyenne attendue est de :',
-   jsonb '[
-     {"key":"a","label":"15 - 20 L/100 km"},
-     {"key":"b","label":"26 - 30 L/100 km"},
-     {"key":"c","label":"40 - 45 L/100 km"},
-     {"key":"d","label":"55 - 60 L/100 km"}
-   ]', '["b"]'::jsonb,
-   'Un porteur 19 t en cycle régional consomme typiquement 26-30 L/100 km. Un tracteur+remorque longue distance : 28-33 L. Une distribution urbaine 12 t : 22-28 L. Variation selon profil de route, charge, conducteur.',
-   'moyenne', '{conso,porteur}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:12', 'qcm',
-   'Une fenêtre RDV stricte signifie :',
-   jsonb '[
-     {"key":"a","label":"Un horaire indicatif modifiable librement"},
-     {"key":"b","label":"Un créneau horaire imposé par le client (ex : 8h-10h)"},
-     {"key":"c","label":"Le repos journalier du conducteur"},
-     {"key":"d","label":"Une réunion d''exploitation hebdomadaire"}
-   ]', '["b"]'::jsonb,
-   'Un slot ou créneau RDV est une fenêtre horaire imposée par le client (typiquement 30 min à 4 h). Le respecter est essentiel : un retard peut entraîner refus de livraison, retour, et pénalités contractuelles.',
-   'facile', '{rdv,creneau}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:13', 'qcm',
-   'Le taux de remplissage en volume d''un véhicule se calcule comme :',
-   jsonb '[
-     {"key":"a","label":"Volume transporté / PTAC × 100"},
-     {"key":"b","label":"Volume transporté / Volume utile × 100"},
-     {"key":"c","label":"Poids transporté / Volume utile × 100"},
-     {"key":"d","label":"Nombre de palettes / Surface au sol"}
-   ]', '["b"]'::jsonb,
-   'Taux de remplissage volume = Volume transporté / Volume utile × 100. À ne pas confondre avec le taux de remplissage poids (qui rapporte au PTAC). Le KPI réel est le maximum des deux : le véhicule est plein dès qu''une dimension atteint 100 %.',
-   'moyenne', '{kpi,remplissage}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:14', 'qcm',
-   'En ponctualité de livraison, un seuil considéré comme "critique" et risque pour la fidélisation client est :',
-   jsonb '[
-     {"key":"a","label":"Inférieur à 99 %"},
-     {"key":"b","label":"Inférieur à 90 %"},
-     {"key":"c","label":"Inférieur à 80 %"},
-     {"key":"d","label":"Inférieur à 50 %"}
-   ]', '["b"]'::jsonb,
-   'Un taux de ponctualité < 90 % met sérieusement en péril la relation client : pénalités contractuelles, refus de livraisons, perte d''appels d''offres. Cible standard : > 95 %, excellent : > 98 %.',
-   'moyenne', '{kpi,ponctualite}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:15', 'qcm',
-   'Le cycle PDCA en amélioration continue désigne :',
-   jsonb '[
-     {"key":"a","label":"Plan / Do / Check / Act"},
-     {"key":"b","label":"Procurement / Delivery / Control / Audit"},
-     {"key":"c","label":"Plan / Distribute / Calculate / Adjust"},
-     {"key":"d","label":"Process / Decide / Confirm / Apply"}
-   ]', '["a"]'::jsonb,
-   'PDCA = Plan (planifier le changement), Do (exécuter sur un pilote), Check (vérifier les résultats), Act (standardiser ou ajuster). Méthode universelle d''amélioration continue (W. E. Deming).',
-   'moyenne', '{pdca,amelioration}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:16', 'qcm',
-   'Le diagramme de Pareto repose sur l''idée que :',
-   jsonb '[
-     {"key":"a","label":"Toutes les causes ont le même poids"},
-     {"key":"b","label":"20 % des causes expliquent 80 % des effets"},
-     {"key":"c","label":"Les problèmes sont aléatoires"},
-     {"key":"d","label":"Il faut tout traiter en même temps"}
-   ]', '["b"]'::jsonb,
-   'Le principe de Pareto (loi 80/20) postule que 20 % des causes produisent 80 % des effets. En planification : 20 % des clients génèrent 80 % du CA, 20 % des problèmes causent 80 % des retards.',
-   'moyenne', '{pareto,80-20}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:17', 'qcm',
-   'Le diagramme d''Ishikawa classe les causes selon les "5M". Lequel n''en fait PAS partie ?',
-   jsonb '[
-     {"key":"a","label":"Main d''œuvre"},
-     {"key":"b","label":"Méthode"},
-     {"key":"c","label":"Marketing"},
-     {"key":"d","label":"Milieu"}
-   ]', '["c"]'::jsonb,
-   'Les 5M sont : Main d''œuvre, Matériel, Méthode, Milieu, Mesure. Marketing n''en fait pas partie. Ishikawa (arête de poisson) sert à identifier toutes les causes possibles d''un problème.',
-   'moyenne', '{ishikawa,5m}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:18', 'qcm',
-   'La méthode des "5 pourquoi" sert à :',
-   jsonb '[
-     {"key":"a","label":"Lister 5 problèmes prioritaires"},
-     {"key":"b","label":"Trouver la cause racine d''un problème en posant 5 fois la question pourquoi"},
-     {"key":"c","label":"Faire 5 réunions de débrief"},
-     {"key":"d","label":"Demander 5 devis avant achat"}
-   ]', '["b"]'::jsonb,
-   'Les 5 pourquoi (Toyota) consistent à demander itérativement « pourquoi ? » jusqu''à atteindre la cause racine. Souvent 5 itérations suffisent pour passer du symptôme à la cause profonde.',
-   'moyenne', '{5-pourquoi,cause-racine}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:19', 'qcm',
-   'En cabotage UE, un transporteur étranger peut effectuer dans un pays UE :',
-   jsonb '[
-     {"key":"a","label":"Un nombre illimité d''opérations"},
-     {"key":"b","label":"Maximum 3 opérations dans les 7 jours suivant le déchargement international"},
-     {"key":"c","label":"Une seule opération par mois"},
-     {"key":"d","label":"Aucune opération autorisée"}
-   ]', '["b"]'::jsonb,
-   'Le cabotage en UE est limité à 3 opérations dans les 7 jours suivant un transport international (règlement 1072/2009). Au-delà, c''est du transport intérieur soumis à licence locale.',
-   'difficile', '{cabotage,reglementation}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:20', 'qcm',
-   'Le RGPD s''applique-t-il à la télématique embarquée des véhicules ?',
-   jsonb '[
-     {"key":"a","label":"Non, c''est de la simple gestion de flotte"},
-     {"key":"b","label":"Oui, car des données personnelles du conducteur sont collectées (géolocalisation, conduite)"},
-     {"key":"c","label":"Uniquement si l''entreprise dépasse 250 salariés"},
-     {"key":"d","label":"Uniquement à l''export hors UE"}
-   ]', '["b"]'::jsonb,
-   'La télématique collecte des données personnelles du conducteur (géolocalisation, comportement, temps). Le RGPD s''applique : information préalable, consultation CSE, registre des traitements, finalité légitime, durée conservation limitée.',
-   'moyenne', '{rgpd,telematique}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:21', 'qcm',
-   'En distribution urbaine, une productivité standard attendue est de :',
-   jsonb '[
-     {"key":"a","label":"0,5 - 1 point/heure"},
-     {"key":"b","label":"1 - 2 points/heure"},
-     {"key":"c","label":"4 - 6 points/heure"},
-     {"key":"d","label":"15 - 20 points/heure"}
-   ]', '["c"]'::jsonb,
-   'En distribution urbaine, on attend 4 à 6 points livrés par heure de service. En périurbain : 2,5-4. En régional : 1-2. La densité urbaine compense les distances courtes par la difficulté de stationnement et de circulation.',
-   'moyenne', '{kpi,productivite}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:22', 'qcm',
-   'L''avantage principal du modèle "hub-and-spoke" est :',
-   jsonb '[
-     {"key":"a","label":"Éliminer le besoin de véhicules"},
-     {"key":"b","label":"Mutualiser les flux par un hub central pour optimiser la consolidation"},
-     {"key":"c","label":"Supprimer les conducteurs"},
-     {"key":"d","label":"Faire baisser le carburant à la pompe"}
-   ]', '["b"]'::jsonb,
-   'Le modèle hub-and-spoke (étoile) consolide les flux de plusieurs origines vers un hub central, puis redistribue depuis ce hub vers les destinations finales. Optimise le remplissage, mutualise les ressources, baisse les coûts unitaires.',
-   'moyenne', '{hub-spoke,reseau}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:23', 'qcm',
-   'Le cross-docking se définit comme :',
-   jsonb '[
-     {"key":"a","label":"Un croisement de deux véhicules sur une voie étroite"},
-     {"key":"b","label":"Un transbordement direct au quai sans stockage intermédiaire"},
-     {"key":"c","label":"Un passage de douanes accéléré"},
-     {"key":"d","label":"Une procédure d''embarquement maritime"}
-   ]', '["b"]'::jsonb,
-   'Cross-docking = transbordement direct quai à quai sans passer par un stock. La marchandise arrive d''un côté, est triée, et repart de l''autre côté sous quelques heures. Optimise le BFR et accélère la chaîne logistique.',
-   'moyenne', '{cross-docking}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:24', 'qcm',
-   'Pour 22 livraisons en zone urbaine avec créneaux RDV stricts, le modèle de planification le plus adapté est :',
-   jsonb '[
-     {"key":"a","label":"Plus proche voisin simple"},
-     {"key":"b","label":"VRPTW (Vehicle Routing Problem with Time Windows)"},
-     {"key":"c","label":"FTL (Full Truck Load)"},
-     {"key":"d","label":"Hub-and-spoke"}
-   ]', '["b"]'::jsonb,
-   'Le VRPTW intègre les créneaux horaires comme contrainte forte. C''est le modèle dominant en distribution multi-stops avec RDV. Le plus proche voisin seul ignorerait les fenêtres et générerait des retards.',
-   'moyenne', '{vrptw,distribution}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:25', 'qcm',
-   'Le ratio km commercial / km total cible en TRM longue distance est :',
-   jsonb '[
-     {"key":"a","label":"> 50 %"},
-     {"key":"b","label":"> 70 %"},
-     {"key":"c","label":"> 85 %"},
-     {"key":"d","label":"> 99 %"}
-   ]', '["c"]'::jsonb,
-   'En TRM longue distance, on vise un ratio km commercial / km total > 85 %. En distribution, > 70 % est un bon objectif. Plus le ratio est élevé, moins de km sont à vide ou de repositionnement.',
-   'moyenne', '{kpi,ratio}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:26', 'qcm',
-   'Quel outil n''est PAS un TMS ?',
-   jsonb '[
-     {"key":"a","label":"Optitrans"},
-     {"key":"b","label":"AlpegaTMS"},
-     {"key":"c","label":"Mapotempo"},
-     {"key":"d","label":"Trans.eu"}
-   ]', '["d"]'::jsonb,
-   'Trans.eu est une bourse de fret (Pologne / UE), pas un TMS. Optitrans, AlpegaTMS et Mapotempo sont des TMS. Le TMS gère le cycle complet du transport, la bourse de fret met en relation chargeurs et transporteurs.',
-   'moyenne', '{tms,distinction}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:27', 'qcm',
-   'Le ROI moyen d''une solution de télématique embarquée est de :',
-   jsonb '[
-     {"key":"a","label":"1 mois"},
-     {"key":"b","label":"6 à 12 mois"},
-     {"key":"c","label":"3 à 5 ans"},
-     {"key":"d","label":"Plus de 10 ans"}
-   ]', '["b"]'::jsonb,
-   'Le ROI typique d''une solution télématique est de 6 à 12 mois grâce aux gains : éco-conduite (-5 à -12 % carburant), productivité, prévention vols, baisse maintenance, gain de temps administratif (téléchargement à distance).',
-   'moyenne', '{telematique,roi}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qcm:28', 'qcm',
-   'Lors d''une utilisation de bourse de fret, la pratique LA MOINS recommandée est :',
-   jsonb '[
-     {"key":"a","label":"Vérifier KBIS et licence du transporteur"},
-     {"key":"b","label":"Charger sans demander l''attestation d''assurance RC"},
-     {"key":"c","label":"Conserver photos et CMR signée"},
-     {"key":"d","label":"Privilégier les abonnements payants"}
-   ]', '["b"]'::jsonb,
-   'Charger sans vérifier l''attestation d''assurance RC est une faute lourde de gestion : en cas de sinistre, l''entreprise peut être tenue responsable et privée d''indemnisation. Toujours demander assurance, licence transport et KBIS avant de confier une marchandise.',
-   'moyenne', '{bourses-fret,vigilance}');
 
   -- =================================================================
   -- 5 QR
   -- =================================================================
-  INSERT INTO public.question_bank (formation_id, source_ref, type, prompt, choices, correct, explanation, difficulty, tags) VALUES
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qr:1', 'qr',
-   'Vous gérez un parc de 18 porteurs 19 t en TRM longue distance. Le taux de retour à vide actuel est de 26 %. Décrivez un plan d''action sur 6 mois pour le ramener à 15 %, en précisant les actions, les ressources, les indicateurs de suivi et le ROI attendu.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Plan d''action proposé :
+  INSERT INTO public.question_bank (formation_id, type, statement, choices, max_score, difficulty, tags, source_ref, active, explanation) VALUES
+  (v_formation, 'qr', 'Vous gérez un parc de 18 porteurs 19 t en TRM longue distance. Le taux de retour à vide actuel est de 26 %. Décrivez un plan d''action sur 6 mois pour le ramener à 15 %, en précisant les actions, les ressources, les indicateurs de suivi et le ROI attendu.', NULL, 1, 'difficile', ARRAY['plan-action','roi','retour-vide'], 'mft-2026-gotrm:bc01-06:qr:1', true, 'Plan d''action proposé :
 
 1. Mois 1 — Diagnostic et choix d''outil
 - Analyse Pareto des trajets retour à vide (top 10 lignes)
@@ -1307,11 +1024,8 @@ ROI attendu :
 - À 1,40 €/km marge brute : ~ 333 k€/an de revenus additionnels
 - Marge nette additionnelle : ~ 165 k€/an (après coûts variables)
 - ROI : 35 k€ investis pour 165 k€ de marge, soit ~ 470 % la 1ère année
-- Période de retour : 2,5 mois',
-   'difficile', '{plan-action,roi,retour-vide}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qr:2', 'qr',
-   'Construisez la tournée optimale pour un porteur 12 t avec hayon devant livrer ces 8 points en agglomération nantaise (départ dépôt 6 h, retour 14 h max). Justifiez l''ordre choisi.
+- Période de retour : 2,5 mois'),
+  (v_formation, 'qr', 'Construisez la tournée optimale pour un porteur 12 t avec hayon devant livrer ces 8 points en agglomération nantaise (départ dépôt 6 h, retour 14 h max). Justifiez l''ordre choisi.
 
 Points :
 - A. Saint-Herblain (créneau 7 h-9 h, 90 kg)
@@ -1321,9 +1035,7 @@ Points :
 - E. Bouguenais (créneau 7 h-9 h, 130 kg)
 - F. Orvault (créneau 8 h-11 h, 80 kg)
 - G. Saint-Sébastien (créneau 9 h-12 h, 95 kg)
-- H. La Chapelle-sur-Erdre (créneau 10 h-13 h, 100 kg)',
-   '[]'::jsonb, '[]'::jsonb,
-   'Méthode :
+- H. La Chapelle-sur-Erdre (créneau 10 h-13 h, 100 kg)', NULL, 1, 'difficile', ARRAY['tournee','construction','cas-pratique'], 'mft-2026-gotrm:bc01-06:qr:2', true, 'Méthode :
 
 1. Analyse géographique :
 - Ouest agglo : Saint-Herblain (A), Bouguenais (E), Orvault (F)
@@ -1359,19 +1071,14 @@ Vérifications :
 - Total : ~ 6 h 15 → respecte la fenêtre 6 h - 14 h
 - Poids total : 740 kg (largement < 12 t PTAC)
 - Tous les créneaux RDV respectés
-- 1 conducteur, 1 véhicule, conformité R561 OK',
-   'difficile', '{tournee,construction,cas-pratique}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qr:3', 'qr',
-   'Une PME de transport de 22 véhicules a les KPI suivants au T1 :
+- 1 conducteur, 1 véhicule, conformité R561 OK'),
+  (v_formation, 'qr', 'Une PME de transport de 22 véhicules a les KPI suivants au T1 :
 - Taux remplissage poids : 76 %
 - Taux retour à vide : 21 %
 - Ponctualité : 91 %
 - Coût km commercial : 1,48 € (cible 1,40 €)
 
-Identifiez les 3 priorités d''action en utilisant Pareto, et bâtissez le plan trimestriel.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Analyse Pareto des écarts à la cible :
+Identifiez les 3 priorités d''action en utilisant Pareto, et bâtissez le plan trimestriel.', NULL, 1, 'difficile', ARRAY['kpi','plan-action','pareto'], 'mft-2026-gotrm:bc01-06:qr:3', true, 'Analyse Pareto des écarts à la cible :
 
 1. Retour à vide 21 % vs cible 15 % : écart 6 pts → impact estimé sur coût km : +0,06 €/km commercial
 2. Remplissage 76 % vs cible 85 % : écart 9 pts → impact sur prix de vente moyen : -7 % de marge
@@ -1419,13 +1126,8 @@ Gains attendus T2 (1 trimestre) :
 - Retour à vide -3 pts → ~ 18 k€
 - Remplissage +5 pts → ~ 14 k€
 - Ponctualité +3 pts → ~ 7 k€ pénalités évitées
-- Total trimestre : ~ 39 k€ pour 6,8 k€ d''investissement (ROI x 5,7)',
-   'difficile', '{kpi,plan-action,pareto}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qr:4', 'qr',
-   'Comparez le déploiement d''un TMS interne (on-premise) versus un TMS cloud (SaaS) pour une PME de 35 véhicules. Coûts, avantages, inconvénients et recommandation.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Comparaison détaillée :
+- Total trimestre : ~ 39 k€ pour 6,8 k€ d''investissement (ROI x 5,7)'),
+  (v_formation, 'qr', 'Comparez le déploiement d''un TMS interne (on-premise) versus un TMS cloud (SaaS) pour une PME de 35 véhicules. Coûts, avantages, inconvénients et recommandation.', NULL, 1, 'difficile', ARRAY['tms','comparaison','recommandation'], 'mft-2026-gotrm:bc01-06:qr:4', true, 'Comparaison détaillée :
 
 1. TMS On-premise (installé sur serveur de l''entreprise)
 
@@ -1500,13 +1202,8 @@ Critères de choix concrets :
 - Support en français, hotline 7 j/7
 - Référence clients PME similaires dans le secteur
 - Période de pilote possible (2-3 mois)
-- Contrat de réversibilité (export des données en cas de fin de contrat)',
-   'difficile', '{tms,comparaison,recommandation}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-06:qr:5', 'qr',
-   'L''entreprise *Trans-Express Loire* a déployé une télématique sur ses 28 véhicules il y a 3 mois. Aujourd''hui, deux conducteurs ont saisi les délégués du personnel pour « surveillance abusive ». Analysez la situation au regard du RGPD et listez 6 mesures correctives.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Analyse RGPD :
+- Contrat de réversibilité (export des données en cas de fin de contrat)'),
+  (v_formation, 'qr', 'L''entreprise *Trans-Express Loire* a déployé une télématique sur ses 28 véhicules il y a 3 mois. Aujourd''hui, deux conducteurs ont saisi les délégués du personnel pour « surveillance abusive ». Analysez la situation au regard du RGPD et listez 6 mesures correctives.', NULL, 1, 'difficile', ARRAY['rgpd','telematique','plan-action'], 'mft-2026-gotrm:bc01-06:qr:5', true, 'Analyse RGPD :
 
 Cadre légal applicable :
 - RGPD (UE 2016/679)
@@ -1572,8 +1269,8 @@ Bonus — Mesures structurelles :
 - Rétroplanning de mise en conformité communiqué à la CNIL si saisine
 
 Conclusion :
-La télématique reste licite et utile, mais son déploiement doit respecter strictement le RGPD : information préalable, finalité légitime, proportionnalité, durée limitée. La crise actuelle est l''occasion de remettre le cadre à plat pour pérenniser l''outil.',
-   'difficile', '{rgpd,telematique,plan-action}');
+La télématique reste licite et utile, mais son déploiement doit respecter strictement le RGPD : information préalable, finalité légitime, proportionnalité, durée limitée. La crise actuelle est l''occasion de remettre le cadre à plat pour pérenniser l''outil.');
+
 
   -- =================================================================
   -- QUIZZES (4 entraînement + 1 examen blanc)

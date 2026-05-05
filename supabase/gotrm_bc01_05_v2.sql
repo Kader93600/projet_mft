@@ -747,325 +747,42 @@ $lesson4$,
   -- =================================================================
   -- 28 QCM REFORMULÉS
   -- =================================================================
-  INSERT INTO public.question_bank (formation_id, source_ref, type, prompt, choices, correct, explanation, difficulty, tags) VALUES
+  INSERT INTO public.question_bank (formation_id, type, statement, choices, max_score, difficulty, tags, source_ref, active, explanation) VALUES
+  (v_formation, 'qcm', 'La lettre de voiture nationale est établie en combien d''exemplaires ?', '[{"id":"a","label":"1 exemplaire","is_correct":false},{"id":"b","label":"2 exemplaires","is_correct":false},{"id":"c","label":"3 exemplaires","is_correct":true},{"id":"d","label":"4 exemplaires","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['lvn','exemplaires'], 'mft-2026-gotrm:bc01-05:qcm:1', true, 'La LVN est en 3 exemplaires : un pour l''expéditeur, un qui suit la marchandise (transporteur), un pour le destinataire. Cette tripartition matérialise le contrat de transport entre les trois acteurs.'),
+  (v_formation, 'qcm', 'L''absence de lettre de voiture rend-elle le contrat de transport invalide ?', '[{"id":"a","label":"Oui, le contrat est nul de plein droit","is_correct":false},{"id":"b","label":"Non, le contrat est consensuel et reste valide, mais la preuve est plus difficile","is_correct":true},{"id":"c","label":"Oui, sauf accord verbal écrit a posteriori","is_correct":false},{"id":"d","label":"Non, mais le transporteur perd toute indemnisation","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['lvn','validite'], 'mft-2026-gotrm:bc01-05:qcm:2', true, 'Le contrat de transport est consensuel : il existe dès l''accord des parties. L''absence de LVN n''entraîne pas sa nullité mais affaiblit la position du transporteur en cas de litige (charge de la preuve plus lourde).'),
+  (v_formation, 'qcm', 'En transport national, le délai pour formuler des réserves non apparentes après livraison est de :', '[{"id":"a","label":"24 heures","is_correct":false},{"id":"b","label":"3 jours ouvrés","is_correct":true},{"id":"c","label":"7 jours ouvrés","is_correct":false},{"id":"d","label":"15 jours calendaires","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['reserves','delai-national'], 'mft-2026-gotrm:bc01-05:qcm:3', true, 'Pour les réserves non apparentes en transport national, le destinataire dispose de 3 jours ouvrés à compter de la livraison. Au-delà, la marchandise est présumée livrée conforme.'),
+  (v_formation, 'qcm', 'En transport international CMR, le délai pour formuler des réserves non apparentes est de :', '[{"id":"a","label":"3 jours ouvrés","is_correct":false},{"id":"b","label":"7 jours ouvrés","is_correct":true},{"id":"c","label":"14 jours calendaires","is_correct":false},{"id":"d","label":"30 jours","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['cmr','reserves'], 'mft-2026-gotrm:bc01-05:qcm:4', true, 'La CMR (article 30) prévoit 7 jours ouvrés pour les réserves non apparentes. Pour les retards : 21 jours. Pour la perte présumée : 30 jours après le délai convenu.'),
+  (v_formation, 'qcm', 'La couleur de l''exemplaire CMR remis à l''expéditeur est :', '[{"id":"a","label":"Bleu","is_correct":false},{"id":"b","label":"Vert","is_correct":false},{"id":"c","label":"Rouge","is_correct":true},{"id":"d","label":"Jaune","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['cmr','exemplaires'], 'mft-2026-gotrm:bc01-05:qcm:5', true, 'Mémo : Rouge = Reste chez l''expéditeur, Bleu = Bouge avec la marchandise (livré au destinataire), Vert = Vit dans les archives du transporteur.'),
+  (v_formation, 'qcm', 'Le plafond standard d''indemnisation CMR est de :', '[{"id":"a","label":"33 €/kg","is_correct":false},{"id":"b","label":"8,33 DTS/kg (≈ 10,80 €/kg)","is_correct":true},{"id":"c","label":"1 000 € par colis","is_correct":false},{"id":"d","label":"15 €/kg","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['cmr','plafond'], 'mft-2026-gotrm:bc01-05:qcm:6', true, 'Le plafond CMR (article 23 §3) est de 8,33 DTS par kg, soit environ 10,80 € selon la valeur du DTS. À distinguer du plafond national (33 €/kg ou 1 000 €/colis pour le contrat-type général).'),
+  (v_formation, 'qcm', 'L''article 29 de la CMR prévoit que les plafonds d''indemnisation sautent en cas de :', '[{"id":"a","label":"Retard de plus de 30 jours","is_correct":false},{"id":"b","label":"Faute lourde, dol ou faute équivalente du transporteur","is_correct":true},{"id":"c","label":"Refus de l''expéditeur de remplir la CMR","is_correct":false},{"id":"d","label":"Marchandises périssables","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['cmr','article-29'], 'mft-2026-gotrm:bc01-05:qcm:7', true, 'L''article 29 lève les plafonds en cas de dol (faute intentionnelle) ou de faute considérée comme équivalente par le droit applicable (faute lourde / inexcusable). Le transporteur doit alors indemniser intégralement.'),
+  (v_formation, 'qcm', 'Une marchandise sous régime T1 est :', '[{"id":"a","label":"Une marchandise communautaire en transit dans un pays tiers","is_correct":false},{"id":"b","label":"Une marchandise non communautaire en transit dans l''UE","is_correct":true},{"id":"c","label":"Une marchandise dédouanée définitivement","is_correct":false},{"id":"d","label":"Une marchandise destinée à une zone franche","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['douane','t1'], 'mft-2026-gotrm:bc01-05:qcm:8', true, 'T1 = marchandise non communautaire (provenance pays tiers) circulant dans l''UE sans avoir été dédouanée. Garantie financière exigée. T2 = inverse (marchandise UE qui transite dans un pays tiers).'),
+  (v_formation, 'qcm', 'Une marchandise sous régime T2 est :', '[{"id":"a","label":"Une marchandise non communautaire","is_correct":false},{"id":"b","label":"Une marchandise communautaire qui transite dans un pays tiers (ex : Suisse)","is_correct":true},{"id":"c","label":"Une marchandise refusée par la douane","is_correct":false},{"id":"d","label":"Une marchandise sous procédure spéciale fiscale","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['douane','t2'], 'mft-2026-gotrm:bc01-05:qcm:9', true, 'T2 désigne une marchandise UE qui transite par un pays tiers (typiquement la Suisse) avant retour dans l''UE ou livraison. Le statut UE est conservé pendant le transit grâce au document T2.'),
+  (v_formation, 'qcm', 'Le DAU est :', '[{"id":"a","label":"Un document d''ambulance routière","is_correct":false},{"id":"b","label":"Le Document Administratif Unique pour les déclarations en douane","is_correct":true},{"id":"c","label":"Un document fiscal européen","is_correct":false},{"id":"d","label":"Une autorisation préalable de transport","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['dau','definition'], 'mft-2026-gotrm:bc01-05:qcm:10', true, 'Le DAU (Document Administratif Unique) est le formulaire universel de déclaration douanière en UE pour l''exportation, l''importation et le transit. Aujourd''hui largement dématérialisé via Delta XI (France) ou NSTI/NCTS au niveau européen.'),
+  (v_formation, 'qcm', 'Le numéro EORI est :', '[{"id":"a","label":"Un identifiant fiscal européen pour le commerce intra-UE","is_correct":false},{"id":"b","label":"L''identifiant douanier européen pour les opérateurs économiques","is_correct":true},{"id":"c","label":"Le code des produits dangereux","is_correct":false},{"id":"d","label":"Un permis de transport spécifique","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['eori','douane'], 'mft-2026-gotrm:bc01-05:qcm:11', true, 'EORI = Economic Operator Registration and Identification. Indispensable pour toute entreprise qui dédouane (export/import). Délivré par la douane française à partir du SIREN.'),
+  (v_formation, 'qcm', 'Le système NSTI / NCTS est utilisé pour :', '[{"id":"a","label":"La déclaration de TVA intracommunautaire","is_correct":false},{"id":"b","label":"Le suivi informatisé des opérations de transit douanier T1/T2","is_correct":true},{"id":"c","label":"La gestion des temps de conduite","is_correct":false},{"id":"d","label":"Le contrôle des températures ATP","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['nsti','transit'], 'mft-2026-gotrm:bc01-05:qcm:12', true, 'Le NSTI (français) / NCTS (européen) est le système informatisé de transit. Il génère un MRN (Movement Reference Number) qui suit la marchandise du bureau de départ au bureau d''arrivée.'),
+  (v_formation, 'qcm', 'Le carnet TIR couvre :', '[{"id":"a","label":"Les transports temporaires (foires, salons)","is_correct":false},{"id":"b","label":"Le transit international par route entre 76 pays signataires","is_correct":true},{"id":"c","label":"L''importation de marchandises agricoles","is_correct":false},{"id":"d","label":"Le transport maritime UE → Afrique","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['tir','carnet'], 'mft-2026-gotrm:bc01-05:qcm:13', true, 'Le carnet TIR est un document de transit international par route, couvert par une garantie IRU jusqu''à 100 000 € par carnet. 76 pays signataires (UE, Russie, Turquie, Iran, etc.).'),
+  (v_formation, 'qcm', 'Le carnet ATA est utilisé pour :', '[{"id":"a","label":"Le transit international permanent","is_correct":false},{"id":"b","label":"Les importations TEMPORAIRES (foires, salons, démonstrations)","is_correct":true},{"id":"c","label":"Le transport de matières dangereuses","is_correct":false},{"id":"d","label":"Les marchandises sous température dirigée","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['ata','temporaire'], 'mft-2026-gotrm:bc01-05:qcm:14', true, 'Le carnet ATA permet l''importation temporaire dans plus de 80 pays sans payer droits ni TVA, à condition de réexporter dans un délai maximum de 12 mois. Très utilisé pour les salons et démonstrations.'),
+  (v_formation, 'qcm', 'Combien d''Incoterms 2020 existent au total ?', '[{"id":"a","label":"7","is_correct":false},{"id":"b","label":"9","is_correct":false},{"id":"c","label":"11","is_correct":true},{"id":"d","label":"13","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['incoterms','nombre'], 'mft-2026-gotrm:bc01-05:qcm:15', true, 'Les Incoterms 2020 comportent 11 termes : 7 multimodaux (EXW, FCA, CPT, CIP, DAP, DPU, DDP) et 4 maritimes uniquement (FAS, FOB, CFR, CIF).'),
+  (v_formation, 'qcm', 'Lesquels de ces Incoterms sont réservés au transport maritime ?', '[{"id":"a","label":"EXW, FCA, CPT, CIP","is_correct":false},{"id":"b","label":"FAS, FOB, CFR, CIF","is_correct":true},{"id":"c","label":"DAP, DPU, DDP","is_correct":false},{"id":"d","label":"Tous les Incoterms s''appliquent à tous les modes","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['incoterms','maritime'], 'mft-2026-gotrm:bc01-05:qcm:16', true, 'FAS, FOB, CFR et CIF ne s''utilisent que pour le transport maritime ou par voies navigables intérieures. Pour la route, l''air ou le multimodal : utiliser FCA, CPT, CIP, DAP, DPU ou DDP.'),
+  (v_formation, 'qcm', 'L''Incoterm où le vendeur prend en charge le maximum (transport, douanes import, TVA destination) est :', '[{"id":"a","label":"EXW","is_correct":false},{"id":"b","label":"DAP","is_correct":false},{"id":"c","label":"DPU","is_correct":false},{"id":"d","label":"DDP","is_correct":true}]'::jsonb, 1, 'facile', ARRAY['incoterms','ddp'], 'mft-2026-gotrm:bc01-05:qcm:17', true, 'DDP (Delivered Duty Paid) charge le vendeur de tout : transport, douanes export, douanes import, TVA destination. Souvent déconseillé hors UE car complexité administrative locale.'),
+  (v_formation, 'qcm', 'L''Incoterm où l''acheteur prend en charge le maximum (presque tout) est :', '[{"id":"a","label":"EXW","is_correct":true},{"id":"b","label":"FCA","is_correct":false},{"id":"c","label":"DAP","is_correct":false},{"id":"d","label":"DDP","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['incoterms','exw'], 'mft-2026-gotrm:bc01-05:qcm:18', true, 'EXW (Ex Works) : le vendeur met simplement la marchandise à disposition dans ses locaux. L''acheteur gère tout le reste : enlèvement, douane export, transport, douane import.'),
+  (v_formation, 'qcm', 'En CIP, à quel moment le risque est-il transféré du vendeur à l''acheteur ?', '[{"id":"a","label":"À l''arrivée au lieu de destination","is_correct":false},{"id":"b","label":"À la remise au premier transporteur","is_correct":true},{"id":"c","label":"Au chargement à bord du navire","is_correct":false},{"id":"d","label":"Au déchargement","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['incoterms','cip','risque'], 'mft-2026-gotrm:bc01-05:qcm:19', true, 'En CIP (et CPT), le vendeur paie le transport jusqu''à destination MAIS le risque est transféré dès la remise au premier transporteur. Confusion fréquente : transport payé ≠ risque assumé.'),
+  (v_formation, 'qcm', 'Pour une vente intra-UE de matériel BTP livrée sur chantier client, l''Incoterm le plus simple à utiliser est :', '[{"id":"a","label":"DDP","is_correct":false},{"id":"b","label":"DAP chantier","is_correct":true},{"id":"c","label":"EXW usine","is_correct":false},{"id":"d","label":"FOB","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['incoterms','choix-pratique'], 'mft-2026-gotrm:bc01-05:qcm:20', true, 'DAP au chantier client : le vendeur livre, le déchargement est fait par le client (qui dispose des moyens sur chantier). Pas de douane car intra-UE. DDP serait excessif (TVA locale gérée par défaut), EXW peu pratique, FOB inadapté à la route.'),
+  (v_formation, 'qcm', 'Une « réserve » très vague comme « sous réserve de déballage » est :', '[{"id":"a","label":"Toujours valable juridiquement","is_correct":false},{"id":"b","label":"Très souvent considérée sans valeur juridique car non spécifique","is_correct":true},{"id":"c","label":"Valable seulement si le destinataire est commerçant","is_correct":false},{"id":"d","label":"Valable mais doit être confirmée par lettre recommandée","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['reserves','validite'], 'mft-2026-gotrm:bc01-05:qcm:21', true, 'Une réserve vague ou générale est souvent jugée inopposable au transporteur car elle ne décrit aucune anomalie spécifique. Préférer : « Carton n° X, dim. Y, enfoncé sur la face supérieure, traces d''humidité ».'),
+  (v_formation, 'qcm', 'L''absence de preuve de sortie effective de l''UE pour une marchandise exportée peut entraîner :', '[{"id":"a","label":"Un avertissement administratif","is_correct":false},{"id":"b","label":"Un redressement de TVA française à 20 % sur la valeur","is_correct":true},{"id":"c","label":"Le retrait de la licence de transport","is_correct":false},{"id":"d","label":"Aucune conséquence si le client est connu","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['tva','export','preuve'], 'mft-2026-gotrm:bc01-05:qcm:22', true, 'L''exonération de TVA à l''export suppose la preuve de la sortie effective hors UE (DAU visé, CMR, certificat de sortie). À défaut, l''administration française peut réclamer la TVA française à 20 %.'),
+  (v_formation, 'qcm', 'Le délai d''apurement classique pour un transit T1 dans l''UE est de :', '[{"id":"a","label":"24 h","is_correct":false},{"id":"b","label":"8 jours","is_correct":true},{"id":"c","label":"30 jours","is_correct":false},{"id":"d","label":"60 jours","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['transit','apurement'], 'mft-2026-gotrm:bc01-05:qcm:23', true, 'Le bureau de départ fixe un délai d''apurement, généralement 8 jours pour un trajet européen. Au-delà, la garantie financière du transporteur peut être activée et des pénalités s''appliquent.'),
+  (v_formation, 'qcm', 'L''Incoterm DPU se distingue du DAP par :', '[{"id":"a","label":"L''inclusion de la douane import","is_correct":false},{"id":"b","label":"L''inclusion du déchargement par le vendeur","is_correct":true},{"id":"c","label":"L''inclusion de la TVA destination","is_correct":false},{"id":"d","label":"L''exclusion du transport principal","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['incoterms','dpu'], 'mft-2026-gotrm:bc01-05:qcm:24', true, 'DPU (Delivered at Place Unloaded) = DAP + déchargement par le vendeur. Apparu en 2020 (remplace DAT 2010). Utile quand le vendeur dispose des moyens de déchargement.'),
+  (v_formation, 'qcm', 'En cas de retard de livraison, le délai de réserve CMR est de :', '[{"id":"a","label":"7 jours","is_correct":false},{"id":"b","label":"14 jours","is_correct":false},{"id":"c","label":"21 jours","is_correct":true},{"id":"d","label":"30 jours","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['cmr','retard'], 'mft-2026-gotrm:bc01-05:qcm:25', true, 'En cas de retard, la CMR (article 30 §3) prévoit un délai de 21 jours à compter de la mise à disposition pour formuler la réserve. Au-delà, plus de réclamation possible.'),
+  (v_formation, 'qcm', 'Pour un transport hors UE (ex : France → Maroc), l''opérateur qui dédouane à l''export doit avoir :', '[{"id":"a","label":"Un EORI européen","is_correct":true},{"id":"b","label":"Un permis de conduire international","is_correct":false},{"id":"c","label":"Une autorisation TIR uniquement","is_correct":false},{"id":"d","label":"Aucune formalité spécifique","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['eori','export'], 'mft-2026-gotrm:bc01-05:qcm:26', true, 'L''EORI est obligatoire pour tout opérateur qui réalise des opérations douanières en UE. Sans EORI, impossible de déposer un DAU export. Le numéro est unique au niveau européen, à partir du SIREN français.'),
+  (v_formation, 'qcm', 'Une déclaration de valeur portée sur la lettre de voiture CMR permet :', '[{"id":"a","label":"De diminuer le coût du transport","is_correct":false},{"id":"b","label":"D''augmenter le plafond d''indemnisation au-delà des 8,33 DTS/kg, moyennant supplément","is_correct":true},{"id":"c","label":"De renoncer aux délais de réserves","is_correct":false},{"id":"d","label":"De choisir le tribunal compétent","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['cmr','declaration-valeur'], 'mft-2026-gotrm:bc01-05:qcm:27', true, 'L''article 24 CMR permet de déclarer une valeur supérieure aux 8,33 DTS/kg, contre supplément de prix de transport. Cette déclaration doit figurer expressément sur la lettre de voiture CMR (case dédiée).'),
+  (v_formation, 'qcm', 'Quel Incoterm est le moins recommandé pour un export hors UE car charge l''acheteur étranger de la douane export française ?', '[{"id":"a","label":"FCA","is_correct":false},{"id":"b","label":"DAP","is_correct":false},{"id":"c","label":"EXW","is_correct":true},{"id":"d","label":"CPT","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['incoterms','exw','piege'], 'mft-2026-gotrm:bc01-05:qcm:28', true, 'En EXW, l''acheteur étranger doit gérer la douane export française, mais il n''a pas d''EORI européen ! Cela bloque le dédouanement et peut entraîner facturation à tort de la TVA. FCA est l''alternative simple : vendeur fait la douane export, acheteur le reste.');
 
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:1', 'qcm',
-   'La lettre de voiture nationale est établie en combien d''exemplaires ?',
-   jsonb '[
-     {"key":"a","label":"1 exemplaire"},
-     {"key":"b","label":"2 exemplaires"},
-     {"key":"c","label":"3 exemplaires"},
-     {"key":"d","label":"4 exemplaires"}
-   ]', '["c"]'::jsonb,
-   'La LVN est en 3 exemplaires : un pour l''expéditeur, un qui suit la marchandise (transporteur), un pour le destinataire. Cette tripartition matérialise le contrat de transport entre les trois acteurs.',
-   'facile', '{lvn,exemplaires}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:2', 'qcm',
-   'L''absence de lettre de voiture rend-elle le contrat de transport invalide ?',
-   jsonb '[
-     {"key":"a","label":"Oui, le contrat est nul de plein droit"},
-     {"key":"b","label":"Non, le contrat est consensuel et reste valide, mais la preuve est plus difficile"},
-     {"key":"c","label":"Oui, sauf accord verbal écrit a posteriori"},
-     {"key":"d","label":"Non, mais le transporteur perd toute indemnisation"}
-   ]', '["b"]'::jsonb,
-   'Le contrat de transport est consensuel : il existe dès l''accord des parties. L''absence de LVN n''entraîne pas sa nullité mais affaiblit la position du transporteur en cas de litige (charge de la preuve plus lourde).',
-   'moyenne', '{lvn,validite}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:3', 'qcm',
-   'En transport national, le délai pour formuler des réserves non apparentes après livraison est de :',
-   jsonb '[
-     {"key":"a","label":"24 heures"},
-     {"key":"b","label":"3 jours ouvrés"},
-     {"key":"c","label":"7 jours ouvrés"},
-     {"key":"d","label":"15 jours calendaires"}
-   ]', '["b"]'::jsonb,
-   'Pour les réserves non apparentes en transport national, le destinataire dispose de 3 jours ouvrés à compter de la livraison. Au-delà, la marchandise est présumée livrée conforme.',
-   'moyenne', '{reserves,delai-national}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:4', 'qcm',
-   'En transport international CMR, le délai pour formuler des réserves non apparentes est de :',
-   jsonb '[
-     {"key":"a","label":"3 jours ouvrés"},
-     {"key":"b","label":"7 jours ouvrés"},
-     {"key":"c","label":"14 jours calendaires"},
-     {"key":"d","label":"30 jours"}
-   ]', '["b"]'::jsonb,
-   'La CMR (article 30) prévoit 7 jours ouvrés pour les réserves non apparentes. Pour les retards : 21 jours. Pour la perte présumée : 30 jours après le délai convenu.',
-   'moyenne', '{cmr,reserves}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:5', 'qcm',
-   'La couleur de l''exemplaire CMR remis à l''expéditeur est :',
-   jsonb '[
-     {"key":"a","label":"Bleu"},
-     {"key":"b","label":"Vert"},
-     {"key":"c","label":"Rouge"},
-     {"key":"d","label":"Jaune"}
-   ]', '["c"]'::jsonb,
-   'Mémo : Rouge = Reste chez l''expéditeur, Bleu = Bouge avec la marchandise (livré au destinataire), Vert = Vit dans les archives du transporteur.',
-   'facile', '{cmr,exemplaires}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:6', 'qcm',
-   'Le plafond standard d''indemnisation CMR est de :',
-   jsonb '[
-     {"key":"a","label":"33 €/kg"},
-     {"key":"b","label":"8,33 DTS/kg (≈ 10,80 €/kg)"},
-     {"key":"c","label":"1 000 € par colis"},
-     {"key":"d","label":"15 €/kg"}
-   ]', '["b"]'::jsonb,
-   'Le plafond CMR (article 23 §3) est de 8,33 DTS par kg, soit environ 10,80 € selon la valeur du DTS. À distinguer du plafond national (33 €/kg ou 1 000 €/colis pour le contrat-type général).',
-   'facile', '{cmr,plafond}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:7', 'qcm',
-   'L''article 29 de la CMR prévoit que les plafonds d''indemnisation sautent en cas de :',
-   jsonb '[
-     {"key":"a","label":"Retard de plus de 30 jours"},
-     {"key":"b","label":"Faute lourde, dol ou faute équivalente du transporteur"},
-     {"key":"c","label":"Refus de l''expéditeur de remplir la CMR"},
-     {"key":"d","label":"Marchandises périssables"}
-   ]', '["b"]'::jsonb,
-   'L''article 29 lève les plafonds en cas de dol (faute intentionnelle) ou de faute considérée comme équivalente par le droit applicable (faute lourde / inexcusable). Le transporteur doit alors indemniser intégralement.',
-   'difficile', '{cmr,article-29}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:8', 'qcm',
-   'Une marchandise sous régime T1 est :',
-   jsonb '[
-     {"key":"a","label":"Une marchandise communautaire en transit dans un pays tiers"},
-     {"key":"b","label":"Une marchandise non communautaire en transit dans l''UE"},
-     {"key":"c","label":"Une marchandise dédouanée définitivement"},
-     {"key":"d","label":"Une marchandise destinée à une zone franche"}
-   ]', '["b"]'::jsonb,
-   'T1 = marchandise non communautaire (provenance pays tiers) circulant dans l''UE sans avoir été dédouanée. Garantie financière exigée. T2 = inverse (marchandise UE qui transite dans un pays tiers).',
-   'moyenne', '{douane,t1}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:9', 'qcm',
-   'Une marchandise sous régime T2 est :',
-   jsonb '[
-     {"key":"a","label":"Une marchandise non communautaire"},
-     {"key":"b","label":"Une marchandise communautaire qui transite dans un pays tiers (ex : Suisse)"},
-     {"key":"c","label":"Une marchandise refusée par la douane"},
-     {"key":"d","label":"Une marchandise sous procédure spéciale fiscale"}
-   ]', '["b"]'::jsonb,
-   'T2 désigne une marchandise UE qui transite par un pays tiers (typiquement la Suisse) avant retour dans l''UE ou livraison. Le statut UE est conservé pendant le transit grâce au document T2.',
-   'moyenne', '{douane,t2}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:10', 'qcm',
-   'Le DAU est :',
-   jsonb '[
-     {"key":"a","label":"Un document d''ambulance routière"},
-     {"key":"b","label":"Le Document Administratif Unique pour les déclarations en douane"},
-     {"key":"c","label":"Un document fiscal européen"},
-     {"key":"d","label":"Une autorisation préalable de transport"}
-   ]', '["b"]'::jsonb,
-   'Le DAU (Document Administratif Unique) est le formulaire universel de déclaration douanière en UE pour l''exportation, l''importation et le transit. Aujourd''hui largement dématérialisé via Delta XI (France) ou NSTI/NCTS au niveau européen.',
-   'facile', '{dau,definition}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:11', 'qcm',
-   'Le numéro EORI est :',
-   jsonb '[
-     {"key":"a","label":"Un identifiant fiscal européen pour le commerce intra-UE"},
-     {"key":"b","label":"L''identifiant douanier européen pour les opérateurs économiques"},
-     {"key":"c","label":"Le code des produits dangereux"},
-     {"key":"d","label":"Un permis de transport spécifique"}
-   ]', '["b"]'::jsonb,
-   'EORI = Economic Operator Registration and Identification. Indispensable pour toute entreprise qui dédouane (export/import). Délivré par la douane française à partir du SIREN.',
-   'moyenne', '{eori,douane}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:12', 'qcm',
-   'Le système NSTI / NCTS est utilisé pour :',
-   jsonb '[
-     {"key":"a","label":"La déclaration de TVA intracommunautaire"},
-     {"key":"b","label":"Le suivi informatisé des opérations de transit douanier T1/T2"},
-     {"key":"c","label":"La gestion des temps de conduite"},
-     {"key":"d","label":"Le contrôle des températures ATP"}
-   ]', '["b"]'::jsonb,
-   'Le NSTI (français) / NCTS (européen) est le système informatisé de transit. Il génère un MRN (Movement Reference Number) qui suit la marchandise du bureau de départ au bureau d''arrivée.',
-   'moyenne', '{nsti,transit}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:13', 'qcm',
-   'Le carnet TIR couvre :',
-   jsonb '[
-     {"key":"a","label":"Les transports temporaires (foires, salons)"},
-     {"key":"b","label":"Le transit international par route entre 76 pays signataires"},
-     {"key":"c","label":"L''importation de marchandises agricoles"},
-     {"key":"d","label":"Le transport maritime UE → Afrique"}
-   ]', '["b"]'::jsonb,
-   'Le carnet TIR est un document de transit international par route, couvert par une garantie IRU jusqu''à 100 000 € par carnet. 76 pays signataires (UE, Russie, Turquie, Iran, etc.).',
-   'moyenne', '{tir,carnet}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:14', 'qcm',
-   'Le carnet ATA est utilisé pour :',
-   jsonb '[
-     {"key":"a","label":"Le transit international permanent"},
-     {"key":"b","label":"Les importations TEMPORAIRES (foires, salons, démonstrations)"},
-     {"key":"c","label":"Le transport de matières dangereuses"},
-     {"key":"d","label":"Les marchandises sous température dirigée"}
-   ]', '["b"]'::jsonb,
-   'Le carnet ATA permet l''importation temporaire dans plus de 80 pays sans payer droits ni TVA, à condition de réexporter dans un délai maximum de 12 mois. Très utilisé pour les salons et démonstrations.',
-   'moyenne', '{ata,temporaire}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:15', 'qcm',
-   'Combien d''Incoterms 2020 existent au total ?',
-   jsonb '[
-     {"key":"a","label":"7"},
-     {"key":"b","label":"9"},
-     {"key":"c","label":"11"},
-     {"key":"d","label":"13"}
-   ]', '["c"]'::jsonb,
-   'Les Incoterms 2020 comportent 11 termes : 7 multimodaux (EXW, FCA, CPT, CIP, DAP, DPU, DDP) et 4 maritimes uniquement (FAS, FOB, CFR, CIF).',
-   'facile', '{incoterms,nombre}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:16', 'qcm',
-   'Lesquels de ces Incoterms sont réservés au transport maritime ?',
-   jsonb '[
-     {"key":"a","label":"EXW, FCA, CPT, CIP"},
-     {"key":"b","label":"FAS, FOB, CFR, CIF"},
-     {"key":"c","label":"DAP, DPU, DDP"},
-     {"key":"d","label":"Tous les Incoterms s''appliquent à tous les modes"}
-   ]', '["b"]'::jsonb,
-   'FAS, FOB, CFR et CIF ne s''utilisent que pour le transport maritime ou par voies navigables intérieures. Pour la route, l''air ou le multimodal : utiliser FCA, CPT, CIP, DAP, DPU ou DDP.',
-   'moyenne', '{incoterms,maritime}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:17', 'qcm',
-   'L''Incoterm où le vendeur prend en charge le maximum (transport, douanes import, TVA destination) est :',
-   jsonb '[
-     {"key":"a","label":"EXW"},
-     {"key":"b","label":"DAP"},
-     {"key":"c","label":"DPU"},
-     {"key":"d","label":"DDP"}
-   ]', '["d"]'::jsonb,
-   'DDP (Delivered Duty Paid) charge le vendeur de tout : transport, douanes export, douanes import, TVA destination. Souvent déconseillé hors UE car complexité administrative locale.',
-   'facile', '{incoterms,ddp}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:18', 'qcm',
-   'L''Incoterm où l''acheteur prend en charge le maximum (presque tout) est :',
-   jsonb '[
-     {"key":"a","label":"EXW"},
-     {"key":"b","label":"FCA"},
-     {"key":"c","label":"DAP"},
-     {"key":"d","label":"DDP"}
-   ]', '["a"]'::jsonb,
-   'EXW (Ex Works) : le vendeur met simplement la marchandise à disposition dans ses locaux. L''acheteur gère tout le reste : enlèvement, douane export, transport, douane import.',
-   'facile', '{incoterms,exw}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:19', 'qcm',
-   'En CIP, à quel moment le risque est-il transféré du vendeur à l''acheteur ?',
-   jsonb '[
-     {"key":"a","label":"À l''arrivée au lieu de destination"},
-     {"key":"b","label":"À la remise au premier transporteur"},
-     {"key":"c","label":"Au chargement à bord du navire"},
-     {"key":"d","label":"Au déchargement"}
-   ]', '["b"]'::jsonb,
-   'En CIP (et CPT), le vendeur paie le transport jusqu''à destination MAIS le risque est transféré dès la remise au premier transporteur. Confusion fréquente : transport payé ≠ risque assumé.',
-   'difficile', '{incoterms,cip,risque}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:20', 'qcm',
-   'Pour une vente intra-UE de matériel BTP livrée sur chantier client, l''Incoterm le plus simple à utiliser est :',
-   jsonb '[
-     {"key":"a","label":"DDP"},
-     {"key":"b","label":"DAP chantier"},
-     {"key":"c","label":"EXW usine"},
-     {"key":"d","label":"FOB"}
-   ]', '["b"]'::jsonb,
-   'DAP au chantier client : le vendeur livre, le déchargement est fait par le client (qui dispose des moyens sur chantier). Pas de douane car intra-UE. DDP serait excessif (TVA locale gérée par défaut), EXW peu pratique, FOB inadapté à la route.',
-   'moyenne', '{incoterms,choix-pratique}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:21', 'qcm',
-   'Une « réserve » très vague comme « sous réserve de déballage » est :',
-   jsonb '[
-     {"key":"a","label":"Toujours valable juridiquement"},
-     {"key":"b","label":"Très souvent considérée sans valeur juridique car non spécifique"},
-     {"key":"c","label":"Valable seulement si le destinataire est commerçant"},
-     {"key":"d","label":"Valable mais doit être confirmée par lettre recommandée"}
-   ]', '["b"]'::jsonb,
-   'Une réserve vague ou générale est souvent jugée inopposable au transporteur car elle ne décrit aucune anomalie spécifique. Préférer : « Carton n° X, dim. Y, enfoncé sur la face supérieure, traces d''humidité ».',
-   'moyenne', '{reserves,validite}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:22', 'qcm',
-   'L''absence de preuve de sortie effective de l''UE pour une marchandise exportée peut entraîner :',
-   jsonb '[
-     {"key":"a","label":"Un avertissement administratif"},
-     {"key":"b","label":"Un redressement de TVA française à 20 % sur la valeur"},
-     {"key":"c","label":"Le retrait de la licence de transport"},
-     {"key":"d","label":"Aucune conséquence si le client est connu"}
-   ]', '["b"]'::jsonb,
-   'L''exonération de TVA à l''export suppose la preuve de la sortie effective hors UE (DAU visé, CMR, certificat de sortie). À défaut, l''administration française peut réclamer la TVA française à 20 %.',
-   'difficile', '{tva,export,preuve}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:23', 'qcm',
-   'Le délai d''apurement classique pour un transit T1 dans l''UE est de :',
-   jsonb '[
-     {"key":"a","label":"24 h"},
-     {"key":"b","label":"8 jours"},
-     {"key":"c","label":"30 jours"},
-     {"key":"d","label":"60 jours"}
-   ]', '["b"]'::jsonb,
-   'Le bureau de départ fixe un délai d''apurement, généralement 8 jours pour un trajet européen. Au-delà, la garantie financière du transporteur peut être activée et des pénalités s''appliquent.',
-   'difficile', '{transit,apurement}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:24', 'qcm',
-   'L''Incoterm DPU se distingue du DAP par :',
-   jsonb '[
-     {"key":"a","label":"L''inclusion de la douane import"},
-     {"key":"b","label":"L''inclusion du déchargement par le vendeur"},
-     {"key":"c","label":"L''inclusion de la TVA destination"},
-     {"key":"d","label":"L''exclusion du transport principal"}
-   ]', '["b"]'::jsonb,
-   'DPU (Delivered at Place Unloaded) = DAP + déchargement par le vendeur. Apparu en 2020 (remplace DAT 2010). Utile quand le vendeur dispose des moyens de déchargement.',
-   'moyenne', '{incoterms,dpu}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:25', 'qcm',
-   'En cas de retard de livraison, le délai de réserve CMR est de :',
-   jsonb '[
-     {"key":"a","label":"7 jours"},
-     {"key":"b","label":"14 jours"},
-     {"key":"c","label":"21 jours"},
-     {"key":"d","label":"30 jours"}
-   ]', '["c"]'::jsonb,
-   'En cas de retard, la CMR (article 30 §3) prévoit un délai de 21 jours à compter de la mise à disposition pour formuler la réserve. Au-delà, plus de réclamation possible.',
-   'difficile', '{cmr,retard}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:26', 'qcm',
-   'Pour un transport hors UE (ex : France → Maroc), l''opérateur qui dédouane à l''export doit avoir :',
-   jsonb '[
-     {"key":"a","label":"Un EORI européen"},
-     {"key":"b","label":"Un permis de conduire international"},
-     {"key":"c","label":"Une autorisation TIR uniquement"},
-     {"key":"d","label":"Aucune formalité spécifique"}
-   ]', '["a"]'::jsonb,
-   'L''EORI est obligatoire pour tout opérateur qui réalise des opérations douanières en UE. Sans EORI, impossible de déposer un DAU export. Le numéro est unique au niveau européen, à partir du SIREN français.',
-   'moyenne', '{eori,export}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:27', 'qcm',
-   'Une déclaration de valeur portée sur la lettre de voiture CMR permet :',
-   jsonb '[
-     {"key":"a","label":"De diminuer le coût du transport"},
-     {"key":"b","label":"D''augmenter le plafond d''indemnisation au-delà des 8,33 DTS/kg, moyennant supplément"},
-     {"key":"c","label":"De renoncer aux délais de réserves"},
-     {"key":"d","label":"De choisir le tribunal compétent"}
-   ]', '["b"]'::jsonb,
-   'L''article 24 CMR permet de déclarer une valeur supérieure aux 8,33 DTS/kg, contre supplément de prix de transport. Cette déclaration doit figurer expressément sur la lettre de voiture CMR (case dédiée).',
-   'moyenne', '{cmr,declaration-valeur}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qcm:28', 'qcm',
-   'Quel Incoterm est le moins recommandé pour un export hors UE car charge l''acheteur étranger de la douane export française ?',
-   jsonb '[
-     {"key":"a","label":"FCA"},
-     {"key":"b","label":"DAP"},
-     {"key":"c","label":"EXW"},
-     {"key":"d","label":"CPT"}
-   ]', '["c"]'::jsonb,
-   'En EXW, l''acheteur étranger doit gérer la douane export française, mais il n''a pas d''EORI européen ! Cela bloque le dédouanement et peut entraîner facturation à tort de la TVA. FCA est l''alternative simple : vendeur fait la douane export, acheteur le reste.',
-   'difficile', '{incoterms,exw,piege}');
 
   -- =================================================================
   -- 5 QR
   -- =================================================================
-  INSERT INTO public.question_bank (formation_id, source_ref, type, prompt, choices, correct, explanation, difficulty, tags) VALUES
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qr:1', 'qr',
-   'Votre client transporteur livre 80 colis de matériel chez un grossiste. Le réceptionnaire signe le BL « sous réserve de déballage ». 5 jours plus tard, il signale que 6 colis sont écrasés et entame une procédure d''indemnisation. Analysez la position juridique de votre entreprise et précisez vos arguments de défense.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Position juridique :
+  INSERT INTO public.question_bank (formation_id, type, statement, choices, max_score, difficulty, tags, source_ref, active, explanation) VALUES
+  (v_formation, 'qr', 'Votre client transporteur livre 80 colis de matériel chez un grossiste. Le réceptionnaire signe le BL « sous réserve de déballage ». 5 jours plus tard, il signale que 6 colis sont écrasés et entame une procédure d''indemnisation. Analysez la position juridique de votre entreprise et précisez vos arguments de défense.', NULL, 1, 'difficile', ARRAY['reserves','defense','jurisprudence'], 'mft-2026-gotrm:bc01-05:qr:1', true, 'Position juridique :
 
 1. Réserve « sous réserve de déballage » : trop vague, considérée généralement sans valeur juridique. Ce type de mention générique ne décrit aucune anomalie spécifique et est régulièrement écarté par les tribunaux. Elle ne fait pas naître de présomption de responsabilité du transporteur.
 
@@ -1088,13 +805,8 @@ d. Charge de la preuve : c''est désormais au destinataire de prouver que les co
 Recommandations préventives à diffuser au client :
 - Vérification systématique au déchargement (briefing du personnel réception).
 - Réserves précises : « Colis n° 12, 24 et 36 — face supérieure enfoncée — humidité visible. »
-- En cas de doute : refus de la livraison ou réception « avec réserves détaillées ».',
-   'difficile', '{reserves,defense,jurisprudence}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qr:2', 'qr',
-   'Vous organisez un transport de 14 t de pièces automobiles Lyon → Istanbul (Turquie). Décrivez les documents de transport et les formalités douanières à anticiper, ainsi que la séquence T1/T2/CMR sur le parcours.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Documents et formalités :
+- En cas de doute : refus de la livraison ou réception « avec réserves détaillées ».'),
+  (v_formation, 'qr', 'Vous organisez un transport de 14 t de pièces automobiles Lyon → Istanbul (Turquie). Décrivez les documents de transport et les formalités douanières à anticiper, ainsi que la séquence T1/T2/CMR sur le parcours.', NULL, 1, 'difficile', ARRAY['international','douane','turquie'], 'mft-2026-gotrm:bc01-05:qr:2', true, 'Documents et formalités :
 
 1. Documents de transport :
 - Lettre de voiture CMR en 3 exemplaires (rouge expéditeur, bleu destinataire, vert transporteur)
@@ -1134,13 +846,8 @@ Recommandations préventives à diffuser au client :
 Délais à anticiper :
 - Préparation des documents : 5 à 7 jours ouvrés
 - Trajet Lyon-Istanbul : 4 à 5 jours en simple équipage (R561 + AETR côté turc)
-- Passages frontières : 4 à 24 h selon trafic, scellement et contrôles',
-   'difficile', '{international,douane,turquie}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qr:3', 'qr',
-   'Comparez les Incoterms FCA, CPT, CIP et DAP pour une vente France → Allemagne par route. Pour chacun, indiquez : qui paie le transport, qui assume le risque, et quelle est la mention contractuelle correcte. Recommandez le plus adapté pour un nouveau client allemand.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Comparaison :
+- Passages frontières : 4 à 24 h selon trafic, scellement et contrôles'),
+  (v_formation, 'qr', 'Comparez les Incoterms FCA, CPT, CIP et DAP pour une vente France → Allemagne par route. Pour chacun, indiquez : qui paie le transport, qui assume le risque, et quelle est la mention contractuelle correcte. Recommandez le plus adapté pour un nouveau client allemand.', NULL, 1, 'difficile', ARRAY['incoterms','comparaison','recommandation'], 'mft-2026-gotrm:bc01-05:qr:3', true, 'Comparaison :
 
 1. FCA (Free Carrier) - Strasbourg :
 - Vendeur paie : pré-acheminement jusqu''au transporteur, douane export
@@ -1186,13 +893,8 @@ Justifications :
 
 Négociation possible :
 - Si l''acheteur préfère gérer son transport (relation logistique intégrée), proposer FCA + remise commerciale.
-- Si l''acheteur exige TVA et douane : DDP, mais à éviter sauf si maîtrise de la TVA allemande.',
-   'difficile', '{incoterms,comparaison,recommandation}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qr:4', 'qr',
-   'Lors d''un trajet international Le Havre → Madrid sous régime CMR, votre véhicule est victime d''un cambriolage sur une aire d''autoroute en Espagne. La marchandise valait 85 000 € et pèse 4 200 kg. Le client réclame 85 000 €. Calculez l''indemnité de base CMR et identifiez les conditions qui permettraient au transporteur d''indemniser au-delà du plafond.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Calcul de l''indemnité CMR de base :
+- Si l''acheteur exige TVA et douane : DDP, mais à éviter sauf si maîtrise de la TVA allemande.'),
+  (v_formation, 'qr', 'Lors d''un trajet international Le Havre → Madrid sous régime CMR, votre véhicule est victime d''un cambriolage sur une aire d''autoroute en Espagne. La marchandise valait 85 000 € et pèse 4 200 kg. Le client réclame 85 000 €. Calculez l''indemnité de base CMR et identifiez les conditions qui permettraient au transporteur d''indemniser au-delà du plafond.', NULL, 1, 'difficile', ARRAY['cmr','sinistre','calcul-indemnisation'], 'mft-2026-gotrm:bc01-05:qr:4', true, 'Calcul de l''indemnité CMR de base :
 
 - Plafond CMR : 8,33 DTS/kg (article 23 §3)
 - Valeur DTS en 2026 : ≈ 1,30 €
@@ -1242,13 +944,8 @@ d. Activer l''assurance RC transporteur :
 
 e. Négocier amiablement :
 - Si la responsabilité est partagée, propose un règlement transactionnel à 60-70 % de la valeur réelle.
-- Évite un procès long et coûteux.',
-   'difficile', '{cmr,sinistre,calcul-indemnisation}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-05:qr:5', 'qr',
-   'Listez les 7 documents indispensables à embarquer pour un trajet international Lyon → Bruxelles avec un chargement de matériel électrique sous régime intra-UE. Pour chacun, précisez son rôle juridique et qui le délivre.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Documents indispensables (intra-UE, donc PAS de DAU douane) :
+- Évite un procès long et coûteux.'),
+  (v_formation, 'qr', 'Listez les 7 documents indispensables à embarquer pour un trajet international Lyon → Bruxelles avec un chargement de matériel électrique sous régime intra-UE. Pour chacun, précisez son rôle juridique et qui le délivre.', NULL, 1, 'moyen', ARRAY['documents','checklist'], 'mft-2026-gotrm:bc01-05:qr:5', true, 'Documents indispensables (intra-UE, donc PAS de DAU douane) :
 
 1. Lettre de voiture CMR
 - Rôle : matérialise le contrat de transport international
@@ -1300,8 +997,8 @@ Bonus : Documents conseillés (non obligatoires intra-UE) :
 Conséquences en cas de défaut :
 - Document obligatoire manquant : amende (90-1 500 €), retard, perte de confiance client.
 - Document conducteur manquant : immobilisation du véhicule, retrait permis si récidive.
-- ADR non documenté : amende lourde + interdiction de circulation immédiate.',
-   'moyenne', '{documents,checklist}');
+- ADR non documenté : amende lourde + interdiction de circulation immédiate.');
+
 
   -- =================================================================
   -- QUIZZES (4 entraînement + 1 examen blanc)

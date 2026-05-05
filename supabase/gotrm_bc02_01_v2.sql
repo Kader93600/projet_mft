@@ -1092,292 +1092,39 @@ $lesson4$,
   -- =================================================================
   -- 25 QCM
   -- =================================================================
-  INSERT INTO public.question_bank (formation_id, source_ref, type, prompt, choices, correct, explanation, difficulty, tags) VALUES
+  INSERT INTO public.question_bank (formation_id, type, statement, choices, max_score, difficulty, tags, source_ref, active, explanation) VALUES
+  (v_formation, 'qcm', 'La sous-traitance représente typiquement quelle part du CA chez les commissionnaires de transport ?', '[{"id":"a","label":"5-10 %","is_correct":false},{"id":"b","label":"40-60 %","is_correct":true},{"id":"c","label":"80-95 %","is_correct":false},{"id":"d","label":"100 %","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['soustraitance','part-CA'], 'mft-2026-gotrm:bc02-01:qcm:1', true, 'La sous-traitance représente 40-60 % du CA chez les commissionnaires de transport en France. C''est un levier économique majeur mais aussi un risque (responsabilité solidaire, complicité de travail dissimulé).'),
+  (v_formation, 'qcm', 'Le commissionnaire de transport :', '[{"id":"a","label":"Effectue lui-même les transports","is_correct":false},{"id":"b","label":"Organise un transport pour le compte d''un client en choisissant librement les moyens","is_correct":true},{"id":"c","label":"Est uniquement un conseiller","is_correct":false},{"id":"d","label":"Possède obligatoirement des véhicules","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['commissionnaire'], 'mft-2026-gotrm:bc02-01:qcm:2', true, 'Le commissionnaire organise un transport pour le compte d''un client, choisit librement les moyens (route, fer, mer, air, multimodal). Profession réglementée nécessitant licence commissionnaire (LCB) + capacité GOTRM.'),
+  (v_formation, 'qcm', 'L''article L. 8222-1 du Code du travail impose au donneur d''ordre de vérifier son sous-traitant :', '[{"id":"a","label":"Une seule fois en début de contrat","is_correct":false},{"id":"b","label":"Avant la conclusion ET tous les 6 mois ensuite","is_correct":true},{"id":"c","label":"Tous les 5 ans","is_correct":false},{"id":"d","label":"Aucune obligation de vérification","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['vigilance','verifications'], 'mft-2026-gotrm:bc02-01:qcm:3', true, 'L. 8222-1 : vérifications avant la conclusion + tous les 6 mois pendant la durée du contrat. KBIS, URSSAF, fiscalité, DPAE. À défaut : risque de complicité de travail dissimulé (75 k€ + solidarité).'),
+  (v_formation, 'qcm', 'Le risque de complicité de travail dissimulé peut entraîner pour le donneur d''ordre :', '[{"id":"a","label":"Un avertissement verbal","is_correct":false},{"id":"b","label":"Une amende pénale jusqu''à 75 000 € + solidarité financière","is_correct":true},{"id":"c","label":"Une interdiction de sous-traiter pendant 1 an","is_correct":false},{"id":"d","label":"Aucune sanction","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['travail-dissimule','sanctions'], 'mft-2026-gotrm:bc02-01:qcm:4', true, 'Complicité de travail dissimulé : amende pénale jusqu''à 75 000 €, solidarité financière (paiement des salaires et cotisations dus), suspension de la licence transport. C''est un risque majeur en sous-traitance.'),
+  (v_formation, 'qcm', 'Le contrat-type sous-traitance transport est défini par le décret :', '[{"id":"a","label":"99-269 du 6 avril 1999","is_correct":false},{"id":"b","label":"2003-1295 du 26 décembre 2003","is_correct":true},{"id":"c","label":"75-1334 du 31 décembre 1975","is_correct":false},{"id":"d","label":"Aucun décret spécifique","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['contrat-type','soustraitance'], 'mft-2026-gotrm:bc02-01:qcm:5', true, 'Décret 2003-1295 du 26 déc 2003 = contrat-type sous-traitance transport (s''applique à défaut d''accord écrit spécifique). Distinct du contrat-type général (décret 99-269 pour le transport routier).'),
+  (v_formation, 'qcm', 'Le « prix abusivement bas » d''un sous-traitant est :', '[{"id":"a","label":"Un avantage économique pour le donneur d''ordre","is_correct":false},{"id":"b","label":"Interdit par L. 3222-3 du Code des transports, amende jusqu''à 90 000 €","is_correct":true},{"id":"c","label":"Toléré si négocié librement","is_correct":false},{"id":"d","label":"Recommandé pour augmenter la marge","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['prix-abusivement-bas'], 'mft-2026-gotrm:bc02-01:qcm:6', true, 'L. 3222-3 : pratique du prix abusivement bas (qui ne couvre pas les coûts du sous-traitant) interdite. Amende administrative jusqu''à 90 000 € pour le donneur d''ordre. Bonne pratique : barème interne minimum.'),
+  (v_formation, 'qcm', 'En cas de défaillance du donneur d''ordre, la loi de 1975 prévoit pour le sous-traitant :', '[{"id":"a","label":"Aucun recours","is_correct":false},{"id":"b","label":"Un paiement direct par le client final","is_correct":true},{"id":"c","label":"Une garantie d''État","is_correct":false},{"id":"d","label":"Une priorité de paiement sur tous autres créanciers","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['paiement-direct','1975'], 'mft-2026-gotrm:bc02-01:qcm:7', true, 'Loi 75-1334 : en cas de défaillance du donneur d''ordre, le sous-traitant peut demander le paiement direct par le client final. C''est une garantie majeure pour le sous-traitant.'),
+  (v_formation, 'qcm', 'Pour qu''un sous-traitant puisse lui-même sous-traiter (cascade) :', '[{"id":"a","label":"Aucune contrainte","is_correct":false},{"id":"b","label":"Il doit informer explicitement le donneur d''ordre principal","is_correct":true},{"id":"c","label":"Il faut une autorisation préfectorale","is_correct":false},{"id":"d","label":"C''est interdit en France","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['cascade','information'], 'mft-2026-gotrm:bc02-01:qcm:8', true, 'Article L. 3221-3 : la sous-traitance en cascade nécessite l''information explicite du donneur d''ordre principal. Une cascade non déclarée peut entraîner annulation, amendes, perte d''honorabilité.'),
+  (v_formation, 'qcm', 'Dans un appel d''offres bien conçu, la pondération recommandée pour le critère "prix" est :', '[{"id":"a","label":"5-10 %","is_correct":false},{"id":"b","label":"30-40 %","is_correct":true},{"id":"c","label":"60-70 %","is_correct":false},{"id":"d","label":"100 %","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['appel-offres','ponderation'], 'mft-2026-gotrm:bc02-01:qcm:9', true, 'Pondération équilibrée : prix 30-40 %, qualité 25-30 %, capacité 15-20 %, finance 10-15 %, RSE 5-10 %. Mettre 100 % sur le prix mène au "moins-disant" destructeur (sous-traitant fragile, risques sécurité).'),
+  (v_formation, 'qcm', 'Le délai standard entre envoi d''un cahier des charges et remise des offres est :', '[{"id":"a","label":"3 jours","is_correct":false},{"id":"b","label":"30-45 jours","is_correct":true},{"id":"c","label":"6 mois","is_correct":false},{"id":"d","label":"1 an","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['appel-offres','delai'], 'mft-2026-gotrm:bc02-01:qcm:10', true, '30-45 jours minimum. Permet une analyse sérieuse, une réponse de qualité et une période de questions. Moins = travail bâclé, plus = perte de focus. Pour un appel d''offres complexe, prévoir 60 jours.'),
+  (v_formation, 'qcm', 'Un cahier des charges complet d''AO transport contient au minimum :', '[{"id":"a","label":"3 sections","is_correct":false},{"id":"b","label":"8 sections (présentation, périmètre, technique, opé, qualité, contractuel, pièces, critères)","is_correct":true},{"id":"c","label":"15 sections obligatoires","is_correct":false},{"id":"d","label":"Aucune structure imposée","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['cahier-charges','sections'], 'mft-2026-gotrm:bc02-01:qcm:11', true, '8 sections clés : présentation donneur d''ordre, périmètre quantitatif, exigences techniques, exigences opérationnelles, exigences qualité, cadre contractuel, pièces à fournir, critères de notation.'),
+  (v_formation, 'qcm', 'La visite terrain d''un sous-traitant finaliste dure typiquement :', '[{"id":"a","label":"15 minutes","is_correct":false},{"id":"b","label":"1/2 journée minimum","is_correct":true},{"id":"c","label":"1 semaine entière","is_correct":false},{"id":"d","label":"Aucune visite nécessaire","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['visite-terrain','duree'], 'mft-2026-gotrm:bc02-01:qcm:12', true, 'Visite terrain : 1/2 journée minimum (4 h) pour rencontrer direction, voir locaux et parc, observer outils, échanger avec exploitants et conducteurs. Indispensable pour les 3 finalistes d''un AO sérieux.'),
+  (v_formation, 'qcm', 'Parmi ces signaux, lequel est un signal d''ALERTE chez un sous-traitant potentiel ?', '[{"id":"a","label":"Parc moderne et propre","is_correct":false},{"id":"b","label":"Conducteurs avec téléphone au volant pendant la visite","is_correct":true},{"id":"c","label":"Procédures écrites accessibles","is_correct":false},{"id":"d","label":"Direction qui parle ouvertement de ses challenges","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['signaux-faibles'], 'mft-2026-gotrm:bc02-01:qcm:13', true, 'Téléphone au volant des conducteurs lors d''une visite = signal d''alerte (manque de discipline, non-respect des règles). Les autres options sont des signaux POSITIFS (modernité, transparence, organisation).'),
+  (v_formation, 'qcm', 'Un panel équilibré de sous-traitants par segment compte typiquement :', '[{"id":"a","label":"1 seul (dépendance maximale)","is_correct":false},{"id":"b","label":"5 à 10 sous-traitants","is_correct":true},{"id":"c","label":"50 sous-traitants","is_correct":false},{"id":"d","label":"Plus de 100","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['panel','nombre'], 'mft-2026-gotrm:bc02-01:qcm:14', true, 'Un panel équilibré = 5 à 10 sous-traitants par segment. Évite la dépendance à un seul (risque de défaillance), permet une saine émulation tarifaire, et offre une couverture des risques.'),
+  (v_formation, 'qcm', 'Une période de pilote chez un nouveau sous-traitant dure typiquement :', '[{"id":"a","label":"1 jour","is_correct":false},{"id":"b","label":"1 à 3 mois sur 25-40 % du volume cible","is_correct":true},{"id":"c","label":"1 an minimum","is_correct":false},{"id":"d","label":"Aucun pilote","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['pilote','duree'], 'mft-2026-gotrm:bc02-01:qcm:15', true, 'Pilote 1-3 mois sur 25-40 % du volume cible. Permet de tester en conditions réelles avant déploiement complet, d''identifier les ajustements nécessaires, et de réduire le risque d''engagement.'),
+  (v_formation, 'qcm', 'La clause RPC (indexation gazole) dans un contrat de sous-traitance est :', '[{"id":"a","label":"Optionnelle","is_correct":false},{"id":"b","label":"D''ordre public selon L. 3222-1, obligatoire dans tout contrat de transport","is_correct":true},{"id":"c","label":"Réservée aux gros transporteurs","is_correct":false},{"id":"d","label":"Limitée à l''international","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['rpc','obligation'], 'mft-2026-gotrm:bc02-01:qcm:16', true, 'L. 3222-1 : la RPC (Répercussion du Prix du Carburant) est d''ordre public. Aucune clause ne peut y renoncer. Standard : indexation CNR mensuelle, part carburant 30 % (porteur) ou 35 % (TRR).'),
+  (v_formation, 'qcm', 'Le préavis standard pour résiliation pour convenance d''un contrat de sous-traitance est :', '[{"id":"a","label":"1 semaine","is_correct":false},{"id":"b","label":"1 mois","is_correct":false},{"id":"c","label":"6 mois","is_correct":true},{"id":"d","label":"3 ans","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['resiliation','preavis'], 'mft-2026-gotrm:bc02-01:qcm:17', true, 'Préavis standard 6 mois pour résiliation pour convenance. Pour faute grave : mise en demeure 30 j sans amélioration. Pour force majeure ou procédure collective : sans préavis.'),
+  (v_formation, 'qcm', 'Lors d''un appel d''offres, les seuils éliminatoires sont :', '[{"id":"a","label":"Optionnels","is_correct":false},{"id":"b","label":"Des conditions minimales en deçà desquelles l''offre est rejetée d''office","is_correct":true},{"id":"c","label":"Des indications de prix","is_correct":false},{"id":"d","label":"Des conditions négociables","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['seuils-eliminatoires'], 'mft-2026-gotrm:bc02-01:qcm:18', true, 'Seuils éliminatoires = conditions minimales (ex : licence transport en cours, KBIS < 3 mois, ISO 9001 si exigée). Si non respectés : rejet automatique sans analyse complète. Doivent être annoncés dans le cahier des charges.'),
+  (v_formation, 'qcm', 'Un commissionnaire reste responsable vis-à-vis du client final :', '[{"id":"a","label":"Uniquement de ses propres actes","is_correct":false},{"id":"b","label":"De ses faits ET des faits de ses substitués (sous-traitants)","is_correct":true},{"id":"c","label":"Aucune responsabilité une fois le sous-traitant désigné","is_correct":false},{"id":"d","label":"Uniquement si faute prouvée","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['commissionnaire','responsabilite'], 'mft-2026-gotrm:bc02-01:qcm:19', true, 'Article L. 132-3 Code de commerce : le commissionnaire est responsable de ses faits ET des faits de ses substitués. Il peut ensuite se retourner contre le sous-traitant fautif (action en garantie, subrogation).'),
+  (v_formation, 'qcm', 'Lors du référencement d''un sous-traitant, parmi les pièces administratives obligatoires :', '[{"id":"a","label":"Bulletin de paie d''un conducteur","is_correct":false},{"id":"b","label":"KBIS < 3 mois, attestations URSSAF et fiscale, DPAE, licence transport, RC pro","is_correct":true},{"id":"c","label":"Plan de masse des locaux","is_correct":false},{"id":"d","label":"Lettre du maire de la commune","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['pieces','obligatoires'], 'mft-2026-gotrm:bc02-01:qcm:20', true, 'Pièces administratives obligatoires : KBIS < 3 mois, URSSAF, fiscalité, DPAE conducteurs, licence transport (LTI/LTM), bulletins n°2 dirigeants (honorabilité), attestation RC professionnelle.'),
+  (v_formation, 'qcm', 'Les rituels de pilotage avec un sous-traitant régulier comprennent typiquement :', '[{"id":"a","label":"1 réunion annuelle uniquement","is_correct":false},{"id":"b","label":"Quotidien (synthèse), hebdo (réunion 30 min), mensuel (KPI), trimestriel (direction)","is_correct":true},{"id":"c","label":"Une newsletter trimestrielle","is_correct":false},{"id":"d","label":"Aucune communication régulière","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['rituels','pilotage'], 'mft-2026-gotrm:bc02-01:qcm:21', true, '4 niveaux de rituels : quotidien (synthèse incidents par mail), hebdo (réunion 30 min exploitants), mensuel (reporting KPI complet), trimestriel (comité de pilotage avec direction). Plus annuel (bilan + revue contrat).'),
+  (v_formation, 'qcm', 'Un signal de fragilité financière chez un sous-traitant est :', '[{"id":"a","label":"Investissements dans le parc","is_correct":false},{"id":"b","label":"Compte de résultat en perte 2 années consécutives","is_correct":true},{"id":"c","label":"Croissance du CA","is_correct":false},{"id":"d","label":"Embauche de conducteurs","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['fragilite','financiere'], 'mft-2026-gotrm:bc02-01:qcm:22', true, 'Signaux financiers d''alerte : pertes 2 années consécutives, hypothèques/nantissements, procédure collective récente, refus de fournir bilans détaillés. À surveiller régulièrement (Infogreffe, attestations).'),
+  (v_formation, 'qcm', 'Pour les 3 finalistes d''un appel d''offres important, la pratique recommandée est :', '[{"id":"a","label":"Décider sur dossier sans rencontrer","is_correct":false},{"id":"b","label":"Visite terrain 1/2 journée + soutenance commerciale","is_correct":true},{"id":"c","label":"Demander un pilote gratuit","is_correct":false},{"id":"d","label":"Faire signer immédiatement","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['finalistes','visite'], 'mft-2026-gotrm:bc02-01:qcm:23', true, 'Pour les 3 finalistes : visite terrain (1/2 journée minimum) pour valider l''adéquation entre dossier et réalité, et soutenance commerciale (présentation orale 30-60 min + questions). Permet une décision finale informée.'),
+  (v_formation, 'qcm', 'Lors d''un audit semestriel d''un sous-traitant, on vérifie notamment :', '[{"id":"a","label":"Uniquement les KPI qualité","is_correct":false},{"id":"b","label":"Renouvellement des pièces administratives + KPI + état du panel","is_correct":true},{"id":"c","label":"Le résultat du dernier match de football","is_correct":false},{"id":"d","label":"Aucun audit nécessaire","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['audit','semestriel'], 'mft-2026-gotrm:bc02-01:qcm:24', true, 'Audit semestriel : vérification renouvellement attestations URSSAF, fiscalité, DPAE (obligation L. 8222-1), KPI qualité, statistiques incidents, évolution du parc et de l''effectif, situation financière.'),
+  (v_formation, 'qcm', 'L''engagement de volume dans un contrat de sous-traitance permet :', '[{"id":"a","label":"De fixer le prix unitaire","is_correct":false},{"id":"b","label":"D''obtenir des conditions préférentielles si un seuil de volume est atteint","is_correct":true},{"id":"c","label":"De résilier sans préavis","is_correct":false},{"id":"d","label":"De refuser tout sinistre","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['engagement','volume'], 'mft-2026-gotrm:bc02-01:qcm:25', true, 'Engagement de volume = clause par laquelle le donneur d''ordre s''engage sur un volume minimum, contre des conditions préférentielles (tarif dégressif, priorité, exclusivité). C''est un levier de négociation gagnant-gagnant.');
 
-  (v_formation, 'mft-2026-gotrm:bc02-01:qcm:1', 'qcm',
-   'La sous-traitance représente typiquement quelle part du CA chez les commissionnaires de transport ?',
-   jsonb '[
-     {"key":"a","label":"5-10 %"},
-     {"key":"b","label":"40-60 %"},
-     {"key":"c","label":"80-95 %"},
-     {"key":"d","label":"100 %"}
-   ]', '["b"]'::jsonb,
-   'La sous-traitance représente 40-60 % du CA chez les commissionnaires de transport en France. C''est un levier économique majeur mais aussi un risque (responsabilité solidaire, complicité de travail dissimulé).',
-   'facile', '{soustraitance,part-CA}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qcm:2', 'qcm',
-   'Le commissionnaire de transport :',
-   jsonb '[
-     {"key":"a","label":"Effectue lui-même les transports"},
-     {"key":"b","label":"Organise un transport pour le compte d''un client en choisissant librement les moyens"},
-     {"key":"c","label":"Est uniquement un conseiller"},
-     {"key":"d","label":"Possède obligatoirement des véhicules"}
-   ]', '["b"]'::jsonb,
-   'Le commissionnaire organise un transport pour le compte d''un client, choisit librement les moyens (route, fer, mer, air, multimodal). Profession réglementée nécessitant licence commissionnaire (LCB) + capacité GOTRM.',
-   'moyenne', '{commissionnaire}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qcm:3', 'qcm',
-   'L''article L. 8222-1 du Code du travail impose au donneur d''ordre de vérifier son sous-traitant :',
-   jsonb '[
-     {"key":"a","label":"Une seule fois en début de contrat"},
-     {"key":"b","label":"Avant la conclusion ET tous les 6 mois ensuite"},
-     {"key":"c","label":"Tous les 5 ans"},
-     {"key":"d","label":"Aucune obligation de vérification"}
-   ]', '["b"]'::jsonb,
-   'L. 8222-1 : vérifications avant la conclusion + tous les 6 mois pendant la durée du contrat. KBIS, URSSAF, fiscalité, DPAE. À défaut : risque de complicité de travail dissimulé (75 k€ + solidarité).',
-   'moyenne', '{vigilance,verifications}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qcm:4', 'qcm',
-   'Le risque de complicité de travail dissimulé peut entraîner pour le donneur d''ordre :',
-   jsonb '[
-     {"key":"a","label":"Un avertissement verbal"},
-     {"key":"b","label":"Une amende pénale jusqu''à 75 000 € + solidarité financière"},
-     {"key":"c","label":"Une interdiction de sous-traiter pendant 1 an"},
-     {"key":"d","label":"Aucune sanction"}
-   ]', '["b"]'::jsonb,
-   'Complicité de travail dissimulé : amende pénale jusqu''à 75 000 €, solidarité financière (paiement des salaires et cotisations dus), suspension de la licence transport. C''est un risque majeur en sous-traitance.',
-   'difficile', '{travail-dissimule,sanctions}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qcm:5', 'qcm',
-   'Le contrat-type sous-traitance transport est défini par le décret :',
-   jsonb '[
-     {"key":"a","label":"99-269 du 6 avril 1999"},
-     {"key":"b","label":"2003-1295 du 26 décembre 2003"},
-     {"key":"c","label":"75-1334 du 31 décembre 1975"},
-     {"key":"d","label":"Aucun décret spécifique"}
-   ]', '["b"]'::jsonb,
-   'Décret 2003-1295 du 26 déc 2003 = contrat-type sous-traitance transport (s''applique à défaut d''accord écrit spécifique). Distinct du contrat-type général (décret 99-269 pour le transport routier).',
-   'difficile', '{contrat-type,soustraitance}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qcm:6', 'qcm',
-   'Le « prix abusivement bas » d''un sous-traitant est :',
-   jsonb '[
-     {"key":"a","label":"Un avantage économique pour le donneur d''ordre"},
-     {"key":"b","label":"Interdit par L. 3222-3 du Code des transports, amende jusqu''à 90 000 €"},
-     {"key":"c","label":"Toléré si négocié librement"},
-     {"key":"d","label":"Recommandé pour augmenter la marge"}
-   ]', '["b"]'::jsonb,
-   'L. 3222-3 : pratique du prix abusivement bas (qui ne couvre pas les coûts du sous-traitant) interdite. Amende administrative jusqu''à 90 000 € pour le donneur d''ordre. Bonne pratique : barème interne minimum.',
-   'difficile', '{prix-abusivement-bas}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qcm:7', 'qcm',
-   'En cas de défaillance du donneur d''ordre, la loi de 1975 prévoit pour le sous-traitant :',
-   jsonb '[
-     {"key":"a","label":"Aucun recours"},
-     {"key":"b","label":"Un paiement direct par le client final"},
-     {"key":"c","label":"Une garantie d''État"},
-     {"key":"d","label":"Une priorité de paiement sur tous autres créanciers"}
-   ]', '["b"]'::jsonb,
-   'Loi 75-1334 : en cas de défaillance du donneur d''ordre, le sous-traitant peut demander le paiement direct par le client final. C''est une garantie majeure pour le sous-traitant.',
-   'moyenne', '{paiement-direct,1975}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qcm:8', 'qcm',
-   'Pour qu''un sous-traitant puisse lui-même sous-traiter (cascade) :',
-   jsonb '[
-     {"key":"a","label":"Aucune contrainte"},
-     {"key":"b","label":"Il doit informer explicitement le donneur d''ordre principal"},
-     {"key":"c","label":"Il faut une autorisation préfectorale"},
-     {"key":"d","label":"C''est interdit en France"}
-   ]', '["b"]'::jsonb,
-   'Article L. 3221-3 : la sous-traitance en cascade nécessite l''information explicite du donneur d''ordre principal. Une cascade non déclarée peut entraîner annulation, amendes, perte d''honorabilité.',
-   'difficile', '{cascade,information}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qcm:9', 'qcm',
-   'Dans un appel d''offres bien conçu, la pondération recommandée pour le critère "prix" est :',
-   jsonb '[
-     {"key":"a","label":"5-10 %"},
-     {"key":"b","label":"30-40 %"},
-     {"key":"c","label":"60-70 %"},
-     {"key":"d","label":"100 %"}
-   ]', '["b"]'::jsonb,
-   'Pondération équilibrée : prix 30-40 %, qualité 25-30 %, capacité 15-20 %, finance 10-15 %, RSE 5-10 %. Mettre 100 % sur le prix mène au "moins-disant" destructeur (sous-traitant fragile, risques sécurité).',
-   'moyenne', '{appel-offres,ponderation}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qcm:10', 'qcm',
-   'Le délai standard entre envoi d''un cahier des charges et remise des offres est :',
-   jsonb '[
-     {"key":"a","label":"3 jours"},
-     {"key":"b","label":"30-45 jours"},
-     {"key":"c","label":"6 mois"},
-     {"key":"d","label":"1 an"}
-   ]', '["b"]'::jsonb,
-   '30-45 jours minimum. Permet une analyse sérieuse, une réponse de qualité et une période de questions. Moins = travail bâclé, plus = perte de focus. Pour un appel d''offres complexe, prévoir 60 jours.',
-   'moyenne', '{appel-offres,delai}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qcm:11', 'qcm',
-   'Un cahier des charges complet d''AO transport contient au minimum :',
-   jsonb '[
-     {"key":"a","label":"3 sections"},
-     {"key":"b","label":"8 sections (présentation, périmètre, technique, opé, qualité, contractuel, pièces, critères)"},
-     {"key":"c","label":"15 sections obligatoires"},
-     {"key":"d","label":"Aucune structure imposée"}
-   ]', '["b"]'::jsonb,
-   '8 sections clés : présentation donneur d''ordre, périmètre quantitatif, exigences techniques, exigences opérationnelles, exigences qualité, cadre contractuel, pièces à fournir, critères de notation.',
-   'moyenne', '{cahier-charges,sections}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qcm:12', 'qcm',
-   'La visite terrain d''un sous-traitant finaliste dure typiquement :',
-   jsonb '[
-     {"key":"a","label":"15 minutes"},
-     {"key":"b","label":"1/2 journée minimum"},
-     {"key":"c","label":"1 semaine entière"},
-     {"key":"d","label":"Aucune visite nécessaire"}
-   ]', '["b"]'::jsonb,
-   'Visite terrain : 1/2 journée minimum (4 h) pour rencontrer direction, voir locaux et parc, observer outils, échanger avec exploitants et conducteurs. Indispensable pour les 3 finalistes d''un AO sérieux.',
-   'moyenne', '{visite-terrain,duree}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qcm:13', 'qcm',
-   'Parmi ces signaux, lequel est un signal d''ALERTE chez un sous-traitant potentiel ?',
-   jsonb '[
-     {"key":"a","label":"Parc moderne et propre"},
-     {"key":"b","label":"Conducteurs avec téléphone au volant pendant la visite"},
-     {"key":"c","label":"Procédures écrites accessibles"},
-     {"key":"d","label":"Direction qui parle ouvertement de ses challenges"}
-   ]', '["b"]'::jsonb,
-   'Téléphone au volant des conducteurs lors d''une visite = signal d''alerte (manque de discipline, non-respect des règles). Les autres options sont des signaux POSITIFS (modernité, transparence, organisation).',
-   'moyenne', '{signaux-faibles}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qcm:14', 'qcm',
-   'Un panel équilibré de sous-traitants par segment compte typiquement :',
-   jsonb '[
-     {"key":"a","label":"1 seul (dépendance maximale)"},
-     {"key":"b","label":"5 à 10 sous-traitants"},
-     {"key":"c","label":"50 sous-traitants"},
-     {"key":"d","label":"Plus de 100"}
-   ]', '["b"]'::jsonb,
-   'Un panel équilibré = 5 à 10 sous-traitants par segment. Évite la dépendance à un seul (risque de défaillance), permet une saine émulation tarifaire, et offre une couverture des risques.',
-   'moyenne', '{panel,nombre}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qcm:15', 'qcm',
-   'Une période de pilote chez un nouveau sous-traitant dure typiquement :',
-   jsonb '[
-     {"key":"a","label":"1 jour"},
-     {"key":"b","label":"1 à 3 mois sur 25-40 % du volume cible"},
-     {"key":"c","label":"1 an minimum"},
-     {"key":"d","label":"Aucun pilote"}
-   ]', '["b"]'::jsonb,
-   'Pilote 1-3 mois sur 25-40 % du volume cible. Permet de tester en conditions réelles avant déploiement complet, d''identifier les ajustements nécessaires, et de réduire le risque d''engagement.',
-   'moyenne', '{pilote,duree}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qcm:16', 'qcm',
-   'La clause RPC (indexation gazole) dans un contrat de sous-traitance est :',
-   jsonb '[
-     {"key":"a","label":"Optionnelle"},
-     {"key":"b","label":"D''ordre public selon L. 3222-1, obligatoire dans tout contrat de transport"},
-     {"key":"c","label":"Réservée aux gros transporteurs"},
-     {"key":"d","label":"Limitée à l''international"}
-   ]', '["b"]'::jsonb,
-   'L. 3222-1 : la RPC (Répercussion du Prix du Carburant) est d''ordre public. Aucune clause ne peut y renoncer. Standard : indexation CNR mensuelle, part carburant 30 % (porteur) ou 35 % (TRR).',
-   'moyenne', '{rpc,obligation}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qcm:17', 'qcm',
-   'Le préavis standard pour résiliation pour convenance d''un contrat de sous-traitance est :',
-   jsonb '[
-     {"key":"a","label":"1 semaine"},
-     {"key":"b","label":"1 mois"},
-     {"key":"c","label":"6 mois"},
-     {"key":"d","label":"3 ans"}
-   ]', '["c"]'::jsonb,
-   'Préavis standard 6 mois pour résiliation pour convenance. Pour faute grave : mise en demeure 30 j sans amélioration. Pour force majeure ou procédure collective : sans préavis.',
-   'moyenne', '{resiliation,preavis}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qcm:18', 'qcm',
-   'Lors d''un appel d''offres, les seuils éliminatoires sont :',
-   jsonb '[
-     {"key":"a","label":"Optionnels"},
-     {"key":"b","label":"Des conditions minimales en deçà desquelles l''offre est rejetée d''office"},
-     {"key":"c","label":"Des indications de prix"},
-     {"key":"d","label":"Des conditions négociables"}
-   ]', '["b"]'::jsonb,
-   'Seuils éliminatoires = conditions minimales (ex : licence transport en cours, KBIS < 3 mois, ISO 9001 si exigée). Si non respectés : rejet automatique sans analyse complète. Doivent être annoncés dans le cahier des charges.',
-   'moyenne', '{seuils-eliminatoires}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qcm:19', 'qcm',
-   'Un commissionnaire reste responsable vis-à-vis du client final :',
-   jsonb '[
-     {"key":"a","label":"Uniquement de ses propres actes"},
-     {"key":"b","label":"De ses faits ET des faits de ses substitués (sous-traitants)"},
-     {"key":"c","label":"Aucune responsabilité une fois le sous-traitant désigné"},
-     {"key":"d","label":"Uniquement si faute prouvée"}
-   ]', '["b"]'::jsonb,
-   'Article L. 132-3 Code de commerce : le commissionnaire est responsable de ses faits ET des faits de ses substitués. Il peut ensuite se retourner contre le sous-traitant fautif (action en garantie, subrogation).',
-   'difficile', '{commissionnaire,responsabilite}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qcm:20', 'qcm',
-   'Lors du référencement d''un sous-traitant, parmi les pièces administratives obligatoires :',
-   jsonb '[
-     {"key":"a","label":"Bulletin de paie d''un conducteur"},
-     {"key":"b","label":"KBIS < 3 mois, attestations URSSAF et fiscale, DPAE, licence transport, RC pro"},
-     {"key":"c","label":"Plan de masse des locaux"},
-     {"key":"d","label":"Lettre du maire de la commune"}
-   ]', '["b"]'::jsonb,
-   'Pièces administratives obligatoires : KBIS < 3 mois, URSSAF, fiscalité, DPAE conducteurs, licence transport (LTI/LTM), bulletins n°2 dirigeants (honorabilité), attestation RC professionnelle.',
-   'moyenne', '{pieces,obligatoires}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qcm:21', 'qcm',
-   'Les rituels de pilotage avec un sous-traitant régulier comprennent typiquement :',
-   jsonb '[
-     {"key":"a","label":"1 réunion annuelle uniquement"},
-     {"key":"b","label":"Quotidien (synthèse), hebdo (réunion 30 min), mensuel (KPI), trimestriel (direction)"},
-     {"key":"c","label":"Une newsletter trimestrielle"},
-     {"key":"d","label":"Aucune communication régulière"}
-   ]', '["b"]'::jsonb,
-   '4 niveaux de rituels : quotidien (synthèse incidents par mail), hebdo (réunion 30 min exploitants), mensuel (reporting KPI complet), trimestriel (comité de pilotage avec direction). Plus annuel (bilan + revue contrat).',
-   'moyenne', '{rituels,pilotage}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qcm:22', 'qcm',
-   'Un signal de fragilité financière chez un sous-traitant est :',
-   jsonb '[
-     {"key":"a","label":"Investissements dans le parc"},
-     {"key":"b","label":"Compte de résultat en perte 2 années consécutives"},
-     {"key":"c","label":"Croissance du CA"},
-     {"key":"d","label":"Embauche de conducteurs"}
-   ]', '["b"]'::jsonb,
-   'Signaux financiers d''alerte : pertes 2 années consécutives, hypothèques/nantissements, procédure collective récente, refus de fournir bilans détaillés. À surveiller régulièrement (Infogreffe, attestations).',
-   'moyenne', '{fragilite,financiere}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qcm:23', 'qcm',
-   'Pour les 3 finalistes d''un appel d''offres important, la pratique recommandée est :',
-   jsonb '[
-     {"key":"a","label":"Décider sur dossier sans rencontrer"},
-     {"key":"b","label":"Visite terrain 1/2 journée + soutenance commerciale"},
-     {"key":"c","label":"Demander un pilote gratuit"},
-     {"key":"d","label":"Faire signer immédiatement"}
-   ]', '["b"]'::jsonb,
-   'Pour les 3 finalistes : visite terrain (1/2 journée minimum) pour valider l''adéquation entre dossier et réalité, et soutenance commerciale (présentation orale 30-60 min + questions). Permet une décision finale informée.',
-   'moyenne', '{finalistes,visite}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qcm:24', 'qcm',
-   'Lors d''un audit semestriel d''un sous-traitant, on vérifie notamment :',
-   jsonb '[
-     {"key":"a","label":"Uniquement les KPI qualité"},
-     {"key":"b","label":"Renouvellement des pièces administratives + KPI + état du panel"},
-     {"key":"c","label":"Le résultat du dernier match de football"},
-     {"key":"d","label":"Aucun audit nécessaire"}
-   ]', '["b"]'::jsonb,
-   'Audit semestriel : vérification renouvellement attestations URSSAF, fiscalité, DPAE (obligation L. 8222-1), KPI qualité, statistiques incidents, évolution du parc et de l''effectif, situation financière.',
-   'moyenne', '{audit,semestriel}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qcm:25', 'qcm',
-   'L''engagement de volume dans un contrat de sous-traitance permet :',
-   jsonb '[
-     {"key":"a","label":"De fixer le prix unitaire"},
-     {"key":"b","label":"D''obtenir des conditions préférentielles si un seuil de volume est atteint"},
-     {"key":"c","label":"De résilier sans préavis"},
-     {"key":"d","label":"De refuser tout sinistre"}
-   ]', '["b"]'::jsonb,
-   'Engagement de volume = clause par laquelle le donneur d''ordre s''engage sur un volume minimum, contre des conditions préférentielles (tarif dégressif, priorité, exclusivité). C''est un levier de négociation gagnant-gagnant.',
-   'moyenne', '{engagement,volume}');
 
   -- =================================================================
   -- 4 QR
   -- =================================================================
-  INSERT INTO public.question_bank (formation_id, source_ref, type, prompt, choices, correct, explanation, difficulty, tags) VALUES
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qr:1', 'qr',
-   'Un nouveau sous-traitant *Trans-Sud SARL* propose un tarif 22 % sous le marché pour une ligne hebdomadaire. Décrivez la procédure de vérification et d''évaluation à mener avant tout engagement, en listant minimum 10 points de contrôle et les sanctions encourues en cas de manquement.',
-   '[]'::jsonb, '[]'::jsonb,
-   'PROCÉDURE DE VÉRIFICATION COMPLÈTE :
+  INSERT INTO public.question_bank (formation_id, type, statement, choices, max_score, difficulty, tags, source_ref, active, explanation) VALUES
+  (v_formation, 'qr', 'Un nouveau sous-traitant *Trans-Sud SARL* propose un tarif 22 % sous le marché pour une ligne hebdomadaire. Décrivez la procédure de vérification et d''évaluation à mener avant tout engagement, en listant minimum 10 points de contrôle et les sanctions encourues en cas de manquement.', NULL, 1, 'difficile', ARRAY['verification','procedure','sanctions'], 'mft-2026-gotrm:bc02-01:qr:1', true, 'PROCÉDURE DE VÉRIFICATION COMPLÈTE :
 
 PHASE 1 — Vérifications administratives (obligatoires L. 8222-1)
 
@@ -1496,13 +1243,8 @@ Conserver pendant 5 ans tous les éléments :
 - Justifications économiques
 - Décision finale motivée
 
-En cas de contrôle, ces éléments prouvent la diligence du donneur d''ordre.',
-   'difficile', '{verification,procedure,sanctions}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qr:2', 'qr',
-   'Construisez la grille de notation détaillée pour un appel d''offres lignes régulières (60 missions/mois, ligne nationale 600 km), avec pondérations, sous-critères, échelles de notation et seuils éliminatoires.',
-   '[]'::jsonb, '[]'::jsonb,
-   'GRILLE DE NOTATION COMPLÈTE — AO LIGNES RÉGULIÈRES
+En cas de contrôle, ces éléments prouvent la diligence du donneur d''ordre.'),
+  (v_formation, 'qr', 'Construisez la grille de notation détaillée pour un appel d''offres lignes régulières (60 missions/mois, ligne nationale 600 km), avec pondérations, sous-critères, échelles de notation et seuils éliminatoires.', NULL, 1, 'difficile', ARRAY['grille','notation','construction'], 'mft-2026-gotrm:bc02-01:qr:2', true, 'GRILLE DE NOTATION COMPLÈTE — AO LIGNES RÉGULIÈRES
 
 OBJET : 60 missions/mois sur ligne nationale 600 km, 1 an renouvelable
 
@@ -1663,13 +1405,8 @@ OBSERVATIONS
 - La VISITE TERRAIN ne fait pas partie de la grille mais est INDISPENSABLE pour les finalistes
 - La GRILLE est COMMUNICABLE aux candidats (transparence)
 
-Cette grille structure une décision objective et défendable. Elle peut être adaptée au contexte (volumes, exigences, marché).',
-   'difficile', '{grille,notation,construction}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qr:3', 'qr',
-   'Vous lancez une collaboration avec un nouveau sous-traitant. Décrivez le plan détaillé du pilote (3 mois) avec étapes, indicateurs de suivi, critères de validation, et arborescence des décisions à la fin du pilote.',
-   '[]'::jsonb, '[]'::jsonb,
-   'PLAN DE PILOTE COLLABORATION SOUS-TRAITANT — 3 MOIS
+Cette grille structure une décision objective et défendable. Elle peut être adaptée au contexte (volumes, exigences, marché).'),
+  (v_formation, 'qr', 'Vous lancez une collaboration avec un nouveau sous-traitant. Décrivez le plan détaillé du pilote (3 mois) avec étapes, indicateurs de suivi, critères de validation, et arborescence des décisions à la fin du pilote.', NULL, 1, 'difficile', ARRAY['pilote','plan','arborescence'], 'mft-2026-gotrm:bc02-01:qr:3', true, 'PLAN DE PILOTE COLLABORATION SOUS-TRAITANT — 3 MOIS
 
 OBJECTIF : valider la capacité opérationnelle, qualité et compatibilité avant déploiement complet (montée à 100 % du volume cible à M+3).
 
@@ -1831,13 +1568,8 @@ LEÇONS À CAPITALISER
 - Former les équipes sur les retours d''expérience
 - Affiner la grille d''évaluation pour les prochains AO
 
-Le pilote n''est pas une formalité administrative — c''est un investissement stratégique qui sécurise les choix de partenariat à long terme.',
-   'difficile', '{pilote,plan,arborescence}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-01:qr:4', 'qr',
-   'Identifiez et expliquez 6 risques majeurs liés à la sous-traitance transport, avec pour chacun : indicateurs de détection, mesures préventives et plan d''action en cas de matérialisation.',
-   '[]'::jsonb, '[]'::jsonb,
-   '6 RISQUES MAJEURS LIÉS À LA SOUS-TRAITANCE TRANSPORT
+Le pilote n''est pas une formalité administrative — c''est un investissement stratégique qui sécurise les choix de partenariat à long terme.'),
+  (v_formation, 'qr', 'Identifiez et expliquez 6 risques majeurs liés à la sous-traitance transport, avec pour chacun : indicateurs de détection, mesures préventives et plan d''action en cas de matérialisation.', NULL, 1, 'difficile', ARRAY['risques','prevention','plan'], 'mft-2026-gotrm:bc02-01:qr:4', true, '6 RISQUES MAJEURS LIÉS À LA SOUS-TRAITANCE TRANSPORT
 
 RISQUE 1 — COMPLICITÉ DE TRAVAIL DISSIMULÉ
 
@@ -2009,8 +1741,8 @@ PILOTAGE GLOBAL DU RISQUE
 - Bilan annuel global des incidents pour ajuster les procédures
 - Formation continue des équipes sur les obligations légales
 
-Sans gestion proactive de ces risques, la sous-traitance peut transformer un avantage économique en source de difficultés majeures. Avec un cadre rigoureux, elle reste un levier puissant de flexibilité et de compétitivité.',
-   'difficile', '{risques,prevention,plan}');
+Sans gestion proactive de ces risques, la sous-traitance peut transformer un avantage économique en source de difficultés majeures. Avec un cadre rigoureux, elle reste un levier puissant de flexibilité et de compétitivité.');
+
 
   -- =================================================================
   -- QUIZZES

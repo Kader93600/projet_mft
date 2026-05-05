@@ -720,347 +720,44 @@ $lesson4$,
   -- =================================================================
   -- 30 QCM REFORMULÉS
   -- =================================================================
-  INSERT INTO public.question_bank (formation_id, source_ref, type, prompt, choices, correct, explanation, difficulty, tags) VALUES
+  INSERT INTO public.question_bank (formation_id, type, statement, choices, max_score, difficulty, tags, source_ref, active, explanation) VALUES
+  (v_formation, 'qcm', 'Le règlement (CE) n° 561/2006 s''applique au transport de marchandises par véhicule de PTAC :', '[{"id":"a","label":"Strictement supérieur à 2,5 t","is_correct":false},{"id":"b","label":"Strictement supérieur à 3,5 t","is_correct":true},{"id":"c","label":"Strictement supérieur à 7,5 t","is_correct":false},{"id":"d","label":"Strictement supérieur à 12 t","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['r561','champ-application'], 'mft-2026-gotrm:bc01-04:qcm:1', true, 'La R561/2006 s''applique aux véhicules de marchandises dont le PTAC excède 3,5 t. Depuis le 1er juillet 2026, les VUL de 2,5 à 3,5 t en transport international y sont également soumis (paquet mobilité).'),
+  (v_formation, 'qcm', 'L''accord AETR s''applique pour la partie du trajet effectuée :', '[{"id":"a","label":"Sur le territoire d''un pays UE","is_correct":false},{"id":"b","label":"Sur le territoire d''un pays AETR non-UE (Russie, Turquie, Maroc...)","is_correct":true},{"id":"c","label":"En cabotage uniquement","is_correct":false},{"id":"d","label":"Pour le transport intérieur français","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['aetr','champ-application'], 'mft-2026-gotrm:bc01-04:qcm:2', true, 'L''AETR couvre le trafic international entre pays signataires. Sur un Lyon-Istanbul, la R561 s''applique côté UE et l''AETR côté Turquie. Les règles fond sont harmonisées entre les deux textes.'),
+  (v_formation, 'qcm', 'Le temps de conduite quotidien maximum normal est de :', '[{"id":"a","label":"8 heures","is_correct":false},{"id":"b","label":"9 heures","is_correct":true},{"id":"c","label":"10 heures","is_correct":false},{"id":"d","label":"11 heures","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['conduite','quotidien'], 'mft-2026-gotrm:bc01-04:qcm:3', true, 'La R561 fixe la conduite quotidienne à 9 h. Elle peut être prolongée à 10 h deux fois par semaine maximum, ce qui doit être planifié et tracé.'),
+  (v_formation, 'qcm', 'Le temps de conduite hebdomadaire maximum est de :', '[{"id":"a","label":"45 heures","is_correct":false},{"id":"b","label":"48 heures","is_correct":false},{"id":"c","label":"56 heures","is_correct":true},{"id":"d","label":"60 heures","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['conduite','hebdo'], 'mft-2026-gotrm:bc01-04:qcm:4', true, 'La conduite hebdomadaire ne peut excéder 56 h sur une semaine civile (lundi 0h à dimanche 24h). À ne pas confondre avec le temps de travail qui obéit à d''autres règles (Code du travail).'),
+  (v_formation, 'qcm', 'Le temps de conduite bihebdomadaire (sur 2 semaines consécutives) est plafonné à :', '[{"id":"a","label":"80 heures","is_correct":false},{"id":"b","label":"90 heures","is_correct":true},{"id":"c","label":"100 heures","is_correct":false},{"id":"d","label":"112 heures","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['conduite','bihebdo'], 'mft-2026-gotrm:bc01-04:qcm:5', true, 'La conduite cumulée sur 2 semaines glissantes ne peut dépasser 90 h. Si un conducteur a fait 56 h en S1, il ne peut conduire que 34 h en S2 (90-56).'),
+  (v_formation, 'qcm', 'La pause après 4 h 30 de conduite continue est de :', '[{"id":"a","label":"30 minutes","is_correct":false},{"id":"b","label":"45 minutes","is_correct":true},{"id":"c","label":"60 minutes","is_correct":false},{"id":"d","label":"15 minutes","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['pause'], 'mft-2026-gotrm:bc01-04:qcm:6', true, 'La pause obligatoire après 4 h 30 de conduite cumulée est de 45 minutes. Elle peut être fractionnée en 15 min puis 30 min (dans cet ordre uniquement).'),
+  (v_formation, 'qcm', 'Le fractionnement de la pause de 45 min est autorisé sous la forme :', '[{"id":"a","label":"30 min puis 15 min","is_correct":false},{"id":"b","label":"15 min puis 30 min","is_correct":true},{"id":"c","label":"3 × 15 min","is_correct":false},{"id":"d","label":"20 min + 25 min","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['pause','fractionnement'], 'mft-2026-gotrm:bc01-04:qcm:7', true, 'Le fractionnement n''est autorisé qu''en 15 min minimum suivi de 30 min minimum, dans cet ordre. L''inverse (30+15) ou un fractionnement en 3 fois ne sont pas conformes.'),
+  (v_formation, 'qcm', 'Le repos journalier normal est de :', '[{"id":"a","label":"9 h consécutives","is_correct":false},{"id":"b","label":"10 h consécutives","is_correct":false},{"id":"c","label":"11 h consécutives","is_correct":true},{"id":"d","label":"12 h consécutives","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['repos','journalier'], 'mft-2026-gotrm:bc01-04:qcm:8', true, 'Le repos journalier normal est de 11 h consécutives. Il peut être réduit à 9 h trois fois entre deux repos hebdomadaires, ou fractionné 3+9 (total ≥ 12 h).'),
+  (v_formation, 'qcm', 'Le repos journalier réduit à 9 h est autorisé :', '[{"id":"a","label":"Sans limite","is_correct":false},{"id":"b","label":"3 fois entre deux repos hebdomadaires","is_correct":true},{"id":"c","label":"1 fois par semaine","is_correct":false},{"id":"d","label":"Uniquement si compensation immédiate","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['repos','reduit'], 'mft-2026-gotrm:bc01-04:qcm:9', true, 'Le repos réduit à 9 h est limité à 3 fois entre deux repos hebdomadaires consécutifs. Depuis le paquet mobilité, aucune compensation n''est due (avant 2020, oui).'),
+  (v_formation, 'qcm', 'Le repos hebdomadaire régulier est de :', '[{"id":"a","label":"24 h","is_correct":false},{"id":"b","label":"36 h","is_correct":false},{"id":"c","label":"45 h","is_correct":true},{"id":"d","label":"56 h","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['repos','hebdo'], 'mft-2026-gotrm:bc01-04:qcm:10', true, 'Le repos hebdomadaire régulier est de 45 h consécutives au moins. Il peut être réduit à 24 h dans la limite d''un sur deux semaines, avec compensation de 21 h à prendre dans les 3 semaines suivantes.'),
+  (v_formation, 'qcm', 'Le repos hebdomadaire régulier de 45 h peut-il être pris dans la cabine du véhicule ?', '[{"id":"a","label":"Oui, c''est expressément autorisé","is_correct":false},{"id":"b","label":"Oui, à condition que la cabine soit aménagée","is_correct":false},{"id":"c","label":"Non, c''est interdit depuis le paquet mobilité (août 2020)","is_correct":true},{"id":"d","label":"Oui, mais uniquement à l''étranger","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['repos','paquet-mobilite'], 'mft-2026-gotrm:bc01-04:qcm:11', true, 'Depuis août 2020, le repos hebdomadaire régulier (45 h) doit obligatoirement être pris hors cabine (hôtel, base, domicile). Sanction : 500 € pour le conducteur, jusqu''à 30 000 € pour l''entreprise.'),
+  (v_formation, 'qcm', 'L''entreprise doit organiser le retour du conducteur au domicile ou à la base au moins :', '[{"id":"a","label":"Toutes les semaines","is_correct":false},{"id":"b","label":"Toutes les 2 semaines","is_correct":false},{"id":"c","label":"Toutes les 4 semaines","is_correct":true},{"id":"d","label":"Toutes les 8 semaines","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['retour-domicile','paquet-mobilite'], 'mft-2026-gotrm:bc01-04:qcm:12', true, 'Le paquet mobilité impose l''organisation du retour au moins toutes les 4 semaines, soit au centre d''établissement de l''employeur, soit au domicile du conducteur.'),
+  (v_formation, 'qcm', 'Quand le repos hebdomadaire est réduit (24 h), la compensation due est de :', '[{"id":"a","label":"9 h","is_correct":false},{"id":"b","label":"15 h","is_correct":false},{"id":"c","label":"21 h","is_correct":true},{"id":"d","label":"45 h","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['compensation','calcul'], 'mft-2026-gotrm:bc01-04:qcm:13', true, 'La différence entre le repos régulier (45 h) et le repos réduit (24 h) est de 21 h. Cette compensation doit être prise en bloc avant la fin de la 3e semaine suivante, accolée à un repos d''au moins 9 h.'),
+  (v_formation, 'qcm', 'Un conducteur ne peut conduire plus de combien de jours consécutifs sans repos hebdomadaire ?', '[{"id":"a","label":"5 jours","is_correct":false},{"id":"b","label":"6 jours","is_correct":true},{"id":"c","label":"7 jours","is_correct":false},{"id":"d","label":"10 jours","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['repos','regle-6-jours'], 'mft-2026-gotrm:bc01-04:qcm:14', true, 'La règle des 6 jours impose un repos hebdomadaire (régulier ou réduit) au plus tard après 6 périodes de 24 h consécutives de travail.'),
+  (v_formation, 'qcm', 'La carte conducteur tachygraphique a une validité de :', '[{"id":"a","label":"2 ans","is_correct":false},{"id":"b","label":"5 ans","is_correct":true},{"id":"c","label":"7 ans","is_correct":false},{"id":"d","label":"10 ans","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['carte-conducteur'], 'mft-2026-gotrm:bc01-04:qcm:15', true, 'La carte conducteur a une validité de 5 ans. Son renouvellement doit être anticipé car son absence interdit la conduite de tout véhicule soumis au tachygraphe numérique.'),
+  (v_formation, 'qcm', 'La carte conducteur stocke combien de jours d''activité minimum ?', '[{"id":"a","label":"7 jours","is_correct":false},{"id":"b","label":"14 jours","is_correct":false},{"id":"c","label":"28 jours","is_correct":true},{"id":"d","label":"56 jours","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['carte-conducteur','stockage'], 'mft-2026-gotrm:bc01-04:qcm:16', true, 'La carte conducteur conserve au minimum 28 jours d''activité (en pratique souvent un peu plus). C''est pourquoi le téléchargement doit être fait au moins tous les 28 jours pour éviter toute perte de données.'),
+  (v_formation, 'qcm', 'Le téléchargement des données de l''unité véhicule doit être effectué au moins tous les :', '[{"id":"a","label":"28 jours","is_correct":false},{"id":"b","label":"60 jours","is_correct":false},{"id":"c","label":"90 jours","is_correct":true},{"id":"d","label":"180 jours","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['telechargement','vu'], 'mft-2026-gotrm:bc01-04:qcm:17', true, 'Les données VU doivent être téléchargées au moins tous les 90 jours, et systématiquement avant cession ou mise au rebut du véhicule. Les données conducteur, elles, doivent être téléchargées tous les 28 jours.'),
+  (v_formation, 'qcm', 'Les données du tachygraphe doivent être conservées par l''entreprise pendant au moins :', '[{"id":"a","label":"6 mois","is_correct":false},{"id":"b","label":"1 an","is_correct":true},{"id":"c","label":"3 ans","is_correct":false},{"id":"d","label":"5 ans","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['conservation','donnees'], 'mft-2026-gotrm:bc01-04:qcm:18', true, 'La conservation légale est de 1 an minimum pour les données numériques (VU et carte) ainsi que pour les disques analogiques. La comptabilité impose 5 ans pour les pièces commerciales (CMR, BL, factures).'),
+  (v_formation, 'qcm', 'Le contrôle routier porte sur quelle période d''activité (paquet mobilité 2020) ?', '[{"id":"a","label":"Le jour même uniquement","is_correct":false},{"id":"b","label":"Les 28 derniers jours","is_correct":false},{"id":"c","label":"La journée en cours et les 56 jours précédents","is_correct":true},{"id":"d","label":"Les 12 derniers mois","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['controle','periode'], 'mft-2026-gotrm:bc01-04:qcm:19', true, 'Le paquet mobilité a étendu la période de contrôle de 28 à 56 jours. Le conducteur doit pouvoir présenter ses activités du jour et des 56 jours précédents (carte numérique + attestations d''activité).'),
+  (v_formation, 'qcm', 'Conduire avec la carte d''un autre conducteur constitue une infraction :', '[{"id":"a","label":"Mineure (MI)","is_correct":false},{"id":"b","label":"Grave (GI)","is_correct":false},{"id":"c","label":"Très Grave (TGI)","is_correct":false},{"id":"d","label":"Particulièrement Grave (IPG)","is_correct":true}]'::jsonb, 1, 'difficile', ARRAY['infraction','categorie'], 'mft-2026-gotrm:bc01-04:qcm:20', true, 'Conduire avec la carte d''un autre, ou sans carte, est une infraction IPG (Particulièrement Grave) qui peut entraîner immobilisation immédiate, retrait permis, amende délictuelle jusqu''à 30 000 € et perte d''honorabilité.'),
+  (v_formation, 'qcm', 'Un conducteur a effectué 52 h de conduite en semaine 8. Quelle est sa conduite maximale en semaine 9 ?', '[{"id":"a","label":"38 h","is_correct":true},{"id":"b","label":"45 h","is_correct":false},{"id":"c","label":"52 h","is_correct":false},{"id":"d","label":"56 h","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['calcul','bihebdo'], 'mft-2026-gotrm:bc01-04:qcm:21', true, 'Le plafond bihebdomadaire est de 90 h. Si le conducteur a fait 52 h en S8, il peut faire 90-52=38 h en S9. La limite hebdo de 56 h n''est pas atteinte mais le bihebdo prime.'),
+  (v_formation, 'qcm', 'Le smart tachygraphe gen.2v2 est obligatoire en transport international depuis :', '[{"id":"a","label":"Janvier 2024","is_correct":false},{"id":"b","label":"Août 2025","is_correct":true},{"id":"c","label":"Janvier 2026","is_correct":false},{"id":"d","label":"Janvier 2030","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['smart-tachygraphe','calendrier'], 'mft-2026-gotrm:bc01-04:qcm:22', true, 'Le calendrier paquet mobilité impose le smart tachygraphe gen.2v2 pour tous les véhicules en transport international depuis le 18 août 2025. Les véhicules anciens doivent être rétrofittés.'),
+  (v_formation, 'qcm', 'Un dépassement de conduite quotidienne de 25 minutes est classé :', '[{"id":"a","label":"MI - Mineure","is_correct":true},{"id":"b","label":"GI - Grave","is_correct":false},{"id":"c","label":"TGI - Très Grave","is_correct":false},{"id":"d","label":"IPG - Particulièrement Grave","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['infraction','gradation'], 'mft-2026-gotrm:bc01-04:qcm:23', true, 'Un dépassement < 1 h de conduite quotidienne est classé MI (Mineure). Entre 1 h et 2 h : GI. Au-delà de 2 h : TGI. Les seuils sont fixés par le règlement (UE) 2016/403.'),
+  (v_formation, 'qcm', 'L''attestation d''activité (jours sans conduite) est utilisée pour justifier :', '[{"id":"a","label":"Les pauses non enregistrées sur la carte","is_correct":false},{"id":"b","label":"Les jours de congés, maladie, formation, repos hors véhicule","is_correct":true},{"id":"c","label":"Les heures supplémentaires","is_correct":false},{"id":"d","label":"Les frais professionnels","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['attestation-activite'], 'mft-2026-gotrm:bc01-04:qcm:24', true, 'L''attestation d''activité (formulaire UE) sert à justifier les périodes où le conducteur n''a pas inséré sa carte (congés, maladie, formation, RTT, autre travail non lié à un véhicule). Elle est signée par l''employeur et le conducteur.'),
+  (v_formation, 'qcm', 'En double équipage, le temps de conduite individuel maximum reste :', '[{"id":"a","label":"9 h (10 h × 2/sem)","is_correct":true},{"id":"b","label":"12 h","is_correct":false},{"id":"c","label":"18 h","is_correct":false},{"id":"d","label":"Aucune limite","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['double-equipage'], 'mft-2026-gotrm:bc01-04:qcm:25', true, 'En double équipage, on peut prolonger la journée de travail (déplacement plus long) mais les temps individuels de conduite restent les mêmes : 9 h normal, 10 h max 2 fois/semaine. Chaque conducteur doit respecter ses propres plafonds.'),
+  (v_formation, 'qcm', 'Une attente de 2 h pendant un déchargement où le conducteur reste à proximité du véhicule est classée :', '[{"id":"a","label":"Conduite","is_correct":false},{"id":"b","label":"Pause","is_correct":false},{"id":"c","label":"Autre travail / Disponibilité","is_correct":true},{"id":"d","label":"Repos","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['disponibilite'], 'mft-2026-gotrm:bc01-04:qcm:26', true, 'Une attente où le conducteur n''est pas libre de son temps n''est pas du repos ni une pause. Elle est classée comme « disponibilité » ou « autre travail » selon le contexte. Seule une période ininterrompue où le conducteur dispose librement de son temps est une pause valide.'),
+  (v_formation, 'qcm', 'L''honorabilité professionnelle peut être perdue notamment en cas de :', '[{"id":"a","label":"Retard de paiement de la TVA","is_correct":false},{"id":"b","label":"Cumul d''infractions graves répétées (notamment R561)","is_correct":true},{"id":"c","label":"Dépassement de capacité du véhicule","is_correct":false},{"id":"d","label":"Défaut d''ABS","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['honorabilite'], 'mft-2026-gotrm:bc01-04:qcm:27', true, 'L''honorabilité professionnelle (R3411-1 Code des transports) repose sur l''absence de condamnations ou cumul d''infractions graves : R561, fraudes tachygraphe, pratiques anticoncurrentielles. Sa perte suspend la licence de transport.'),
+  (v_formation, 'qcm', 'Sur un trajet Marseille → Casablanca, quel(s) texte(s) s''applique(nt) ?', '[{"id":"a","label":"R561 sur tout le parcours","is_correct":false},{"id":"b","label":"AETR sur tout le parcours","is_correct":false},{"id":"c","label":"R561 dans l''UE puis AETR au Maroc","is_correct":true},{"id":"d","label":"Aucune réglementation européenne au-delà de l''UE","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['aetr','trajet-international'], 'mft-2026-gotrm:bc01-04:qcm:28', true, 'Le Maroc est signataire de l''AETR. La R561 s''applique sur le parcours UE (jusqu''au port d''embarquement), puis l''AETR prend le relais au Maroc. Les règles fond étant identiques, le conducteur ne change rien à ses temps.'),
+  (v_formation, 'qcm', 'Pour les VUL marchandises de 2,5 t à 3,5 t en transport international, l''application de la R561 est obligatoire depuis :', '[{"id":"a","label":"Janvier 2020","is_correct":false},{"id":"b","label":"Mai 2022","is_correct":false},{"id":"c","label":"1er juillet 2026","is_correct":true},{"id":"d","label":"Cette catégorie reste exemptée","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['paquet-mobilite','vul'], 'mft-2026-gotrm:bc01-04:qcm:29', true, 'Le paquet mobilité a étendu la R561 aux VUL 2,5-3,5 t en transport international à partir du 1er juillet 2026. Les VUL ≤ 2,5 t restent exemptés, ainsi que les transports nationaux.'),
+  (v_formation, 'qcm', 'Lors d''un contrôle routier, si le conducteur ne peut pas présenter d''attestation d''activité pour 5 jours non enregistrés sur sa carte :', '[{"id":"a","label":"Pas d''infraction si la période est ancienne","is_correct":false},{"id":"b","label":"Infraction documentaire passible d''amende","is_correct":true},{"id":"c","label":"Infraction tolérée si le conducteur s''explique oralement","is_correct":false},{"id":"d","label":"Infraction uniquement à l''étranger","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['attestation','controle'], 'mft-2026-gotrm:bc01-04:qcm:30', true, 'Toute période non enregistrée par le tachygraphe doit être justifiée par une attestation d''activité (formulaire UE). En l''absence de justificatif, c''est une infraction documentaire avec amende à la charge de l''entreprise et du conducteur.');
 
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:1', 'qcm',
-   'Le règlement (CE) n° 561/2006 s''applique au transport de marchandises par véhicule de PTAC :',
-   jsonb '[
-     {"key":"a","label":"Strictement supérieur à 2,5 t"},
-     {"key":"b","label":"Strictement supérieur à 3,5 t"},
-     {"key":"c","label":"Strictement supérieur à 7,5 t"},
-     {"key":"d","label":"Strictement supérieur à 12 t"}
-   ]', '["b"]'::jsonb,
-   'La R561/2006 s''applique aux véhicules de marchandises dont le PTAC excède 3,5 t. Depuis le 1er juillet 2026, les VUL de 2,5 à 3,5 t en transport international y sont également soumis (paquet mobilité).',
-   'facile', '{r561,champ-application}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:2', 'qcm',
-   'L''accord AETR s''applique pour la partie du trajet effectuée :',
-   jsonb '[
-     {"key":"a","label":"Sur le territoire d''un pays UE"},
-     {"key":"b","label":"Sur le territoire d''un pays AETR non-UE (Russie, Turquie, Maroc...)"},
-     {"key":"c","label":"En cabotage uniquement"},
-     {"key":"d","label":"Pour le transport intérieur français"}
-   ]', '["b"]'::jsonb,
-   'L''AETR couvre le trafic international entre pays signataires. Sur un Lyon-Istanbul, la R561 s''applique côté UE et l''AETR côté Turquie. Les règles fond sont harmonisées entre les deux textes.',
-   'moyenne', '{aetr,champ-application}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:3', 'qcm',
-   'Le temps de conduite quotidien maximum normal est de :',
-   jsonb '[
-     {"key":"a","label":"8 heures"},
-     {"key":"b","label":"9 heures"},
-     {"key":"c","label":"10 heures"},
-     {"key":"d","label":"11 heures"}
-   ]', '["b"]'::jsonb,
-   'La R561 fixe la conduite quotidienne à 9 h. Elle peut être prolongée à 10 h deux fois par semaine maximum, ce qui doit être planifié et tracé.',
-   'facile', '{conduite,quotidien}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:4', 'qcm',
-   'Le temps de conduite hebdomadaire maximum est de :',
-   jsonb '[
-     {"key":"a","label":"45 heures"},
-     {"key":"b","label":"48 heures"},
-     {"key":"c","label":"56 heures"},
-     {"key":"d","label":"60 heures"}
-   ]', '["c"]'::jsonb,
-   'La conduite hebdomadaire ne peut excéder 56 h sur une semaine civile (lundi 0h à dimanche 24h). À ne pas confondre avec le temps de travail qui obéit à d''autres règles (Code du travail).',
-   'facile', '{conduite,hebdo}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:5', 'qcm',
-   'Le temps de conduite bihebdomadaire (sur 2 semaines consécutives) est plafonné à :',
-   jsonb '[
-     {"key":"a","label":"80 heures"},
-     {"key":"b","label":"90 heures"},
-     {"key":"c","label":"100 heures"},
-     {"key":"d","label":"112 heures"}
-   ]', '["b"]'::jsonb,
-   'La conduite cumulée sur 2 semaines glissantes ne peut dépasser 90 h. Si un conducteur a fait 56 h en S1, il ne peut conduire que 34 h en S2 (90-56).',
-   'moyenne', '{conduite,bihebdo}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:6', 'qcm',
-   'La pause après 4 h 30 de conduite continue est de :',
-   jsonb '[
-     {"key":"a","label":"30 minutes"},
-     {"key":"b","label":"45 minutes"},
-     {"key":"c","label":"60 minutes"},
-     {"key":"d","label":"15 minutes"}
-   ]', '["b"]'::jsonb,
-   'La pause obligatoire après 4 h 30 de conduite cumulée est de 45 minutes. Elle peut être fractionnée en 15 min puis 30 min (dans cet ordre uniquement).',
-   'facile', '{pause}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:7', 'qcm',
-   'Le fractionnement de la pause de 45 min est autorisé sous la forme :',
-   jsonb '[
-     {"key":"a","label":"30 min puis 15 min"},
-     {"key":"b","label":"15 min puis 30 min"},
-     {"key":"c","label":"3 × 15 min"},
-     {"key":"d","label":"20 min + 25 min"}
-   ]', '["b"]'::jsonb,
-   'Le fractionnement n''est autorisé qu''en 15 min minimum suivi de 30 min minimum, dans cet ordre. L''inverse (30+15) ou un fractionnement en 3 fois ne sont pas conformes.',
-   'moyenne', '{pause,fractionnement}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:8', 'qcm',
-   'Le repos journalier normal est de :',
-   jsonb '[
-     {"key":"a","label":"9 h consécutives"},
-     {"key":"b","label":"10 h consécutives"},
-     {"key":"c","label":"11 h consécutives"},
-     {"key":"d","label":"12 h consécutives"}
-   ]', '["c"]'::jsonb,
-   'Le repos journalier normal est de 11 h consécutives. Il peut être réduit à 9 h trois fois entre deux repos hebdomadaires, ou fractionné 3+9 (total ≥ 12 h).',
-   'facile', '{repos,journalier}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:9', 'qcm',
-   'Le repos journalier réduit à 9 h est autorisé :',
-   jsonb '[
-     {"key":"a","label":"Sans limite"},
-     {"key":"b","label":"3 fois entre deux repos hebdomadaires"},
-     {"key":"c","label":"1 fois par semaine"},
-     {"key":"d","label":"Uniquement si compensation immédiate"}
-   ]', '["b"]'::jsonb,
-   'Le repos réduit à 9 h est limité à 3 fois entre deux repos hebdomadaires consécutifs. Depuis le paquet mobilité, aucune compensation n''est due (avant 2020, oui).',
-   'moyenne', '{repos,reduit}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:10', 'qcm',
-   'Le repos hebdomadaire régulier est de :',
-   jsonb '[
-     {"key":"a","label":"24 h"},
-     {"key":"b","label":"36 h"},
-     {"key":"c","label":"45 h"},
-     {"key":"d","label":"56 h"}
-   ]', '["c"]'::jsonb,
-   'Le repos hebdomadaire régulier est de 45 h consécutives au moins. Il peut être réduit à 24 h dans la limite d''un sur deux semaines, avec compensation de 21 h à prendre dans les 3 semaines suivantes.',
-   'facile', '{repos,hebdo}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:11', 'qcm',
-   'Le repos hebdomadaire régulier de 45 h peut-il être pris dans la cabine du véhicule ?',
-   jsonb '[
-     {"key":"a","label":"Oui, c''est expressément autorisé"},
-     {"key":"b","label":"Oui, à condition que la cabine soit aménagée"},
-     {"key":"c","label":"Non, c''est interdit depuis le paquet mobilité (août 2020)"},
-     {"key":"d","label":"Oui, mais uniquement à l''étranger"}
-   ]', '["c"]'::jsonb,
-   'Depuis août 2020, le repos hebdomadaire régulier (45 h) doit obligatoirement être pris hors cabine (hôtel, base, domicile). Sanction : 500 € pour le conducteur, jusqu''à 30 000 € pour l''entreprise.',
-   'moyenne', '{repos,paquet-mobilite}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:12', 'qcm',
-   'L''entreprise doit organiser le retour du conducteur au domicile ou à la base au moins :',
-   jsonb '[
-     {"key":"a","label":"Toutes les semaines"},
-     {"key":"b","label":"Toutes les 2 semaines"},
-     {"key":"c","label":"Toutes les 4 semaines"},
-     {"key":"d","label":"Toutes les 8 semaines"}
-   ]', '["c"]'::jsonb,
-   'Le paquet mobilité impose l''organisation du retour au moins toutes les 4 semaines, soit au centre d''établissement de l''employeur, soit au domicile du conducteur.',
-   'moyenne', '{retour-domicile,paquet-mobilite}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:13', 'qcm',
-   'Quand le repos hebdomadaire est réduit (24 h), la compensation due est de :',
-   jsonb '[
-     {"key":"a","label":"9 h"},
-     {"key":"b","label":"15 h"},
-     {"key":"c","label":"21 h"},
-     {"key":"d","label":"45 h"}
-   ]', '["c"]'::jsonb,
-   'La différence entre le repos régulier (45 h) et le repos réduit (24 h) est de 21 h. Cette compensation doit être prise en bloc avant la fin de la 3e semaine suivante, accolée à un repos d''au moins 9 h.',
-   'moyenne', '{compensation,calcul}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:14', 'qcm',
-   'Un conducteur ne peut conduire plus de combien de jours consécutifs sans repos hebdomadaire ?',
-   jsonb '[
-     {"key":"a","label":"5 jours"},
-     {"key":"b","label":"6 jours"},
-     {"key":"c","label":"7 jours"},
-     {"key":"d","label":"10 jours"}
-   ]', '["b"]'::jsonb,
-   'La règle des 6 jours impose un repos hebdomadaire (régulier ou réduit) au plus tard après 6 périodes de 24 h consécutives de travail.',
-   'moyenne', '{repos,regle-6-jours}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:15', 'qcm',
-   'La carte conducteur tachygraphique a une validité de :',
-   jsonb '[
-     {"key":"a","label":"2 ans"},
-     {"key":"b","label":"5 ans"},
-     {"key":"c","label":"7 ans"},
-     {"key":"d","label":"10 ans"}
-   ]', '["b"]'::jsonb,
-   'La carte conducteur a une validité de 5 ans. Son renouvellement doit être anticipé car son absence interdit la conduite de tout véhicule soumis au tachygraphe numérique.',
-   'facile', '{carte-conducteur}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:16', 'qcm',
-   'La carte conducteur stocke combien de jours d''activité minimum ?',
-   jsonb '[
-     {"key":"a","label":"7 jours"},
-     {"key":"b","label":"14 jours"},
-     {"key":"c","label":"28 jours"},
-     {"key":"d","label":"56 jours"}
-   ]', '["c"]'::jsonb,
-   'La carte conducteur conserve au minimum 28 jours d''activité (en pratique souvent un peu plus). C''est pourquoi le téléchargement doit être fait au moins tous les 28 jours pour éviter toute perte de données.',
-   'moyenne', '{carte-conducteur,stockage}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:17', 'qcm',
-   'Le téléchargement des données de l''unité véhicule doit être effectué au moins tous les :',
-   jsonb '[
-     {"key":"a","label":"28 jours"},
-     {"key":"b","label":"60 jours"},
-     {"key":"c","label":"90 jours"},
-     {"key":"d","label":"180 jours"}
-   ]', '["c"]'::jsonb,
-   'Les données VU doivent être téléchargées au moins tous les 90 jours, et systématiquement avant cession ou mise au rebut du véhicule. Les données conducteur, elles, doivent être téléchargées tous les 28 jours.',
-   'moyenne', '{telechargement,vu}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:18', 'qcm',
-   'Les données du tachygraphe doivent être conservées par l''entreprise pendant au moins :',
-   jsonb '[
-     {"key":"a","label":"6 mois"},
-     {"key":"b","label":"1 an"},
-     {"key":"c","label":"3 ans"},
-     {"key":"d","label":"5 ans"}
-   ]', '["b"]'::jsonb,
-   'La conservation légale est de 1 an minimum pour les données numériques (VU et carte) ainsi que pour les disques analogiques. La comptabilité impose 5 ans pour les pièces commerciales (CMR, BL, factures).',
-   'moyenne', '{conservation,donnees}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:19', 'qcm',
-   'Le contrôle routier porte sur quelle période d''activité (paquet mobilité 2020) ?',
-   jsonb '[
-     {"key":"a","label":"Le jour même uniquement"},
-     {"key":"b","label":"Les 28 derniers jours"},
-     {"key":"c","label":"La journée en cours et les 56 jours précédents"},
-     {"key":"d","label":"Les 12 derniers mois"}
-   ]', '["c"]'::jsonb,
-   'Le paquet mobilité a étendu la période de contrôle de 28 à 56 jours. Le conducteur doit pouvoir présenter ses activités du jour et des 56 jours précédents (carte numérique + attestations d''activité).',
-   'moyenne', '{controle,periode}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:20', 'qcm',
-   'Conduire avec la carte d''un autre conducteur constitue une infraction :',
-   jsonb '[
-     {"key":"a","label":"Mineure (MI)"},
-     {"key":"b","label":"Grave (GI)"},
-     {"key":"c","label":"Très Grave (TGI)"},
-     {"key":"d","label":"Particulièrement Grave (IPG)"}
-   ]', '["d"]'::jsonb,
-   'Conduire avec la carte d''un autre, ou sans carte, est une infraction IPG (Particulièrement Grave) qui peut entraîner immobilisation immédiate, retrait permis, amende délictuelle jusqu''à 30 000 € et perte d''honorabilité.',
-   'difficile', '{infraction,categorie}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:21', 'qcm',
-   'Un conducteur a effectué 52 h de conduite en semaine 8. Quelle est sa conduite maximale en semaine 9 ?',
-   jsonb '[
-     {"key":"a","label":"38 h"},
-     {"key":"b","label":"45 h"},
-     {"key":"c","label":"52 h"},
-     {"key":"d","label":"56 h"}
-   ]', '["a"]'::jsonb,
-   'Le plafond bihebdomadaire est de 90 h. Si le conducteur a fait 52 h en S8, il peut faire 90-52=38 h en S9. La limite hebdo de 56 h n''est pas atteinte mais le bihebdo prime.',
-   'difficile', '{calcul,bihebdo}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:22', 'qcm',
-   'Le smart tachygraphe gen.2v2 est obligatoire en transport international depuis :',
-   jsonb '[
-     {"key":"a","label":"Janvier 2024"},
-     {"key":"b","label":"Août 2025"},
-     {"key":"c",  "label":"Janvier 2026"},
-     {"key":"d","label":"Janvier 2030"}
-   ]', '["b"]'::jsonb,
-   'Le calendrier paquet mobilité impose le smart tachygraphe gen.2v2 pour tous les véhicules en transport international depuis le 18 août 2025. Les véhicules anciens doivent être rétrofittés.',
-   'moyenne', '{smart-tachygraphe,calendrier}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:23', 'qcm',
-   'Un dépassement de conduite quotidienne de 25 minutes est classé :',
-   jsonb '[
-     {"key":"a","label":"MI - Mineure"},
-     {"key":"b","label":"GI - Grave"},
-     {"key":"c","label":"TGI - Très Grave"},
-     {"key":"d","label":"IPG - Particulièrement Grave"}
-   ]', '["a"]'::jsonb,
-   'Un dépassement < 1 h de conduite quotidienne est classé MI (Mineure). Entre 1 h et 2 h : GI. Au-delà de 2 h : TGI. Les seuils sont fixés par le règlement (UE) 2016/403.',
-   'difficile', '{infraction,gradation}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:24', 'qcm',
-   'L''attestation d''activité (jours sans conduite) est utilisée pour justifier :',
-   jsonb '[
-     {"key":"a","label":"Les pauses non enregistrées sur la carte"},
-     {"key":"b","label":"Les jours de congés, maladie, formation, repos hors véhicule"},
-     {"key":"c","label":"Les heures supplémentaires"},
-     {"key":"d","label":"Les frais professionnels"}
-   ]', '["b"]'::jsonb,
-   'L''attestation d''activité (formulaire UE) sert à justifier les périodes où le conducteur n''a pas inséré sa carte (congés, maladie, formation, RTT, autre travail non lié à un véhicule). Elle est signée par l''employeur et le conducteur.',
-   'moyenne', '{attestation-activite}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:25', 'qcm',
-   'En double équipage, le temps de conduite individuel maximum reste :',
-   jsonb '[
-     {"key":"a","label":"9 h (10 h × 2/sem)"},
-     {"key":"b","label":"12 h"},
-     {"key":"c","label":"18 h"},
-     {"key":"d","label":"Aucune limite"}
-   ]', '["a"]'::jsonb,
-   'En double équipage, on peut prolonger la journée de travail (déplacement plus long) mais les temps individuels de conduite restent les mêmes : 9 h normal, 10 h max 2 fois/semaine. Chaque conducteur doit respecter ses propres plafonds.',
-   'moyenne', '{double-equipage}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:26', 'qcm',
-   'Une attente de 2 h pendant un déchargement où le conducteur reste à proximité du véhicule est classée :',
-   jsonb '[
-     {"key":"a","label":"Conduite"},
-     {"key":"b","label":"Pause"},
-     {"key":"c","label":"Autre travail / Disponibilité"},
-     {"key":"d","label":"Repos"}
-   ]', '["c"]'::jsonb,
-   'Une attente où le conducteur n''est pas libre de son temps n''est pas du repos ni une pause. Elle est classée comme « disponibilité » ou « autre travail » selon le contexte. Seule une période ininterrompue où le conducteur dispose librement de son temps est une pause valide.',
-   'moyenne', '{disponibilite}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:27', 'qcm',
-   'L''honorabilité professionnelle peut être perdue notamment en cas de :',
-   jsonb '[
-     {"key":"a","label":"Retard de paiement de la TVA"},
-     {"key":"b","label":"Cumul d''infractions graves répétées (notamment R561)"},
-     {"key":"c","label":"Dépassement de capacité du véhicule"},
-     {"key":"d","label":"Défaut d''ABS"}
-   ]', '["b"]'::jsonb,
-   'L''honorabilité professionnelle (R3411-1 Code des transports) repose sur l''absence de condamnations ou cumul d''infractions graves : R561, fraudes tachygraphe, pratiques anticoncurrentielles. Sa perte suspend la licence de transport.',
-   'difficile', '{honorabilite}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:28', 'qcm',
-   'Sur un trajet Marseille → Casablanca, quel(s) texte(s) s''applique(nt) ?',
-   jsonb '[
-     {"key":"a","label":"R561 sur tout le parcours"},
-     {"key":"b","label":"AETR sur tout le parcours"},
-     {"key":"c","label":"R561 dans l''UE puis AETR au Maroc"},
-     {"key":"d","label":"Aucune réglementation européenne au-delà de l''UE"}
-   ]', '["c"]'::jsonb,
-   'Le Maroc est signataire de l''AETR. La R561 s''applique sur le parcours UE (jusqu''au port d''embarquement), puis l''AETR prend le relais au Maroc. Les règles fond étant identiques, le conducteur ne change rien à ses temps.',
-   'moyenne', '{aetr,trajet-international}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:29', 'qcm',
-   'Pour les VUL marchandises de 2,5 t à 3,5 t en transport international, l''application de la R561 est obligatoire depuis :',
-   jsonb '[
-     {"key":"a","label":"Janvier 2020"},
-     {"key":"b","label":"Mai 2022"},
-     {"key":"c","label":"1er juillet 2026"},
-     {"key":"d","label":"Cette catégorie reste exemptée"}
-   ]', '["c"]'::jsonb,
-   'Le paquet mobilité a étendu la R561 aux VUL 2,5-3,5 t en transport international à partir du 1er juillet 2026. Les VUL ≤ 2,5 t restent exemptés, ainsi que les transports nationaux.',
-   'difficile', '{paquet-mobilite,vul}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qcm:30', 'qcm',
-   'Lors d''un contrôle routier, si le conducteur ne peut pas présenter d''attestation d''activité pour 5 jours non enregistrés sur sa carte :',
-   jsonb '[
-     {"key":"a","label":"Pas d''infraction si la période est ancienne"},
-     {"key":"b","label":"Infraction documentaire passible d''amende"},
-     {"key":"c","label":"Infraction tolérée si le conducteur s''explique oralement"},
-     {"key":"d","label":"Infraction uniquement à l''étranger"}
-   ]', '["b"]'::jsonb,
-   'Toute période non enregistrée par le tachygraphe doit être justifiée par une attestation d''activité (formulaire UE). En l''absence de justificatif, c''est une infraction documentaire avec amende à la charge de l''entreprise et du conducteur.',
-   'moyenne', '{attestation,controle}');
 
   -- =================================================================
   -- 6 QR (questions rédigées)
   -- =================================================================
-  INSERT INTO public.question_bank (formation_id, source_ref, type, prompt, choices, correct, explanation, difficulty, tags) VALUES
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qr:1', 'qr',
-   'Un conducteur de votre entreprise réalise la semaine 18 le planning suivant : Lundi 9 h conduite, Mardi 10 h, Mercredi 9 h 30, Jeudi 9 h, Vendredi 10 h. Identifiez la ou les infractions, la catégorie de gravité et expliquez comment réorganiser la semaine pour la rendre conforme.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Analyse :
+  INSERT INTO public.question_bank (formation_id, type, statement, choices, max_score, difficulty, tags, source_ref, active, explanation) VALUES
+  (v_formation, 'qr', 'Un conducteur de votre entreprise réalise la semaine 18 le planning suivant : Lundi 9 h conduite, Mardi 10 h, Mercredi 9 h 30, Jeudi 9 h, Vendredi 10 h. Identifiez la ou les infractions, la catégorie de gravité et expliquez comment réorganiser la semaine pour la rendre conforme.', NULL, 1, 'difficile', ARRAY['cas-pratique','planification'], 'mft-2026-gotrm:bc01-04:qr:1', true, 'Analyse :
 
 1. Total hebdomadaire : 9 + 10 + 9,5 + 9 + 10 = 47 h 30 → OK (sous 56 h).
 
@@ -1079,13 +776,8 @@ Réorganisation conforme :
 - Vendredi : 10 h (2e dépassement)
 Total : 47 h, deux dépassements autorisés bien tracés.
 
-Mesure préventive : intégrer les 10 h dans la planification hebdomadaire dès le lundi, ne jamais les utiliser « à la surprise » en cours de semaine.',
-   'difficile', '{cas-pratique,planification}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qr:2', 'qr',
-   'Lors d''un contrôle DREAL, un inspecteur constate qu''un de vos conducteurs a pris son repos hebdomadaire régulier (45 h) en cabine sur le parking d''une aire de service en Italie. Quelles sont les conséquences pour le conducteur ET pour votre entreprise, et quelles mesures correctives mettre en place ?',
-   '[]'::jsonb, '[]'::jsonb,
-   'Conséquences :
+Mesure préventive : intégrer les 10 h dans la planification hebdomadaire dès le lundi, ne jamais les utiliser « à la surprise » en cours de semaine.'),
+  (v_formation, 'qr', 'Lors d''un contrôle DREAL, un inspecteur constate qu''un de vos conducteurs a pris son repos hebdomadaire régulier (45 h) en cabine sur le parking d''une aire de service en Italie. Quelles sont les conséquences pour le conducteur ET pour votre entreprise, et quelles mesures correctives mettre en place ?', NULL, 1, 'difficile', ARRAY['paquet-mobilite','sanctions','plan-action'], 'mft-2026-gotrm:bc01-04:qr:2', true, 'Conséquences :
 
 1. Pour le conducteur : amende administrative de 500 € (sanction prévue au paquet mobilité). Cette amende peut lui être retenue sur salaire si l''entreprise l''a explicitement informé de la règle (pas par défaut).
 
@@ -1105,13 +797,8 @@ d. Pièce justificative : facture d''hôtel ou attestation employeur jointe à c
 
 e. Sanction interne au conducteur (avertissement, voire mise à pied selon gravité).
 
-f. Audit interne semestriel : croisement des données tachygraphes (45 h détecté) avec les justificatifs d''hébergement.',
-   'difficile', '{paquet-mobilite,sanctions,plan-action}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qr:3', 'qr',
-   'Vous gérez un conducteur qui doit livrer un fret urgent Paris → Bucarest (Roumanie) en 3 jours. Le trajet fait 2 200 km. Le conducteur seul. Décrivez la planification respectant la R561 et précisez les frontières AETR éventuellement traversées.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Planification proposée :
+f. Audit interne semestriel : croisement des données tachygraphes (45 h détecté) avec les justificatifs d''hébergement.'),
+  (v_formation, 'qr', 'Vous gérez un conducteur qui doit livrer un fret urgent Paris → Bucarest (Roumanie) en 3 jours. Le trajet fait 2 200 km. Le conducteur seul. Décrivez la planification respectant la R561 et précisez les frontières AETR éventuellement traversées.', NULL, 1, 'difficile', ARRAY['cas-pratique','international','planification'], 'mft-2026-gotrm:bc01-04:qr:3', true, 'Planification proposée :
 
 1. Calcul base :
 - 2 200 km à 65 km/h moyen = 33,8 h de conduite minimum
@@ -1137,13 +824,8 @@ f. Audit interne semestriel : croisement des données tachygraphes (45 h détect
 5. Recommandations commerciales :
 - Annoncer J+4 au client pour sécurité.
 - Si vraiment urgent : facturer le surcoût d''un double équipage (+45 % du prix).
-- Anticiper la réservation des 3 hébergements et la clause RPC (carburant Allemagne/Autriche).',
-   'difficile', '{cas-pratique,international,planification}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qr:4', 'qr',
-   'Expliquez la différence entre temps de conduite, temps de travail et temps de service. Pourquoi un planning « R561-conforme » peut-il quand même violer le Code du travail ?',
-   '[]'::jsonb, '[]'::jsonb,
-   'Distinction des trois notions :
+- Anticiper la réservation des 3 hébergements et la clause RPC (carburant Allemagne/Autriche).'),
+  (v_formation, 'qr', 'Expliquez la différence entre temps de conduite, temps de travail et temps de service. Pourquoi un planning « R561-conforme » peut-il quand même violer le Code du travail ?', NULL, 1, 'difficile', ARRAY['r561','code-travail','distinction'], 'mft-2026-gotrm:bc01-04:qr:4', true, 'Distinction des trois notions :
 
 1. Temps de CONDUITE (R561) : strictement le temps de mise en mouvement du véhicule. Mesuré par le tachygraphe.
 
@@ -1169,13 +851,8 @@ Si en plus le total hebdomadaire (conduite + autre travail) dépasse 48 h en moy
 Implication pratique pour l''exploitant :
 - Suivi DOUBLE : R561 par les fichiers tachygraphes ET temps de travail par les pointages/feuilles de route.
 - Coordination paie/exploitation : les heures supplémentaires sont calculées sur le temps de travail, pas la conduite seule.
-- Respect des conventions collectives (CCN Transports - IDCC 16) qui fixent durées, repos, pauses spécifiques au secteur.',
-   'difficile', '{r561,code-travail,distinction}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qr:5', 'qr',
-   'Un conducteur termine son repos hebdomadaire régulier (45 h) le dimanche à 22 h 00. Il commence la semaine suivante (lundi) à 5 h 00. Détaillez ses possibilités de conduite sur les 5 premiers jours, en intégrant un planning de tournées entre Lyon et Lille (650 km A/R).',
-   '[]'::jsonb, '[]'::jsonb,
-   'Planning proposé :
+- Respect des conventions collectives (CCN Transports - IDCC 16) qui fixent durées, repos, pauses spécifiques au secteur.'),
+  (v_formation, 'qr', 'Un conducteur termine son repos hebdomadaire régulier (45 h) le dimanche à 22 h 00. Il commence la semaine suivante (lundi) à 5 h 00. Détaillez ses possibilités de conduite sur les 5 premiers jours, en intégrant un planning de tournées entre Lyon et Lille (650 km A/R).', NULL, 1, 'difficile', ARRAY['planning','cas-pratique'], 'mft-2026-gotrm:bc01-04:qr:5', true, 'Planning proposé :
 
 Repos terminé dimanche 22 h. Nouvelle semaine commence légalement immédiatement. Le repos suivant (journalier) doit intervenir avant que la « journée de travail » de 24 h ne s''achève.
 
@@ -1210,13 +887,8 @@ Mercredi à Vendredi : exploitations régionales 9 h chacun.
 Cumul hebdo : 9 + 10 + 9 + 9 + 9 = 46 h → OK (sous 56 h).
 Marge : 10 h pour absorber les imprévus.
 
-Le conducteur prendra son prochain repos hebdomadaire vendredi soir à samedi soir (24 h réduit) ou vendredi soir à lundi 5 h (45 h régulier).',
-   'difficile', '{planning,cas-pratique}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-04:qr:6', 'qr',
-   'Listez et expliquez les 5 principaux outils ou pratiques d''un service exploitation pour prévenir les infractions R561 dans une entreprise de 30 véhicules.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Outils et pratiques recommandés :
+Le conducteur prendra son prochain repos hebdomadaire vendredi soir à samedi soir (24 h réduit) ou vendredi soir à lundi 5 h (45 h régulier).'),
+  (v_formation, 'qr', 'Listez et expliquez les 5 principaux outils ou pratiques d''un service exploitation pour prévenir les infractions R561 dans une entreprise de 30 véhicules.', NULL, 1, 'moyen', ARRAY['outils','prevention'], 'mft-2026-gotrm:bc01-04:qr:6', true, 'Outils et pratiques recommandés :
 
 1. Téléchargement automatisé des cartes et VU :
 - Outil : clé physique (DLK Pro) ou télématique embarquée (FleetBoard, OPTAC, Frotcom).
@@ -1246,8 +918,8 @@ Le conducteur prendra son prochain repos hebdomadaire vendredi soir à samedi so
 Bonus : système d''alerte temps réel via télématique embarquée
 - Le boîtier alerte le conducteur ET l''exploitant 30 min avant un dépassement potentiel.
 - Permet une intervention en direct (replan, pause anticipée).
-- Coût modéré (~15 €/mois/véhicule) compensé par les amendes évitées.',
-   'moyenne', '{outils,prevention}');
+- Coût modéré (~15 €/mois/véhicule) compensé par les amendes évitées.');
+
 
   -- =================================================================
   -- QUIZZES (4 entraînement + 1 examen blanc)

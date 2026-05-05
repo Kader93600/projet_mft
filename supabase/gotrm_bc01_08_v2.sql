@@ -870,292 +870,39 @@ $lesson4$,
   -- =================================================================
   -- 25 QCM
   -- =================================================================
-  INSERT INTO public.question_bank (formation_id, source_ref, type, prompt, choices, correct, explanation, difficulty, tags) VALUES
+  INSERT INTO public.question_bank (formation_id, type, statement, choices, max_score, difficulty, tags, source_ref, active, explanation) VALUES
+  (v_formation, 'qcm', 'Le cycle classique de relation client transport comporte combien de phases principales ?', '[{"id":"a","label":"3 phases","is_correct":false},{"id":"b","label":"5 phases","is_correct":true},{"id":"c","label":"7 phases","is_correct":false},{"id":"d","label":"10 phases","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['cycle','phases'], 'mft-2026-gotrm:bc01-08:qcm:1', true, 'Le cycle se compose de 5 phases : prospection/qualification → devis/négociation → première mission → fidélisation/récurrence → sortie/rupture éventuelle.'),
+  (v_formation, 'qcm', 'La LTV (Lifetime Value) d''un client se calcule comme :', '[{"id":"a","label":"CA × marge brute","is_correct":false},{"id":"b","label":"Revenu annuel moyen × Marge nette × Durée moyenne de la relation","is_correct":true},{"id":"c","label":"Marge mensuelle × 12","is_correct":false},{"id":"d","label":"Volume client / coût d''acquisition","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['ltv','calcul'], 'mft-2026-gotrm:bc01-08:qcm:2', true, 'LTV = Revenu annuel × Marge nette × Durée moyenne. Permet d''évaluer la valeur réelle d''un client sur sa durée de vie chez vous, et de justifier les investissements de fidélisation.'),
+  (v_formation, 'qcm', 'Un coût d''acquisition d''un nouveau client en transport B2B représente typiquement :', '[{"id":"a","label":"1-2 % du CA annuel","is_correct":false},{"id":"b","label":"8-15 % du CA annuel","is_correct":true},{"id":"c","label":"30-40 % du CA annuel","is_correct":false},{"id":"d","label":"Plus de 50 %","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['cout-acquisition','fidelisation'], 'mft-2026-gotrm:bc01-08:qcm:3', true, 'Le coût d''acquisition (commercial + marketing) en transport B2B est typiquement de 8-15 % du CA annuel d''un nouveau client. Fidéliser est 5 à 10 fois moins cher qu''acquérir.'),
+  (v_formation, 'qcm', 'La formule de la satisfaction client est :', '[{"id":"a","label":"Perception × Attente","is_correct":false},{"id":"b","label":"Perception - Attente","is_correct":true},{"id":"c","label":"Perception + Attente","is_correct":false},{"id":"d","label":"Perception / Attente","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['satisfaction','formule'], 'mft-2026-gotrm:bc01-08:qcm:4', true, 'Satisfaction = Perception - Attente. Si la perception dépasse l''attente : enchantement. Si elle est égale : satisfaction. Si elle est inférieure : insatisfaction. D''où la règle "sous-promettre et sur-livrer".'),
+  (v_formation, 'qcm', 'Le SLA est :', '[{"id":"a","label":"Service Level Agreement = engagement chiffré contractuel","is_correct":true},{"id":"b","label":"Société Logistique Auto-organisée","is_correct":false},{"id":"c","label":"Schéma Logistique Annuel","is_correct":false},{"id":"d","label":"Stock Logistique Avancé","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['sla','definition'], 'mft-2026-gotrm:bc01-08:qcm:5', true, 'SLA = Service Level Agreement. Engagement contractuel chiffré sur un niveau de service à atteindre (ponctualité, intégrité, conformité), avec pénalités en cas de non-respect.'),
+  (v_formation, 'qcm', 'Une cible de ponctualité standard en SLA transport est de :', '[{"id":"a","label":"80 %","is_correct":false},{"id":"b","label":"95-98 %","is_correct":true},{"id":"c","label":"100 % strict","is_correct":false},{"id":"d","label":"60 %","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['sla','ponctualite'], 'mft-2026-gotrm:bc01-08:qcm:6', true, 'Le standard du marché est 95-98 % de ponctualité dans la fenêtre RDV. 99 % est très exigeant et coûte cher. 100 % strict n''est pas réaliste vu les aléas (trafic, accidents, météo).'),
+  (v_formation, 'qcm', 'Un SLA bien rédigé doit être :', '[{"id":"a","label":"Vague pour laisser de la flexibilité","is_correct":false},{"id":"b","label":"SMART : Spécifique, Mesurable, Atteignable, Réaliste, Temporel","is_correct":true},{"id":"c","label":"Très exigeant pour rassurer le client","is_correct":false},{"id":"d","label":"Identique à tous les clients","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['sla','smart'], 'mft-2026-gotrm:bc01-08:qcm:7', true, 'Un bon SLA est SMART : Spécifique (quoi, où, quand), Mesurable (indicateur précis), Atteignable, Réaliste (aligné aux capacités), Temporel (période de référence).'),
+  (v_formation, 'qcm', 'Le plafond recommandé pour les pénalités contractuelles SLA est typiquement :', '[{"id":"a","label":"30 % du CA","is_correct":false},{"id":"b","label":"15 % du CA mensuel maximum","is_correct":true},{"id":"c","label":"50 % du CA","is_correct":false},{"id":"d","label":"Pas de plafond","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['sla','plafond-penalites'], 'mft-2026-gotrm:bc01-08:qcm:8', true, 'Au-delà de 15 % du CA mensuel, les pénalités menacent la rentabilité. Toujours négocier un plafond, des exclusions claires (force majeure, faute du client) et idéalement un bonus en compensation.'),
+  (v_formation, 'qcm', 'La certification qualité internationale la plus courante en transport est :', '[{"id":"a","label":"ISO 14001","is_correct":false},{"id":"b","label":"ISO 9001","is_correct":true},{"id":"c","label":"ISO 27001","is_correct":false},{"id":"d","label":"ISO 50001","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['iso-9001'], 'mft-2026-gotrm:bc01-08:qcm:9', true, 'ISO 9001 = norme management qualité. De plus en plus demandée par les chargeurs grands comptes. ISO 14001 = environnement, ISO 27001 = sécurité de l''information, ISO 50001 = énergie.'),
+  (v_formation, 'qcm', 'L''agrément OEA s''applique principalement à :', '[{"id":"a","label":"La sécurité alimentaire","is_correct":false},{"id":"b","label":"La douane et la simplification des procédures internationales","is_correct":true},{"id":"c","label":"Les transports voyageurs","is_correct":false},{"id":"d","label":"L''environnement","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['oea','certification'], 'mft-2026-gotrm:bc01-08:qcm:10', true, 'OEA = Opérateur Économique Agréé. Statut douanier reconnaissant la fiabilité d''une entreprise pour bénéficier de simplifications (contrôles allégés, garanties réduites, dédouanement centralisé).'),
+  (v_formation, 'qcm', 'Le NPS se calcule comme :', '[{"id":"a","label":"% de promoteurs / % de détracteurs","is_correct":false},{"id":"b","label":"% de promoteurs - % de détracteurs","is_correct":true},{"id":"c","label":"Moyenne des notes /10","is_correct":false},{"id":"d","label":"Nombre de promoteurs en valeur absolue","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['nps','calcul'], 'mft-2026-gotrm:bc01-08:qcm:11', true, 'NPS = % Promoteurs (notes 9-10) - % Détracteurs (notes 0-6). Les passifs (7-8) ne sont pas comptabilisés. Échelle de -100 à +100.'),
+  (v_formation, 'qcm', 'Les clients ayant donné une note de 9 ou 10 au NPS sont appelés :', '[{"id":"a","label":"Passifs","is_correct":false},{"id":"b","label":"Promoteurs","is_correct":true},{"id":"c","label":"Détracteurs","is_correct":false},{"id":"d","label":"Indifférents","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['nps','categories'], 'mft-2026-gotrm:bc01-08:qcm:12', true, 'Les notes 9-10 = Promoteurs (potentiellement ambassadeurs). 7-8 = Passifs. 0-6 = Détracteurs (susceptibles de partir et de communiquer négativement).'),
+  (v_formation, 'qcm', 'Le NPS moyen du secteur transport B2B en France se situe autour de :', '[{"id":"a","label":"-10","is_correct":false},{"id":"b","label":"20-30","is_correct":true},{"id":"c","label":"60-70","is_correct":false},{"id":"d","label":"90+","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['nps','benchmark'], 'mft-2026-gotrm:bc01-08:qcm:13', true, 'NPS moyen secteur transport B2B France : 20-30. Au-dessus de 40, on est dans le top quartile. Un NPS > 50 est excellent, < 0 est mauvais.'),
+  (v_formation, 'qcm', 'Le CES (Customer Effort Score) mesure :', '[{"id":"a","label":"La satisfaction globale","is_correct":false},{"id":"b","label":"L''effort que le client a dû fournir pour obtenir le service","is_correct":true},{"id":"c","label":"Le coût payé par le client","is_correct":false},{"id":"d","label":"Le nombre d''appels passés","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['ces','definition'], 'mft-2026-gotrm:bc01-08:qcm:14', true, 'CES = Customer Effort Score, mesure l''effort fourni par le client (1 à 7). Plus prédictif de la fidélisation que le NPS pour les interactions de service. Idéal pour mesurer une réclamation ou un parcours.'),
+  (v_formation, 'qcm', 'Lors d''un retard livraison, la 1ère règle de communication est :', '[{"id":"a","label":"Attendre que le client appelle","is_correct":false},{"id":"b","label":"Anticiper en alertant dès que le retard est probable","is_correct":true},{"id":"c","label":"Minimiser le retard pour rassurer","is_correct":false},{"id":"d","label":"Justifier longuement la cause","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['retard','communication'], 'mft-2026-gotrm:bc01-08:qcm:15', true, 'Anticiper > constater. Alerter le client dès que le retard est probable lui permet d''adapter son organisation. Mieux vaut prévenir 1 h avant que de constater 1 h après.'),
+  (v_formation, 'qcm', 'Lors d''un refus de livraison, la 1ère action du conducteur est :', '[{"id":"a","label":"Insister pour faire accepter la marchandise","is_correct":false},{"id":"b","label":"Documenter (photos, constat signé) puis appeler l''exploitation","is_correct":true},{"id":"c","label":"Repartir immédiatement avec la marchandise","is_correct":false},{"id":"d","label":"Décharger sans signature","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['refus','procedure'], 'mft-2026-gotrm:bc01-08:qcm:16', true, 'Documenter (photos, constat de refus signé) protège l''entreprise en cas de litige. Puis appeler l''exploitation pour décision (réexpédition, retour, garde). Ne jamais insister face à un refus formel.'),
+  (v_formation, 'qcm', 'Les 4 étapes du désamorçage d''un conflit téléphonique sont :', '[{"id":"a","label":"Couper, parler fort, refuser, raccrocher","is_correct":false},{"id":"b","label":"Écouter, Reformuler, Reconnaître, Proposer","is_correct":true},{"id":"c","label":"Justifier, Excuser, Promettre, Espérer","is_correct":false},{"id":"d","label":"Ignorer, Rappeler, Esquiver, Conclure","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['conflit','desamorcage'], 'mft-2026-gotrm:bc01-08:qcm:17', true, 'Méthode universelle : Écouter (laisser exprimer), Reformuler (« si je comprends bien »), Reconnaître (« je comprends que cela soit pénible »), Proposer (action concrète, datée).'),
+  (v_formation, 'qcm', 'Quelle phrase est à éviter absolument face à un client mécontent ?', '[{"id":"a","label":"« Je vais m''en occuper personnellement »","is_correct":false},{"id":"b","label":"« Calmez-vous »","is_correct":true},{"id":"c","label":"« Je vous rappelle dans 30 minutes avec une réponse »","is_correct":false},{"id":"d","label":"« Quelle solution serait acceptable pour vous ? »","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['conflit','phrases-eviter'], 'mft-2026-gotrm:bc01-08:qcm:18', true, '« Calmez-vous » a l''effet inverse de l''intention : c''est perçu comme condescendant et déclenche la colère. À éviter aussi : « C''est la procédure », « Ce n''est pas mon problème », « Vous auriez dû ».'),
+  (v_formation, 'qcm', 'Un client toxique présente typiquement :', '[{"id":"a","label":"Un volume élevé","is_correct":false},{"id":"b","label":"Des retards de paiement chroniques + réclamations infondées + pression tarifaire constante","is_correct":true},{"id":"c","label":"Une fidélité de longue date","is_correct":false},{"id":"d","label":"Une marge nette élevée","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['client-toxique','signaux'], 'mft-2026-gotrm:bc01-08:qcm:19', true, 'Signaux : impayés chroniques, réclamations infondées répétées, pression tarifaire sans contrepartie, comportement disrespectueux, demandes hors contrat permanentes. Coût caché : 30-50 % de marge en moins.'),
+  (v_formation, 'qcm', 'La règle des 3 chocs en gestion de la relation client signifie :', '[{"id":"a","label":"Faire 3 réductions par an","is_correct":false},{"id":"b","label":"Si 3 dérapages graves en 12 mois sans amélioration → désengagement progressif du client","is_correct":true},{"id":"c","label":"3 réunions clients par mois","is_correct":false},{"id":"d","label":"3 relances de paiement avant huissier","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['client-toxique','3-chocs'], 'mft-2026-gotrm:bc01-08:qcm:20', true, 'Règle managériale : 3 dérapages graves en 12 mois (impayés, agressivité, abus) sans amélioration après échanges directs justifient un plan de désengagement progressif (préavis, fin de contrat sur 6-12 mois).'),
+  (v_formation, 'qcm', 'Le « paradoxe de la récupération » signifie que :', '[{"id":"a","label":"Un incident jamais résolu fidélise le client","is_correct":false},{"id":"b","label":"Un client mécontent bien traité après incident est plus fidèle que la moyenne","is_correct":true},{"id":"c","label":"Récupérer un client coûte plus cher que d''en perdre un","is_correct":false},{"id":"d","label":"Tous les clients reviennent","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['paradoxe','recuperation'], 'mft-2026-gotrm:bc01-08:qcm:21', true, 'Paradoxe documenté : un client mécontent dont la réclamation est traitée rapidement, sincèrement et avec une mesure correctrice concrète devient plus fidèle qu''un client n''ayant jamais eu de problème.'),
+  (v_formation, 'qcm', 'Quel CRM est le plus adapté à une PME transport débutante avec budget limité ?', '[{"id":"a","label":"Salesforce Enterprise","is_correct":false},{"id":"b","label":"HubSpot CRM (version gratuite)","is_correct":true},{"id":"c","label":"Oracle Siebel","is_correct":false},{"id":"d","label":"SAP CRM","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['crm','pme'], 'mft-2026-gotrm:bc01-08:qcm:22', true, 'HubSpot CRM en version gratuite est très adapté aux PME : 1 M de contacts, fonctionnalités de base solides, intuitif. Salesforce, Oracle Siebel et SAP CRM sont des solutions enterprise plus coûteuses.'),
+  (v_formation, 'qcm', 'Pour boucler une boucle de feedback client, on doit :', '[{"id":"a","label":"Ne jamais revenir vers le client","is_correct":false},{"id":"b","label":"Revenir vers le client sous 30 jours avec les actions menées suite à son retour","is_correct":true},{"id":"c","label":"Revenir uniquement si on demande quelque chose","is_correct":false},{"id":"d","label":"Attendre que le client redemande","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['feedback','boucle'], 'mft-2026-gotrm:bc01-08:qcm:23', true, 'Boucler la boucle = revenir vers le client dans les 30 jours avec un message du type « Vous nous avez signalé X, voici ce que nous avons fait pour y répondre ». Transforme un détracteur en promoteur potentiel.'),
+  (v_formation, 'qcm', 'Un « moment de vérité » dans la relation client est :', '[{"id":"a","label":"Une réunion mensuelle","is_correct":false},{"id":"b","label":"Un instant où le client juge réellement la qualité de service","is_correct":true},{"id":"c","label":"La signature du contrat","is_correct":false},{"id":"d","label":"Le paiement de la facture","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['moment-verite'], 'mft-2026-gotrm:bc01-08:qcm:24', true, 'Moment de vérité (concept Karl Albrecht) = instant où le client forme son jugement (premier appel, comportement conducteur, communication retard, traitement réclamation). Une seule défaillance peut effacer 10 missions parfaites.'),
+  (v_formation, 'qcm', 'Le délai de réponse standard à une réclamation client en transport est de :', '[{"id":"a","label":"1 heure ouvrée","is_correct":false},{"id":"b","label":"24 h ouvrées (4 h pour SLA exigeant)","is_correct":true},{"id":"c","label":"1 semaine","is_correct":false},{"id":"d","label":"1 mois","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['reclamation','delai'], 'mft-2026-gotrm:bc01-08:qcm:25', true, 'Standard du marché : sous 24 h ouvrées. Pour les contrats à SLA exigeant : sous 4 h ouvrées. Au-delà de 48 h, le client perçoit un manque d''engagement et le risque de churn augmente fortement.');
 
-  (v_formation, 'mft-2026-gotrm:bc01-08:qcm:1', 'qcm',
-   'Le cycle classique de relation client transport comporte combien de phases principales ?',
-   jsonb '[
-     {"key":"a","label":"3 phases"},
-     {"key":"b","label":"5 phases"},
-     {"key":"c","label":"7 phases"},
-     {"key":"d","label":"10 phases"}
-   ]', '["b"]'::jsonb,
-   'Le cycle se compose de 5 phases : prospection/qualification → devis/négociation → première mission → fidélisation/récurrence → sortie/rupture éventuelle.',
-   'facile', '{cycle,phases}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qcm:2', 'qcm',
-   'La LTV (Lifetime Value) d''un client se calcule comme :',
-   jsonb '[
-     {"key":"a","label":"CA × marge brute"},
-     {"key":"b","label":"Revenu annuel moyen × Marge nette × Durée moyenne de la relation"},
-     {"key":"c","label":"Marge mensuelle × 12"},
-     {"key":"d","label":"Volume client / coût d''acquisition"}
-   ]', '["b"]'::jsonb,
-   'LTV = Revenu annuel × Marge nette × Durée moyenne. Permet d''évaluer la valeur réelle d''un client sur sa durée de vie chez vous, et de justifier les investissements de fidélisation.',
-   'moyenne', '{ltv,calcul}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qcm:3', 'qcm',
-   'Un coût d''acquisition d''un nouveau client en transport B2B représente typiquement :',
-   jsonb '[
-     {"key":"a","label":"1-2 % du CA annuel"},
-     {"key":"b","label":"8-15 % du CA annuel"},
-     {"key":"c","label":"30-40 % du CA annuel"},
-     {"key":"d","label":"Plus de 50 %"}
-   ]', '["b"]'::jsonb,
-   'Le coût d''acquisition (commercial + marketing) en transport B2B est typiquement de 8-15 % du CA annuel d''un nouveau client. Fidéliser est 5 à 10 fois moins cher qu''acquérir.',
-   'moyenne', '{cout-acquisition,fidelisation}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qcm:4', 'qcm',
-   'La formule de la satisfaction client est :',
-   jsonb '[
-     {"key":"a","label":"Perception × Attente"},
-     {"key":"b","label":"Perception - Attente"},
-     {"key":"c","label":"Perception + Attente"},
-     {"key":"d","label":"Perception / Attente"}
-   ]', '["b"]'::jsonb,
-   'Satisfaction = Perception - Attente. Si la perception dépasse l''attente : enchantement. Si elle est égale : satisfaction. Si elle est inférieure : insatisfaction. D''où la règle "sous-promettre et sur-livrer".',
-   'moyenne', '{satisfaction,formule}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qcm:5', 'qcm',
-   'Le SLA est :',
-   jsonb '[
-     {"key":"a","label":"Service Level Agreement = engagement chiffré contractuel"},
-     {"key":"b","label":"Société Logistique Auto-organisée"},
-     {"key":"c","label":"Schéma Logistique Annuel"},
-     {"key":"d","label":"Stock Logistique Avancé"}
-   ]', '["a"]'::jsonb,
-   'SLA = Service Level Agreement. Engagement contractuel chiffré sur un niveau de service à atteindre (ponctualité, intégrité, conformité), avec pénalités en cas de non-respect.',
-   'facile', '{sla,definition}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qcm:6', 'qcm',
-   'Une cible de ponctualité standard en SLA transport est de :',
-   jsonb '[
-     {"key":"a","label":"80 %"},
-     {"key":"b","label":"95-98 %"},
-     {"key":"c","label":"100 % strict"},
-     {"key":"d","label":"60 %"}
-   ]', '["b"]'::jsonb,
-   'Le standard du marché est 95-98 % de ponctualité dans la fenêtre RDV. 99 % est très exigeant et coûte cher. 100 % strict n''est pas réaliste vu les aléas (trafic, accidents, météo).',
-   'moyenne', '{sla,ponctualite}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qcm:7', 'qcm',
-   'Un SLA bien rédigé doit être :',
-   jsonb '[
-     {"key":"a","label":"Vague pour laisser de la flexibilité"},
-     {"key":"b","label":"SMART : Spécifique, Mesurable, Atteignable, Réaliste, Temporel"},
-     {"key":"c","label":"Très exigeant pour rassurer le client"},
-     {"key":"d","label":"Identique à tous les clients"}
-   ]', '["b"]'::jsonb,
-   'Un bon SLA est SMART : Spécifique (quoi, où, quand), Mesurable (indicateur précis), Atteignable, Réaliste (aligné aux capacités), Temporel (période de référence).',
-   'moyenne', '{sla,smart}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qcm:8', 'qcm',
-   'Le plafond recommandé pour les pénalités contractuelles SLA est typiquement :',
-   jsonb '[
-     {"key":"a","label":"30 % du CA"},
-     {"key":"b","label":"15 % du CA mensuel maximum"},
-     {"key":"c","label":"50 % du CA"},
-     {"key":"d","label":"Pas de plafond"}
-   ]', '["b"]'::jsonb,
-   'Au-delà de 15 % du CA mensuel, les pénalités menacent la rentabilité. Toujours négocier un plafond, des exclusions claires (force majeure, faute du client) et idéalement un bonus en compensation.',
-   'moyenne', '{sla,plafond-penalites}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qcm:9', 'qcm',
-   'La certification qualité internationale la plus courante en transport est :',
-   jsonb '[
-     {"key":"a","label":"ISO 14001"},
-     {"key":"b","label":"ISO 9001"},
-     {"key":"c","label":"ISO 27001"},
-     {"key":"d","label":"ISO 50001"}
-   ]', '["b"]'::jsonb,
-   'ISO 9001 = norme management qualité. De plus en plus demandée par les chargeurs grands comptes. ISO 14001 = environnement, ISO 27001 = sécurité de l''information, ISO 50001 = énergie.',
-   'facile', '{iso-9001}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qcm:10', 'qcm',
-   'L''agrément OEA s''applique principalement à :',
-   jsonb '[
-     {"key":"a","label":"La sécurité alimentaire"},
-     {"key":"b","label":"La douane et la simplification des procédures internationales"},
-     {"key":"c","label":"Les transports voyageurs"},
-     {"key":"d","label":"L''environnement"}
-   ]', '["b"]'::jsonb,
-   'OEA = Opérateur Économique Agréé. Statut douanier reconnaissant la fiabilité d''une entreprise pour bénéficier de simplifications (contrôles allégés, garanties réduites, dédouanement centralisé).',
-   'moyenne', '{oea,certification}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qcm:11', 'qcm',
-   'Le NPS se calcule comme :',
-   jsonb '[
-     {"key":"a","label":"% de promoteurs / % de détracteurs"},
-     {"key":"b","label":"% de promoteurs - % de détracteurs"},
-     {"key":"c","label":"Moyenne des notes /10"},
-     {"key":"d","label":"Nombre de promoteurs en valeur absolue"}
-   ]', '["b"]'::jsonb,
-   'NPS = % Promoteurs (notes 9-10) - % Détracteurs (notes 0-6). Les passifs (7-8) ne sont pas comptabilisés. Échelle de -100 à +100.',
-   'moyenne', '{nps,calcul}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qcm:12', 'qcm',
-   'Les clients ayant donné une note de 9 ou 10 au NPS sont appelés :',
-   jsonb '[
-     {"key":"a","label":"Passifs"},
-     {"key":"b","label":"Promoteurs"},
-     {"key":"c","label":"Détracteurs"},
-     {"key":"d","label":"Indifférents"}
-   ]', '["b"]'::jsonb,
-   'Les notes 9-10 = Promoteurs (potentiellement ambassadeurs). 7-8 = Passifs. 0-6 = Détracteurs (susceptibles de partir et de communiquer négativement).',
-   'facile', '{nps,categories}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qcm:13', 'qcm',
-   'Le NPS moyen du secteur transport B2B en France se situe autour de :',
-   jsonb '[
-     {"key":"a","label":"-10"},
-     {"key":"b","label":"20-30"},
-     {"key":"c","label":"60-70"},
-     {"key":"d","label":"90+"}
-   ]', '["b"]'::jsonb,
-   'NPS moyen secteur transport B2B France : 20-30. Au-dessus de 40, on est dans le top quartile. Un NPS > 50 est excellent, < 0 est mauvais.',
-   'difficile', '{nps,benchmark}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qcm:14', 'qcm',
-   'Le CES (Customer Effort Score) mesure :',
-   jsonb '[
-     {"key":"a","label":"La satisfaction globale"},
-     {"key":"b","label":"L''effort que le client a dû fournir pour obtenir le service"},
-     {"key":"c","label":"Le coût payé par le client"},
-     {"key":"d","label":"Le nombre d''appels passés"}
-   ]', '["b"]'::jsonb,
-   'CES = Customer Effort Score, mesure l''effort fourni par le client (1 à 7). Plus prédictif de la fidélisation que le NPS pour les interactions de service. Idéal pour mesurer une réclamation ou un parcours.',
-   'difficile', '{ces,definition}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qcm:15', 'qcm',
-   'Lors d''un retard livraison, la 1ère règle de communication est :',
-   jsonb '[
-     {"key":"a","label":"Attendre que le client appelle"},
-     {"key":"b","label":"Anticiper en alertant dès que le retard est probable"},
-     {"key":"c","label":"Minimiser le retard pour rassurer"},
-     {"key":"d","label":"Justifier longuement la cause"}
-   ]', '["b"]'::jsonb,
-   'Anticiper > constater. Alerter le client dès que le retard est probable lui permet d''adapter son organisation. Mieux vaut prévenir 1 h avant que de constater 1 h après.',
-   'facile', '{retard,communication}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qcm:16', 'qcm',
-   'Lors d''un refus de livraison, la 1ère action du conducteur est :',
-   jsonb '[
-     {"key":"a","label":"Insister pour faire accepter la marchandise"},
-     {"key":"b","label":"Documenter (photos, constat signé) puis appeler l''exploitation"},
-     {"key":"c","label":"Repartir immédiatement avec la marchandise"},
-     {"key":"d","label":"Décharger sans signature"}
-   ]', '["b"]'::jsonb,
-   'Documenter (photos, constat de refus signé) protège l''entreprise en cas de litige. Puis appeler l''exploitation pour décision (réexpédition, retour, garde). Ne jamais insister face à un refus formel.',
-   'moyenne', '{refus,procedure}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qcm:17', 'qcm',
-   'Les 4 étapes du désamorçage d''un conflit téléphonique sont :',
-   jsonb '[
-     {"key":"a","label":"Couper, parler fort, refuser, raccrocher"},
-     {"key":"b","label":"Écouter, Reformuler, Reconnaître, Proposer"},
-     {"key":"c","label":"Justifier, Excuser, Promettre, Espérer"},
-     {"key":"d","label":"Ignorer, Rappeler, Esquiver, Conclure"}
-   ]', '["b"]'::jsonb,
-   'Méthode universelle : Écouter (laisser exprimer), Reformuler (« si je comprends bien »), Reconnaître (« je comprends que cela soit pénible »), Proposer (action concrète, datée).',
-   'moyenne', '{conflit,desamorcage}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qcm:18', 'qcm',
-   'Quelle phrase est à éviter absolument face à un client mécontent ?',
-   jsonb '[
-     {"key":"a","label":"« Je vais m''en occuper personnellement »"},
-     {"key":"b","label":"« Calmez-vous »"},
-     {"key":"c","label":"« Je vous rappelle dans 30 minutes avec une réponse »"},
-     {"key":"d","label":"« Quelle solution serait acceptable pour vous ? »"}
-   ]', '["b"]'::jsonb,
-   '« Calmez-vous » a l''effet inverse de l''intention : c''est perçu comme condescendant et déclenche la colère. À éviter aussi : « C''est la procédure », « Ce n''est pas mon problème », « Vous auriez dû ».',
-   'moyenne', '{conflit,phrases-eviter}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qcm:19', 'qcm',
-   'Un client toxique présente typiquement :',
-   jsonb '[
-     {"key":"a","label":"Un volume élevé"},
-     {"key":"b","label":"Des retards de paiement chroniques + réclamations infondées + pression tarifaire constante"},
-     {"key":"c","label":"Une fidélité de longue date"},
-     {"key":"d","label":"Une marge nette élevée"}
-   ]', '["b"]'::jsonb,
-   'Signaux : impayés chroniques, réclamations infondées répétées, pression tarifaire sans contrepartie, comportement disrespectueux, demandes hors contrat permanentes. Coût caché : 30-50 % de marge en moins.',
-   'moyenne', '{client-toxique,signaux}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qcm:20', 'qcm',
-   'La règle des 3 chocs en gestion de la relation client signifie :',
-   jsonb '[
-     {"key":"a","label":"Faire 3 réductions par an"},
-     {"key":"b","label":"Si 3 dérapages graves en 12 mois sans amélioration → désengagement progressif du client"},
-     {"key":"c","label":"3 réunions clients par mois"},
-     {"key":"d","label":"3 relances de paiement avant huissier"}
-   ]', '["b"]'::jsonb,
-   'Règle managériale : 3 dérapages graves en 12 mois (impayés, agressivité, abus) sans amélioration après échanges directs justifient un plan de désengagement progressif (préavis, fin de contrat sur 6-12 mois).',
-   'difficile', '{client-toxique,3-chocs}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qcm:21', 'qcm',
-   'Le « paradoxe de la récupération » signifie que :',
-   jsonb '[
-     {"key":"a","label":"Un incident jamais résolu fidélise le client"},
-     {"key":"b","label":"Un client mécontent bien traité après incident est plus fidèle que la moyenne"},
-     {"key":"c","label":"Récupérer un client coûte plus cher que d''en perdre un"},
-     {"key":"d","label":"Tous les clients reviennent"}
-   ]', '["b"]'::jsonb,
-   'Paradoxe documenté : un client mécontent dont la réclamation est traitée rapidement, sincèrement et avec une mesure correctrice concrète devient plus fidèle qu''un client n''ayant jamais eu de problème.',
-   'difficile', '{paradoxe,recuperation}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qcm:22', 'qcm',
-   'Quel CRM est le plus adapté à une PME transport débutante avec budget limité ?',
-   jsonb '[
-     {"key":"a","label":"Salesforce Enterprise"},
-     {"key":"b","label":"HubSpot CRM (version gratuite)"},
-     {"key":"c","label":"Oracle Siebel"},
-     {"key":"d","label":"SAP CRM"}
-   ]', '["b"]'::jsonb,
-   'HubSpot CRM en version gratuite est très adapté aux PME : 1 M de contacts, fonctionnalités de base solides, intuitif. Salesforce, Oracle Siebel et SAP CRM sont des solutions enterprise plus coûteuses.',
-   'facile', '{crm,pme}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qcm:23', 'qcm',
-   'Pour boucler une boucle de feedback client, on doit :',
-   jsonb '[
-     {"key":"a","label":"Ne jamais revenir vers le client"},
-     {"key":"b","label":"Revenir vers le client sous 30 jours avec les actions menées suite à son retour"},
-     {"key":"c","label":"Revenir uniquement si on demande quelque chose"},
-     {"key":"d","label":"Attendre que le client redemande"}
-   ]', '["b"]'::jsonb,
-   'Boucler la boucle = revenir vers le client dans les 30 jours avec un message du type « Vous nous avez signalé X, voici ce que nous avons fait pour y répondre ». Transforme un détracteur en promoteur potentiel.',
-   'moyenne', '{feedback,boucle}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qcm:24', 'qcm',
-   'Un « moment de vérité » dans la relation client est :',
-   jsonb '[
-     {"key":"a","label":"Une réunion mensuelle"},
-     {"key":"b","label":"Un instant où le client juge réellement la qualité de service"},
-     {"key":"c","label":"La signature du contrat"},
-     {"key":"d","label":"Le paiement de la facture"}
-   ]', '["b"]'::jsonb,
-   'Moment de vérité (concept Karl Albrecht) = instant où le client forme son jugement (premier appel, comportement conducteur, communication retard, traitement réclamation). Une seule défaillance peut effacer 10 missions parfaites.',
-   'moyenne', '{moment-verite}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qcm:25', 'qcm',
-   'Le délai de réponse standard à une réclamation client en transport est de :',
-   jsonb '[
-     {"key":"a","label":"1 heure ouvrée"},
-     {"key":"b","label":"24 h ouvrées (4 h pour SLA exigeant)"},
-     {"key":"c","label":"1 semaine"},
-     {"key":"d","label":"1 mois"}
-   ]', '["b"]'::jsonb,
-   'Standard du marché : sous 24 h ouvrées. Pour les contrats à SLA exigeant : sous 4 h ouvrées. Au-delà de 48 h, le client perçoit un manque d''engagement et le risque de churn augmente fortement.',
-   'moyenne', '{reclamation,delai}');
 
   -- =================================================================
   -- 4 QR
   -- =================================================================
-  INSERT INTO public.question_bank (formation_id, source_ref, type, prompt, choices, correct, explanation, difficulty, tags) VALUES
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qr:1', 'qr',
-   'Calculez la LTV d''un client *Distribution Bretagne* (volume annuel 240 000 €, marge nette 8 %, durée moyenne client secteur transport 7 ans). Comparez à un coût d''acquisition de 12 % du CA annuel et concluez sur l''importance de la fidélisation.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Calcul LTV :
+  INSERT INTO public.question_bank (formation_id, type, statement, choices, max_score, difficulty, tags, source_ref, active, explanation) VALUES
+  (v_formation, 'qr', 'Calculez la LTV d''un client *Distribution Bretagne* (volume annuel 240 000 €, marge nette 8 %, durée moyenne client secteur transport 7 ans). Comparez à un coût d''acquisition de 12 % du CA annuel et concluez sur l''importance de la fidélisation.', NULL, 1, 'difficile', ARRAY['ltv','calcul','fidelisation'], 'mft-2026-gotrm:bc01-08:qr:1', true, 'Calcul LTV :
 
 LTV = Volume annuel × Marge nette × Durée moyenne
 LTV = 240 000 × 0,08 × 7 = 134 400 €
@@ -1194,20 +941,15 @@ Recommandations concrètes :
 4. Politique « zéro impayé » par communication proactive
 5. Up-selling : nouveaux services (ATP, ADR, hayon) au fil des opportunités
 
-ROI estimé : si la durée moyenne passe de 7 à 8 ans grâce à ces actions, gain marge / client = 19 200 € pour ~ 5 000 € de coût annuel = ROI x 3,8.',
-   'difficile', '{ltv,calcul,fidelisation}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qr:2', 'qr',
-   'Un grand client industriel vous propose un contrat annuel à 1,8 M€ avec ce SLA strict :
+ROI estimé : si la durée moyenne passe de 7 à 8 ans grâce à ces actions, gain marge / client = 19 200 € pour ~ 5 000 € de coût annuel = ROI x 3,8.'),
+  (v_formation, 'qr', 'Un grand client industriel vous propose un contrat annuel à 1,8 M€ avec ce SLA strict :
 - Ponctualité 99 % (créneau RDV ±15 min)
 - Intégrité 99,9 %
 - Pénalité 4 % de la facture mensuelle par % manquant (cumulable, sans plafond)
 - Force majeure stricte uniquement (pas de panne véhicule, pas de trafic)
 - Pas de bonus
 
-Analysez les risques et formulez une contre-proposition argumentée.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Analyse des risques :
+Analysez les risques et formulez une contre-proposition argumentée.', NULL, 1, 'difficile', ARRAY['sla','negociation','risques'], 'mft-2026-gotrm:bc01-08:qr:2', true, 'Analyse des risques :
 
 1. Ponctualité 99 % avec créneau RDV ±15 min :
 - Très exigeant, surtout en distribution urbaine
@@ -1278,13 +1020,8 @@ Position de repli si négociation difficile :
   - Tarif majoré de 12 %
   - Plafond pénalité 8 %
   - Bonus minimum 1,5 %
-- Si refus total : ne pas signer. Un contrat à risque > 15 % du CA en pénalités est un piège.',
-   'difficile', '{sla,negociation,risques}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qr:3', 'qr',
-   'Vous lancez votre première campagne NPS sur 120 clients. Résultats : 28 promoteurs, 64 passifs, 28 détracteurs. Calculez le NPS, analysez la situation par rapport au benchmark sectoriel et proposez un plan d''action 6 mois.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Calcul NPS :
+- Si refus total : ne pas signer. Un contrat à risque > 15 % du CA en pénalités est un piège.'),
+  (v_formation, 'qr', 'Vous lancez votre première campagne NPS sur 120 clients. Résultats : 28 promoteurs, 64 passifs, 28 détracteurs. Calculez le NPS, analysez la situation par rapport au benchmark sectoriel et proposez un plan d''action 6 mois.', NULL, 1, 'difficile', ARRAY['nps','plan-action','calcul'], 'mft-2026-gotrm:bc01-08:qr:3', true, 'Calcul NPS :
 
 Total répondants : 28 + 64 + 28 = 120 (taux de réponse non précisé)
 
@@ -1367,13 +1104,8 @@ Communication aux détracteurs (3 jours après calcul) :
 - Action 1 (mesurable et datée)
 - Action 2
 - Action 3
-Nous vous proposons un point d''avancement à 60 jours pour mesurer ensemble les progrès. Cordialement, [direction nominative]. »',
-   'difficile', '{nps,plan-action,calcul}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-08:qr:4', 'qr',
-   'Un de vos plus gros clients (CA 600 k€/an, 12 % de votre CA total) accumule depuis 8 mois : impayés répétés, 14 réclamations dont 9 jugées infondées par votre service qualité, agressivité verbale de son responsable logistique envers 3 de vos exploitants, demandes hors contrat permanentes. Que faites-vous ?',
-   '[]'::jsonb, '[]'::jsonb,
-   'Analyse de la situation :
+Nous vous proposons un point d''avancement à 60 jours pour mesurer ensemble les progrès. Cordialement, [direction nominative]. »'),
+  (v_formation, 'qr', 'Un de vos plus gros clients (CA 600 k€/an, 12 % de votre CA total) accumule depuis 8 mois : impayés répétés, 14 réclamations dont 9 jugées infondées par votre service qualité, agressivité verbale de son responsable logistique envers 3 de vos exploitants, demandes hors contrat permanentes. Que faites-vous ?', NULL, 1, 'difficile', ARRAY['client-toxique','desengagement','plan'], 'mft-2026-gotrm:bc01-08:qr:4', true, 'Analyse de la situation :
 
 1. Évaluation factuelle :
 
@@ -1480,8 +1212,8 @@ d. Direction :
 - Communication maîtrisée : ne pas se justifier publiquement, lettres recommandées formelles uniquement
 - Possible transition juridique : prévoir conseil d''avocat dès le début
 
-Conclusion stratégique : un client toxique de 600 k€ qui en réalité ne rapporte que 11 k€ de marge nette n''est pas un client à conserver. Le perdre libère l''équipe et permet de reconstruire avec des clients sains. C''est l''une des décisions les plus importantes en gestion de la relation client.',
-   'difficile', '{client-toxique,desengagement,plan}');
+Conclusion stratégique : un client toxique de 600 k€ qui en réalité ne rapporte que 11 k€ de marge nette n''est pas un client à conserver. Le perdre libère l''équipe et permet de reconstruire avec des clients sains. C''est l''une des décisions les plus importantes en gestion de la relation client.');
+
 
   -- =================================================================
   -- QUIZZES

@@ -843,292 +843,39 @@ $lesson4$,
   -- =================================================================
   -- 25 QCM
   -- =================================================================
-  INSERT INTO public.question_bank (formation_id, source_ref, type, prompt, choices, correct, explanation, difficulty, tags) VALUES
+  INSERT INTO public.question_bank (formation_id, type, statement, choices, max_score, difficulty, tags, source_ref, active, explanation) VALUES
+  (v_formation, 'qcm', 'Le scorecard mensuel d''un sous-traitant est noté typiquement sur :', '[{"id":"a","label":"10 points","is_correct":false},{"id":"b","label":"100 points","is_correct":true},{"id":"c","label":"5 étoiles","is_correct":false},{"id":"d","label":"Aucune notation","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['scorecard','notation'], 'mft-2026-gotrm:bc02-02:qcm:1', true, 'Le scorecard est noté sur 100 points, ventilé typiquement : opérationnel 50 pts, conformité 25 pts, qualité 15 pts, RSE 10 pts. Permet une lecture immédiate (> 90 excellence, < 60 plan urgent).'),
+  (v_formation, 'qcm', 'Un audit administratif d''un sous-traitant est obligatoire :', '[{"id":"a","label":"Une fois en début de contrat uniquement","is_correct":false},{"id":"b","label":"Tous les 6 mois (L. 8222-1)","is_correct":true},{"id":"c","label":"Tous les 5 ans","is_correct":false},{"id":"d","label":"Aucune obligation","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['audit','semestriel'], 'mft-2026-gotrm:bc02-02:qcm:2', true, 'L. 8222-1 du Code du travail : vérifications avant la conclusion + tous les 6 mois pendant la durée du contrat. À défaut : risque de complicité travail dissimulé (75 k€ + solidarité).'),
+  (v_formation, 'qcm', 'Une grille d''audit complète d''un sous-traitant transport contient typiquement :', '[{"id":"a","label":"5 sections (administratif, véhicules, conducteurs, procédures, spécifique)","is_correct":true},{"id":"b","label":"1 seule section (administratif)","is_correct":false},{"id":"c","label":"50 sections détaillées","is_correct":false},{"id":"d","label":"Aucune structure","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['audit','sections'], 'mft-2026-gotrm:bc02-02:qcm:3', true, '5 sections clés : administratif (20 pts), véhicules (25 pts), conducteurs (25 pts), procédures et qualité (15 pts), conformité spécifique ADR/ATP/RGPD (15 pts). Total 100 pts.'),
+  (v_formation, 'qcm', 'Une non-conformité majeure dans un audit doit être régularisée sous :', '[{"id":"a","label":"24 heures","is_correct":false},{"id":"b","label":"30 jours","is_correct":true},{"id":"c","label":"6 mois","is_correct":false},{"id":"d","label":"Aucun délai","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['non-conformite','delai'], 'mft-2026-gotrm:bc02-02:qcm:4', true, 'Non-conformité majeure (risque légal, financier, sécuritaire) : régularisation < 30 jours. Mineure : < 90 jours. Observation : plan moyen terme. Bonne pratique : à capitaliser.'),
+  (v_formation, 'qcm', 'Un audit terrain d''un sous-traitant dure typiquement :', '[{"id":"a","label":"15 min","is_correct":false},{"id":"b","label":"Demi-journée (4 h)","is_correct":true},{"id":"c","label":"Une semaine entière","is_correct":false},{"id":"d","label":"Aucune durée standard","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['audit','duree'], 'mft-2026-gotrm:bc02-02:qcm:5', true, 'Audit terrain : demi-journée minimum (réunion ouverture, revue documents, visite locaux et parc, échanges opérationnels et conducteurs, clôture). Pour les sous-traitants stratégiques, parfois une journée complète.'),
+  (v_formation, 'qcm', 'Le plan d''amélioration d''un sous-traitant doit être :', '[{"id":"a","label":"Imposé unilatéralement","is_correct":false},{"id":"b","label":"Co-construit avec le sous-traitant pour engagement réel","is_correct":true},{"id":"c","label":"Confidentiel, non communiqué au sous-traitant","is_correct":false},{"id":"d","label":"Verbal sans engagement","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['plan-amelioration'], 'mft-2026-gotrm:bc02-02:qcm:6', true, 'Co-construction = engagement réel. L''erreur classique est d''imposer unilatéralement, ce qui génère résistance passive. La co-construction (diagnostic partagé, causes racines, objectifs SMART, actions) garantit l''adhésion.'),
+  (v_formation, 'qcm', 'La méthode 4R pour désamorcer un conflit signifie :', '[{"id":"a","label":"Refuser, Renvoyer, Reporter, Réclamer","is_correct":false},{"id":"b","label":"Reconnaître, Reformuler, Rechercher, Résoudre","is_correct":true},{"id":"c","label":"Récupérer, Rectifier, Réparer, Restituer","is_correct":false},{"id":"d","label":"Aucun acronyme officiel","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['4r','desamorcage'], 'mft-2026-gotrm:bc02-02:qcm:7', true, '4R : Reconnaître (le problème existe), Reformuler (« si je comprends bien... »), Rechercher (solutions ensemble), Résoudre (décision claire, datée). Universellement applicable en gestion de conflits.'),
+  (v_formation, 'qcm', 'L''article L. 442-1 du Code de commerce sanctionne :', '[{"id":"a","label":"Le travail dissimulé","is_correct":false},{"id":"b","label":"La rupture brutale d''une relation commerciale établie","is_correct":true},{"id":"c","label":"Les retards de paiement","is_correct":false},{"id":"d","label":"Les incoterms incorrects","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['rupture-brutale','L442-1'], 'mft-2026-gotrm:bc02-02:qcm:8', true, 'L. 442-1 : la rupture brutale d''une relation commerciale établie engage la responsabilité de son auteur. Préavis raisonnable obligatoire selon ancienneté (1-2 mois si < 1 an, 12-24 mois si > 10 ans).'),
+  (v_formation, 'qcm', 'Pour une relation commerciale de 3-10 ans, le préavis raisonnable typique est :', '[{"id":"a","label":"1 mois","is_correct":false},{"id":"b","label":"6-12 mois","is_correct":true},{"id":"c","label":"24 mois","is_correct":false},{"id":"d","label":"Aucun préavis","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['preavis','raisonnable'], 'mft-2026-gotrm:bc02-02:qcm:9', true, 'Échelle indicative préavis raisonnable : < 1 an = 1-2 mois, 1-3 ans = 3-6 mois, 3-10 ans = 6-12 mois, > 10 ans = 12-24 mois. À adapter selon volume, dépendance, contexte.'),
+  (v_formation, 'qcm', 'Un score scorecard < 60 sur 100 indique typiquement :', '[{"id":"a","label":"Une excellente performance","is_correct":false},{"id":"b","label":"Une situation nécessitant un plan d''action urgent","is_correct":true},{"id":"c","label":"Un fonctionnement normal","is_correct":false},{"id":"d","label":"Une innovation","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['score','seuils'], 'mft-2026-gotrm:bc02-02:qcm:10', true, 'Échelle : > 90 excellence, 75-90 performant, 60-75 à surveiller, < 60 plan d''action urgent (avec risque de désengagement). Décliner les indicateurs en plan détaillé.'),
+  (v_formation, 'qcm', 'La conservation légale des rapports d''audit sous-traitant est de :', '[{"id":"a","label":"6 mois","is_correct":false},{"id":"b","label":"5 ans minimum","is_correct":true},{"id":"c","label":"30 ans","is_correct":false},{"id":"d","label":"À vie","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['archivage','5-ans'], 'mft-2026-gotrm:bc02-02:qcm:11', true, '5 ans minimum (correspond à la prescription en matière commerciale). Recommandé : conservation pendant toute la durée du contrat + 5 ans après la fin. Format papier ou numérique.'),
+  (v_formation, 'qcm', 'Le benchmarking entre sous-traitants permet :', '[{"id":"a","label":"De diviser pour mieux régner","is_correct":false},{"id":"b","label":"De stimuler la performance par comparaison et identification des meilleures pratiques","is_correct":true},{"id":"c","label":"De mettre les sous-traitants en concurrence agressive","is_correct":false},{"id":"d","label":"D''ignorer les performances individuelles","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['benchmarking'], 'mft-2026-gotrm:bc02-02:qcm:12', true, 'Le benchmarking (anonymisé si nécessaire) stimule la performance par émulation, identifie les meilleures pratiques transférables, et permet d''appuyer les plans d''amélioration sur des références.'),
+  (v_formation, 'qcm', 'Lors d''un désengagement, la 1ère étape de la procédure est :', '[{"id":"a","label":"Notification immédiate au sous-traitant","is_correct":false},{"id":"b","label":"Décision interne avec bilan factuel et validation hiérarchique","is_correct":true},{"id":"c","label":"Lettre aux clients finaux","is_correct":false},{"id":"d","label":"Saisine du tribunal","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['desengagement','procedure'], 'mft-2026-gotrm:bc02-02:qcm:13', true, 'Étape 1 = décision interne (J-90 à J-60) : bilan factuel chiffré, validation direction, vérification clauses contractuelles, choix stratégie (faute / convenance), préparation alternatives.'),
+  (v_formation, 'qcm', 'Le pilote du sous-traitant remplaçant doit démarrer :', '[{"id":"a","label":"Après la fin du préavis du sortant","is_correct":false},{"id":"b","label":"En parallèle de la fin du préavis (généralement à J-30)","is_correct":true},{"id":"c","label":"6 mois après la fin du préavis","is_correct":false},{"id":"d","label":"Aucun pilote nécessaire","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['transition','parallele'], 'mft-2026-gotrm:bc02-02:qcm:14', true, 'Le pilote du remplaçant démarre EN PARALLÈLE pour éviter les ruptures de service. Bascule progressive : 30 % à J-30, 50 % à J-15, 80 % à J-5, 100 % à la fin du préavis du sortant.'),
+  (v_formation, 'qcm', 'En cas de défaillance financière du sous-traitant en cours de mission, ses propres créanciers peuvent demander :', '[{"id":"a","label":"Aucun recours","is_correct":false},{"id":"b","label":"Le paiement direct au donneur d''ordre principal (loi 1975)","is_correct":true},{"id":"c","label":"Une médiation judiciaire systématique","is_correct":false},{"id":"d","label":"L''annulation des contrats","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['paiement-direct','defaillance'], 'mft-2026-gotrm:bc02-02:qcm:15', true, 'Loi 1975 : en cas de défaillance du sous-traitant, ses sous-traitants ou créanciers peuvent demander le paiement direct au donneur d''ordre principal. Risque pour le donneur d''ordre : payer 2 fois.'),
+  (v_formation, 'qcm', 'Une attestation URSSAF de vigilance valide doit avoir au maximum :', '[{"id":"a","label":"3 mois","is_correct":false},{"id":"b","label":"6 mois","is_correct":true},{"id":"c","label":"1 an","is_correct":false},{"id":"d","label":"5 ans","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['urssaf','validite'], 'mft-2026-gotrm:bc02-02:qcm:16', true, 'Attestation URSSAF de vigilance < 6 mois pour être opposable. Au-delà : à renouveler. À demander tous les semestres dans le cadre des vérifications L. 8222-1.'),
+  (v_formation, 'qcm', 'Lors d''une réunion de recadrage, la 1ère étape est :', '[{"id":"a","label":"Annoncer immédiatement la sanction","is_correct":false},{"id":"b","label":"Présenter les constats factuels chiffrés","is_correct":true},{"id":"c","label":"Crier","is_correct":false},{"id":"d","label":"Refuser le dialogue","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['recadrage','methode'], 'mft-2026-gotrm:bc02-02:qcm:17', true, 'Présenter les FAITS chiffrés (scorecard, KPI, incidents) avant tout jugement. Permet d''éviter le débat émotionnel et de partir sur une base objective. Posture : factuel, professionnel, ouvert.'),
+  (v_formation, 'qcm', 'Le critère qui DÉCLENCHE généralement un plan d''amélioration sous-traitant est :', '[{"id":"a","label":"Score scorecard < 75/100 sur 2 mois consécutifs","is_correct":true},{"id":"b","label":"Une seule mauvaise mission","is_correct":false},{"id":"c","label":"Un changement de directeur","is_correct":false},{"id":"d","label":"L''anniversaire du contrat","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['declencheur','plan-amelioration'], 'mft-2026-gotrm:bc02-02:qcm:18', true, 'Déclencheurs typiques d''un plan d''amélioration : score < 75 sur 2 mois consécutifs, non-conformité majeure post-audit, plainte client significative, dégradation d''un KPI critique.'),
+  (v_formation, 'qcm', 'Lors d''une rupture pour faute grave, le préavis :', '[{"id":"a","label":"Reste de 6 mois minimum","is_correct":false},{"id":"b","label":"Peut être supprimé ou très raccourci selon les clauses contractuelles","is_correct":true},{"id":"c","label":"Doit être doublé","is_correct":false},{"id":"d","label":"N''est pas applicable","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['rupture','faute-grave'], 'mft-2026-gotrm:bc02-02:qcm:19', true, 'Faute grave (travail dissimulé, sous-traitance occulte, faute lourde sinistre majeur) : préavis supprimé ou très raccourci selon les clauses contractuelles. Pour la faute "ordinaire" et la convenance : préavis contractuel standard.'),
+  (v_formation, 'qcm', 'Le format type d''un rapport d''audit sous-traitant fait :', '[{"id":"a","label":"1 page","is_correct":false},{"id":"b","label":"10-15 pages","is_correct":true},{"id":"c","label":"100 pages minimum","is_correct":false},{"id":"d","label":"Aucune limite","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['rapport-audit','format'], 'mft-2026-gotrm:bc02-02:qcm:20', true, 'Rapport d''audit type 10-15 pages : synthèse exécutive (1), périmètre et méthode (1), constats par section (5-8), score et benchmark (1), recommandations (2-3), annexes (photos, documents). Lisible et utilisable.'),
+  (v_formation, 'qcm', 'L''escalade en cas de conflit non résolu se fait typiquement par niveaux :', '[{"id":"a","label":"3 niveaux maximum","is_correct":false},{"id":"b","label":"6 niveaux : direction expl., direction G, médiation, mise en demeure, résiliation, contentieux","is_correct":true},{"id":"c","label":"50 niveaux","is_correct":false},{"id":"d","label":"Aucun niveau structuré","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['escalade','niveaux'], 'mft-2026-gotrm:bc02-02:qcm:21', true, '6 niveaux d''escalade : 1) direction d''exploitation, 2) direction générale, 3) médiation amiable (CCI), 4) mise en demeure RAR, 5) résiliation contractuelle, 6) contentieux judiciaire. Documentation à chaque niveau.'),
+  (v_formation, 'qcm', 'Un audit thématique annuel ADR vérifie notamment :', '[{"id":"a","label":"Le coût du carburant","is_correct":false},{"id":"b","label":"Les attestations conducteurs ADR, équipement véhicules, certificats d''agrément","is_correct":true},{"id":"c","label":"Les places de parking","is_correct":false},{"id":"d","label":"Les habitudes alimentaires","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['audit-adr'], 'mft-2026-gotrm:bc02-02:qcm:22', true, 'Audit ADR : attestations conducteurs (Base, Citerne, classe 1, classe 7), équipement véhicules obligatoire, certificats d''agrément véhicules (EX/II ou EX/III), consignes écrites à bord, plan d''urgence.'),
+  (v_formation, 'qcm', 'La validité d''une attestation conducteur ADR est de :', '[{"id":"a","label":"1 an","is_correct":false},{"id":"b","label":"5 ans","is_correct":true},{"id":"c","label":"10 ans","is_correct":false},{"id":"d","label":"À vie","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['adr','attestation'], 'mft-2026-gotrm:bc02-02:qcm:23', true, '5 ans avec recyclage obligatoire avant expiration (13 h pour la base, 8 h citerne, 8 h classe 1 ou 7). Audit annuel des sous-traitants ADR pour vérifier la validité de toutes les attestations.'),
+  (v_formation, 'qcm', 'Lors d''un désengagement pour convenance, la communication aux clients finaux :', '[{"id":"a","label":"N''est jamais nécessaire","is_correct":false},{"id":"b","label":"Est nécessaire si volumes importants ou impact direct sur le service","is_correct":true},{"id":"c","label":"Doit être anonyme","is_correct":false},{"id":"d","label":"Doit dénigrer le sortant","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['communication','desengagement'], 'mft-2026-gotrm:bc02-02:qcm:24', true, 'Communication client final = nécessaire si volumes significatifs, impact direct sur le service, ou si le client connaît le sous-traitant. Posture : transparente, factuelle, sans dénigrer (risque diffamation).'),
+  (v_formation, 'qcm', 'Le coût typique d''une transition de sous-traitant (sur-coût pendant la phase parallèle) est de :', '[{"id":"a","label":"5-10 % du CA annuel concerné","is_correct":true},{"id":"b","label":"50 %","is_correct":false},{"id":"c","label":"Aucun sur-coût","is_correct":false},{"id":"d","label":"100 %","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['transition','cout'], 'mft-2026-gotrm:bc02-02:qcm:25', true, 'Sur-coût transition : 5-10 % du CA annuel concerné (3-6 mois de fonctionnement parallèle). À comparer aux risques évités : rupture de service, perte clients, contentieux. ROI typiquement positif sur 12-24 mois.');
 
-  (v_formation, 'mft-2026-gotrm:bc02-02:qcm:1', 'qcm',
-   'Le scorecard mensuel d''un sous-traitant est noté typiquement sur :',
-   jsonb '[
-     {"key":"a","label":"10 points"},
-     {"key":"b","label":"100 points"},
-     {"key":"c","label":"5 étoiles"},
-     {"key":"d","label":"Aucune notation"}
-   ]', '["b"]'::jsonb,
-   'Le scorecard est noté sur 100 points, ventilé typiquement : opérationnel 50 pts, conformité 25 pts, qualité 15 pts, RSE 10 pts. Permet une lecture immédiate (> 90 excellence, < 60 plan urgent).',
-   'facile', '{scorecard,notation}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qcm:2', 'qcm',
-   'Un audit administratif d''un sous-traitant est obligatoire :',
-   jsonb '[
-     {"key":"a","label":"Une fois en début de contrat uniquement"},
-     {"key":"b","label":"Tous les 6 mois (L. 8222-1)"},
-     {"key":"c","label":"Tous les 5 ans"},
-     {"key":"d","label":"Aucune obligation"}
-   ]', '["b"]'::jsonb,
-   'L. 8222-1 du Code du travail : vérifications avant la conclusion + tous les 6 mois pendant la durée du contrat. À défaut : risque de complicité travail dissimulé (75 k€ + solidarité).',
-   'moyenne', '{audit,semestriel}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qcm:3', 'qcm',
-   'Une grille d''audit complète d''un sous-traitant transport contient typiquement :',
-   jsonb '[
-     {"key":"a","label":"5 sections (administratif, véhicules, conducteurs, procédures, spécifique)"},
-     {"key":"b","label":"1 seule section (administratif)"},
-     {"key":"c","label":"50 sections détaillées"},
-     {"key":"d","label":"Aucune structure"}
-   ]', '["a"]'::jsonb,
-   '5 sections clés : administratif (20 pts), véhicules (25 pts), conducteurs (25 pts), procédures et qualité (15 pts), conformité spécifique ADR/ATP/RGPD (15 pts). Total 100 pts.',
-   'moyenne', '{audit,sections}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qcm:4', 'qcm',
-   'Une non-conformité majeure dans un audit doit être régularisée sous :',
-   jsonb '[
-     {"key":"a","label":"24 heures"},
-     {"key":"b","label":"30 jours"},
-     {"key":"c","label":"6 mois"},
-     {"key":"d","label":"Aucun délai"}
-   ]', '["b"]'::jsonb,
-   'Non-conformité majeure (risque légal, financier, sécuritaire) : régularisation < 30 jours. Mineure : < 90 jours. Observation : plan moyen terme. Bonne pratique : à capitaliser.',
-   'moyenne', '{non-conformite,delai}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qcm:5', 'qcm',
-   'Un audit terrain d''un sous-traitant dure typiquement :',
-   jsonb '[
-     {"key":"a","label":"15 min"},
-     {"key":"b","label":"Demi-journée (4 h)"},
-     {"key":"c","label":"Une semaine entière"},
-     {"key":"d","label":"Aucune durée standard"}
-   ]', '["b"]'::jsonb,
-   'Audit terrain : demi-journée minimum (réunion ouverture, revue documents, visite locaux et parc, échanges opérationnels et conducteurs, clôture). Pour les sous-traitants stratégiques, parfois une journée complète.',
-   'moyenne', '{audit,duree}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qcm:6', 'qcm',
-   'Le plan d''amélioration d''un sous-traitant doit être :',
-   jsonb '[
-     {"key":"a","label":"Imposé unilatéralement"},
-     {"key":"b","label":"Co-construit avec le sous-traitant pour engagement réel"},
-     {"key":"c","label":"Confidentiel, non communiqué au sous-traitant"},
-     {"key":"d","label":"Verbal sans engagement"}
-   ]', '["b"]'::jsonb,
-   'Co-construction = engagement réel. L''erreur classique est d''imposer unilatéralement, ce qui génère résistance passive. La co-construction (diagnostic partagé, causes racines, objectifs SMART, actions) garantit l''adhésion.',
-   'moyenne', '{plan-amelioration}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qcm:7', 'qcm',
-   'La méthode 4R pour désamorcer un conflit signifie :',
-   jsonb '[
-     {"key":"a","label":"Refuser, Renvoyer, Reporter, Réclamer"},
-     {"key":"b","label":"Reconnaître, Reformuler, Rechercher, Résoudre"},
-     {"key":"c","label":"Récupérer, Rectifier, Réparer, Restituer"},
-     {"key":"d","label":"Aucun acronyme officiel"}
-   ]', '["b"]'::jsonb,
-   '4R : Reconnaître (le problème existe), Reformuler (« si je comprends bien... »), Rechercher (solutions ensemble), Résoudre (décision claire, datée). Universellement applicable en gestion de conflits.',
-   'moyenne', '{4r,desamorcage}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qcm:8', 'qcm',
-   'L''article L. 442-1 du Code de commerce sanctionne :',
-   jsonb '[
-     {"key":"a","label":"Le travail dissimulé"},
-     {"key":"b","label":"La rupture brutale d''une relation commerciale établie"},
-     {"key":"c","label":"Les retards de paiement"},
-     {"key":"d","label":"Les incoterms incorrects"}
-   ]', '["b"]'::jsonb,
-   'L. 442-1 : la rupture brutale d''une relation commerciale établie engage la responsabilité de son auteur. Préavis raisonnable obligatoire selon ancienneté (1-2 mois si < 1 an, 12-24 mois si > 10 ans).',
-   'difficile', '{rupture-brutale,L442-1}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qcm:9', 'qcm',
-   'Pour une relation commerciale de 3-10 ans, le préavis raisonnable typique est :',
-   jsonb '[
-     {"key":"a","label":"1 mois"},
-     {"key":"b","label":"6-12 mois"},
-     {"key":"c","label":"24 mois"},
-     {"key":"d","label":"Aucun préavis"}
-   ]', '["b"]'::jsonb,
-   'Échelle indicative préavis raisonnable : < 1 an = 1-2 mois, 1-3 ans = 3-6 mois, 3-10 ans = 6-12 mois, > 10 ans = 12-24 mois. À adapter selon volume, dépendance, contexte.',
-   'difficile', '{preavis,raisonnable}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qcm:10', 'qcm',
-   'Un score scorecard < 60 sur 100 indique typiquement :',
-   jsonb '[
-     {"key":"a","label":"Une excellente performance"},
-     {"key":"b","label":"Une situation nécessitant un plan d''action urgent"},
-     {"key":"c","label":"Un fonctionnement normal"},
-     {"key":"d","label":"Une innovation"}
-   ]', '["b"]'::jsonb,
-   'Échelle : > 90 excellence, 75-90 performant, 60-75 à surveiller, < 60 plan d''action urgent (avec risque de désengagement). Décliner les indicateurs en plan détaillé.',
-   'moyenne', '{score,seuils}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qcm:11', 'qcm',
-   'La conservation légale des rapports d''audit sous-traitant est de :',
-   jsonb '[
-     {"key":"a","label":"6 mois"},
-     {"key":"b","label":"5 ans minimum"},
-     {"key":"c","label":"30 ans"},
-     {"key":"d","label":"À vie"}
-   ]', '["b"]'::jsonb,
-   '5 ans minimum (correspond à la prescription en matière commerciale). Recommandé : conservation pendant toute la durée du contrat + 5 ans après la fin. Format papier ou numérique.',
-   'moyenne', '{archivage,5-ans}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qcm:12', 'qcm',
-   'Le benchmarking entre sous-traitants permet :',
-   jsonb '[
-     {"key":"a","label":"De diviser pour mieux régner"},
-     {"key":"b","label":"De stimuler la performance par comparaison et identification des meilleures pratiques"},
-     {"key":"c","label":"De mettre les sous-traitants en concurrence agressive"},
-     {"key":"d","label":"D''ignorer les performances individuelles"}
-   ]', '["b"]'::jsonb,
-   'Le benchmarking (anonymisé si nécessaire) stimule la performance par émulation, identifie les meilleures pratiques transférables, et permet d''appuyer les plans d''amélioration sur des références.',
-   'moyenne', '{benchmarking}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qcm:13', 'qcm',
-   'Lors d''un désengagement, la 1ère étape de la procédure est :',
-   jsonb '[
-     {"key":"a","label":"Notification immédiate au sous-traitant"},
-     {"key":"b","label":"Décision interne avec bilan factuel et validation hiérarchique"},
-     {"key":"c","label":"Lettre aux clients finaux"},
-     {"key":"d","label":"Saisine du tribunal"}
-   ]', '["b"]'::jsonb,
-   'Étape 1 = décision interne (J-90 à J-60) : bilan factuel chiffré, validation direction, vérification clauses contractuelles, choix stratégie (faute / convenance), préparation alternatives.',
-   'moyenne', '{desengagement,procedure}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qcm:14', 'qcm',
-   'Le pilote du sous-traitant remplaçant doit démarrer :',
-   jsonb '[
-     {"key":"a","label":"Après la fin du préavis du sortant"},
-     {"key":"b","label":"En parallèle de la fin du préavis (généralement à J-30)"},
-     {"key":"c","label":"6 mois après la fin du préavis"},
-     {"key":"d","label":"Aucun pilote nécessaire"}
-   ]', '["b"]'::jsonb,
-   'Le pilote du remplaçant démarre EN PARALLÈLE pour éviter les ruptures de service. Bascule progressive : 30 % à J-30, 50 % à J-15, 80 % à J-5, 100 % à la fin du préavis du sortant.',
-   'moyenne', '{transition,parallele}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qcm:15', 'qcm',
-   'En cas de défaillance financière du sous-traitant en cours de mission, ses propres créanciers peuvent demander :',
-   jsonb '[
-     {"key":"a","label":"Aucun recours"},
-     {"key":"b","label":"Le paiement direct au donneur d''ordre principal (loi 1975)"},
-     {"key":"c","label":"Une médiation judiciaire systématique"},
-     {"key":"d","label":"L''annulation des contrats"}
-   ]', '["b"]'::jsonb,
-   'Loi 1975 : en cas de défaillance du sous-traitant, ses sous-traitants ou créanciers peuvent demander le paiement direct au donneur d''ordre principal. Risque pour le donneur d''ordre : payer 2 fois.',
-   'difficile', '{paiement-direct,defaillance}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qcm:16', 'qcm',
-   'Une attestation URSSAF de vigilance valide doit avoir au maximum :',
-   jsonb '[
-     {"key":"a","label":"3 mois"},
-     {"key":"b","label":"6 mois"},
-     {"key":"c","label":"1 an"},
-     {"key":"d","label":"5 ans"}
-   ]', '["b"]'::jsonb,
-   'Attestation URSSAF de vigilance < 6 mois pour être opposable. Au-delà : à renouveler. À demander tous les semestres dans le cadre des vérifications L. 8222-1.',
-   'moyenne', '{urssaf,validite}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qcm:17', 'qcm',
-   'Lors d''une réunion de recadrage, la 1ère étape est :',
-   jsonb '[
-     {"key":"a","label":"Annoncer immédiatement la sanction"},
-     {"key":"b","label":"Présenter les constats factuels chiffrés"},
-     {"key":"c","label":"Crier"},
-     {"key":"d","label":"Refuser le dialogue"}
-   ]', '["b"]'::jsonb,
-   'Présenter les FAITS chiffrés (scorecard, KPI, incidents) avant tout jugement. Permet d''éviter le débat émotionnel et de partir sur une base objective. Posture : factuel, professionnel, ouvert.',
-   'facile', '{recadrage,methode}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qcm:18', 'qcm',
-   'Le critère qui DÉCLENCHE généralement un plan d''amélioration sous-traitant est :',
-   jsonb '[
-     {"key":"a","label":"Score scorecard < 75/100 sur 2 mois consécutifs"},
-     {"key":"b","label":"Une seule mauvaise mission"},
-     {"key":"c","label":"Un changement de directeur"},
-     {"key":"d","label":"L''anniversaire du contrat"}
-   ]', '["a"]'::jsonb,
-   'Déclencheurs typiques d''un plan d''amélioration : score < 75 sur 2 mois consécutifs, non-conformité majeure post-audit, plainte client significative, dégradation d''un KPI critique.',
-   'moyenne', '{declencheur,plan-amelioration}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qcm:19', 'qcm',
-   'Lors d''une rupture pour faute grave, le préavis :',
-   jsonb '[
-     {"key":"a","label":"Reste de 6 mois minimum"},
-     {"key":"b","label":"Peut être supprimé ou très raccourci selon les clauses contractuelles"},
-     {"key":"c","label":"Doit être doublé"},
-     {"key":"d","label":"N''est pas applicable"}
-   ]', '["b"]'::jsonb,
-   'Faute grave (travail dissimulé, sous-traitance occulte, faute lourde sinistre majeur) : préavis supprimé ou très raccourci selon les clauses contractuelles. Pour la faute "ordinaire" et la convenance : préavis contractuel standard.',
-   'moyenne', '{rupture,faute-grave}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qcm:20', 'qcm',
-   'Le format type d''un rapport d''audit sous-traitant fait :',
-   jsonb '[
-     {"key":"a","label":"1 page"},
-     {"key":"b","label":"10-15 pages"},
-     {"key":"c","label":"100 pages minimum"},
-     {"key":"d","label":"Aucune limite"}
-   ]', '["b"]'::jsonb,
-   'Rapport d''audit type 10-15 pages : synthèse exécutive (1), périmètre et méthode (1), constats par section (5-8), score et benchmark (1), recommandations (2-3), annexes (photos, documents). Lisible et utilisable.',
-   'moyenne', '{rapport-audit,format}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qcm:21', 'qcm',
-   'L''escalade en cas de conflit non résolu se fait typiquement par niveaux :',
-   jsonb '[
-     {"key":"a","label":"3 niveaux maximum"},
-     {"key":"b","label":"6 niveaux : direction expl., direction G, médiation, mise en demeure, résiliation, contentieux"},
-     {"key":"c","label":"50 niveaux"},
-     {"key":"d","label":"Aucun niveau structuré"}
-   ]', '["b"]'::jsonb,
-   '6 niveaux d''escalade : 1) direction d''exploitation, 2) direction générale, 3) médiation amiable (CCI), 4) mise en demeure RAR, 5) résiliation contractuelle, 6) contentieux judiciaire. Documentation à chaque niveau.',
-   'difficile', '{escalade,niveaux}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qcm:22', 'qcm',
-   'Un audit thématique annuel ADR vérifie notamment :',
-   jsonb '[
-     {"key":"a","label":"Le coût du carburant"},
-     {"key":"b","label":"Les attestations conducteurs ADR, équipement véhicules, certificats d''agrément"},
-     {"key":"c","label":"Les places de parking"},
-     {"key":"d","label":"Les habitudes alimentaires"}
-   ]', '["b"]'::jsonb,
-   'Audit ADR : attestations conducteurs (Base, Citerne, classe 1, classe 7), équipement véhicules obligatoire, certificats d''agrément véhicules (EX/II ou EX/III), consignes écrites à bord, plan d''urgence.',
-   'moyenne', '{audit-adr}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qcm:23', 'qcm',
-   'La validité d''une attestation conducteur ADR est de :',
-   jsonb '[
-     {"key":"a","label":"1 an"},
-     {"key":"b","label":"5 ans"},
-     {"key":"c","label":"10 ans"},
-     {"key":"d","label":"À vie"}
-   ]', '["b"]'::jsonb,
-   '5 ans avec recyclage obligatoire avant expiration (13 h pour la base, 8 h citerne, 8 h classe 1 ou 7). Audit annuel des sous-traitants ADR pour vérifier la validité de toutes les attestations.',
-   'facile', '{adr,attestation}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qcm:24', 'qcm',
-   'Lors d''un désengagement pour convenance, la communication aux clients finaux :',
-   jsonb '[
-     {"key":"a","label":"N''est jamais nécessaire"},
-     {"key":"b","label":"Est nécessaire si volumes importants ou impact direct sur le service"},
-     {"key":"c","label":"Doit être anonyme"},
-     {"key":"d","label":"Doit dénigrer le sortant"}
-   ]', '["b"]'::jsonb,
-   'Communication client final = nécessaire si volumes significatifs, impact direct sur le service, ou si le client connaît le sous-traitant. Posture : transparente, factuelle, sans dénigrer (risque diffamation).',
-   'moyenne', '{communication,desengagement}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qcm:25', 'qcm',
-   'Le coût typique d''une transition de sous-traitant (sur-coût pendant la phase parallèle) est de :',
-   jsonb '[
-     {"key":"a","label":"5-10 % du CA annuel concerné"},
-     {"key":"b","label":"50 %"},
-     {"key":"c","label":"Aucun sur-coût"},
-     {"key":"d","label":"100 %"}
-   ]', '["a"]'::jsonb,
-   'Sur-coût transition : 5-10 % du CA annuel concerné (3-6 mois de fonctionnement parallèle). À comparer aux risques évités : rupture de service, perte clients, contentieux. ROI typiquement positif sur 12-24 mois.',
-   'difficile', '{transition,cout}');
 
   -- =================================================================
   -- 4 QR
   -- =================================================================
-  INSERT INTO public.question_bank (formation_id, source_ref, type, prompt, choices, correct, explanation, difficulty, tags) VALUES
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qr:1', 'qr',
-   'Un sous-traitant a un score scorecard de 62/100 sur 3 mois consécutifs. Détaillez la procédure de redressement en 5 étapes (sur 6 mois), avec actions, indicateurs de suivi et arborescence des décisions à la fin.',
-   '[]'::jsonb, '[]'::jsonb,
-   'PROCÉDURE DE REDRESSEMENT — 6 MOIS
+  INSERT INTO public.question_bank (formation_id, type, statement, choices, max_score, difficulty, tags, source_ref, active, explanation) VALUES
+  (v_formation, 'qr', 'Un sous-traitant a un score scorecard de 62/100 sur 3 mois consécutifs. Détaillez la procédure de redressement en 5 étapes (sur 6 mois), avec actions, indicateurs de suivi et arborescence des décisions à la fin.', NULL, 1, 'difficile', ARRAY['plan-amelioration','procedure','decision'], 'mft-2026-gotrm:bc02-02:qr:1', true, 'PROCÉDURE DE REDRESSEMENT — 6 MOIS
 
 PHASE 1 — Diagnostic et alerte (M0)
 
@@ -1263,13 +1010,8 @@ LEÇONS À CAPITALISER
 - Les pièges à éviter
 - Les bons indicateurs de progression
 
-Ces apprentissages enrichissent le référentiel interne et améliorent la sélection future des sous-traitants.',
-   'difficile', '{plan-amelioration,procedure,decision}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qr:2', 'qr',
-   'Construisez la grille d''audit complète d''un sous-traitant transport ATP (température dirigée). 50 critères répartis sur les 5 sections, avec barème de notation et seuils éliminatoires.',
-   '[]'::jsonb, '[]'::jsonb,
-   'GRILLE D''AUDIT — SOUS-TRAITANT ATP (TEMPÉRATURE DIRIGÉE)
+Ces apprentissages enrichissent le référentiel interne et améliorent la sélection future des sous-traitants.'),
+  (v_formation, 'qr', 'Construisez la grille d''audit complète d''un sous-traitant transport ATP (température dirigée). 50 critères répartis sur les 5 sections, avec barème de notation et seuils éliminatoires.', NULL, 1, 'difficile', ARRAY['audit','grille','atp'], 'mft-2026-gotrm:bc02-02:qr:2', true, 'GRILLE D''AUDIT — SOUS-TRAITANT ATP (TEMPÉRATURE DIRIGÉE)
 
 50 critères, 100 points
 
@@ -1440,13 +1182,8 @@ J+30 : Plan d''action signé par le sous-traitant
 
 J+90 : Audit de suivi pour vérification de la mise en œuvre des actions critiques.
 
-Cette grille structure une évaluation complète et reproductible. Elle peut être adaptée au contexte (ADR, transports exceptionnels, distribution urbaine) en modifiant la section 5 spécifique.',
-   'difficile', '{audit,grille,atp}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qr:3', 'qr',
-   'Vous décidez de mettre fin à 5 ans de collaboration avec *Express Sud SARL* (volumes 450 k€/an). Décrivez la procédure de désengagement complète sur 12 mois, en anticipant les risques juridiques et opérationnels.',
-   '[]'::jsonb, '[]'::jsonb,
-   'PROCÉDURE DE DÉSENGAGEMENT — 12 MOIS
+Cette grille structure une évaluation complète et reproductible. Elle peut être adaptée au contexte (ADR, transports exceptionnels, distribution urbaine) en modifiant la section 5 spécifique.'),
+  (v_formation, 'qr', 'Vous décidez de mettre fin à 5 ans de collaboration avec *Express Sud SARL* (volumes 450 k€/an). Décrivez la procédure de désengagement complète sur 12 mois, en anticipant les risques juridiques et opérationnels.', NULL, 1, 'difficile', ARRAY['desengagement','procedure','risques'], 'mft-2026-gotrm:bc02-02:qr:3', true, 'PROCÉDURE DE DÉSENGAGEMENT — 12 MOIS
 
 CONTEXTE INITIAL
 
@@ -1670,13 +1407,8 @@ Documents à conserver et capitaliser :
 - Pièges identifiés
 - Apprentissages spécifiques
 
-Ces livrables enrichissent le référentiel interne et facilitent les prochains désengagements (qui sont inévitables dans toute relation longue durée).',
-   'difficile', '{desengagement,procedure,risques}'),
-
-  (v_formation, 'mft-2026-gotrm:bc02-02:qr:4', 'qr',
-   'Comparez le pilotage d''un panel de 5 sous-traitants stratégiques (gros volumes) vs 15 sous-traitants tactiques (volumes moyens). Différences en termes de KPI, fréquence de suivi, audits, ressources allouées et coût total de gestion.',
-   '[]'::jsonb, '[]'::jsonb,
-   'COMPARAISON DU PILOTAGE — STRATÉGIQUES VS TACTIQUES
+Ces livrables enrichissent le référentiel interne et facilitent les prochains désengagements (qui sont inévitables dans toute relation longue durée).'),
+  (v_formation, 'qr', 'Comparez le pilotage d''un panel de 5 sous-traitants stratégiques (gros volumes) vs 15 sous-traitants tactiques (volumes moyens). Différences en termes de KPI, fréquence de suivi, audits, ressources allouées et coût total de gestion.', NULL, 1, 'difficile', ARRAY['pilotage','strategiques','tactiques'], 'mft-2026-gotrm:bc02-02:qr:4', true, 'COMPARAISON DU PILOTAGE — STRATÉGIQUES VS TACTIQUES
 
 PROFILS
 
@@ -1854,8 +1586,8 @@ CONCLUSION
 
 Le pilotage différencié n''est pas une discrimination mais une optimisation des ressources face à des enjeux différents. Les sous-traitants comprennent généralement bien cette logique, surtout si la communication est transparente et si les ascensions du tactique vers le stratégique sont possibles selon les performances.
 
-Sans différenciation, on traite tous les sous-traitants soit avec un excès de moyens (gaspillage sur les tactiques) soit avec un défaut de moyens (risques sur les stratégiques). La maturité d''une fonction sous-traitance se mesure à la qualité de cette différenciation.',
-   'difficile', '{pilotage,strategiques,tactiques}');
+Sans différenciation, on traite tous les sous-traitants soit avec un excès de moyens (gaspillage sur les tactiques) soit avec un défaut de moyens (risques sur les stratégiques). La maturité d''une fonction sous-traitance se mesure à la qualité de cette différenciation.');
+
 
   -- =================================================================
   -- QUIZZES

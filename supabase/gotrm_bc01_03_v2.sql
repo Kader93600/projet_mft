@@ -661,325 +661,42 @@ $lesson4$,
   -- =================================================================
   -- 28 QCM REFORMULÉS
   -- =================================================================
-  INSERT INTO public.question_bank (formation_id, source_ref, type, prompt, choices, correct, explanation, difficulty, tags) VALUES
+  INSERT INTO public.question_bank (formation_id, type, statement, choices, max_score, difficulty, tags, source_ref, active, explanation) VALUES
+  (v_formation, 'qcm', 'Parmi ces postes, lequel est un coût VARIABLE pour un véhicule industriel ?', '[{"id":"a","label":"L''amortissement","is_correct":false},{"id":"b","label":"L''assurance véhicule","is_correct":false},{"id":"c","label":"Le carburant","is_correct":true},{"id":"d","label":"La taxe à l''essieu","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['couts','variables'], 'mft-2026-gotrm:bc01-03:qcm:1', true, 'Le carburant est proportionnel aux kilomètres parcourus, donc variable. Amortissement, assurance et taxe à l''essieu sont fixes (existent même véhicule à l''arrêt).'),
+  (v_formation, 'qcm', 'Un porteur 19 t neuf coûte 95 000 € HT, valeur résiduelle 25 % après 6 ans, parcourt 120 000 km/an. Coût d''amortissement kilométrique ?', '[{"id":"a","label":"Environ 0,066 €/km","is_correct":false},{"id":"b","label":"Environ 0,099 €/km","is_correct":true},{"id":"c","label":"Environ 0,132 €/km","is_correct":false},{"id":"d","label":"Environ 0,158 €/km","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['calcul','amortissement'], 'mft-2026-gotrm:bc01-03:qcm:2', true, 'Base = 95 000 − 23 750 = 71 250 €. Amortissement annuel = 71 250 / 6 = 11 875 €. Coût km = 11 875 / 120 000 ≈ 0,099 €/km.'),
+  (v_formation, 'qcm', 'Le carburant représente quelle part typique du coût de revient kilométrique d''un porteur ?', '[{"id":"a","label":"5 à 10 %","is_correct":false},{"id":"b","label":"15 à 20 %","is_correct":false},{"id":"c","label":"25 à 35 %","is_correct":true},{"id":"d","label":"45 à 55 %","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['couts','carburant'], 'mft-2026-gotrm:bc01-03:qcm:3', true, 'Le carburant pèse 25 à 35 % du coût total selon le profil d''exploitation. C''est aussi le poste le plus volatil, d''où l''importance de l''indexation contractuelle.'),
+  (v_formation, 'qcm', 'Un véhicule fait Lyon → Marseille (320 km chargés) puis retour à vide (320 km). Quel est le coût km commercial si le coût km total est 1,22 € ?', '[{"id":"a","label":"1,22 €/km","is_correct":false},{"id":"b","label":"1,83 €/km","is_correct":false},{"id":"c","label":"2,44 €/km","is_correct":true},{"id":"d","label":"3,05 €/km","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['km-commercial','calcul'], 'mft-2026-gotrm:bc01-03:qcm:4', true, 'Tous les coûts des 640 km totaux doivent être absorbés sur 320 km commerciaux (chargés). Coût km commercial = 1,22 × 640 / 320 = 2,44 €/km. Le retour à vide double mécaniquement le coût km commercial.'),
+  (v_formation, 'qcm', 'Un transport a un coût de revient total de 546 €. Si je vise une marge nette de 10 %, quel prix HT minimal proposer ?', '[{"id":"a","label":"546 € HT","is_correct":false},{"id":"b","label":"600 € HT","is_correct":false},{"id":"c","label":"607 € HT","is_correct":true},{"id":"d","label":"655 € HT","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['calcul','marge'], 'mft-2026-gotrm:bc01-03:qcm:5', true, 'Prix = Coût / (1 − marge) = 546 / (1 − 0,10) = 546 / 0,90 = 607 € HT. Une simple addition « coût + 10 % » donnerait 600 € mais ne représenterait que 9 % de marge sur le prix.'),
+  (v_formation, 'qcm', 'Quelle marge nette est considérée comme un seuil de fragilité structurelle dans le TRM ?', '[{"id":"a","label":"Inférieure à 1 %","is_correct":false},{"id":"b","label":"Inférieure à 4 %","is_correct":true},{"id":"c","label":"Inférieure à 8 %","is_correct":false},{"id":"d","label":"Inférieure à 12 %","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['marge','rentabilite'], 'mft-2026-gotrm:bc01-03:qcm:6', true, 'Une marge nette inférieure à 4 % rend l''entreprise fragile à tout incident (panne, sinistre, hausse carburant). En dessous de 2 %, l''activité est structurellement en danger.'),
+  (v_formation, 'qcm', 'La méthode CRT (Coût de Revient Transport) repose principalement sur :', '[{"id":"a","label":"Le prix marché × 0,9","is_correct":false},{"id":"b","label":"(Km × coût km variable) + (heures × coût horaire fixe) + opérations annexes","is_correct":true},{"id":"c","label":"Le coût des concurrents directement","is_correct":false},{"id":"d","label":"Le forfait journalier conducteur uniquement","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['methode','crt'], 'mft-2026-gotrm:bc01-03:qcm:7', true, 'Le CRT additionne les coûts variables (au km) et les coûts fixes (à l''heure pour le conducteur, l''amortissement et la structure), plus les opérations annexes spécifiques à la mission.'),
+  (v_formation, 'qcm', 'Pour un transport de mobilier volumineux et léger, l''unité de tarification la plus pertinente est :', '[{"id":"a","label":"À la tonne","is_correct":false},{"id":"b","label":"Au km","is_correct":false},{"id":"c","label":"Au m³","is_correct":true},{"id":"d","label":"Au point de livraison","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['tarification','volume'], 'mft-2026-gotrm:bc01-03:qcm:8', true, 'Le mobilier est volumineux mais léger : la tarification au m³ reflète mieux la capacité utilisée du véhicule (ce sont les volumes qui saturent le camion avant le poids).'),
+  (v_formation, 'qcm', 'Un devis transport accepté par signature du client :', '[{"id":"a","label":"Reste révocable pendant 7 jours","is_correct":false},{"id":"b","label":"Vaut contrat ferme opposable aux deux parties","is_correct":true},{"id":"c","label":"N''engage que le transporteur","is_correct":false},{"id":"d","label":"Doit être confirmé par bon de commande pour être valable","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['devis','contrat'], 'mft-2026-gotrm:bc01-03:qcm:9', true, 'L''acceptation écrite (signature, mail, bon de commande) transforme le devis en contrat ferme. Toute modification ultérieure exige un avenant écrit.'),
+  (v_formation, 'qcm', 'Pour qu''une CGT (Conditions Générales de Transport) soit opposable, elle doit être :', '[{"id":"a","label":"Communiquée après acceptation du devis","is_correct":false},{"id":"b","label":"Disponible uniquement sur le site internet du transporteur","is_correct":false},{"id":"c","label":"Communiquée avant ou avec le devis et acceptée expressément","is_correct":true},{"id":"d","label":"Signée par un huissier de justice","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['cgt','opposabilite'], 'mft-2026-gotrm:bc01-03:qcm:10', true, 'Les CGT doivent être remises avant ou avec le devis (jamais après acceptation), être lisibles, et faire l''objet d''une acceptation expresse pour être opposables. Un simple lien vers le site est insuffisant.'),
+  (v_formation, 'qcm', 'L''indemnité forfaitaire de recouvrement obligatoire en cas de retard de paiement B2B est de :', '[{"id":"a","label":"20 €","is_correct":false},{"id":"b","label":"40 €","is_correct":true},{"id":"c","label":"75 €","is_correct":false},{"id":"d","label":"100 €","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['paiement','recouvrement'], 'mft-2026-gotrm:bc01-03:qcm:11', true, 'Depuis la loi du 22 mars 2012 (transposition directive 2011/7/UE), toute facture impayée à échéance entraîne automatiquement une indemnité forfaitaire de 40 € pour frais de recouvrement, en plus des pénalités de retard.'),
+  (v_formation, 'qcm', 'La RPC (Répercussion du Prix du Carburant) est :', '[{"id":"a","label":"Une option commerciale facultative","is_correct":false},{"id":"b","label":"Une obligation légale d''ordre public (L. 3222-1 Code des transports)","is_correct":true},{"id":"c","label":"Un dispositif réservé aux PME du transport","is_correct":false},{"id":"d","label":"Une recommandation syndicale non contraignante","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['rpc','legal'], 'mft-2026-gotrm:bc01-03:qcm:12', true, 'L''article L. 3222-1 du Code des transports impose la répercussion du carburant et la rend d''ordre public : aucune clause ne peut y renoncer. Sanctions pénales (15 000 €) en cas de refus du donneur d''ordre.'),
+  (v_formation, 'qcm', 'L''indice de référence le plus utilisé pour la clause d''indexation gazole est :', '[{"id":"a","label":"L''INSEE des prix à la consommation","is_correct":false},{"id":"b","label":"L''indice CNR (Comité National Routier) gazole national","is_correct":true},{"id":"c","label":"Le cours du Brent à Londres","is_correct":false},{"id":"d","label":"L''indice DGCCRF des produits pétroliers","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['rpc','cnr'], 'mft-2026-gotrm:bc01-03:qcm:13', true, 'Le CNR (Comité National Routier) publie chaque mois des indices officiels reconnus par la profession et opposables. L''indice gazole national est la référence standard pour la clause RPC.'),
+  (v_formation, 'qcm', 'Dans une formule d''indexation gazole, la part carburant typique pour un porteur 19 t en régional est de :', '[{"id":"a","label":"15 %","is_correct":false},{"id":"b","label":"30 %","is_correct":true},{"id":"c","label":"50 %","is_correct":false},{"id":"d","label":"75 %","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['rpc','coefficient'], 'mft-2026-gotrm:bc01-03:qcm:14', true, 'La part carburant standard est 30 % pour un porteur, 35 % pour un TRR (transport routier régional longue distance), et 25 % pour la distribution urbaine. C''est ce coefficient qui est appliqué à la variation d''indice CNR.'),
+  (v_formation, 'qcm', 'Contrat à 2 800 € avec part carburant 30 %. L''indice CNR varie de +5 %. Quel est le nouveau prix ?', '[{"id":"a","label":"2 814 €","is_correct":false},{"id":"b","label":"2 828 €","is_correct":false},{"id":"c","label":"2 842 €","is_correct":true},{"id":"d","label":"2 940 €","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['rpc','calcul'], 'mft-2026-gotrm:bc01-03:qcm:15', true, 'Coefficient = 1 + (5 % × 30 %) = 1 + 0,015 = 1,015. Prix indexé = 2 800 × 1,015 = 2 842 €. La hausse n''impacte que la part carburant du prix, pas les autres postes.'),
+  (v_formation, 'qcm', 'Une clause prévoyant une indexation gazole « uniquement à la baisse » est :', '[{"id":"a","label":"Légale si négociée librement","is_correct":false},{"id":"b","label":"Illégale et réputée non écrite","is_correct":true},{"id":"c","label":"Légale uniquement pour les contrats inférieurs à 6 mois","is_correct":false},{"id":"d","label":"Légale si compensée par un autre avantage","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['rpc','illegal'], 'mft-2026-gotrm:bc01-03:qcm:16', true, 'L''article L. 3222-1 impose une indexation symétrique (hausses ET baisses). Une clause asymétrique est illégale et réputée non écrite, indépendamment de toute négociation. Le donneur d''ordre commet une infraction (15 000 € amende).'),
+  (v_formation, 'qcm', 'Lors d''une négociation, un client demande -8 % sur le prix. La meilleure approche est :', '[{"id":"a","label":"Accepter immédiatement pour préserver la relation","is_correct":false},{"id":"b","label":"Refuser sèchement sans alternative","is_correct":false},{"id":"c","label":"Proposer des contreparties (volume, délai, service) pour réduire l''impact","is_correct":true},{"id":"d","label":"Renvoyer à la concurrence","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['negociation','leviers'], 'mft-2026-gotrm:bc01-03:qcm:17', true, 'La règle des 3 leviers (volume, délai, service) permet de préserver la marge tout en répondant au besoin du client. Une baisse sèche supérieure à 5 % sans contrepartie signale de la faiblesse et appelle la baisse suivante.'),
+  (v_formation, 'qcm', 'Le contrat-type général applicable à défaut d''écrit en transport national est défini par :', '[{"id":"a","label":"Le décret 99-269 du 6 avril 1999 (modifié)","is_correct":true},{"id":"b","label":"La loi LOTI de 1982","is_correct":false},{"id":"c","label":"L''accord de Genève de 1956","is_correct":false},{"id":"d","label":"La directive européenne 96/53/CE","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['contrat-type','decret'], 'mft-2026-gotrm:bc01-03:qcm:18', true, 'Le décret 99-269 du 6 avril 1999 (modifié par décrets postérieurs) fixe le contrat-type général applicable à tout transport national en l''absence de convention écrite particulière entre les parties.'),
+  (v_formation, 'qcm', 'Le taux de TVA applicable au transport routier de marchandises en France est :', '[{"id":"a","label":"5,5 %","is_correct":false},{"id":"b","label":"10 %","is_correct":false},{"id":"c","label":"20 %","is_correct":true},{"id":"d","label":"Le TRM est exonéré de TVA","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['tva','prix'], 'mft-2026-gotrm:bc01-03:qcm:19', true, 'Le transport routier de marchandises est soumis au taux normal de TVA de 20 % en France métropolitaine. Le taux réduit de 10 % concerne le transport de voyageurs, pas les marchandises.'),
+  (v_formation, 'qcm', 'Une marge brute de 50 % sur un transport signifie :', '[{"id":"a","label":"Que l''entreprise gagne 50 % de bénéfice net","is_correct":false},{"id":"b","label":"Que (Prix − Coûts variables) / Prix = 50 %","is_correct":true},{"id":"c","label":"Que le coût de revient est doublé pour fixer le prix","is_correct":false},{"id":"d","label":"Que la TVA représente 50 %","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['marge','calcul'], 'mft-2026-gotrm:bc01-03:qcm:20', true, 'La marge brute est (Prix − Coûts variables directs) / Prix. Elle ne tient pas compte des coûts fixes ou de structure. C''est un indicateur de couverture des frais variables, pas de rentabilité finale.'),
+  (v_formation, 'qcm', 'Un coût horaire conducteur de 25,6 €/h et une vitesse moyenne de 65 km/h donnent un coût km de :', '[{"id":"a","label":"0,256 €/km","is_correct":false},{"id":"b","label":"0,394 €/km","is_correct":true},{"id":"c","label":"0,512 €/km","is_correct":false},{"id":"d","label":"0,650 €/km","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['calcul','conducteur'], 'mft-2026-gotrm:bc01-03:qcm:21', true, '25,6 / 65 = 0,394 €/km. Le coût km conducteur représente environ un tiers du coût de revient total d''un porteur, à parité avec le carburant.'),
+  (v_formation, 'qcm', 'L''« indemnité forfaitaire de recouvrement » de 40 € s''applique :', '[{"id":"a","label":"Sur demande écrite uniquement","is_correct":false},{"id":"b","label":"Automatiquement, à chaque facture impayée à échéance","is_correct":true},{"id":"c","label":"Une fois par an au total","is_correct":false},{"id":"d","label":"Uniquement si le client est mis en demeure par huissier","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['paiement','legal'], 'mft-2026-gotrm:bc01-03:qcm:22', true, 'L''indemnité de 40 € s''applique automatiquement à chaque facture impayée à échéance, sans formalité ni mise en demeure. Elle s''ajoute aux pénalités de retard et peut être complétée par la facturation des frais réels au-delà de 40 €.'),
+  (v_formation, 'qcm', 'Le « lissage annuel » des coûts fixes consiste à :', '[{"id":"a","label":"Faire varier le prix toutes les semaines","is_correct":false},{"id":"b","label":"Répartir les coûts fixes sur le volume km commercial annuel prévu","is_correct":true},{"id":"c","label":"Reporter les coûts fixes à l''année suivante","is_correct":false},{"id":"d","label":"Augmenter les coûts fixes de 5 % chaque année","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['couts','lissage'], 'mft-2026-gotrm:bc01-03:qcm:23', true, 'Le lissage répartit les coûts fixes (amortissement, assurance, structure) sur le total des km commerciaux prévus dans l''année, ce qui donne un seuil de profitabilité réaliste plutôt qu''une vision mission par mission.'),
+  (v_formation, 'qcm', 'Pour un transport de granulats (matériau dense), l''unité de tarification la plus adaptée est :', '[{"id":"a","label":"Au m³","is_correct":false},{"id":"b","label":"À la palette EUR","is_correct":false},{"id":"c","label":"À la tonne","is_correct":true},{"id":"d","label":"Au point de livraison","is_correct":false}]'::jsonb, 1, 'facile', ARRAY['tarification','densite'], 'mft-2026-gotrm:bc01-03:qcm:24', true, 'Les granulats sont denses : c''est le poids qui sature le camion avant le volume. La tarification à la tonne est donc la plus pertinente pour ce type de marchandise.'),
+  (v_formation, 'qcm', 'En cas de hausse soudaine du gazole de 10 % en cours de contrat sans clause RPC explicite :', '[{"id":"a","label":"Le transporteur doit absorber la hausse intégralement","is_correct":false},{"id":"b","label":"L''indexation s''applique automatiquement par la loi (L. 3222-1 al. 2)","is_correct":true},{"id":"c","label":"Il faut résilier le contrat puis le renégocier","is_correct":false},{"id":"d","label":"Seul le client peut décider d''accorder une hausse","is_correct":false}]'::jsonb, 1, 'difficile', ARRAY['rpc','defaut-clause'], 'mft-2026-gotrm:bc01-03:qcm:25', true, 'L''article L. 3222-1 al. 2 prévoit qu''à défaut de clause contractuelle, la répercussion s''applique automatiquement de plein droit, sur la base de l''indice CNR mensuel. Le transporteur a le droit de facturer la hausse même sans clause écrite.'),
+  (v_formation, 'qcm', 'Une PME de transport de 20 véhicules a 250 000 € de frais de structure annuels. Coût structure km par véhicule pour 120 000 km/an ?', '[{"id":"a","label":"0,052 €/km","is_correct":false},{"id":"b","label":"0,104 €/km","is_correct":true},{"id":"c","label":"0,156 €/km","is_correct":false},{"id":"d","label":"0,208 €/km","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['calcul','structure'], 'mft-2026-gotrm:bc01-03:qcm:26', true, 'Frais par véhicule = 250 000 / 20 = 12 500 €/an. Coût km = 12 500 / 120 000 = 0,104 €/km. La structure pèse environ 8 à 10 % du coût total dans une PME bien dimensionnée.'),
+  (v_formation, 'qcm', 'Quel élément n''est PAS une mention obligatoire d''un devis transport ?', '[{"id":"a","label":"SIREN du transporteur","is_correct":false},{"id":"b","label":"Numéro de licence de transport (LTI/LTM)","is_correct":false},{"id":"c","label":"Le nom du conducteur affecté","is_correct":true},{"id":"d","label":"Les conditions de paiement","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['devis','mentions'], 'mft-2026-gotrm:bc01-03:qcm:27', true, 'Le nom du conducteur n''est pas une mention obligatoire — c''est une donnée d''affectation interne, qui peut changer. Les éléments obligatoires sont l''identification des parties (SIREN, licence), la marchandise, le prix, les conditions de paiement et le renvoi aux CGT.'),
+  (v_formation, 'qcm', 'En négociation, le levier le plus efficace pour préserver la marge face à une demande de baisse est :', '[{"id":"a","label":"Réduire la qualité du service en silence","is_correct":false},{"id":"b","label":"Augmenter le volume engagé pour mutualiser","is_correct":true},{"id":"c","label":"Promettre une compensation l''année suivante","is_correct":false},{"id":"d","label":"Ajouter des frais cachés sur les factures","is_correct":false}]'::jsonb, 1, 'moyen', ARRAY['negociation','volume'], 'mft-2026-gotrm:bc01-03:qcm:28', true, 'Augmenter le volume engagé est le levier n°1 : il permet d''amortir les coûts fixes et d''optimiser les tournées. Les autres options sont soit illégales, soit toxiques pour la relation commerciale à long terme.');
 
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:1', 'qcm',
-   'Parmi ces postes, lequel est un coût VARIABLE pour un véhicule industriel ?',
-   jsonb '[
-     {"key":"a","label":"L''amortissement"},
-     {"key":"b","label":"L''assurance véhicule"},
-     {"key":"c","label":"Le carburant"},
-     {"key":"d","label":"La taxe à l''essieu"}
-   ]', '["c"]'::jsonb,
-   'Le carburant est proportionnel aux kilomètres parcourus, donc variable. Amortissement, assurance et taxe à l''essieu sont fixes (existent même véhicule à l''arrêt).',
-   'facile', '{couts,variables}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:2', 'qcm',
-   'Un porteur 19 t neuf coûte 95 000 € HT, valeur résiduelle 25 % après 6 ans, parcourt 120 000 km/an. Coût d''amortissement kilométrique ?',
-   jsonb '[
-     {"key":"a","label":"Environ 0,066 €/km"},
-     {"key":"b","label":"Environ 0,099 €/km"},
-     {"key":"c","label":"Environ 0,132 €/km"},
-     {"key":"d","label":"Environ 0,158 €/km"}
-   ]', '["b"]'::jsonb,
-   'Base = 95 000 − 23 750 = 71 250 €. Amortissement annuel = 71 250 / 6 = 11 875 €. Coût km = 11 875 / 120 000 ≈ 0,099 €/km.',
-   'moyenne', '{calcul,amortissement}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:3', 'qcm',
-   'Le carburant représente quelle part typique du coût de revient kilométrique d''un porteur ?',
-   jsonb '[
-     {"key":"a","label":"5 à 10 %"},
-     {"key":"b","label":"15 à 20 %"},
-     {"key":"c","label":"25 à 35 %"},
-     {"key":"d","label":"45 à 55 %"}
-   ]', '["c"]'::jsonb,
-   'Le carburant pèse 25 à 35 % du coût total selon le profil d''exploitation. C''est aussi le poste le plus volatil, d''où l''importance de l''indexation contractuelle.',
-   'facile', '{couts,carburant}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:4', 'qcm',
-   'Un véhicule fait Lyon → Marseille (320 km chargés) puis retour à vide (320 km). Quel est le coût km commercial si le coût km total est 1,22 € ?',
-   jsonb '[
-     {"key":"a","label":"1,22 €/km"},
-     {"key":"b","label":"1,83 €/km"},
-     {"key":"c","label":"2,44 €/km"},
-     {"key":"d","label":"3,05 €/km"}
-   ]', '["c"]'::jsonb,
-   'Tous les coûts des 640 km totaux doivent être absorbés sur 320 km commerciaux (chargés). Coût km commercial = 1,22 × 640 / 320 = 2,44 €/km. Le retour à vide double mécaniquement le coût km commercial.',
-   'moyenne', '{km-commercial,calcul}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:5', 'qcm',
-   'Un transport a un coût de revient total de 546 €. Si je vise une marge nette de 10 %, quel prix HT minimal proposer ?',
-   jsonb '[
-     {"key":"a","label":"546 € HT"},
-     {"key":"b","label":"600 € HT"},
-     {"key":"c","label":"607 € HT"},
-     {"key":"d","label":"655 € HT"}
-   ]', '["c"]'::jsonb,
-   'Prix = Coût / (1 − marge) = 546 / (1 − 0,10) = 546 / 0,90 = 607 € HT. Une simple addition « coût + 10 % » donnerait 600 € mais ne représenterait que 9 % de marge sur le prix.',
-   'moyenne', '{calcul,marge}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:6', 'qcm',
-   'Quelle marge nette est considérée comme un seuil de fragilité structurelle dans le TRM ?',
-   jsonb '[
-     {"key":"a","label":"Inférieure à 1 %"},
-     {"key":"b","label":"Inférieure à 4 %"},
-     {"key":"c","label":"Inférieure à 8 %"},
-     {"key":"d","label":"Inférieure à 12 %"}
-   ]', '["b"]'::jsonb,
-   'Une marge nette inférieure à 4 % rend l''entreprise fragile à tout incident (panne, sinistre, hausse carburant). En dessous de 2 %, l''activité est structurellement en danger.',
-   'moyenne', '{marge,rentabilite}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:7', 'qcm',
-   'La méthode CRT (Coût de Revient Transport) repose principalement sur :',
-   jsonb '[
-     {"key":"a","label":"Le prix marché × 0,9"},
-     {"key":"b","label":"(Km × coût km variable) + (heures × coût horaire fixe) + opérations annexes"},
-     {"key":"c","label":"Le coût des concurrents directement"},
-     {"key":"d","label":"Le forfait journalier conducteur uniquement"}
-   ]', '["b"]'::jsonb,
-   'Le CRT additionne les coûts variables (au km) et les coûts fixes (à l''heure pour le conducteur, l''amortissement et la structure), plus les opérations annexes spécifiques à la mission.',
-   'moyenne', '{methode,crt}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:8', 'qcm',
-   'Pour un transport de mobilier volumineux et léger, l''unité de tarification la plus pertinente est :',
-   jsonb '[
-     {"key":"a","label":"À la tonne"},
-     {"key":"b","label":"Au km"},
-     {"key":"c","label":"Au m³"},
-     {"key":"d","label":"Au point de livraison"}
-   ]', '["c"]'::jsonb,
-   'Le mobilier est volumineux mais léger : la tarification au m³ reflète mieux la capacité utilisée du véhicule (ce sont les volumes qui saturent le camion avant le poids).',
-   'moyenne', '{tarification,volume}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:9', 'qcm',
-   'Un devis transport accepté par signature du client :',
-   jsonb '[
-     {"key":"a","label":"Reste révocable pendant 7 jours"},
-     {"key":"b","label":"Vaut contrat ferme opposable aux deux parties"},
-     {"key":"c","label":"N''engage que le transporteur"},
-     {"key":"d","label":"Doit être confirmé par bon de commande pour être valable"}
-   ]', '["b"]'::jsonb,
-   'L''acceptation écrite (signature, mail, bon de commande) transforme le devis en contrat ferme. Toute modification ultérieure exige un avenant écrit.',
-   'facile', '{devis,contrat}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:10', 'qcm',
-   'Pour qu''une CGT (Conditions Générales de Transport) soit opposable, elle doit être :',
-   jsonb '[
-     {"key":"a","label":"Communiquée après acceptation du devis"},
-     {"key":"b","label":"Disponible uniquement sur le site internet du transporteur"},
-     {"key":"c","label":"Communiquée avant ou avec le devis et acceptée expressément"},
-     {"key":"d","label":"Signée par un huissier de justice"}
-   ]', '["c"]'::jsonb,
-   'Les CGT doivent être remises avant ou avec le devis (jamais après acceptation), être lisibles, et faire l''objet d''une acceptation expresse pour être opposables. Un simple lien vers le site est insuffisant.',
-   'moyenne', '{cgt,opposabilite}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:11', 'qcm',
-   'L''indemnité forfaitaire de recouvrement obligatoire en cas de retard de paiement B2B est de :',
-   jsonb '[
-     {"key":"a","label":"20 €"},
-     {"key":"b","label":"40 €"},
-     {"key":"c","label":"75 €"},
-     {"key":"d","label":"100 €"}
-   ]', '["b"]'::jsonb,
-   'Depuis la loi du 22 mars 2012 (transposition directive 2011/7/UE), toute facture impayée à échéance entraîne automatiquement une indemnité forfaitaire de 40 € pour frais de recouvrement, en plus des pénalités de retard.',
-   'facile', '{paiement,recouvrement}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:12', 'qcm',
-   'La RPC (Répercussion du Prix du Carburant) est :',
-   jsonb '[
-     {"key":"a","label":"Une option commerciale facultative"},
-     {"key":"b","label":"Une obligation légale d''ordre public (L. 3222-1 Code des transports)"},
-     {"key":"c","label":"Un dispositif réservé aux PME du transport"},
-     {"key":"d","label":"Une recommandation syndicale non contraignante"}
-   ]', '["b"]'::jsonb,
-   'L''article L. 3222-1 du Code des transports impose la répercussion du carburant et la rend d''ordre public : aucune clause ne peut y renoncer. Sanctions pénales (15 000 €) en cas de refus du donneur d''ordre.',
-   'moyenne', '{rpc,legal}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:13', 'qcm',
-   'L''indice de référence le plus utilisé pour la clause d''indexation gazole est :',
-   jsonb '[
-     {"key":"a","label":"L''INSEE des prix à la consommation"},
-     {"key":"b","label":"L''indice CNR (Comité National Routier) gazole national"},
-     {"key":"c","label":"Le cours du Brent à Londres"},
-     {"key":"d","label":"L''indice DGCCRF des produits pétroliers"}
-   ]', '["b"]'::jsonb,
-   'Le CNR (Comité National Routier) publie chaque mois des indices officiels reconnus par la profession et opposables. L''indice gazole national est la référence standard pour la clause RPC.',
-   'moyenne', '{rpc,cnr}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:14', 'qcm',
-   'Dans une formule d''indexation gazole, la part carburant typique pour un porteur 19 t en régional est de :',
-   jsonb '[
-     {"key":"a","label":"15 %"},
-     {"key":"b","label":"30 %"},
-     {"key":"c","label":"50 %"},
-     {"key":"d","label":"75 %"}
-   ]', '["b"]'::jsonb,
-   'La part carburant standard est 30 % pour un porteur, 35 % pour un TRR (transport routier régional longue distance), et 25 % pour la distribution urbaine. C''est ce coefficient qui est appliqué à la variation d''indice CNR.',
-   'moyenne', '{rpc,coefficient}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:15', 'qcm',
-   'Contrat à 2 800 € avec part carburant 30 %. L''indice CNR varie de +5 %. Quel est le nouveau prix ?',
-   jsonb '[
-     {"key":"a","label":"2 814 €"},
-     {"key":"b","label":"2 828 €"},
-     {"key":"c","label":"2 842 €"},
-     {"key":"d","label":"2 940 €"}
-   ]', '["c"]'::jsonb,
-   'Coefficient = 1 + (5 % × 30 %) = 1 + 0,015 = 1,015. Prix indexé = 2 800 × 1,015 = 2 842 €. La hausse n''impacte que la part carburant du prix, pas les autres postes.',
-   'difficile', '{rpc,calcul}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:16', 'qcm',
-   'Une clause prévoyant une indexation gazole « uniquement à la baisse » est :',
-   jsonb '[
-     {"key":"a","label":"Légale si négociée librement"},
-     {"key":"b","label":"Illégale et réputée non écrite"},
-     {"key":"c","label":"Légale uniquement pour les contrats inférieurs à 6 mois"},
-     {"key":"d","label":"Légale si compensée par un autre avantage"}
-   ]', '["b"]'::jsonb,
-   'L''article L. 3222-1 impose une indexation symétrique (hausses ET baisses). Une clause asymétrique est illégale et réputée non écrite, indépendamment de toute négociation. Le donneur d''ordre commet une infraction (15 000 € amende).',
-   'moyenne', '{rpc,illegal}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:17', 'qcm',
-   'Lors d''une négociation, un client demande -8 % sur le prix. La meilleure approche est :',
-   jsonb '[
-     {"key":"a","label":"Accepter immédiatement pour préserver la relation"},
-     {"key":"b","label":"Refuser sèchement sans alternative"},
-     {"key":"c","label":"Proposer des contreparties (volume, délai, service) pour réduire l''impact"},
-     {"key":"d","label":"Renvoyer à la concurrence"}
-   ]', '["c"]'::jsonb,
-   'La règle des 3 leviers (volume, délai, service) permet de préserver la marge tout en répondant au besoin du client. Une baisse sèche supérieure à 5 % sans contrepartie signale de la faiblesse et appelle la baisse suivante.',
-   'moyenne', '{negociation,leviers}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:18', 'qcm',
-   'Le contrat-type général applicable à défaut d''écrit en transport national est défini par :',
-   jsonb '[
-     {"key":"a","label":"Le décret 99-269 du 6 avril 1999 (modifié)"},
-     {"key":"b","label":"La loi LOTI de 1982"},
-     {"key":"c","label":"L''accord de Genève de 1956"},
-     {"key":"d","label":"La directive européenne 96/53/CE"}
-   ]', '["a"]'::jsonb,
-   'Le décret 99-269 du 6 avril 1999 (modifié par décrets postérieurs) fixe le contrat-type général applicable à tout transport national en l''absence de convention écrite particulière entre les parties.',
-   'facile', '{contrat-type,decret}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:19', 'qcm',
-   'Le taux de TVA applicable au transport routier de marchandises en France est :',
-   jsonb '[
-     {"key":"a","label":"5,5 %"},
-     {"key":"b","label":"10 %"},
-     {"key":"c","label":"20 %"},
-     {"key":"d","label":"Le TRM est exonéré de TVA"}
-   ]', '["c"]'::jsonb,
-   'Le transport routier de marchandises est soumis au taux normal de TVA de 20 % en France métropolitaine. Le taux réduit de 10 % concerne le transport de voyageurs, pas les marchandises.',
-   'facile', '{tva,prix}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:20', 'qcm',
-   'Une marge brute de 50 % sur un transport signifie :',
-   jsonb '[
-     {"key":"a","label":"Que l''entreprise gagne 50 % de bénéfice net"},
-     {"key":"b","label":"Que (Prix − Coûts variables) / Prix = 50 %"},
-     {"key":"c","label":"Que le coût de revient est doublé pour fixer le prix"},
-     {"key":"d","label":"Que la TVA représente 50 %"}
-   ]', '["b"]'::jsonb,
-   'La marge brute est (Prix − Coûts variables directs) / Prix. Elle ne tient pas compte des coûts fixes ou de structure. C''est un indicateur de couverture des frais variables, pas de rentabilité finale.',
-   'moyenne', '{marge,calcul}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:21', 'qcm',
-   'Un coût horaire conducteur de 25,6 €/h et une vitesse moyenne de 65 km/h donnent un coût km de :',
-   jsonb '[
-     {"key":"a","label":"0,256 €/km"},
-     {"key":"b","label":"0,394 €/km"},
-     {"key":"c","label":"0,512 €/km"},
-     {"key":"d","label":"0,650 €/km"}
-   ]', '["b"]'::jsonb,
-   '25,6 / 65 = 0,394 €/km. Le coût km conducteur représente environ un tiers du coût de revient total d''un porteur, à parité avec le carburant.',
-   'moyenne', '{calcul,conducteur}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:22', 'qcm',
-   'L''« indemnité forfaitaire de recouvrement » de 40 € s''applique :',
-   jsonb '[
-     {"key":"a","label":"Sur demande écrite uniquement"},
-     {"key":"b","label":"Automatiquement, à chaque facture impayée à échéance"},
-     {"key":"c","label":"Une fois par an au total"},
-     {"key":"d","label":"Uniquement si le client est mis en demeure par huissier"}
-   ]', '["b"]'::jsonb,
-   'L''indemnité de 40 € s''applique automatiquement à chaque facture impayée à échéance, sans formalité ni mise en demeure. Elle s''ajoute aux pénalités de retard et peut être complétée par la facturation des frais réels au-delà de 40 €.',
-   'moyenne', '{paiement,legal}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:23', 'qcm',
-   'Le « lissage annuel » des coûts fixes consiste à :',
-   jsonb '[
-     {"key":"a","label":"Faire varier le prix toutes les semaines"},
-     {"key":"b","label":"Répartir les coûts fixes sur le volume km commercial annuel prévu"},
-     {"key":"c","label":"Reporter les coûts fixes à l''année suivante"},
-     {"key":"d","label":"Augmenter les coûts fixes de 5 % chaque année"}
-   ]', '["b"]'::jsonb,
-   'Le lissage répartit les coûts fixes (amortissement, assurance, structure) sur le total des km commerciaux prévus dans l''année, ce qui donne un seuil de profitabilité réaliste plutôt qu''une vision mission par mission.',
-   'moyenne', '{couts,lissage}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:24', 'qcm',
-   'Pour un transport de granulats (matériau dense), l''unité de tarification la plus adaptée est :',
-   jsonb '[
-     {"key":"a","label":"Au m³"},
-     {"key":"b","label":"À la palette EUR"},
-     {"key":"c","label":"À la tonne"},
-     {"key":"d","label":"Au point de livraison"}
-   ]', '["c"]'::jsonb,
-   'Les granulats sont denses : c''est le poids qui sature le camion avant le volume. La tarification à la tonne est donc la plus pertinente pour ce type de marchandise.',
-   'facile', '{tarification,densite}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:25', 'qcm',
-   'En cas de hausse soudaine du gazole de 10 % en cours de contrat sans clause RPC explicite :',
-   jsonb '[
-     {"key":"a","label":"Le transporteur doit absorber la hausse intégralement"},
-     {"key":"b","label":"L''indexation s''applique automatiquement par la loi (L. 3222-1 al. 2)"},
-     {"key":"c","label":"Il faut résilier le contrat puis le renégocier"},
-     {"key":"d","label":"Seul le client peut décider d''accorder une hausse"}
-   ]', '["b"]'::jsonb,
-   'L''article L. 3222-1 al. 2 prévoit qu''à défaut de clause contractuelle, la répercussion s''applique automatiquement de plein droit, sur la base de l''indice CNR mensuel. Le transporteur a le droit de facturer la hausse même sans clause écrite.',
-   'difficile', '{rpc,defaut-clause}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:26', 'qcm',
-   'Une PME de transport de 20 véhicules a 250 000 € de frais de structure annuels. Coût structure km par véhicule pour 120 000 km/an ?',
-   jsonb '[
-     {"key":"a","label":"0,052 €/km"},
-     {"key":"b","label":"0,104 €/km"},
-     {"key":"c","label":"0,156 €/km"},
-     {"key":"d","label":"0,208 €/km"}
-   ]', '["b"]'::jsonb,
-   'Frais par véhicule = 250 000 / 20 = 12 500 €/an. Coût km = 12 500 / 120 000 = 0,104 €/km. La structure pèse environ 8 à 10 % du coût total dans une PME bien dimensionnée.',
-   'moyenne', '{calcul,structure}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:27', 'qcm',
-   'Quel élément n''est PAS une mention obligatoire d''un devis transport ?',
-   jsonb '[
-     {"key":"a","label":"SIREN du transporteur"},
-     {"key":"b","label":"Numéro de licence de transport (LTI/LTM)"},
-     {"key":"c","label":"Le nom du conducteur affecté"},
-     {"key":"d","label":"Les conditions de paiement"}
-   ]', '["c"]'::jsonb,
-   'Le nom du conducteur n''est pas une mention obligatoire — c''est une donnée d''affectation interne, qui peut changer. Les éléments obligatoires sont l''identification des parties (SIREN, licence), la marchandise, le prix, les conditions de paiement et le renvoi aux CGT.',
-   'moyenne', '{devis,mentions}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qcm:28', 'qcm',
-   'En négociation, le levier le plus efficace pour préserver la marge face à une demande de baisse est :',
-   jsonb '[
-     {"key":"a","label":"Réduire la qualité du service en silence"},
-     {"key":"b","label":"Augmenter le volume engagé pour mutualiser"},
-     {"key":"c","label":"Promettre une compensation l''année suivante"},
-     {"key":"d","label":"Ajouter des frais cachés sur les factures"}
-   ]', '["b"]'::jsonb,
-   'Augmenter le volume engagé est le levier n°1 : il permet d''amortir les coûts fixes et d''optimiser les tournées. Les autres options sont soit illégales, soit toxiques pour la relation commerciale à long terme.',
-   'moyenne', '{negociation,volume}');
 
   -- =================================================================
   -- 5 QR (questions rédigées)
   -- =================================================================
-  INSERT INTO public.question_bank (formation_id, source_ref, type, prompt, choices, correct, explanation, difficulty, tags) VALUES
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qr:1', 'qr',
-   'Un client vous demande un devis pour un porteur 19 t entre Bordeaux (33) et Toulouse (31). Trajet 245 km commerciaux, 250 km retour à vide. Coût km variable 0,60 € et coût horaire 33 €/h pour 8 h totales (4 h conduite + 4 h chargement/déchargement/pause). Marge nette cible 12 %. Calculez le coût de revient transport (CRT) et le prix HT minimal à proposer.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Calcul attendu :
+  INSERT INTO public.question_bank (formation_id, type, statement, choices, max_score, difficulty, tags, source_ref, active, explanation) VALUES
+  (v_formation, 'qr', 'Un client vous demande un devis pour un porteur 19 t entre Bordeaux (33) et Toulouse (31). Trajet 245 km commerciaux, 250 km retour à vide. Coût km variable 0,60 € et coût horaire 33 €/h pour 8 h totales (4 h conduite + 4 h chargement/déchargement/pause). Marge nette cible 12 %. Calculez le coût de revient transport (CRT) et le prix HT minimal à proposer.', NULL, 1, 'moyen', ARRAY['cas-pratique','calcul'], 'mft-2026-gotrm:bc01-03:qr:1', true, 'Calcul attendu :
 1. Km totaux = 245 + 250 = 495 km
 2. Coûts variables = 495 × 0,60 = 297 €
 3. Coûts horaires = 8 × 33 = 264 €
@@ -987,25 +704,15 @@ $lesson4$,
 5. Prix HT = 561 / (1 − 0,12) = 561 / 0,88 = 637,50 € HT
 6. Coût km commercial = 561 / 245 = 2,29 €/km — à comparer avec le prix marché.
 
-Réponse à formuler au client : 638 € HT (arrondi commercial), avec clause d''indexation gazole CNR mensuelle.',
-   'moyenne', '{cas-pratique,calcul}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qr:2', 'qr',
-   'Vous gérez un contrat annuel à 1 850 €/tournée hebdomadaire avec une clause RPC standard (CNR mensuel, part carburant 30 %). L''indice CNR est passé de 138,5 (référence janvier) à 147,2 en mars. Calculez le prix indexé applicable aux tournées de mars et expliquez la mécanique au client.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Calcul attendu :
+Réponse à formuler au client : 638 € HT (arrondi commercial), avec clause d''indexation gazole CNR mensuelle.'),
+  (v_formation, 'qr', 'Vous gérez un contrat annuel à 1 850 €/tournée hebdomadaire avec une clause RPC standard (CNR mensuel, part carburant 30 %). L''indice CNR est passé de 138,5 (référence janvier) à 147,2 en mars. Calculez le prix indexé applicable aux tournées de mars et expliquez la mécanique au client.', NULL, 1, 'difficile', ARRAY['rpc','calcul','argumentaire'], 'mft-2026-gotrm:bc01-03:qr:2', true, 'Calcul attendu :
 1. Variation indice = (147,2 − 138,5) / 138,5 = 6,28 %
 2. Coefficient = 1 + (6,28 % × 30 %) = 1 + 0,01884 = 1,01884
 3. Prix indexé = 1 850 × 1,01884 = 1 884,85 € HT, arrondi à 1 885 € HT
 4. Hausse répercutée : 35 € par tournée (uniquement la part carburant subit la variation)
 
-Argumentaire client : « Conformément à l''article L. 3222-1 du Code des transports et à la clause d''indexation prévue à notre contrat, le carburant ayant augmenté de 6,28 % depuis janvier, et représentant 30 % du prix de transport, j''applique la répercussion de 35 € par tournée à partir des factures de mars. Vous trouverez ci-joint la note de calcul détaillée avec la référence CNR. »',
-   'difficile', '{rpc,calcul,argumentaire}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qr:3', 'qr',
-   'Un nouveau client vous transmet ses « Conditions Générales d''Achat » qui contiennent : « Le prestataire renonce expressément à toute clause d''indexation gazole, le prix étant ferme sur la durée du contrat ». Comment réagissez-vous ? Argumentez votre réponse en citant les textes.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Réponse type :
+Argumentaire client : « Conformément à l''article L. 3222-1 du Code des transports et à la clause d''indexation prévue à notre contrat, le carburant ayant augmenté de 6,28 % depuis janvier, et représentant 30 % du prix de transport, j''applique la répercussion de 35 € par tournée à partir des factures de mars. Vous trouverez ci-joint la note de calcul détaillée avec la référence CNR. »'),
+  (v_formation, 'qr', 'Un nouveau client vous transmet ses « Conditions Générales d''Achat » qui contiennent : « Le prestataire renonce expressément à toute clause d''indexation gazole, le prix étant ferme sur la durée du contrat ». Comment réagissez-vous ? Argumentez votre réponse en citant les textes.', NULL, 1, 'difficile', ARRAY['rpc','negociation','droit'], 'mft-2026-gotrm:bc01-03:qr:3', true, 'Réponse type :
 
 a. Refus catégorique de la clause :
 Je refuse cette clause car elle contrevient à l''article L. 3222-1 du Code des transports, qui rend la répercussion du prix du carburant d''ordre public. Toute clause y dérogeant est réputée non écrite.
@@ -1017,13 +724,8 @@ c. Proposition alternative :
 Je propose à la place une clause d''indexation CNR mensuelle classique (part carburant 30 %), qui assure la transparence et la prévisibilité tout en respectant la loi. Je peux également proposer une clause trimestrielle plus stable si le client recherche une meilleure prévisibilité budgétaire.
 
 d. Documentation :
-Je joins à ma réponse une copie des articles L. 3222-1, L. 3222-2 et L. 3242-3 ainsi qu''un avis du CNR sur la pratique standard.',
-   'difficile', '{rpc,negociation,droit}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qr:4', 'qr',
-   'Un client annuel vous demande -8 % sur le prix unitaire de la tournée (actuellement 1,42 €/km commercial, marge nette 11 %). Décrivez votre stratégie de négociation en utilisant la règle des 3 leviers et calculez l''impact sur la marge.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Stratégie attendue :
+Je joins à ma réponse une copie des articles L. 3222-1, L. 3222-2 et L. 3242-3 ainsi qu''un avis du CNR sur la pratique standard.'),
+  (v_formation, 'qr', 'Un client annuel vous demande -8 % sur le prix unitaire de la tournée (actuellement 1,42 €/km commercial, marge nette 11 %). Décrivez votre stratégie de négociation en utilisant la règle des 3 leviers et calculez l''impact sur la marge.', NULL, 1, 'difficile', ARRAY['negociation','strategie'], 'mft-2026-gotrm:bc01-03:qr:4', true, 'Stratégie attendue :
 
 1. Calcul de l''impact d''une baisse sèche :
 - Nouvelle marge = 11 % − 8 % ≈ 3 % → zone de fragilité structurelle (sous le seuil des 4 %).
@@ -1042,13 +744,8 @@ Je joins à ma réponse une copie des articles L. 3222-1, L. 3222-2 et L. 3242-3
 - Avenant écrit fixant le volume minimal annuel garanti, les nouvelles conditions de RDV et les délais.
 - Clause de revoyure à 6 mois pour ajuster si le volume n''est pas tenu.
 
-Mantra : « Je ne baisse jamais un prix sans contrepartie qui me redonne au moins l''équivalent en marge. »',
-   'difficile', '{negociation,strategie}'),
-
-  (v_formation, 'mft-2026-gotrm:bc01-03:qr:5', 'qr',
-   'Listez et expliquez 5 erreurs fréquentes dans la rédaction d''un devis transport, en précisant pour chacune la conséquence opérationnelle ou juridique.',
-   '[]'::jsonb, '[]'::jsonb,
-   'Erreurs attendues (au moins 5 sur les 7 ci-dessous) :
+Mantra : « Je ne baisse jamais un prix sans contrepartie qui me redonne au moins l''équivalent en marge. »'),
+  (v_formation, 'qr', 'Listez et expliquez 5 erreurs fréquentes dans la rédaction d''un devis transport, en précisant pour chacune la conséquence opérationnelle ou juridique.', NULL, 1, 'moyen', ARRAY['devis','erreurs'], 'mft-2026-gotrm:bc01-03:qr:5', true, 'Erreurs attendues (au moins 5 sur les 7 ci-dessous) :
 
 1. Forfait sans plafond horaire au chargement/déchargement : le transporteur peut subir 6 h d''attente non facturable. Conséquence : marge anéantie sur la mission.
 
@@ -1062,8 +759,8 @@ Mantra : « Je ne baisse jamais un prix sans contrepartie qui me redonne au moin
 
 6. Absence de mention des plafonds d''indemnisation : difficulté à opposer les limites légales en cas de litige (charge de la preuve plus lourde).
 
-7. Absence du numéro de licence transport (LTI/LTM) : irrégularité formelle pouvant entraîner la nullité du contrat ou le rejet par le donneur d''ordre.',
-   'moyenne', '{devis,erreurs}');
+7. Absence du numéro de licence transport (LTI/LTM) : irrégularité formelle pouvant entraîner la nullité du contrat ou le rejet par le donneur d''ordre.');
+
 
   -- =================================================================
   -- QUIZZES (4 entraînement + 1 examen blanc)
