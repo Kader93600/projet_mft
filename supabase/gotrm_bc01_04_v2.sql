@@ -924,47 +924,47 @@ Bonus : système d''alerte temps réel via télématique embarquée
   -- =================================================================
   -- QUIZZES (4 entraînement + 1 examen blanc)
   -- =================================================================
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, v_lesson_1, 'Quiz — Cadre R561 et AETR', 'gotrm-bc01-04-quiz-01', 'Champ d''application, dérogations, vocabulaire (semaine, journée, période).', 70, NULL, false, 1)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Quiz — Cadre R561 et AETR', 'Champ d''application, dérogations, vocabulaire (semaine, journée, période).', 'entrainement', NULL, 70)
   RETURNING id INTO v_quiz_1;
 
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_1, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc01-04:qcm:1','mft-2026-gotrm:bc01-04:qcm:2','mft-2026-gotrm:bc01-04:qcm:23','mft-2026-gotrm:bc01-04:qcm:27','mft-2026-gotrm:bc01-04:qcm:28','mft-2026-gotrm:bc01-04:qcm:29');
 
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, v_lesson_2, 'Quiz — Temps de conduite', 'gotrm-bc01-04-quiz-02', 'Plafonds quotidien, hebdo, bihebdo, double équipage.', 70, NULL, false, 2)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Quiz — Temps de conduite', 'Plafonds quotidien, hebdo, bihebdo, double équipage.', 'entrainement', NULL, 70)
   RETURNING id INTO v_quiz_2;
 
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_2, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc01-04:qcm:3','mft-2026-gotrm:bc01-04:qcm:4','mft-2026-gotrm:bc01-04:qcm:5','mft-2026-gotrm:bc01-04:qcm:21','mft-2026-gotrm:bc01-04:qcm:25');
 
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, v_lesson_3, 'Quiz — Pauses et repos', 'gotrm-bc01-04-quiz-03', 'Pause 45 min, repos journalier 11h/9h, repos hebdo 45h/24h, retour domicile.', 70, NULL, false, 3)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Quiz — Pauses et repos', 'Pause 45 min, repos journalier 11h/9h, repos hebdo 45h/24h, retour domicile.', 'entrainement', NULL, 70)
   RETURNING id INTO v_quiz_3;
 
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_3, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc01-04:qcm:6','mft-2026-gotrm:bc01-04:qcm:7','mft-2026-gotrm:bc01-04:qcm:8','mft-2026-gotrm:bc01-04:qcm:9','mft-2026-gotrm:bc01-04:qcm:10','mft-2026-gotrm:bc01-04:qcm:11','mft-2026-gotrm:bc01-04:qcm:12','mft-2026-gotrm:bc01-04:qcm:13','mft-2026-gotrm:bc01-04:qcm:14','mft-2026-gotrm:bc01-04:qcm:26');
 
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, v_lesson_4, 'Quiz — Tachygraphe et contrôles', 'gotrm-bc01-04-quiz-04', 'Smart tachygraphe, cartes, téléchargements, contrôles, sanctions.', 70, NULL, false, 4)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Quiz — Tachygraphe et contrôles', 'Smart tachygraphe, cartes, téléchargements, contrôles, sanctions.', 'entrainement', NULL, 70)
   RETURNING id INTO v_quiz_4;
 
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_4, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc01-04:qcm:15','mft-2026-gotrm:bc01-04:qcm:16','mft-2026-gotrm:bc01-04:qcm:17','mft-2026-gotrm:bc01-04:qcm:18','mft-2026-gotrm:bc01-04:qcm:19','mft-2026-gotrm:bc01-04:qcm:20','mft-2026-gotrm:bc01-04:qcm:22','mft-2026-gotrm:bc01-04:qcm:24','mft-2026-gotrm:bc01-04:qcm:30');
 
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, NULL, 'Examen blanc — BC01-04 R561 et AETR', 'gotrm-bc01-04-examen-blanc', '15 QCM en 30 min, seuil 50 %. Synthèse du module.', 50, 30, true, 5)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Examen blanc — BC01-04 R561 et AETR', '15 QCM en 30 min, seuil 50 %. Synthèse du module.', 'examen_blanc', 1800, 50)
   RETURNING id INTO v_quiz_eb;
 
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_eb, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc01-04:qcm:1','mft-2026-gotrm:bc01-04:qcm:3','mft-2026-gotrm:bc01-04:qcm:4','mft-2026-gotrm:bc01-04:qcm:5','mft-2026-gotrm:bc01-04:qcm:6','mft-2026-gotrm:bc01-04:qcm:8','mft-2026-gotrm:bc01-04:qcm:10','mft-2026-gotrm:bc01-04:qcm:11','mft-2026-gotrm:bc01-04:qcm:13','mft-2026-gotrm:bc01-04:qcm:16','mft-2026-gotrm:bc01-04:qcm:17','mft-2026-gotrm:bc01-04:qcm:19','mft-2026-gotrm:bc01-04:qcm:21','mft-2026-gotrm:bc01-04:qcm:22','mft-2026-gotrm:bc01-04:qcm:29');

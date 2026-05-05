@@ -1003,47 +1003,47 @@ Conséquences en cas de défaut :
   -- =================================================================
   -- QUIZZES (4 entraînement + 1 examen blanc)
   -- =================================================================
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, v_lesson_1, 'Quiz — Documents nationaux', 'gotrm-bc01-05-quiz-01', 'LVN, BL, mentions obligatoires, réserves nationales.', 70, NULL, false, 1)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Quiz — Documents nationaux', 'LVN, BL, mentions obligatoires, réserves nationales.', 'entrainement', NULL, 70)
   RETURNING id INTO v_quiz_1;
 
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_1, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc01-05:qcm:1','mft-2026-gotrm:bc01-05:qcm:2','mft-2026-gotrm:bc01-05:qcm:3','mft-2026-gotrm:bc01-05:qcm:21');
 
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, v_lesson_2, 'Quiz — CMR international', 'gotrm-bc01-05-quiz-02', 'Lettre de voiture CMR, plafonds, art. 29, déclaration de valeur.', 70, NULL, false, 2)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Quiz — CMR international', 'Lettre de voiture CMR, plafonds, art. 29, déclaration de valeur.', 'entrainement', NULL, 70)
   RETURNING id INTO v_quiz_2;
 
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_2, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc01-05:qcm:4','mft-2026-gotrm:bc01-05:qcm:5','mft-2026-gotrm:bc01-05:qcm:6','mft-2026-gotrm:bc01-05:qcm:7','mft-2026-gotrm:bc01-05:qcm:25','mft-2026-gotrm:bc01-05:qcm:27');
 
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, v_lesson_3, 'Quiz — Formalités douanières', 'gotrm-bc01-05-quiz-03', 'T1/T2, DAU, EORI, NSTI, carnets TIR/ATA, transit.', 70, NULL, false, 3)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Quiz — Formalités douanières', 'T1/T2, DAU, EORI, NSTI, carnets TIR/ATA, transit.', 'entrainement', NULL, 70)
   RETURNING id INTO v_quiz_3;
 
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_3, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc01-05:qcm:8','mft-2026-gotrm:bc01-05:qcm:9','mft-2026-gotrm:bc01-05:qcm:10','mft-2026-gotrm:bc01-05:qcm:11','mft-2026-gotrm:bc01-05:qcm:12','mft-2026-gotrm:bc01-05:qcm:13','mft-2026-gotrm:bc01-05:qcm:14','mft-2026-gotrm:bc01-05:qcm:22','mft-2026-gotrm:bc01-05:qcm:23','mft-2026-gotrm:bc01-05:qcm:26');
 
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, v_lesson_4, 'Quiz — Incoterms 2020', 'gotrm-bc01-05-quiz-04', '11 Incoterms, groupes E/F/C/D, transfert de risque, douanes.', 70, NULL, false, 4)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Quiz — Incoterms 2020', '11 Incoterms, groupes E/F/C/D, transfert de risque, douanes.', 'entrainement', NULL, 70)
   RETURNING id INTO v_quiz_4;
 
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_4, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc01-05:qcm:15','mft-2026-gotrm:bc01-05:qcm:16','mft-2026-gotrm:bc01-05:qcm:17','mft-2026-gotrm:bc01-05:qcm:18','mft-2026-gotrm:bc01-05:qcm:19','mft-2026-gotrm:bc01-05:qcm:20','mft-2026-gotrm:bc01-05:qcm:24','mft-2026-gotrm:bc01-05:qcm:28');
 
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, NULL, 'Examen blanc — BC01-05 Documents et douane', 'gotrm-bc01-05-examen-blanc', '12 QCM en 25 min, seuil 50 %. Synthèse documentaire et douanière.', 50, 25, true, 5)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Examen blanc — BC01-05 Documents et douane', '12 QCM en 25 min, seuil 50 %. Synthèse documentaire et douanière.', 'examen_blanc', 1500, 50)
   RETURNING id INTO v_quiz_eb;
 
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_eb, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc01-05:qcm:1','mft-2026-gotrm:bc01-05:qcm:3','mft-2026-gotrm:bc01-05:qcm:5','mft-2026-gotrm:bc01-05:qcm:6','mft-2026-gotrm:bc01-05:qcm:7','mft-2026-gotrm:bc01-05:qcm:8','mft-2026-gotrm:bc01-05:qcm:11','mft-2026-gotrm:bc01-05:qcm:15','mft-2026-gotrm:bc01-05:qcm:17','mft-2026-gotrm:bc01-05:qcm:19','mft-2026-gotrm:bc01-05:qcm:22','mft-2026-gotrm:bc01-05:qcm:28');

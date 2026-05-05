@@ -765,47 +765,47 @@ Mantra : « Je ne baisse jamais un prix sans contrepartie qui me redonne au moin
   -- =================================================================
   -- QUIZZES (4 entraînement + 1 examen blanc)
   -- =================================================================
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, v_lesson_1, 'Quiz — Composantes du prix de transport', 'gotrm-bc01-03-quiz-01', 'Coûts fixes/variables, postes principaux, km commercial vs total.', 70, NULL, false, 1)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Quiz — Composantes du prix de transport', 'Coûts fixes/variables, postes principaux, km commercial vs total.', 'entrainement', NULL, 70)
   RETURNING id INTO v_quiz_1;
 
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_1, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc01-03:qcm:1','mft-2026-gotrm:bc01-03:qcm:2','mft-2026-gotrm:bc01-03:qcm:3','mft-2026-gotrm:bc01-03:qcm:4','mft-2026-gotrm:bc01-03:qcm:21','mft-2026-gotrm:bc01-03:qcm:23','mft-2026-gotrm:bc01-03:qcm:26');
 
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, v_lesson_2, 'Quiz — Coût de revient et marge', 'gotrm-bc01-03-quiz-02', 'CRT, marge brute/nette, tarification au km/palette/tonne.', 70, NULL, false, 2)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Quiz — Coût de revient et marge', 'CRT, marge brute/nette, tarification au km/palette/tonne.', 'entrainement', NULL, 70)
   RETURNING id INTO v_quiz_2;
 
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_2, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc01-03:qcm:5','mft-2026-gotrm:bc01-03:qcm:6','mft-2026-gotrm:bc01-03:qcm:7','mft-2026-gotrm:bc01-03:qcm:8','mft-2026-gotrm:bc01-03:qcm:20','mft-2026-gotrm:bc01-03:qcm:24');
 
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, v_lesson_3, 'Quiz — Devis et CGT', 'gotrm-bc01-03-quiz-03', 'Mentions obligatoires, opposabilité des CGT, contrat-type.', 70, NULL, false, 3)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Quiz — Devis et CGT', 'Mentions obligatoires, opposabilité des CGT, contrat-type.', 'entrainement', NULL, 70)
   RETURNING id INTO v_quiz_3;
 
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_3, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc01-03:qcm:9','mft-2026-gotrm:bc01-03:qcm:10','mft-2026-gotrm:bc01-03:qcm:11','mft-2026-gotrm:bc01-03:qcm:18','mft-2026-gotrm:bc01-03:qcm:19','mft-2026-gotrm:bc01-03:qcm:22','mft-2026-gotrm:bc01-03:qcm:27');
 
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, v_lesson_4, 'Quiz — Indexation gazole et négociation', 'gotrm-bc01-03-quiz-04', 'RPC, indice CNR, calcul d''indexation, leviers de négociation.', 70, NULL, false, 4)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Quiz — Indexation gazole et négociation', 'RPC, indice CNR, calcul d''indexation, leviers de négociation.', 'entrainement', NULL, 70)
   RETURNING id INTO v_quiz_4;
 
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_4, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc01-03:qcm:12','mft-2026-gotrm:bc01-03:qcm:13','mft-2026-gotrm:bc01-03:qcm:14','mft-2026-gotrm:bc01-03:qcm:15','mft-2026-gotrm:bc01-03:qcm:16','mft-2026-gotrm:bc01-03:qcm:17','mft-2026-gotrm:bc01-03:qcm:25','mft-2026-gotrm:bc01-03:qcm:28');
 
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, NULL, 'Examen blanc — BC01-03 Cotation et offre', 'gotrm-bc01-03-examen-blanc', '12 QCM en 25 min, seuil 50 %. Synthèse du module.', 50, 25, true, 5)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Examen blanc — BC01-03 Cotation et offre', '12 QCM en 25 min, seuil 50 %. Synthèse du module.', 'examen_blanc', 1500, 50)
   RETURNING id INTO v_quiz_eb;
 
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_eb, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc01-03:qcm:2','mft-2026-gotrm:bc01-03:qcm:4','mft-2026-gotrm:bc01-03:qcm:5','mft-2026-gotrm:bc01-03:qcm:7','mft-2026-gotrm:bc01-03:qcm:10','mft-2026-gotrm:bc01-03:qcm:12','mft-2026-gotrm:bc01-03:qcm:14','mft-2026-gotrm:bc01-03:qcm:15','mft-2026-gotrm:bc01-03:qcm:18','mft-2026-gotrm:bc01-03:qcm:25','mft-2026-gotrm:bc01-03:qcm:27','mft-2026-gotrm:bc01-03:qcm:28');

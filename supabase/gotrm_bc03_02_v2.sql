@@ -1828,42 +1828,42 @@ Sa qualité de mise en œuvre détermine la maturité RSE de l''entreprise. Bien
   -- =================================================================
   -- QUIZZES
   -- =================================================================
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, v_lesson_1, 'Quiz — RSE et certifications', 'gotrm-bc03-02-quiz-01', '3 piliers, ISO 14001, Objectif CO2, EcoVadis, Bilan Carbone.', 70, NULL, false, 1)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Quiz — RSE et certifications', '3 piliers, ISO 14001, Objectif CO2, EcoVadis, Bilan Carbone.', 'entrainement', NULL, 70)
   RETURNING id INTO v_quiz_1;
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_1, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc03-02:qcm:1','mft-2026-gotrm:bc03-02:qcm:2','mft-2026-gotrm:bc03-02:qcm:3','mft-2026-gotrm:bc03-02:qcm:4','mft-2026-gotrm:bc03-02:qcm:5','mft-2026-gotrm:bc03-02:qcm:18','mft-2026-gotrm:bc03-02:qcm:24');
 
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, v_lesson_2, 'Quiz — Énergies alternatives', 'gotrm-bc03-02-quiz-02', 'Électrique, GNV/bioGNV, hydrogène, suramortissement, ADEME.', 70, NULL, false, 2)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Quiz — Énergies alternatives', 'Électrique, GNV/bioGNV, hydrogène, suramortissement, ADEME.', 'entrainement', NULL, 70)
   RETURNING id INTO v_quiz_2;
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_2, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc03-02:qcm:6','mft-2026-gotrm:bc03-02:qcm:7','mft-2026-gotrm:bc03-02:qcm:8','mft-2026-gotrm:bc03-02:qcm:9','mft-2026-gotrm:bc03-02:qcm:10','mft-2026-gotrm:bc03-02:qcm:20');
 
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, v_lesson_3, 'Quiz — ZFE et urbain', 'gotrm-bc03-02-quiz-03', 'Crit''Air, calendriers ZFE, dernier kilomètre, opportunités.', 70, NULL, false, 3)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Quiz — ZFE et urbain', 'Crit''Air, calendriers ZFE, dernier kilomètre, opportunités.', 'entrainement', NULL, 70)
   RETURNING id INTO v_quiz_3;
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_3, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc03-02:qcm:11','mft-2026-gotrm:bc03-02:qcm:12','mft-2026-gotrm:bc03-02:qcm:13','mft-2026-gotrm:bc03-02:qcm:14','mft-2026-gotrm:bc03-02:qcm:21');
 
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, v_lesson_4, 'Quiz — KPI rentabilité durable', 'gotrm-bc03-02-quiz-04', 'KPI ESG, CSRD, Bilan Carbone, neutralité carbone, reporting.', 70, NULL, false, 4)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Quiz — KPI rentabilité durable', 'KPI ESG, CSRD, Bilan Carbone, neutralité carbone, reporting.', 'entrainement', NULL, 70)
   RETURNING id INTO v_quiz_4;
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_4, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc03-02:qcm:15','mft-2026-gotrm:bc03-02:qcm:16','mft-2026-gotrm:bc03-02:qcm:17','mft-2026-gotrm:bc03-02:qcm:19','mft-2026-gotrm:bc03-02:qcm:22','mft-2026-gotrm:bc03-02:qcm:23','mft-2026-gotrm:bc03-02:qcm:25');
 
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, NULL, 'Examen blanc — BC03-02 RSE et transition', 'gotrm-bc03-02-examen-blanc', '12 QCM en 25 min, seuil 50 %.', 50, 25, true, 5)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Examen blanc — BC03-02 RSE et transition', '12 QCM en 25 min, seuil 50 %.', 'examen_blanc', 1500, 50)
   RETURNING id INTO v_quiz_eb;
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_eb, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc03-02:qcm:1','mft-2026-gotrm:bc03-02:qcm:2','mft-2026-gotrm:bc03-02:qcm:5','mft-2026-gotrm:bc03-02:qcm:6','mft-2026-gotrm:bc03-02:qcm:8','mft-2026-gotrm:bc03-02:qcm:11','mft-2026-gotrm:bc03-02:qcm:12','mft-2026-gotrm:bc03-02:qcm:13','mft-2026-gotrm:bc03-02:qcm:15','mft-2026-gotrm:bc03-02:qcm:17','mft-2026-gotrm:bc03-02:qcm:21','mft-2026-gotrm:bc03-02:qcm:22');

@@ -1250,42 +1250,42 @@ Pour une PME de transport carburant :
   -- =================================================================
   -- QUIZZES
   -- =================================================================
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, v_lesson_1, 'Quiz — ADR : cadre et classes', 'gotrm-bc01-07-quiz-01', 'Cadre ADR, 9 classes, numéros UN, panneau orange, exemption 1.1.3.6, CSTMD.', 70, NULL, false, 1)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Quiz — ADR : cadre et classes', 'Cadre ADR, 9 classes, numéros UN, panneau orange, exemption 1.1.3.6, CSTMD.', 'entrainement', NULL, 70)
   RETURNING id INTO v_quiz_1;
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_1, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc01-07:qcm:1','mft-2026-gotrm:bc01-07:qcm:2','mft-2026-gotrm:bc01-07:qcm:3','mft-2026-gotrm:bc01-07:qcm:4','mft-2026-gotrm:bc01-07:qcm:5','mft-2026-gotrm:bc01-07:qcm:6','mft-2026-gotrm:bc01-07:qcm:7','mft-2026-gotrm:bc01-07:qcm:21','mft-2026-gotrm:bc01-07:qcm:22','mft-2026-gotrm:bc01-07:qcm:24','mft-2026-gotrm:bc01-07:qcm:27');
 
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, v_lesson_2, 'Quiz — ATP température dirigée', 'gotrm-bc01-07-quiz-02', 'Cadre ATP, catégories véhicules, températures, attestation, enregistrement.', 70, NULL, false, 2)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Quiz — ATP température dirigée', 'Cadre ATP, catégories véhicules, températures, attestation, enregistrement.', 'entrainement', NULL, 70)
   RETURNING id INTO v_quiz_2;
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_2, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc01-07:qcm:8','mft-2026-gotrm:bc01-07:qcm:9','mft-2026-gotrm:bc01-07:qcm:10','mft-2026-gotrm:bc01-07:qcm:11','mft-2026-gotrm:bc01-07:qcm:12','mft-2026-gotrm:bc01-07:qcm:13','mft-2026-gotrm:bc01-07:qcm:23','mft-2026-gotrm:bc01-07:qcm:26');
 
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, v_lesson_3, 'Quiz — Transports exceptionnels', 'gotrm-bc01-07-quiz-03', 'Gabarits, 3 catégories, TIE-PI, voiture pilote, vitesse, anticipation.', 70, NULL, false, 3)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Quiz — Transports exceptionnels', 'Gabarits, 3 catégories, TIE-PI, voiture pilote, vitesse, anticipation.', 'entrainement', NULL, 70)
   RETURNING id INTO v_quiz_3;
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_3, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc01-07:qcm:14','mft-2026-gotrm:bc01-07:qcm:15','mft-2026-gotrm:bc01-07:qcm:16','mft-2026-gotrm:bc01-07:qcm:17','mft-2026-gotrm:bc01-07:qcm:18','mft-2026-gotrm:bc01-07:qcm:19','mft-2026-gotrm:bc01-07:qcm:20','mft-2026-gotrm:bc01-07:qcm:28');
 
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, v_lesson_4, 'Quiz — Documents et obligations transverses', 'gotrm-bc01-07-quiz-04', 'CQC FCO, équipement véhicule, traçabilité, incidents.', 70, NULL, false, 4)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Quiz — Documents et obligations transverses', 'CQC FCO, équipement véhicule, traçabilité, incidents.', 'entrainement', NULL, 70)
   RETURNING id INTO v_quiz_4;
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_4, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc01-07:qcm:21','mft-2026-gotrm:bc01-07:qcm:22','mft-2026-gotrm:bc01-07:qcm:23','mft-2026-gotrm:bc01-07:qcm:24','mft-2026-gotrm:bc01-07:qcm:25','mft-2026-gotrm:bc01-07:qcm:26');
 
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, NULL, 'Examen blanc — BC01-07 Transports spécifiques', 'gotrm-bc01-07-examen-blanc', '15 QCM en 30 min, seuil 50 %.', 50, 30, true, 5)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Examen blanc — BC01-07 Transports spécifiques', '15 QCM en 30 min, seuil 50 %.', 'examen_blanc', 1800, 50)
   RETURNING id INTO v_quiz_eb;
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_eb, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc01-07:qcm:1','mft-2026-gotrm:bc01-07:qcm:2','mft-2026-gotrm:bc01-07:qcm:4','mft-2026-gotrm:bc01-07:qcm:6','mft-2026-gotrm:bc01-07:qcm:7','mft-2026-gotrm:bc01-07:qcm:8','mft-2026-gotrm:bc01-07:qcm:10','mft-2026-gotrm:bc01-07:qcm:11','mft-2026-gotrm:bc01-07:qcm:12','mft-2026-gotrm:bc01-07:qcm:14','mft-2026-gotrm:bc01-07:qcm:16','mft-2026-gotrm:bc01-07:qcm:17','mft-2026-gotrm:bc01-07:qcm:20','mft-2026-gotrm:bc01-07:qcm:22','mft-2026-gotrm:bc01-07:qcm:25');

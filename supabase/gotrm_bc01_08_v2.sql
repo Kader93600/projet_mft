@@ -1218,42 +1218,42 @@ Conclusion stratégique : un client toxique de 600 k€ qui en réalité ne rapp
   -- =================================================================
   -- QUIZZES
   -- =================================================================
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, v_lesson_1, 'Quiz — Cycle relation client', 'gotrm-bc01-08-quiz-01', '5 phases, rôles, moments de vérité, LTV.', 70, NULL, false, 1)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Quiz — Cycle relation client', '5 phases, rôles, moments de vérité, LTV.', 'entrainement', NULL, 70)
   RETURNING id INTO v_quiz_1;
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_1, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc01-08:qcm:1','mft-2026-gotrm:bc01-08:qcm:2','mft-2026-gotrm:bc01-08:qcm:3','mft-2026-gotrm:bc01-08:qcm:24');
 
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, v_lesson_2, 'Quiz — Qualité et SLA', 'gotrm-bc01-08-quiz-02', 'Satisfaction, SLA SMART, pénalités, ISO 9001, OEA.', 70, NULL, false, 2)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Quiz — Qualité et SLA', 'Satisfaction, SLA SMART, pénalités, ISO 9001, OEA.', 'entrainement', NULL, 70)
   RETURNING id INTO v_quiz_2;
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_2, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc01-08:qcm:4','mft-2026-gotrm:bc01-08:qcm:5','mft-2026-gotrm:bc01-08:qcm:6','mft-2026-gotrm:bc01-08:qcm:7','mft-2026-gotrm:bc01-08:qcm:8','mft-2026-gotrm:bc01-08:qcm:9','mft-2026-gotrm:bc01-08:qcm:10');
 
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, v_lesson_3, 'Quiz — CRM, NPS et feedback', 'gotrm-bc01-08-quiz-03', 'CRM, NPS, CSAT, CES, boucle feedback.', 70, NULL, false, 3)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Quiz — CRM, NPS et feedback', 'CRM, NPS, CSAT, CES, boucle feedback.', 'entrainement', NULL, 70)
   RETURNING id INTO v_quiz_3;
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_3, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc01-08:qcm:11','mft-2026-gotrm:bc01-08:qcm:12','mft-2026-gotrm:bc01-08:qcm:13','mft-2026-gotrm:bc01-08:qcm:14','mft-2026-gotrm:bc01-08:qcm:22','mft-2026-gotrm:bc01-08:qcm:23');
 
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, v_lesson_4, 'Quiz — Situations difficiles', 'gotrm-bc01-08-quiz-04', 'Retard, refus, conflits, clients toxiques, paradoxe récupération.', 70, NULL, false, 4)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Quiz — Situations difficiles', 'Retard, refus, conflits, clients toxiques, paradoxe récupération.', 'entrainement', NULL, 70)
   RETURNING id INTO v_quiz_4;
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_4, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc01-08:qcm:15','mft-2026-gotrm:bc01-08:qcm:16','mft-2026-gotrm:bc01-08:qcm:17','mft-2026-gotrm:bc01-08:qcm:18','mft-2026-gotrm:bc01-08:qcm:19','mft-2026-gotrm:bc01-08:qcm:20','mft-2026-gotrm:bc01-08:qcm:21','mft-2026-gotrm:bc01-08:qcm:25');
 
-  INSERT INTO public.quizzes (module_id, lesson_id, title, slug, description, pass_threshold, time_limit_min, is_mock_exam, "order")
-  VALUES (v_module, NULL, 'Examen blanc — BC01-08 Relation client', 'gotrm-bc01-08-examen-blanc', '12 QCM en 25 min, seuil 50 %.', 50, 25, true, 5)
+  INSERT INTO public.quizzes (module_id, title, description, type, time_limit_s, pass_threshold)
+  VALUES (v_module, 'Examen blanc — BC01-08 Relation client', '12 QCM en 25 min, seuil 50 %.', 'examen_blanc', 1500, 50)
   RETURNING id INTO v_quiz_eb;
-  INSERT INTO public.quiz_question_bank (quiz_id, question_id, "order")
+  INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   SELECT v_quiz_eb, id, ROW_NUMBER() OVER (ORDER BY source_ref)
   FROM public.question_bank
   WHERE source_ref IN ('mft-2026-gotrm:bc01-08:qcm:1','mft-2026-gotrm:bc01-08:qcm:2','mft-2026-gotrm:bc01-08:qcm:5','mft-2026-gotrm:bc01-08:qcm:7','mft-2026-gotrm:bc01-08:qcm:8','mft-2026-gotrm:bc01-08:qcm:11','mft-2026-gotrm:bc01-08:qcm:12','mft-2026-gotrm:bc01-08:qcm:15','mft-2026-gotrm:bc01-08:qcm:17','mft-2026-gotrm:bc01-08:qcm:19','mft-2026-gotrm:bc01-08:qcm:20','mft-2026-gotrm:bc01-08:qcm:25');
