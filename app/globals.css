@@ -191,11 +191,17 @@
   .prose-lesson pre code {
     @apply block bg-transparent border-0 p-5 md:p-6 overflow-x-auto;
     color: #E8ECF8;
-    font-family: var(--font-jetbrains, ui-monospace, SFMono-Regular, Menlo, monospace);
+    /* Stack système moderne : SF Mono (Apple), Cascadia (Windows),
+       Roboto Mono (Linux/Android), fallbacks. Plus doux que JetBrains. */
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono",
+      "Fira Code", "Source Code Pro", Consolas, monospace;
     font-size: 0.875rem;
     line-height: 1.7;
-    font-feature-settings: "calt", "ss01";
-    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+    letter-spacing: 0.005em;
+    font-weight: 400;
+    font-feature-settings: "calt", "liga";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   /* Table wrap — permet le scroll horizontal sur mobile sans casser le layout */
