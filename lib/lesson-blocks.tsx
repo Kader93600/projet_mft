@@ -23,6 +23,7 @@ import { renderMarkdown } from "./markdown";
 import { Callout } from "@/components/lesson/callout";
 import { LawArticle } from "@/components/lesson/law-article";
 import { KeyFigures } from "@/components/lesson/key-figure";
+import { ScrollReveal } from "@/components/lesson/scroll-reveal";
 import {
   Memo,
   Piege,
@@ -100,6 +101,118 @@ function parseFigures(body: string) {
 }
 
 export function LessonContent({ source }: { source: string }) {
+  const segments = tokenize(source);
+
+  // Sub-segmentation des segments md : on découpe par double saut de ligne
+  // pour pouvoir animer paragraphe par paragraphe (effet Apple).
+  type AnimItem =
+    | { kind: "md-block"; content: string; keyId: string }
+    | { kind: "block"; seg: Extract<Segment, { kind: "block" }>; keyId: string };
+  const animated: AnimItem[] = segments.flatMap((seg, idx): AnimItem[] => {
+    if (seg.kind === "md") {
+      const blocks = seg.content
+        .split(/\n\n+/)
+        .map((b) => b.trim())
+        .filter(Boolean);
+      return blocks.map((block, j) => ({
+        kind: "md-block",
+        content: block,
+        keyId: `${idx}-${j}`,
+      }));
+    }
+    return [{ kind: "block", seg, keyId: String(idx) }];
+  });
+
+  return (
+    <div className="prose-lesson">
+      {animated.map((item, i) => {
+        // Stagger doux : 60ms par item (cap à 8 items pour éviter
+        // un délai cumulé trop long sur les longues leçons)
+        const delay = Math.min(i, 8) * 60;
+        if (item.kind === "md-block") {
+          return (
+            <ScrollReveal key={item.keyId} delay={delay}>
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: renderMarkdown(item.content),
+                }}
+              />
+            </ScrollReveal>
+          );
+        }
+        const seg = item.seg;
+        // Wrap avec ScrollReveal pour les blocs riches aussi
+        const block = renderRichBlock(seg, item.keyId);
+        if (!block) return null;
+        return (
+          <ScrollReveal key={item.keyId} delay={delay}>
+            {block}
+          </ScrollReveal>
+        );
+      })}
+    </div>
+  );
+}
+
+function renderRichBlock(
+  seg: Extract<Segment, { kind: "block" }>,
+  idx: string
+): React.ReactNode {
+  // (Bloc de fallback déplacé en haut pour réutilisation)
+  const md = (body: string) => (
+    <div dangerouslySetInnerHTML={{ __html: renderMarkdown(body) }} />
+  );
+  if (seg.name === "callout") {
+    const variant = (seg.attrs.type ?? "info") as any;
+    return (
+      <Callout key={idx} variant={variant} title={seg.attrs.title}>
+        {md(seg.body)}
+      </Callout>
+    );
+  }
+  if (seg.name === "law") {
+    return (
+      <LawArticle
+        key={idx}
+        code={seg.attrs.code ?? "Code"}
+        article={seg.attrs.article ?? ""}
+        href={seg.attrs.href}
+        date={seg.attrs.date}
+      >
+        {md(seg.body)}
+      </LawArticle>
+    );
+  }
+  if (seg.name === "figures") return <KeyFigures key={idx} items={parseFigures(seg.body)} />;
+  if (seg.name === "memo")
+    return <Memo key={idx} title={seg.attrs.title}>{md(seg.body)}</Memo>;
+  if (seg.name === "piege")
+    return <Piege key={idx} title={seg.attrs.title}>{md(seg.body)}</Piege>;
+  if (seg.name === "caspratique")
+    return <CasPratique key={idx} title={seg.attrs.title}>{md(seg.body)}</CasPratique>;
+  if (seg.name === "conseil")
+    return <Conseil key={idx} title={seg.attrs.title}>{md(seg.body)}</Conseil>;
+  if (seg.name === "objectifs") {
+    const items = seg.body
+      .split("\n")
+      .map((l) => l.trim())
+      .filter((l) => l.startsWith("- "))
+      .map((l) => l.slice(2).trim());
+    return <Objectifs key={idx} items={items} />;
+  }
+  return (
+    <div
+      key={idx}
+      className="my-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-3 text-xs text-slate-500"
+    >
+      <span className="font-mono font-semibold">:::{seg.name}</span>
+      <pre className="whitespace-pre-wrap mt-1 text-slate-700">{seg.body}</pre>
+    </div>
+  );
+}
+
+function _legacyRender({ source }: { source: string }) {
+  // Conservé pour rétro-compat éventuelle, non utilisé
   const segments = tokenize(source);
   return (
     <div className="prose-lesson">

@@ -124,6 +124,22 @@ export function renderMarkdown(md: string): string {
       }
       i++; // saute le ``` fermant (ou EOF)
       const content = codeLines.join("\n");
+
+      // Auto-détection : formulaire ASCII (Label : ____) → composant visuel
+      const visualForm = tryRenderVisualForm(content);
+      if (visualForm) {
+        out.push(visualForm);
+        continue;
+      }
+
+      // Auto-détection : arborescence (├ └ │) → diagramme propre
+      const tree = tryRenderTree(content);
+      if (tree) {
+        out.push(tree);
+        continue;
+      }
+
+      // Sinon : code block standard
       out.push(
         `<pre data-lang="${lang}"><code class="lang-${lang}">${content}</code></pre>`
       );
@@ -311,6 +327,143 @@ function renderBlockquote(lines: string[]): string {
 
   const innerHtml = renderInnerBlock(lines.join("\n"));
   return `<blockquote>${innerHtml}</blockquote>`;
+}
+
+// ---------------------------------------------------------------------
+// Détection automatique : formulaire ASCII → vrai formulaire visuel
+// ---------------------------------------------------------------------
+//
+// Patterns supportés :
+//   "Donneur d'ordre : ___________________"
+//   "Contact         : ___________________ (tél / email)"
+//   "[ ] Option 1"        → checkbox
+//   "[x] Option cochée"   → checkbox cochée
+//   "── Section ──"        → séparateur de groupe
+//
+// On rend en HTML structuré (.visual-form) avec spans dédiés ; les
+// styles modernes sont dans globals.css.
+
+function tryRenderVisualForm(content: string): string | null {
+  const lines = content.split("\n");
+  // Compte le nombre de lignes "Label : ____" ou "[ ] Option" / "[x] Option"
+  let formLikeLines = 0;
+  let totalNonEmpty = 0;
+  for (const l of lines) {
+    const t = l.trim();
+    if (!t) continue;
+    totalNonEmpty++;
+    if (/^[\w\s'’éèêàâùûôîçÉÈÊÀÂÙÛÔÎÇ\/().-]+\s*:\s*_{3,}/.test(t)) formLikeLines++;
+    else if (/^\[\s?[xX]?\s?\]\s+/.test(t)) formLikeLines++;
+    else if (/^[─━=]{3,}/.test(t)) formLikeLines++;
+  }
+  // Doit ressembler majoritairement à un formulaire (≥ 50 % des lignes non vides)
+  if (totalNonEmpty < 3 || formLikeLines / totalNonEmpty < 0.5) return null;
+
+  const rows: string[] = [];
+  let groupOpen = false;
+  const closeGroup = () => {
+    if (groupOpen) {
+      rows.push("</div>");
+      groupOpen = false;
+    }
+  };
+  const openGroup = () => {
+    if (!groupOpen) {
+      rows.push('<div class="visual-form__group">');
+      groupOpen = true;
+    }
+  };
+
+  for (const rawLine of lines) {
+    const t = rawLine.trim();
+    if (!t) {
+      closeGroup();
+      continue;
+    }
+
+    // Séparateur visuel (─── ou === ou ── Titre ──)
+    const sep = t.match(/^[─━=]{2,}\s*(.*?)\s*[─━=]{2,}$/);
+    if (sep) {
+      closeGroup();
+      const label = sep[1].trim();
+      if (label) {
+        rows.push(
+          `<div class="visual-form__sep"><span>${escapeHtml(label)}</span></div>`
+        );
+      } else {
+        rows.push('<div class="visual-form__divider" aria-hidden="true"></div>');
+      }
+      continue;
+    }
+    // Pure ligne de underscores ou tirets (séparateur sans titre)
+    if (/^[─━=_]{3,}$/.test(t)) {
+      closeGroup();
+      rows.push('<div class="visual-form__divider" aria-hidden="true"></div>');
+      continue;
+    }
+
+    // Checkbox [ ] ou [x]
+    const cb = t.match(/^\[\s?([xX])?\s?\]\s+(.+)$/);
+    if (cb) {
+      const checked = !!cb[1];
+      const label = cb[2];
+      openGroup();
+      rows.push(
+        `<div class="visual-form__check"><span class="visual-form__checkbox${checked ? " is-checked" : ""}" aria-hidden="true">${checked ? "✓" : ""}</span><span class="visual-form__check-label">${renderInline(escapeHtml(label))}</span></div>`
+      );
+      continue;
+    }
+
+    // Champ "Label : ____ (hint)"
+    const field = t.match(
+      /^([\w\s'’éèêàâùûôîçÉÈÊÀÂÙÛÔÎÇ\/().-]+?)\s*:\s*_{3,}\s*(.*)$/
+    );
+    if (field) {
+      const label = field[1].trim();
+      const hint = field[2].trim();
+      openGroup();
+      rows.push(
+        `<div class="visual-form__row"><span class="visual-form__label">${escapeHtml(label)}</span><span class="visual-form__field" aria-hidden="true"></span>${hint ? `<span class="visual-form__hint">${escapeHtml(hint.replace(/^\(|\)$/g, ""))}</span>` : ""}</div>`
+      );
+      continue;
+    }
+
+    // Ligne de texte normale dans un formulaire (titre intermédiaire, paragraphe)
+    closeGroup();
+    rows.push(`<p class="visual-form__note">${renderInline(escapeHtml(t))}</p>`);
+  }
+  closeGroup();
+
+  return `<div class="visual-form" role="group" aria-label="Formulaire pédagogique">${rows.join("")}</div>`;
+}
+
+// ---------------------------------------------------------------------
+// Détection automatique : arborescence ASCII (├ └ │) → diagramme stylé
+// ---------------------------------------------------------------------
+
+function tryRenderTree(content: string): string | null {
+  const lines = content.split("\n");
+  let treeLines = 0;
+  let totalNonEmpty = 0;
+  for (const l of lines) {
+    if (!l.trim()) continue;
+    totalNonEmpty++;
+    if (/[├└│┃┣┗━─]/.test(l)) treeLines++;
+  }
+  if (totalNonEmpty < 3 || treeLines / totalNonEmpty < 0.5) return null;
+
+  // On garde le contenu tel quel mais avec une font + spacing optimisés
+  const escaped = lines
+    .map((l) =>
+      l
+        .replace(/├/g, '<span class="tree-branch">├</span>')
+        .replace(/└/g, '<span class="tree-branch tree-branch--last">└</span>')
+        .replace(/│/g, '<span class="tree-pipe">│</span>')
+        .replace(/─/g, '<span class="tree-dash">─</span>')
+    )
+    .join("\n");
+
+  return `<div class="visual-tree" role="img" aria-label="Diagramme arborescent"><pre><code>${escaped}</code></pre></div>`;
 }
 
 function renderInnerBlock(content: string): string {

@@ -204,6 +204,135 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* ===== Visual form — formulaires pédagogiques modernes ===== */
+  /* Remplace les "Label : ____" ASCII par une carte propre avec
+     champs visuels élégants (style Apple notebook). */
+  .prose-lesson .visual-form {
+    @apply my-7 rounded-2xl border border-navy-100 overflow-hidden;
+    background: linear-gradient(180deg, #ffffff 0%, #FAFAF7 100%);
+    box-shadow:
+      0 1px 0 rgba(14, 18, 64, 0.04),
+      0 12px 32px -16px rgba(14, 18, 64, 0.08);
+  }
+  .prose-lesson .visual-form__group {
+    @apply px-5 md:px-7 py-5 md:py-6 space-y-3;
+  }
+  .prose-lesson .visual-form__group + .visual-form__group {
+    @apply border-t border-navy-100/70;
+  }
+  .prose-lesson .visual-form__divider {
+    @apply mx-7 my-0 border-t border-dashed border-navy-100;
+    height: 0;
+  }
+  .prose-lesson .visual-form__sep {
+    @apply px-5 md:px-7 py-3 flex items-center gap-3 border-y border-navy-100/70;
+    background: rgba(37, 48, 217, 0.015);
+  }
+  .prose-lesson .visual-form__sep::before,
+  .prose-lesson .visual-form__sep::after {
+    content: "";
+    @apply flex-1 h-px bg-navy-100;
+  }
+  .prose-lesson .visual-form__sep span {
+    @apply font-display text-[12px] font-semibold tracking-[0.16em] uppercase text-brand-700 px-2;
+  }
+
+  /* Une ligne de champ = label + champ visuel + hint */
+  .prose-lesson .visual-form__row {
+    @apply flex items-baseline gap-3 flex-wrap;
+    min-height: 2rem;
+  }
+  .prose-lesson .visual-form__label {
+    @apply font-medium text-navy-900;
+    font-size: 0.9375rem;
+    min-width: 9rem;
+    flex-shrink: 0;
+    line-height: 1.5;
+  }
+  .prose-lesson .visual-form__field {
+    @apply rounded-lg flex-1;
+    min-width: 8rem;
+    height: 2rem;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid rgba(14, 18, 64, 0.10);
+    box-shadow: inset 0 1px 0 rgba(14, 18, 64, 0.03);
+    transition: border-color 0.2s ease-out, transform 0.2s ease-out;
+  }
+  .prose-lesson .visual-form__hint {
+    @apply text-[12px] text-slate-500;
+    font-style: italic;
+    flex-basis: 100%;
+    margin-left: 9rem;
+  }
+  @media (min-width: 640px) {
+    .prose-lesson .visual-form__hint {
+      flex-basis: auto;
+      margin-left: 0;
+    }
+  }
+  .prose-lesson .visual-form__row:hover .visual-form__field {
+    border-color: rgba(37, 48, 217, 0.30);
+    transform: translateY(-1px);
+  }
+  .prose-lesson .visual-form__note {
+    @apply text-[13px] text-slate-600 leading-snug px-5 md:px-7 py-3 my-0;
+    background: rgba(245, 158, 11, 0.04);
+    border-top: 1px dashed rgba(245, 158, 11, 0.25);
+    border-bottom: 1px dashed rgba(245, 158, 11, 0.25);
+  }
+
+  /* Checkbox visuelle */
+  .prose-lesson .visual-form__check {
+    @apply flex items-start gap-3;
+  }
+  .prose-lesson .visual-form__checkbox {
+    @apply inline-flex items-center justify-center font-bold text-[12px] rounded-md border;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-color: rgba(14, 18, 64, 0.18);
+    background: #ffffff;
+    color: transparent;
+    flex-shrink: 0;
+    margin-top: 0.125rem;
+    transition: all 0.2s ease-out;
+  }
+  .prose-lesson .visual-form__checkbox.is-checked {
+    background: #2530D9;
+    border-color: #2530D9;
+    color: #ffffff;
+  }
+  .prose-lesson .visual-form__check-label {
+    @apply text-[14px] text-slate-700 leading-relaxed;
+  }
+
+  /* ===== Tree visuel — arborescences ASCII modernisées ===== */
+  .prose-lesson .visual-tree {
+    @apply my-7 rounded-2xl overflow-hidden border border-navy-100;
+    background: #FAFAF7;
+  }
+  .prose-lesson .visual-tree pre {
+    @apply m-0 p-5 md:p-6 bg-transparent border-0 shadow-none overflow-x-auto;
+    background: transparent;
+  }
+  .prose-lesson .visual-tree pre code {
+    @apply block p-0 bg-transparent;
+    color: #1f2937;
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono",
+      "Fira Code", Consolas, monospace;
+    font-size: 0.875rem;
+    line-height: 1.7;
+    text-shadow: none;
+  }
+  .prose-lesson .tree-branch,
+  .prose-lesson .tree-pipe,
+  .prose-lesson .tree-dash {
+    color: rgba(37, 48, 217, 0.45);
+    font-weight: 500;
+  }
+  .prose-lesson .tree-branch--last {
+    color: rgba(37, 48, 217, 0.7);
+  }
+
   /* Table wrap — permet le scroll horizontal sur mobile sans casser le layout */
   .prose-lesson .table-wrap {
     @apply my-8 -mx-4 md:mx-0 overflow-x-auto rounded-xl;
