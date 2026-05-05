@@ -488,7 +488,7 @@ function FormationQuizSection({
       {/* Header formation */}
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div className="min-w-0">
-          <FormationBadge slug={formationSlug} size="md" icon withTitle />
+          <FormationBadge slug={formationSlug} size="lg" icon withTitle />
           {f.tagline && (
             <p className="mt-2 text-[14px] text-slate-600 leading-relaxed max-w-2xl">
               {f.tagline}

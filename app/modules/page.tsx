@@ -347,7 +347,7 @@ export default async function ModulesPage() {
               <div className="min-w-0">
                 <FormationBadge
                   slug={formation.slug}
-                  size="md"
+                  size="lg"
                   icon
                   withTitle
                 />
