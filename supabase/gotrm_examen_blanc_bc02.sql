@@ -99,6 +99,6 @@ $cbc02$,
       'mft-2026-gotrm:bc02-01:qr:1'    -- vérification sous-traitant -22 % marché
     );
 
-  RAISE NOTICE '✅ GOTRM examen blanc BC02 chargé : 15 QCM + 1 QR, 45 min, seuil 50 %.';
+  RAISE NOTICE '✅ GOTRM examen blanc BC02 chargé : 15 QCM + 1 QR, 45 min, seuil 50 %%.';
 END
 $eb_bc02$;

@@ -107,6 +107,6 @@ $cbc01$,
       'mft-2026-gotrm:bc01-03:qr:1', 'mft-2026-gotrm:bc01-04:qr:1'
     );
 
-  RAISE NOTICE '✅ GOTRM examen blanc BC01 chargé : 30 QCM + 2 QR, 90 min, seuil 50 %.';
+  RAISE NOTICE '✅ GOTRM examen blanc BC01 chargé : 30 QCM + 2 QR, 90 min, seuil 50 %%.';
 END
 $eb_bc01$;

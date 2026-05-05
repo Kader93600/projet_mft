@@ -950,6 +950,6 @@ $msp_d4_corr$);
       'mft-2026-gotrm:msp:dossier:4'
     );
 
-  RAISE NOTICE '✅ GOTRM MSP final chargé : 4 dossiers d''exploitation, 3 h, seuil 50 %.';
+  RAISE NOTICE '✅ GOTRM MSP final chargé : 4 dossiers d''exploitation, 3 h, seuil 50 %%.';
 END
 $msp$;
