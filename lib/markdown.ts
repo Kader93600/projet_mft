@@ -343,21 +343,55 @@ function renderBlockquote(lines: string[]): string {
 // On rend en HTML structuré (.visual-form) avec spans dédiés ; les
 // styles modernes sont dans globals.css.
 
+// Charset accepté pour un label : lettres + chiffres + accents +
+// quelques signes (apostrophe, parenthèses, tirets, etc.).
+// Limité à ~50 caractères pour ne pas matcher des phrases entières.
+const LABEL_CHARSET =
+  "[A-Za-zÀ-ÖØ-öø-ÿ0-9'’éèêàâùûôîçÉÈÊÀÂÙÛÔÎÇ \\/().\\-+°&]";
+
 function tryRenderVisualForm(content: string): string | null {
   const lines = content.split("\n");
-  // Compte le nombre de lignes "Label : ____" ou "[ ] Option" / "[x] Option"
-  let formLikeLines = 0;
+  // Une ligne est "form-like" si :
+  //   - "Label : ____" (champ vide à remplir)
+  //   - "Label : __ unité"  (champ avec unité)
+  //   - "Label : option1 / option2 / option3" (choix)
+  //   - "Label : valeur" (toute ligne avec ":") — TANT que d'autres
+  //     lignes du bloc ont déjà des "____", indicateur strong qu'on est
+  //     dans un formulaire pédagogique
+  //   - "[ ] Option" / "[x] Option"
+  //   - "── Titre ──" (séparateur)
+  let strictFieldCount = 0; // lignes "Label : ___"
+  let lineWithColonCount = 0; // toutes les lignes "Label : ..."
   let totalNonEmpty = 0;
+  const labelRe = new RegExp(`^${LABEL_CHARSET}{1,50}\\s*:\\s*`);
+  const strictUnderscoreRe = new RegExp(`^${LABEL_CHARSET}{1,50}\\s*:\\s*_{3,}`);
+  const fewUnderscoreRe = new RegExp(`^${LABEL_CHARSET}{1,50}\\s*:\\s*_{1,2}\\s+\\S`);
+
   for (const l of lines) {
     const t = l.trim();
     if (!t) continue;
     totalNonEmpty++;
-    if (/^[\w\s'’éèêàâùûôîçÉÈÊÀÂÙÛÔÎÇ\/().-]+\s*:\s*_{3,}/.test(t)) formLikeLines++;
-    else if (/^\[\s?[xX]?\s?\]\s+/.test(t)) formLikeLines++;
-    else if (/^[─━=]{3,}/.test(t)) formLikeLines++;
+    if (strictUnderscoreRe.test(t)) {
+      strictFieldCount++;
+      lineWithColonCount++;
+    } else if (fewUnderscoreRe.test(t)) {
+      strictFieldCount++;
+      lineWithColonCount++;
+    } else if (/^\[\s?[xX]?\s?\]\s+/.test(t)) {
+      strictFieldCount++;
+    } else if (/^[─━=]{3,}/.test(t)) {
+      // séparateur
+    } else if (labelRe.test(t)) {
+      lineWithColonCount++;
+    }
   }
-  // Doit ressembler majoritairement à un formulaire (≥ 50 % des lignes non vides)
-  if (totalNonEmpty < 3 || formLikeLines / totalNonEmpty < 0.5) return null;
+
+  // Le bloc est éligible si :
+  //  - au moins 2 champs stricts ("Label : ___" ou "[ ]" ou "Label : __ kg")
+  //  - ET ≥ 60 % des lignes non vides sont "Label : quelque chose"
+  if (totalNonEmpty < 3) return null;
+  if (strictFieldCount < 2) return null;
+  if (lineWithColonCount / totalNonEmpty < 0.6) return null;
 
   const rows: string[] = [];
   let groupOpen = false;
@@ -374,6 +408,17 @@ function tryRenderVisualForm(content: string): string | null {
     }
   };
 
+  // Patterns réutilisables
+  const fieldStrict = new RegExp(
+    `^(${LABEL_CHARSET}{1,50}?)\\s*:\\s*_{3,}\\s*(.*)$`
+  );
+  const fieldWithUnit = new RegExp(
+    `^(${LABEL_CHARSET}{1,50}?)\\s*:\\s*_{1,2}\\s+(.+)$`
+  );
+  const fieldWithChoices = new RegExp(
+    `^(${LABEL_CHARSET}{1,50}?)\\s*:\\s*(.+)$`
+  );
+
   for (const rawLine of lines) {
     const t = rawLine.trim();
     if (!t) {
@@ -381,7 +426,7 @@ function tryRenderVisualForm(content: string): string | null {
       continue;
     }
 
-    // Séparateur visuel (─── ou === ou ── Titre ──)
+    // Séparateur visuel ── Titre ──
     const sep = t.match(/^[─━=]{2,}\s*(.*?)\s*[─━=]{2,}$/);
     if (sep) {
       closeGroup();
@@ -395,14 +440,13 @@ function tryRenderVisualForm(content: string): string | null {
       }
       continue;
     }
-    // Pure ligne de underscores ou tirets (séparateur sans titre)
     if (/^[─━=_]{3,}$/.test(t)) {
       closeGroup();
       rows.push('<div class="visual-form__divider" aria-hidden="true"></div>');
       continue;
     }
 
-    // Checkbox [ ] ou [x]
+    // Checkbox
     const cb = t.match(/^\[\s?([xX])?\s?\]\s+(.+)$/);
     if (cb) {
       const checked = !!cb[1];
@@ -415,26 +459,98 @@ function tryRenderVisualForm(content: string): string | null {
     }
 
     // Champ "Label : ____ (hint)"
-    const field = t.match(
-      /^([\w\s'’éèêàâùûôîçÉÈÊÀÂÙÛÔÎÇ\/().-]+?)\s*:\s*_{3,}\s*(.*)$/
-    );
-    if (field) {
-      const label = field[1].trim();
-      const hint = field[2].trim();
+    const m1 = t.match(fieldStrict);
+    if (m1) {
+      const label = m1[1].trim();
+      const hint = m1[2].trim();
       openGroup();
-      rows.push(
-        `<div class="visual-form__row"><span class="visual-form__label">${escapeHtml(label)}</span><span class="visual-form__field" aria-hidden="true"></span>${hint ? `<span class="visual-form__hint">${escapeHtml(hint.replace(/^\(|\)$/g, ""))}</span>` : ""}</div>`
-      );
+      rows.push(renderFormRow(label, "blank", hint));
       continue;
     }
 
-    // Ligne de texte normale dans un formulaire (titre intermédiaire, paragraphe)
+    // Champ "Label : __ unité" (peu d'underscores + unité)
+    const m2 = t.match(fieldWithUnit);
+    if (m2) {
+      const label = m2[1].trim();
+      const unit = m2[2].trim();
+      openGroup();
+      // Si l'unité contient des "/", c'est en fait un champ + plusieurs choix
+      if (unit.includes("/")) {
+        const choices = unit.split("/").map((c) => c.trim()).filter(Boolean);
+        rows.push(renderFormRowUnitChoices(label, choices));
+      } else {
+        rows.push(renderFormRow(label, "unit", unit));
+      }
+      continue;
+    }
+
+    // Champ "Label : option1 / option2 / option3" ou "Label : valeur"
+    const m3 = t.match(fieldWithChoices);
+    if (m3) {
+      const label = m3[1].trim();
+      const value = m3[2].trim();
+      // Si on a "/" → choix multiples
+      if (value.includes("/")) {
+        const choices = value.split("/").map((c) => c.trim()).filter(Boolean);
+        openGroup();
+        rows.push(renderFormRowChoices(label, choices));
+        continue;
+      }
+      // Sinon : valeur libre (exemple, indicateur)
+      openGroup();
+      rows.push(renderFormRow(label, "value", value));
+      continue;
+    }
+
+    // Ligne de texte normale dans un formulaire (note pédagogique)
     closeGroup();
     rows.push(`<p class="visual-form__note">${renderInline(escapeHtml(t))}</p>`);
   }
   closeGroup();
 
   return `<div class="visual-form" role="group" aria-label="Formulaire pédagogique">${rows.join("")}</div>`;
+}
+
+/**
+ * Rendu d'une ligne de formulaire selon son type :
+ *  - "blank" : champ vide (input visuel) + hint optionnel
+ *  - "unit"  : champ avec unité affichée (ex : "kg", "€/km", "°C")
+ *  - "value" : valeur libre affichée comme exemple
+ */
+function renderFormRow(
+  label: string,
+  type: "blank" | "unit" | "value",
+  extra: string
+): string {
+  if (type === "blank") {
+    return `<div class="visual-form__row"><span class="visual-form__label">${escapeHtml(label)}</span><span class="visual-form__field" aria-hidden="true"></span>${extra ? `<span class="visual-form__hint">${escapeHtml(extra.replace(/^\(|\)$/g, ""))}</span>` : ""}</div>`;
+  }
+  if (type === "unit") {
+    return `<div class="visual-form__row"><span class="visual-form__label">${escapeHtml(label)}</span><span class="visual-form__field visual-form__field--small" aria-hidden="true"></span><span class="visual-form__unit">${escapeHtml(extra)}</span></div>`;
+  }
+  // value : on l'affiche dans un champ "rempli" avec valeur visible
+  return `<div class="visual-form__row"><span class="visual-form__label">${escapeHtml(label)}</span><span class="visual-form__value">${escapeHtml(extra)}</span></div>`;
+}
+
+/**
+ * Rendu d'une ligne de formulaire avec choix multiples (chips).
+ */
+function renderFormRowChoices(label: string, choices: string[]): string {
+  const chips = choices
+    .map((c) => `<span class="visual-form__chip">${escapeHtml(c)}</span>`)
+    .join("");
+  return `<div class="visual-form__row visual-form__row--choices"><span class="visual-form__label">${escapeHtml(label)}</span><span class="visual-form__chips">${chips}</span></div>`;
+}
+
+/**
+ * Rendu d'une ligne avec petit champ numérique suivi de choix
+ * (ex : "Conditionnement : __ palettes EUR / cartons / vrac").
+ */
+function renderFormRowUnitChoices(label: string, choices: string[]): string {
+  const chips = choices
+    .map((c) => `<span class="visual-form__chip">${escapeHtml(c)}</span>`)
+    .join("");
+  return `<div class="visual-form__row visual-form__row--choices"><span class="visual-form__label">${escapeHtml(label)}</span><span class="visual-form__field visual-form__field--small" aria-hidden="true"></span><span class="visual-form__chips">${chips}</span></div>`;
 }
 
 // ---------------------------------------------------------------------
