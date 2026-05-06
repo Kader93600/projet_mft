@@ -74,14 +74,25 @@
     text-wrap: balance;
   }
 
-  /* Body : 17px desktop, 16px mobile, hyphenation activée */
+  /* Body : 17px desktop, 16px mobile, hyphenation activée
+     Espacement vertical augmenté pour éviter les paragraphes "collés"
+     surtout sur mobile où la densité visuelle est plus forte. */
   .prose-lesson p {
-    @apply my-5;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
     font-size: clamp(1rem, 0.93rem + 0.18vw, 1.0625rem);
-    line-height: 1.7;
+    line-height: 1.75;
     max-width: 68ch;
     hyphens: auto;
     -webkit-hyphens: auto;
+  }
+  /* Premier paragraphe d'un bloc : pas de margin-top inutile */
+  .prose-lesson p:first-child {
+    margin-top: 0;
+  }
+  /* Deux paragraphes consécutifs : marge un peu plus généreuse */
+  .prose-lesson p + p {
+    margin-top: 1.75rem;
   }
 
   /* Lead paragraph — premier paragraphe = chapeau d'article */

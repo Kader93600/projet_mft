@@ -193,46 +193,81 @@ export default async function LessonPage({
         </Card>
       )}
 
-      <div className="grid sm:grid-cols-[1fr_auto_1fr] items-center pt-8 border-t border-navy-100 gap-4">
-        <div className="min-w-0">
-          {prev && (
-            <Link
-              href={`/modules/${module.slug}/${prev.slug}`}
-              className="group inline-flex items-start gap-2.5 text-left transition-colors"
-            >
-              <ArrowLeft className="h-3.5 w-3.5 mt-1 text-slate-400 group-hover:text-brand-600 group-hover:-translate-x-0.5 transition-transform shrink-0" />
-              <span className="min-w-0">
-                <span className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                  Précédent
-                </span>
-                <span className="block font-display text-sm font-medium text-navy-800 group-hover:text-brand-700 truncate transition-colors">
-                  {prev.title}
-                </span>
-              </span>
-            </Link>
-          )}
-        </div>
-        <div className="flex justify-center">
+      {/* Navigation entre leçons — refonte cards visuelles, animées,
+          responsives. Mobile : stack vertical (Précédent → MarkDone → Suivant)
+          avec gap large. Desktop : grille 3 colonnes asymétriques. */}
+      <div className="pt-10 border-t border-navy-100">
+        <div className="flex justify-center mb-5 md:mb-6">
           <MarkDoneButton lessonId={lesson.id} initialDone={completed} />
         </div>
-        <div className="min-w-0 sm:text-right">
-          {next && (
+
+        <nav
+          aria-label="Navigation entre les leçons"
+          className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2"
+        >
+          {/* Précédent */}
+          {prev ? (
+            <Link
+              href={`/modules/${module.slug}/${prev.slug}`}
+              className="group relative overflow-hidden rounded-2xl border border-navy-100 bg-white px-5 py-4 md:px-6 md:py-5 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-raised hover:border-brand-200 motion-reduce:hover:translate-y-0"
+              style={{
+                transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
+              }}
+            >
+              <div className="flex items-center gap-3 md:gap-4">
+                <span className="inline-flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-xl bg-navy-50 text-navy-700 shrink-0 transition-all group-hover:bg-brand-100 group-hover:text-brand-700 group-hover:-translate-x-0.5 motion-reduce:group-hover:translate-x-0">
+                  <ArrowLeft className="h-5 w-5" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-brand-700">
+                    Précédent
+                  </div>
+                  <div className="mt-0.5 font-display text-[15px] md:text-base font-semibold text-navy-900 leading-snug truncate group-hover:text-brand-700 transition-colors">
+                    {prev.title}
+                  </div>
+                </div>
+              </div>
+            </Link>
+          ) : (
+            <div aria-hidden className="hidden md:block" />
+          )}
+
+          {/* Suivant */}
+          {next ? (
             <Link
               href={`/modules/${module.slug}/${next.slug}`}
-              className="group inline-flex items-start gap-2.5 text-left sm:flex-row-reverse transition-colors"
+              className="group relative overflow-hidden rounded-2xl border border-signal-200 bg-gradient-to-br from-white to-signal-50/40 px-5 py-4 md:px-6 md:py-5 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-raised hover:border-signal-400 motion-reduce:hover:translate-y-0"
+              style={{
+                transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
+              }}
             >
-              <ArrowRight className="h-3.5 w-3.5 mt-1 text-slate-400 group-hover:text-signal-700 group-hover:translate-x-0.5 transition-transform shrink-0" />
-              <span className="min-w-0">
-                <span className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-signal-700">
-                  Suivant
+              {/* Halo signal coin droit */}
+              <div
+                aria-hidden
+                className="absolute -top-8 -right-8 h-24 w-24 rounded-full pointer-events-none opacity-50 transition-opacity group-hover:opacity-80"
+                style={{
+                  background:
+                    "radial-gradient(circle, rgba(159,226,32,0.4) 0%, transparent 70%)",
+                }}
+              />
+              <div className="relative flex items-center gap-3 md:gap-4 md:flex-row-reverse md:text-right">
+                <span className="inline-flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-xl bg-signal-100 text-signal-800 shrink-0 transition-all group-hover:bg-signal-300 group-hover:text-navy-900 group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0">
+                  <ArrowRight className="h-5 w-5" />
                 </span>
-                <span className="block font-display text-sm font-semibold text-navy-900 group-hover:text-brand-700 truncate transition-colors">
-                  {next.title}
-                </span>
-              </span>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-signal-800">
+                    Suivant
+                  </div>
+                  <div className="mt-0.5 font-display text-[15px] md:text-base font-semibold text-navy-900 leading-snug truncate group-hover:text-brand-700 transition-colors">
+                    {next.title}
+                  </div>
+                </div>
+              </div>
             </Link>
+          ) : (
+            <div aria-hidden className="hidden md:block" />
           )}
-        </div>
+        </nav>
       </div>
       </div>
     </div>
