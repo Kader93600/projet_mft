@@ -221,6 +221,50 @@ export function renderMarkdown(md: string): string {
       continue;
     }
 
+    // ---- Formulaire ASCII hors fence ----
+    // Si la ligne courante matche "Label : ___" (≥3 underscores) ou "[ ] …",
+    // on collecte les lignes consécutives (avec blanks isolés autorisés) et
+    // on tente le rendu visual-form. Si l'éligibilité n'est pas atteinte
+    // (1 seule ligne, etc.), on retombe sur le rendu paragraphe normal.
+    if (looksFormLikeOpener(line)) {
+      const formLines: string[] = [];
+      let j = i;
+      let blankRun = 0;
+      while (j < lines.length) {
+        const l = lines[j];
+        if (l.trim() === "") {
+          blankRun++;
+          if (blankRun >= 2) break; // double saut = vraie rupture
+          formLines.push(l);
+          j++;
+          continue;
+        }
+        blankRun = 0;
+        if (
+          /^(#{1,4})\s+/.test(l) ||
+          /^&gt;\s?/.test(l) ||
+          /^\s*[-*]\s+/.test(l) ||
+          /^\s*\d+\.\s+/.test(l) ||
+          /^```/.test(l) ||
+          /^\s*\|.*\|\s*$/.test(l) ||
+          /^\s*---\s*$/.test(l)
+        )
+          break;
+        formLines.push(l);
+        j++;
+      }
+      while (formLines.length && formLines[formLines.length - 1].trim() === "")
+        formLines.pop();
+      const candidate = formLines.join("\n");
+      const rendered = tryRenderVisualForm(candidate);
+      if (rendered) {
+        out.push(rendered);
+        i = j;
+        continue;
+      }
+      // sinon : fall-through paragraphe
+    }
+
     // ---- Paragraphe ----
     const paraLines: string[] = [line];
     i++;
@@ -252,6 +296,18 @@ export function renderMarkdown(md: string): string {
 // Rendus de blocs
 // ---------------------------------------------------------------------
 
+// Détecte si une cellule est purement numérique (avec unité optionnelle)
+// → on lui appliquera tabular-nums + alignement à droite par défaut.
+function isNumericCell(s: string): boolean {
+  // strip markdown bold/italic for detection
+  const t = s.replace(/\*+/g, "").trim();
+  if (!t) return false;
+  // accepte chiffres + virgule/point + signes + unités courantes
+  return /^[+\-−]?[\d\s.,'’]+(?:\s*(?:%|€|kg|g|t|h|min|m|km|mm|cm|°C|°|pts?))?$/i.test(
+    t
+  );
+}
+
 function renderTable(lines: string[]): string {
   const rows = lines.map((r) =>
     r.trim().replace(/^\||\|$/g, "").split("|").map((c) => c.trim())
@@ -268,13 +324,35 @@ function renderTable(lines: string[]): string {
     return "left";
   });
 
+  // Heuristique variante :
+  //  - kv   : ≤ 2 colonnes ET ≤ 5 lignes de body  → empilage label/valeur
+  //  - grid : sinon → grille responsive avec sticky header & zebra
+  const cols = head.length;
+  const variant = cols <= 2 && body.length <= 5 ? "kv" : "grid";
+
+  // Détection colonnes numériques (tabular-nums + align-right par défaut)
+  const numericCol = new Array(cols).fill(true).map((_, idx) => {
+    if (idx === 0) return false; // 1re colonne = quasiment toujours label
+    const cellsInCol = body.map((r) => r[idx] ?? "");
+    if (!cellsInCol.length) return false;
+    const numCount = cellsInCol.filter(isNumericCell).length;
+    return numCount / cellsInCol.length >= 0.6;
+  });
+
+  const colClass = (idx: number) => {
+    const align = aligns[idx];
+    const isNum = numericCol[idx];
+    const classes: string[] = [];
+    if (isNum) classes.push("data-table__cell--num");
+    if (align === "center") classes.push("data-table__cell--center");
+    else if (align === "right" || isNum) classes.push("data-table__cell--right");
+    return classes.length ? ` class="${classes.join(" ")}"` : "";
+  };
+
   const thead =
     "<thead><tr>" +
     head
-      .map(
-        (c, idx) =>
-          `<th style="text-align:${aligns[idx]}">${renderInline(c)}</th>`
-      )
+      .map((c, idx) => `<th${colClass(idx)}>${renderInline(c)}</th>`)
       .join("") +
     "</tr></thead>";
 
@@ -285,17 +363,18 @@ function renderTable(lines: string[]): string {
         (row) =>
           "<tr>" +
           row
-            .map(
-              (cell, idx) =>
-                `<td style="text-align:${aligns[idx]}">${renderInline(cell)}</td>`
-            )
+            .map((cell, idx) => {
+              const label = head[idx] ?? "";
+              // data-label pour le mode "stacked" mobile
+              return `<td${colClass(idx)} data-label="${escapeHtml(label)}">${renderInline(cell)}</td>`;
+            })
             .join("") +
           "</tr>"
       )
       .join("") +
     "</tbody>";
 
-  return `<div class="table-wrap"><table>${thead}${tbody}</table></div>`;
+  return `<div class="data-table" data-variant="${variant}" role="region" aria-label="Tableau de données"><table>${thead}${tbody}</table></div>`;
 }
 
 function renderBlockquote(lines: string[]): string {
@@ -348,6 +427,19 @@ function renderBlockquote(lines: string[]): string {
 // Limité à ~50 caractères pour ne pas matcher des phrases entières.
 const LABEL_CHARSET =
   "[A-Za-zÀ-ÖØ-öø-ÿ0-9'’éèêàâùûôîçÉÈÊÀÂÙÛÔÎÇ \\/().\\-+°&]";
+
+// Détecte si une ligne pourrait OUVRIR un formulaire ASCII hors fence.
+// Conditions : "Label : ___" (≥3 underscores) ou checkbox "[ ] …".
+// On reste strict pour ne pas confondre avec un paragraphe normal qui
+// contiendrait deux-points.
+function looksFormLikeOpener(line: string): boolean {
+  const t = line.trim();
+  if (!t) return false;
+  const strict = new RegExp(`^${LABEL_CHARSET}{1,50}\\s*:\\s*_{3,}`);
+  if (strict.test(t)) return true;
+  if (/^\[\s?[xX]?\s?\]\s+\S/.test(t)) return true;
+  return false;
+}
 
 function tryRenderVisualForm(content: string): string | null {
   const lines = content.split("\n");
