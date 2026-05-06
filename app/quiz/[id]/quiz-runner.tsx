@@ -64,11 +64,13 @@ export function QuizRunner({
   questions,
   attemptState,
   formationSlug,
+  formationId,
 }: {
   quiz: Quiz;
   questions: Question[];
   attemptState: AttemptState | null;
   formationSlug?: string | null;
+  formationId?: string | null;
 }) {
   const router = useRouter();
   const [started, setStarted] = useState(false);
@@ -224,27 +226,34 @@ export function QuizRunner({
     const hasQr = qrList.length > 0;
     const mode = isMock ? "blanc" : quiz.type === "examen" ? "examen" : "entrainement";
 
-    // Insert tentative principale
+    // Insert tentative principale.
+    // formation_id : passé explicitement depuis la page (résolu via le
+    // module du quiz). Le trigger BD est un fallback mais ne couvre pas
+    // les cas où profiles.current_formation_id est NULL.
+    const insertPayload: any = {
+      user_id: user.id,
+      quiz_id: quiz.id,
+      score,
+      total: totalQcm,
+      percentage: qcmPercentage,
+      passed: hasQr ? null : qcmPercentage >= quiz.pass_threshold,
+      duration_s: startedAt
+        ? Math.round((finishedAt.getTime() - startedAt.getTime()) / 1000)
+        : null,
+      answers,
+      started_at: startedAt?.toISOString(),
+      finished_at: finishedAt.toISOString(),
+      focus_loss_count: focusRef.current,
+      flagged_questions: Array.from(flagged),
+      mode,
+      status: hasQr ? "awaiting_review" : "graded",
+      qcm_score: qcmPercentage,
+    };
+    if (formationId) insertPayload.formation_id = formationId;
+
     const { data: inserted, error: insertErr } = await supabase
       .from("quiz_attempts")
-      .insert({
-        user_id: user.id,
-        quiz_id: quiz.id,
-        score,
-        total: totalQcm,                                // pour le score QCM
-        percentage: qcmPercentage,                       // % QCM auto
-        passed: hasQr ? null : qcmPercentage >= quiz.pass_threshold,
-        duration_s: startedAt ? Math.round((finishedAt.getTime() - startedAt.getTime()) / 1000) : null,
-        answers,
-        started_at: startedAt?.toISOString(),
-        finished_at: finishedAt.toISOString(),
-        focus_loss_count: focusRef.current,
-        flagged_questions: Array.from(flagged),
-        mode,
-        // Statut différé si QR présents (sinon graded comme avant)
-        status: hasQr ? "awaiting_review" : "graded",
-        qcm_score: qcmPercentage,
-      } as any)
+      .insert(insertPayload)
       .select("id")
       .single();
 

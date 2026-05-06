@@ -66,3 +66,42 @@ export async function resolveFormationFromAttempt(
   if (!attempt?.quiz_id) return null;
   return resolveFormationFromQuiz(attempt.quiz_id);
 }
+
+/**
+ * Résout l'ID UUID de la formation pour un quiz donné.
+ * Stratégie en 2 paliers :
+ *   1. via formation_quizzes (si seedé)
+ *   2. via le module du quiz → formation_modules
+ *
+ * Utilisé pour pré-remplir quiz_attempts.formation_id côté client
+ * (le trigger BD ne suffit pas si profiles.current_formation_id est NULL).
+ */
+export async function resolveFormationIdFromQuiz(
+  quizId: string
+): Promise<string | null> {
+  const supabase = createClient();
+
+  // 1) formation_quizzes (mapping direct quiz↔formation)
+  const { data: fq } = await supabase
+    .from("formation_quizzes")
+    .select("formation_id")
+    .eq("quiz_id", quizId)
+    .limit(1)
+    .maybeSingle();
+  if ((fq as any)?.formation_id) return (fq as any).formation_id as string;
+
+  // 2) Fallback : on remonte au module du quiz puis formation_modules
+  const { data: q } = await supabase
+    .from("quizzes")
+    .select("module_id")
+    .eq("id", quizId)
+    .maybeSingle();
+  if (!q?.module_id) return null;
+  const { data: fm } = await supabase
+    .from("formation_modules")
+    .select("formation_id")
+    .eq("module_id", q.module_id)
+    .limit(1)
+    .maybeSingle();
+  return (fm as any)?.formation_id ?? null;
+}
