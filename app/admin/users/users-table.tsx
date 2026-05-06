@@ -4,17 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/components/ui/toast";
 import { formatDate, initials, scoreColor } from "@/lib/utils";
 import {
-  MoreHorizontal,
   Search,
   Mail,
   Eye,
@@ -237,80 +229,92 @@ export function UsersTable({
                         <Badge tone="success">Actif</Badge>
                       )}
                     </td>
-                    <td className="px-5 py-3.5 text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger>
-                          <button className="h-8 w-8 rounded-lg hover:bg-navy-50 text-slate-500 hover:text-navy-900 inline-flex items-center justify-center">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          <DropdownMenuItem>
-                            <Link
-                              href={`/admin/users/${u.id}`}
-                              className="flex items-center gap-2 w-full"
-                            >
-                              <Eye className="h-3.5 w-3.5" /> Voir le profil
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <a
-                              href={`mailto:${u.email}`}
-                              className="flex items-center gap-2 w-full"
-                            >
-                              <Mail className="h-3.5 w-3.5" /> Contacter
-                            </a>
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() =>
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center justify-end gap-1">
+                        {/* Voir le profil */}
+                        <Link
+                          href={`/admin/users/${u.id}`}
+                          title="Voir le profil"
+                          aria-label="Voir le profil"
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-gold-200 text-gold-800 hover:bg-gold-50 transition"
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                        </Link>
+
+                        {/* Contacter */}
+                        <a
+                          href={`mailto:${u.email}`}
+                          title={`Envoyer un email — ${u.email}`}
+                          aria-label={`Envoyer un email — ${u.email}`}
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-navy-200 text-navy-800 hover:bg-navy-50 transition"
+                        >
+                          <Mail className="h-3.5 w-3.5" />
+                        </a>
+
+                        {/* Désactiver / Réactiver */}
+                        <button
+                          type="button"
+                          disabled={isPending}
+                          title={u.disabled ? "Réactiver le compte" : "Désactiver le compte"}
+                          aria-label={u.disabled ? "Réactiver le compte" : "Désactiver le compte"}
+                          onClick={() =>
+                            run(
+                              () => toggleUserDisabled(u.id, !u.disabled),
+                              u.disabled ? "Compte réactivé" : "Compte désactivé"
+                            )
+                          }
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-navy-200 text-navy-800 hover:bg-navy-50 transition disabled:opacity-50"
+                        >
+                          {u.disabled ? (
+                            <UserCheck className="h-3.5 w-3.5" />
+                          ) : (
+                            <UserX className="h-3.5 w-3.5" />
+                          )}
+                        </button>
+
+                        {/* Réinitialiser résultats */}
+                        <button
+                          type="button"
+                          disabled={isPending}
+                          title="Réinitialiser tous les résultats de quiz et la progression"
+                          aria-label="Réinitialiser les résultats"
+                          onClick={() => {
+                            if (
+                              confirm(
+                                `Réinitialiser tous les résultats et la progression de "${
+                                  u.full_name ?? u.email
+                                }" ?`
+                              )
+                            )
                               run(
-                                () => toggleUserDisabled(u.id, !u.disabled),
-                                u.disabled ? "Compte réactivé" : "Compte désactivé"
+                                () => resetUserResults(u.id),
+                                "Résultats réinitialisés"
+                              );
+                          }}
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-rose-200 text-rose-700 hover:bg-rose-50 transition disabled:opacity-50"
+                        >
+                          <RotateCcw className="h-3.5 w-3.5" />
+                        </button>
+
+                        {/* Supprimer */}
+                        <button
+                          type="button"
+                          disabled={isPending}
+                          title="Supprimer définitivement le compte"
+                          aria-label="Supprimer le compte"
+                          onClick={() => {
+                            if (
+                              confirm(
+                                `Supprimer définitivement le compte "${u.email}" ? Cette action est irréversible.`
                               )
-                            }
-                          >
-                            {u.disabled ? (
-                              <>
-                                <UserCheck className="h-3.5 w-3.5" /> Réactiver
-                              </>
-                            ) : (
-                              <>
-                                <UserX className="h-3.5 w-3.5" /> Désactiver
-                              </>
-                            )}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => {
-                              if (
-                                confirm(
-                                  "Réinitialiser tous les résultats de quiz et progression ?"
-                                )
-                              )
-                                run(
-                                  () => resetUserResults(u.id),
-                                  "Résultats réinitialisés"
-                                );
-                            }}
-                          >
-                            <RotateCcw className="h-3.5 w-3.5" /> Réinitialiser résultats
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            destructive
-                            onClick={() => {
-                              if (
-                                confirm(
-                                  `Supprimer définitivement le compte "${u.email}" ? Cette action est irréversible.`
-                                )
-                              )
-                                run(() => deleteUser(u.id), "Compte supprimé");
-                            }}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" /> Supprimer
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                            )
+                              run(() => deleteUser(u.id), "Compte supprimé");
+                          }}
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-transparent bg-rose-600 text-white hover:bg-rose-700 transition disabled:opacity-50"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
