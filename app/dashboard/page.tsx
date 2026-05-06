@@ -32,25 +32,58 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
+  // Formations du stagiaire (filtrage de la portée)
+  const { data: enrollments } = await supabase
+    .from("enrollments")
+    .select("formation_id")
+    .eq("user_id", user.id)
+    .not("formation_id", "is", null)
+    .not("status", "in", "(refuse,abandon)");
+  const enrolledFormationIds = (enrollments ?? [])
+    .map((e: any) => e.formation_id as string)
+    .filter(Boolean);
+
+  let allowedModuleIds: string[] = [];
+  if (enrolledFormationIds.length > 0) {
+    const { data: links } = await supabase
+      .from("formation_modules")
+      .select("module_id")
+      .in("formation_id", enrolledFormationIds);
+    allowedModuleIds = Array.from(
+      new Set((links ?? []).map((l: any) => l.module_id as string))
+    );
+  }
+  const noModules = allowedModuleIds.length === 0;
+
   const [{ data: profile }, { data: modules }, { data: progress }, { data: attempts }] =
     await Promise.all([
       supabase.from("profiles").select("*").eq("id", user.id).single(),
-      supabase
-        .from("modules")
-        .select("id, title, slug, duration_min, bloc_id, blocs(code, title)")
-        .order("bloc_id"),
+      noModules
+        ? Promise.resolve({ data: [] as any[] })
+        : supabase
+            .from("modules")
+            .select("id, title, slug, duration_min, bloc_id, blocs(code, title)")
+            .in("id", allowedModuleIds)
+            .order("bloc_id"),
       supabase.from("lesson_progress").select("lesson_id, completed").eq("user_id", user.id),
-      supabase
-        .from("quiz_attempts")
-        .select("id, percentage, passed, finished_at, quizzes(title)")
-        .eq("user_id", user.id)
-        .order("finished_at", { ascending: false })
-        .limit(5),
+      enrolledFormationIds.length > 0
+        ? supabase
+            .from("quiz_attempts")
+            .select("id, percentage, passed, finished_at, quizzes(title)")
+            .eq("user_id", user.id)
+            .in("formation_id", enrolledFormationIds)
+            .order("finished_at", { ascending: false })
+            .limit(5)
+        : Promise.resolve({ data: [] as any[] }),
     ]);
 
-  const { count: totalLessons } = await supabase
-    .from("lessons")
-    .select("*", { count: "exact", head: true });
+  // Total de leçons : limité à celles des formations du stagiaire
+  const { count: totalLessons } = noModules
+    ? { count: 0 }
+    : await supabase
+        .from("lessons")
+        .select("*", { count: "exact", head: true })
+        .in("module_id", allowedModuleIds);
   const completedLessons = progress?.filter((p) => p.completed).length || 0;
   const progressPct = totalLessons ? Math.round((completedLessons / totalLessons) * 100) : 0;
 

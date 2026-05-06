@@ -47,6 +47,29 @@ export default async function StatsPage() {
   const since90 = new Date();
   since90.setDate(since90.getDate() - 90);
 
+  // Formations du stagiaire (filtre la portée des stats à ses formations)
+  const { data: enrollments } = await supabase
+    .from("enrollments")
+    .select("formation_id")
+    .eq("user_id", user.id)
+    .not("formation_id", "is", null)
+    .not("status", "in", "(refuse,abandon)");
+  const enrolledFormationIds = (enrollments ?? [])
+    .map((e: any) => e.formation_id as string)
+    .filter(Boolean);
+
+  let allowedModuleIds: string[] = [];
+  if (enrolledFormationIds.length > 0) {
+    const { data: links } = await supabase
+      .from("formation_modules")
+      .select("module_id")
+      .in("formation_id", enrolledFormationIds);
+    allowedModuleIds = Array.from(
+      new Set((links ?? []).map((l: any) => l.module_id as string))
+    );
+  }
+  const noModules = allowedModuleIds.length === 0;
+
   const [
     { data: attempts },
     { data: blocs },
@@ -56,16 +79,30 @@ export default async function StatsPage() {
     { data: daily },
     { data: summary },
   ] = await Promise.all([
-    supabase
-      .from("quiz_attempts")
-      .select(
-        "id, percentage, passed, score, total, finished_at, started_at, duration_s, quiz_id, quizzes(title, type, module_id)"
-      )
-      .eq("user_id", user.id)
-      .order("finished_at", { ascending: false }),
+    // Quiz attempts : filtrés par formation_id de l'utilisateur
+    enrolledFormationIds.length > 0
+      ? supabase
+          .from("quiz_attempts")
+          .select(
+            "id, percentage, passed, score, total, finished_at, started_at, duration_s, quiz_id, quizzes(title, type, module_id)"
+          )
+          .eq("user_id", user.id)
+          .in("formation_id", enrolledFormationIds)
+          .order("finished_at", { ascending: false })
+      : Promise.resolve({ data: [] as any[] }),
     supabase.from("blocs").select("id, code, title").order("order"),
-    supabase.from("modules").select("id, title, bloc_id"),
-    supabase.from("lessons").select("id, module_id"),
+    noModules
+      ? Promise.resolve({ data: [] as any[] })
+      : supabase
+          .from("modules")
+          .select("id, title, bloc_id")
+          .in("id", allowedModuleIds),
+    noModules
+      ? Promise.resolve({ data: [] as any[] })
+      : supabase
+          .from("lessons")
+          .select("id, module_id")
+          .in("module_id", allowedModuleIds),
     supabase
       .from("lesson_progress")
       .select("lesson_id, completed, completed_at")

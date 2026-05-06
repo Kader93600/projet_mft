@@ -32,6 +32,31 @@ export default async function QuizPage({ params }: { params: { id: string } }) {
     .single();
   if (!quiz) notFound();
 
+  // Gate par formation : le module de ce quiz est-il rattaché à une
+  // formation où l'utilisateur est inscrit ? Sinon, 404.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (user && quiz.module_id) {
+    const { data: enrollments } = await supabase
+      .from("enrollments")
+      .select("formation_id")
+      .eq("user_id", user.id)
+      .not("formation_id", "is", null)
+      .not("status", "in", "(refuse,abandon)");
+    const enrolledIds = (enrollments ?? [])
+      .map((e: any) => e.formation_id as string)
+      .filter(Boolean);
+    if (enrolledIds.length === 0) notFound();
+
+    const { count } = await supabase
+      .from("formation_modules")
+      .select("module_id", { count: "exact", head: true })
+      .eq("module_id", quiz.module_id)
+      .in("formation_id", enrolledIds);
+    if (!count) notFound();
+  }
+
   // Source 1 : table historique "questions" (rattachée au quiz)
   const { data: legacyQuestions } = await supabase
     .from("questions")

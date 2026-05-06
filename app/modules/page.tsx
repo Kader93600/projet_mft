@@ -59,34 +59,75 @@ export default async function ModulesPage() {
     firstName = extractFirstName(profile?.full_name ?? null);
   }
 
-  // Formation active (1 seule par stagiaire selon spec)
+  // Formations où le stagiaire est inscrit (1 ou plusieurs)
+  // + formation active (la "courante" — sera mise en premier visuellement)
+  let enrolledFormationIds: string[] = [];
   let activeFormationSlug: string | null = null;
   if (user) {
-    const { data: enrollment } = await supabase
+    const { data: enrollments } = await supabase
       .from("enrollments")
-      .select("formation_slug")
+      .select("formation_id, formation_slug, status, created_at")
       .eq("user_id", user.id)
+      .not("formation_id", "is", null)
       .not("status", "in", "(refuse,abandon)")
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    activeFormationSlug = (enrollment as any)?.formation_slug ?? null;
+      .order("created_at", { ascending: false });
+    enrolledFormationIds = (enrollments ?? [])
+      .map((e: any) => e.formation_id as string)
+      .filter(Boolean);
+    // active = en_cours en priorité, sinon le plus récent
+    const sorted = [...(enrollments ?? [])].sort((a: any, b: any) => {
+      const ar = a.status === "en_cours" ? 0 : 1;
+      const br = b.status === "en_cours" ? 0 : 1;
+      if (ar !== br) return ar - br;
+      return (
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+    });
+    activeFormationSlug = (sorted[0] as any)?.formation_slug ?? null;
   }
 
-  // Données catalogue
+  // Filtrage par formation : on récupère uniquement les modules rattachés
+  // aux formations où le stagiaire est inscrit.
+  let allowedModuleIds: string[] = [];
+  let links: any[] = [];
+  if (enrolledFormationIds.length > 0) {
+    const { data: linkRows } = await supabase
+      .from("formation_modules")
+      .select("module_id, display_order, formation:formations(slug)")
+      .in("formation_id", enrolledFormationIds);
+    links = linkRows ?? [];
+    allowedModuleIds = Array.from(
+      new Set(links.map((l: any) => l.module_id as string))
+    );
+  }
+
+  // Données catalogue (filtrées)
+  const noModules = allowedModuleIds.length === 0;
   const [
     { data: modules },
-    { data: links },
     { data: lessonsRaw },
     { data: quizzesRaw },
-  ] = await Promise.all([
-    supabase.from("modules").select("*").order("order"),
-    supabase
-      .from("formation_modules")
-      .select("module_id, display_order, formation:formations(slug)"),
-    supabase.from("lessons").select("id, module_id"),
-    supabase.from("quizzes").select("id, module_id"),
-  ]);
+  ] = noModules
+    ? [
+        { data: [] as any[] },
+        { data: [] as any[] },
+        { data: [] as any[] },
+      ]
+    : await Promise.all([
+        supabase
+          .from("modules")
+          .select("*")
+          .in("id", allowedModuleIds)
+          .order("order"),
+        supabase
+          .from("lessons")
+          .select("id, module_id")
+          .in("module_id", allowedModuleIds),
+        supabase
+          .from("quizzes")
+          .select("id, module_id")
+          .in("module_id", allowedModuleIds),
+      ]);
 
   // Données de progression utilisateur
   let lessonViews: { lesson_id: string; completed: boolean; last_ping_at: string }[] =

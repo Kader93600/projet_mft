@@ -63,39 +63,75 @@ export default async function QuizListPage() {
     firstName = extractFirstName(profile?.full_name ?? null);
   }
 
-  // Formation active (1 seule par stagiaire)
+  // Formations où le stagiaire est inscrit + formation active
+  let enrolledFormationIds: string[] = [];
   let activeFormationSlug: string | null = null;
   if (user) {
-    const { data: enrollment } = await supabase
+    const { data: enrollments } = await supabase
       .from("enrollments")
-      .select("formation_slug")
+      .select("formation_id, formation_slug, status, created_at")
       .eq("user_id", user.id)
+      .not("formation_id", "is", null)
       .not("status", "in", "(refuse,abandon)")
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    activeFormationSlug = (enrollment as any)?.formation_slug ?? null;
+      .order("created_at", { ascending: false });
+    enrolledFormationIds = (enrollments ?? [])
+      .map((e: any) => e.formation_id as string)
+      .filter(Boolean);
+    const sorted = [...(enrollments ?? [])].sort((a: any, b: any) => {
+      const ar = a.status === "en_cours" ? 0 : 1;
+      const br = b.status === "en_cours" ? 0 : 1;
+      if (ar !== br) return ar - br;
+      return (
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+    });
+    activeFormationSlug = (sorted[0] as any)?.formation_slug ?? null;
   }
 
-  // Données catalogue
+  // Filtrage par formations du stagiaire
+  let allowedModuleIds: string[] = [];
+  let links: any[] = [];
+  if (enrolledFormationIds.length > 0) {
+    const { data: linkRows } = await supabase
+      .from("formation_modules")
+      .select("module_id, display_order, formation:formations(slug)")
+      .in("formation_id", enrolledFormationIds);
+    links = linkRows ?? [];
+    allowedModuleIds = Array.from(
+      new Set(links.map((l: any) => l.module_id as string))
+    );
+  }
+
+  // Données catalogue (filtrées)
+  const noModules = allowedModuleIds.length === 0;
   const [
     { data: quizzesRaw },
     { data: modulesRaw },
-    { data: links },
     { data: lessonsRaw },
-  ] = await Promise.all([
-    supabase
-      .from("quizzes")
-      .select(
-        "id, title, description, type, is_mock_exam, pass_threshold, time_limit_s, max_attempts, retake_delay_hours, module_id, modules(title, slug)"
-      )
-      .order("type", { ascending: false }),
-    supabase.from("modules").select("id, slug, title, summary").order("order"),
-    supabase
-      .from("formation_modules")
-      .select("module_id, display_order, formation:formations(slug)"),
-    supabase.from("lessons").select("id, module_id"),
-  ]);
+  ] = noModules
+    ? [
+        { data: [] as any[] },
+        { data: [] as any[] },
+        { data: [] as any[] },
+      ]
+    : await Promise.all([
+        supabase
+          .from("quizzes")
+          .select(
+            "id, title, description, type, is_mock_exam, pass_threshold, time_limit_s, max_attempts, retake_delay_hours, module_id, modules(title, slug)"
+          )
+          .in("module_id", allowedModuleIds)
+          .order("type", { ascending: false }),
+        supabase
+          .from("modules")
+          .select("id, slug, title, summary")
+          .in("id", allowedModuleIds)
+          .order("order"),
+        supabase
+          .from("lessons")
+          .select("id, module_id")
+          .in("module_id", allowedModuleIds),
+      ]);
 
   // Tentatives utilisateur (1 requête, agrégée côté JS)
   let userAttempts: any[] = [];
