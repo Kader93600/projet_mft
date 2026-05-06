@@ -6,30 +6,63 @@ import { UserPlus } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminUsers() {
+const PAGE_SIZE = 50;
+
+export default async function AdminUsers({
+  searchParams,
+}: {
+  searchParams?: { page?: string; q?: string };
+}) {
   const supabase = createClient();
-  const [{ data: users }, { data: groups }, { data: attempts }] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("*")
-      .order("created_at", { ascending: false }),
+
+  const page = Math.max(1, Number(searchParams?.page ?? 1) || 1);
+  const q = (searchParams?.q ?? "").toString().trim();
+  const from = (page - 1) * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
+
+  // Recherche server-side : ILIKE sur email + full_name (couvre la base
+  // entière, pas seulement la page courante)
+  let usersQuery = supabase
+    .from("profiles")
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(from, to);
+  if (q) {
+    const safe = q.replace(/[%_]/g, "\\$&"); // échappe les wildcards SQL
+    usersQuery = usersQuery.or(`email.ilike.%${safe}%,full_name.ilike.%${safe}%`);
+  }
+
+  const [{ data: users, count }, { data: groups }] = await Promise.all([
+    usersQuery,
     supabase.from("groups").select("id, name, color").order("name"),
-    supabase.from("quiz_attempts").select("user_id, percentage"),
   ]);
+
+  // Stats : agrégat sur les tentatives — on ne fetche que celles des users
+  // de la page courante (évite de tirer la table entière à chaque visite)
+  const userIds = (users ?? []).map((u: any) => u.id);
+  const { data: attempts } = userIds.length
+    ? await supabase
+        .from("quiz_attempts")
+        .select("user_id, percentage")
+        .in("user_id", userIds)
+    : { data: [] as any[] };
 
   const statsByUser = new Map<string, { count: number; avg: number }>();
   (attempts ?? []).forEach((a: any) => {
     const cur = statsByUser.get(a.user_id) ?? { count: 0, avg: 0 };
     cur.count++;
-    cur.avg = ((cur.avg * (cur.count - 1)) + (a.percentage || 0)) / cur.count;
+    cur.avg = (cur.avg * (cur.count - 1) + (a.percentage || 0)) / cur.count;
     statsByUser.set(a.user_id, cur);
   });
 
-  const enriched = (users ?? []).map((u) => ({
+  const enriched = (users ?? []).map((u: any) => ({
     ...u,
     attempts_count: statsByUser.get(u.id)?.count ?? 0,
     avg_score: Math.round(statsByUser.get(u.id)?.avg ?? 0),
   }));
+
+  const total = count ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
     <div className="space-y-8">
@@ -40,8 +73,9 @@ export default async function AdminUsers() {
             Utilisateurs
           </h1>
           <p className="mt-2 text-slate-600">
-            {users?.length ?? 0} comptes · gérez rôles, groupes, activité et
-            accès.
+            {total} compte{total > 1 ? "s" : ""}
+            {q && ` correspondant à « ${q} »`} · gérez rôles, groupes,
+            activité et accès.
           </p>
         </div>
         <Link href="/admin/users/new">
@@ -51,7 +85,17 @@ export default async function AdminUsers() {
         </Link>
       </header>
 
-      <UsersTable users={enriched} groups={groups ?? []} />
+      <UsersTable
+        users={enriched}
+        groups={groups ?? []}
+        pagination={{
+          page,
+          pageSize: PAGE_SIZE,
+          total,
+          totalPages,
+          q,
+        }}
+      />
     </div>
   );
 }
