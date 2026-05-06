@@ -206,13 +206,41 @@ export async function toggleUserDisabled(userId: string, disabled: boolean) {
 }
 
 export async function deleteUser(userId: string) {
-  const { supabase, admin } = await requireAdmin();
+  const { admin } = await requireAdmin();
   validate(uuid, userId);
   if (userId === admin.id) {
     throw new Error("Vous ne pouvez pas supprimer votre propre compte");
   }
-  const { error } = await supabase.from("profiles").delete().eq("id", userId);
-  if (error) throw new Error(error.message);
+
+  // ⚠️ Important : il faut supprimer le user de `auth.users` (pas seulement
+  // `public.profiles`) sinon Supabase Auth garde l'email "réservé" et toute
+  // ré-invitation échoue avec "User with this email already registered".
+  //
+  // Ordre privilégié :
+  //   1. auth.admin.deleteUser() → cascade ON DELETE vers profiles +
+  //      enrollments + quiz_attempts + ... grâce aux FK définies en schema.
+  //   2. Fallback : si l'auth user a déjà disparu (orphan profile d'un
+  //      ancien delete partiel), on nettoie public.profiles directement.
+  const sb = createAdminClient();
+  const { error: authErr } = await sb.auth.admin.deleteUser(userId);
+
+  if (authErr) {
+    // Cas typique : "User not found" → orphan dans profiles seulement.
+    const isNotFound =
+      /not[\s_-]?found|does not exist/i.test(authErr.message ?? "") ||
+      (authErr as any).status === 404;
+
+    if (isNotFound) {
+      const { error: pErr } = await sb
+        .from("profiles")
+        .delete()
+        .eq("id", userId);
+      if (pErr) throw new Error(pErr.message);
+    } else {
+      throw new Error(authErr.message);
+    }
+  }
+
   await auditLog("delete_user", "profile", userId);
   revalidatePath("/admin/users");
   return { ok: true };
