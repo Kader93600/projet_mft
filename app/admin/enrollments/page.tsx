@@ -12,6 +12,7 @@ import {
   UserPlus,
   Ban,
   Trash2,
+  Download,
 } from "lucide-react";
 import {
   deleteFunder,
@@ -114,7 +115,16 @@ export default async function AdminEnrollmentsPage() {
       {/* Demandes d'inscription */}
       {openReq.length > 0 && (
         <section>
-          <h2 className="eyebrow text-gold-700 mb-3">Leads à contacter</h2>
+          <div className="flex items-center justify-between mb-3 gap-3">
+            <h2 className="eyebrow text-gold-700">Leads à contacter</h2>
+            <a
+              href="/api/admin/export/leads"
+              className="inline-flex items-center gap-2 h-8 px-3 rounded-lg border border-navy-200 bg-white text-xs text-navy-800 hover:bg-navy-50 transition"
+              title="Télécharger un CSV de tous les leads"
+            >
+              <Download className="h-3.5 w-3.5" /> CSV
+            </a>
+          </div>
           <Card>
             <CardBody className="p-0 overflow-x-auto">
               <table className="w-full text-sm">
