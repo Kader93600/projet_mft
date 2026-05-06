@@ -10,6 +10,7 @@ import {
   renderToBuffer,
 } from "@react-pdf/renderer";
 import React from "react";
+import { PdfLogoMark } from "@/lib/pdf-logo";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -159,7 +160,12 @@ function Certificat({
       Page,
       { size: "A4", style: s.page },
       C(View, { style: s.topBar }),
-      C(Text, { style: s.brand }, cfg?.organisme_nom || "GOTRM Academy"),
+      C(
+        View,
+        { style: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 2 } },
+        C(PdfLogoMark, { size: 30 }),
+        C(Text, { style: s.brand }, cfg?.organisme_nom || "MA FORMATION TRANSPORT")
+      ),
       C(
         Text,
         { style: s.meta },
@@ -178,7 +184,7 @@ function Certificat({
         `Je soussigné(e), ${
           cfg?.organisme_responsable || "responsable pédagogique"
         }, représentant légal de l'organisme ${
-          cfg?.organisme_nom || "GOTRM Academy"
+          cfg?.organisme_nom || "MA FORMATION TRANSPORT"
         }, certifie que :`
       ),
 
@@ -190,7 +196,7 @@ function Certificat({
         `a suivi l'action de formation intitulée « ${
           cfg?.formation_titre || ""
         } » (${cfg?.formation_rncp || ""}) dispensée en distanciel sur la plateforme ${
-          cfg?.organisme_nom || "GOTRM Academy"
+          cfg?.organisme_nom || "MA FORMATION TRANSPORT"
         }.`
       ),
 
@@ -287,7 +293,7 @@ function Certificat({
       C(
         Text,
         { style: s.footer },
-        `${cfg?.organisme_nom || "GOTRM Academy"}${
+        `${cfg?.organisme_nom || "MA FORMATION TRANSPORT"}${
           cfg?.organisme_siret ? " — SIRET " + cfg.organisme_siret : ""
         }${cfg?.organisme_num_da ? " — DA " + cfg.organisme_num_da : ""}`
       )

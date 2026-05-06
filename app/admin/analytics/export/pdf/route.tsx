@@ -10,6 +10,7 @@ import {
   renderToBuffer,
 } from "@react-pdf/renderer";
 import React from "react";
+import { PdfLogoMark } from "@/lib/pdf-logo";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -177,14 +178,19 @@ function Report({
         { style: styles.header },
         React.createElement(
           View,
-          {},
-          React.createElement(Text, { style: styles.brand }, "GOTRM Academy"),
+          { style: { flexDirection: "row", alignItems: "center", gap: 10 } },
+          React.createElement(PdfLogoMark, { size: 32 }),
           React.createElement(
-            Text,
-            { style: styles.subtitle },
-            mode === "user"
-              ? `Rapport individuel — ${user?.full_name || user?.email || "—"}`
-              : "Rapport global d'activité"
+            View,
+            {},
+            React.createElement(Text, { style: styles.brand }, "MA FORMATION TRANSPORT"),
+            React.createElement(
+              Text,
+              { style: styles.subtitle },
+              mode === "user"
+                ? `Rapport individuel — ${user?.full_name || user?.email || "—"}`
+                : "Rapport global d'activité"
+            )
           )
         ),
         React.createElement(Text, { style: styles.meta }, `Généré le ${now}`)
@@ -344,7 +350,7 @@ function Report({
       React.createElement(
         View,
         { style: styles.footer, fixed: true },
-        React.createElement(Text, {}, "GOTRM Academy — Rapport confidentiel"),
+        React.createElement(Text, {}, "MA FORMATION TRANSPORT — Rapport confidentiel"),
         React.createElement(
           Text,
           {},
@@ -380,12 +386,17 @@ function AttemptReport({
         { style: styles.header },
         React.createElement(
           View,
-          {},
-          React.createElement(Text, { style: styles.brand }, "GOTRM Academy"),
+          { style: { flexDirection: "row", alignItems: "center", gap: 10 } },
+          React.createElement(PdfLogoMark, { size: 32 }),
           React.createElement(
-            Text,
-            { style: styles.subtitle },
-            `Copie corrigée — ${quiz?.title ?? "Quiz"}`
+            View,
+            {},
+            React.createElement(Text, { style: styles.brand }, "MA FORMATION TRANSPORT"),
+            React.createElement(
+              Text,
+              { style: styles.subtitle },
+              `Copie corrigée — ${quiz?.title ?? "Quiz"}`
+            )
           )
         ),
         React.createElement(Text, { style: styles.meta }, `Généré le ${now}`)
@@ -510,7 +521,7 @@ function AttemptReport({
       React.createElement(
         View,
         { style: styles.footer, fixed: true },
-        React.createElement(Text, {}, "GOTRM Academy — Copie corrigée"),
+        React.createElement(Text, {}, "MA FORMATION TRANSPORT — Copie corrigée"),
         React.createElement(
           Text,
           { render: ({ pageNumber, totalPages }: any) => `${pageNumber} / ${totalPages}` }

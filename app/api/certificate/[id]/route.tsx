@@ -10,6 +10,7 @@ import {
   renderToBuffer,
 } from "@react-pdf/renderer";
 import React from "react";
+import { PdfLogoMark } from "@/lib/pdf-logo";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -150,7 +151,12 @@ function CertificatePDF({
       C(View, { style: styles.outerBorder }),
       C(View, { style: styles.innerBorder }),
 
-      C(Text, { style: styles.brand }, "GOTRM Academy"),
+      C(
+        View,
+        { style: { alignItems: "center", marginTop: 28 } },
+        C(PdfLogoMark, { size: 56 })
+      ),
+      C(Text, { style: [styles.brand, { marginTop: 10 }] }, "MA FORMATION TRANSPORT"),
       C(
         Text,
         { style: styles.sub },
@@ -212,7 +218,7 @@ function CertificatePDF({
       C(
         Text,
         { style: styles.footer },
-        "Ce certificat atteste de la réussite d'un parcours d'évaluation formatif GOTRM Academy. Il ne se substitue pas à la délivrance officielle du titre professionnel par le jury RNCP."
+        "Ce certificat atteste de la réussite d'un parcours d'évaluation formatif MA FORMATION TRANSPORT. Il ne se substitue pas à la délivrance officielle du titre professionnel par le jury RNCP."
       )
     )
   );

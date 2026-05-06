@@ -10,6 +10,7 @@ import {
   renderToBuffer,
 } from "@react-pdf/renderer";
 import React from "react";
+import { PdfLogoMark } from "@/lib/pdf-logo";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -146,7 +147,12 @@ function Attestation({
       Page,
       { size: "A4", style: styles.page },
       C(View, { style: styles.topBar }),
-      C(Text, { style: styles.brand }, "GOTRM Academy"),
+      C(
+        View,
+        { style: { alignItems: "center", marginBottom: 6 } },
+        C(PdfLogoMark, { size: 48 })
+      ),
+      C(Text, { style: styles.brand }, "MA FORMATION TRANSPORT"),
       C(
         Text,
         { style: styles.sub },
@@ -156,7 +162,7 @@ function Attestation({
       C(Text, { style: styles.title }, "Attestation de formation"),
       C(View, { style: styles.titleUnderline }),
 
-      C(Text, { style: styles.intro }, "Je soussigné(e), responsable pédagogique de l'organisme GOTRM Academy, atteste que"),
+      C(Text, { style: styles.intro }, "Je soussigné(e), responsable pédagogique de l'organisme MA FORMATION TRANSPORT, atteste que"),
 
       C(
         View,
@@ -170,7 +176,7 @@ function Attestation({
       C(
         Text,
         { style: styles.body },
-        `a suivi la formation préparatoire au titre professionnel "Gestionnaire des Opérations de Transport Routier de Marchandises" (RNCP 40990) dispensée en distanciel sur la plateforme GOTRM Academy, du ${fmtDate(
+        `a suivi la formation préparatoire au titre professionnel "Gestionnaire des Opérations de Transport Routier de Marchandises" (RNCP 40990) dispensée en distanciel sur la plateforme MA FORMATION TRANSPORT, du ${fmtDate(
           summary?.first_session
         )} au ${fmtDate(summary?.last_session)}.`
       ),
@@ -236,7 +242,7 @@ function Attestation({
       C(
         Text,
         { style: styles.footer },
-        "GOTRM Academy — SIRET à compléter — Organisme de formation enregistré sous le n° [à compléter]"
+        "MA FORMATION TRANSPORT — SIRET à compléter — Organisme de formation enregistré sous le n° [à compléter]"
       )
     )
   );

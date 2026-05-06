@@ -10,6 +10,7 @@ import {
   renderToBuffer,
 } from "@react-pdf/renderer";
 import React from "react";
+import { PdfLogoMark } from "@/lib/pdf-logo";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -160,12 +161,17 @@ function Emargement({
         { style: s.header },
         C(
           View,
-          {},
-          C(Text, { style: s.brand }, cfg?.organisme_nom || "GOTRM Academy"),
+          { style: { flexDirection: "row", alignItems: "center", gap: 10 } },
+          C(PdfLogoMark, { size: 30 }),
           C(
-            Text,
-            { style: s.sub },
-            "Émargement détaillé — Formation à distance"
+            View,
+            {},
+            C(Text, { style: s.brand }, cfg?.organisme_nom || "MA FORMATION TRANSPORT"),
+            C(
+              Text,
+              { style: s.sub },
+              "Émargement détaillé — Formation à distance"
+            )
           )
         ),
         C(Text, { style: s.meta }, `Édité le ${today}`)
@@ -314,7 +320,7 @@ function Emargement({
         C(
           Text,
           {},
-          `${cfg?.organisme_nom || "GOTRM Academy"} — Émargement détaillé FOAD / Qualiopi`
+          `${cfg?.organisme_nom || "MA FORMATION TRANSPORT"} — Émargement détaillé FOAD / Qualiopi`
         ),
         C(Text, {
           render: ({ pageNumber, totalPages }: any) =>

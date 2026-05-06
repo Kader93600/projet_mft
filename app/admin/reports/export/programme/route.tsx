@@ -9,6 +9,7 @@ import {
   renderToBuffer,
 } from "@react-pdf/renderer";
 import React from "react";
+import { PdfLogoMark } from "@/lib/pdf-logo";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -86,7 +87,12 @@ function Programme({ cfg, today }: { cfg: any; today: string }) {
       Page,
       { size: "A4", style: s.page },
       C(View, { style: s.topBar }),
-      C(Text, { style: s.brand }, cfg?.organisme_nom || "GOTRM Academy"),
+      C(
+        View,
+        { style: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 2 } },
+        C(PdfLogoMark, { size: 32 }),
+        C(Text, { style: s.brand }, cfg?.organisme_nom || "MA FORMATION TRANSPORT")
+      ),
       C(
         Text,
         { style: s.sub },

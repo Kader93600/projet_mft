@@ -10,6 +10,7 @@ import {
   renderToBuffer,
 } from "@react-pdf/renderer";
 import React from "react";
+import { PdfLogoMark } from "@/lib/pdf-logo";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -139,9 +140,14 @@ function PresenceReport({
         { style: styles.header },
         C(
           View,
-          {},
-          C(Text, { style: styles.brand }, "GOTRM Academy"),
-          C(Text, { style: styles.sub }, "Feuille de présence — Formation à distance")
+          { style: { flexDirection: "row", alignItems: "center", gap: 10 } },
+          C(PdfLogoMark, { size: 32 }),
+          C(
+            View,
+            {},
+            C(Text, { style: styles.brand }, "MA FORMATION TRANSPORT"),
+            C(Text, { style: styles.sub }, "Feuille de présence — Formation à distance")
+          )
         ),
         C(Text, { style: styles.meta }, `Édité le ${generatedAt}`)
       ),
@@ -252,7 +258,7 @@ function PresenceReport({
         C(
           Text,
           {},
-          "GOTRM Academy — Document officiel conformément aux obligations Qualiopi (formation à distance)"
+          "MA FORMATION TRANSPORT — Document officiel conformément aux obligations Qualiopi (formation à distance)"
         ),
         C(Text, {
           render: ({ pageNumber, totalPages }: any) => `${pageNumber} / ${totalPages}`,
