@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/components/ui/toast";
 import { ProgressBar, RadialProgress } from "@/components/ui/progress";
 import {
   Check, X, Clock, Target, Lightbulb, ArrowRight, ArrowLeft,
@@ -71,6 +72,7 @@ export function QuizRunner({
   formationSlug?: string | null;
 }) {
   const router = useRouter();
+  const { toast } = useToast();
   const [started, setStarted] = useState(false);
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -238,7 +240,37 @@ export function QuizRunner({
       .single();
 
     if (insertErr || !inserted) {
-      console.error("[quiz submit] insert error", insertErr);
+      // Diagnostic complet côté serveur ET côté UI — avant ce fix, l'échec
+      // était silencieux, le stagiaire ne savait pas pourquoi son score
+      // n'apparaissait jamais dans /stats.
+      console.error("[quiz submit] insert error", {
+        message: insertErr?.message,
+        details: (insertErr as any)?.details,
+        hint: (insertErr as any)?.hint,
+        code: (insertErr as any)?.code,
+        full: insertErr,
+      });
+
+      const code = (insertErr as any)?.code as string | undefined;
+      const msg = insertErr?.message ?? "Erreur inconnue";
+      let friendly = `Impossible d'enregistrer votre tentative : ${msg}`;
+      // Mappings courants pour parler humain
+      if (code === "42703") {
+        // colonne inexistante
+        friendly =
+          "La base de données n'est pas à jour (migration manquante). Contactez votre administrateur.";
+      } else if (code === "42501" || /row.level security|policy/i.test(msg)) {
+        friendly =
+          "Vos droits ne permettent pas d'enregistrer cette tentative. Vérifiez que votre formation est bien active dans votre profil.";
+      } else if (code === "23502") {
+        // not null violation
+        friendly = `Champ obligatoire manquant : ${
+          (insertErr as any)?.details ?? msg
+        }`;
+      } else if (code === "23505") {
+        friendly = "Cette tentative a déjà été enregistrée.";
+      }
+      toast(friendly, "error");
       return;
     }
     const attemptId = inserted.id;
