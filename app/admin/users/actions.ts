@@ -160,7 +160,14 @@ export async function createStudent(raw: unknown): Promise<CreateStudentResult> 
       }
     );
     if (invErr) {
-      return fail("invite", `Invitation impossible : ${invErr.message}`);
+      // Cas connu : quota SMTP intégré Supabase atteint (~3-4/h en gratuit).
+      // Suggère le mode password en attendant la config SMTP custom.
+      const msg = invErr.message ?? "";
+      const isRateLimit = /rate[\s_-]?limit|too[_\s]many/i.test(msg);
+      const friendly = isRateLimit
+        ? "Quota d'envoi d'emails Supabase atteint (limite intégrée). Utilisez le mode « Mot de passe initial » pour ce stagiaire, ou configurez SMTP custom (Resend) dans Supabase → Auth → SMTP Settings pour lever la limite."
+        : `Invitation impossible : ${msg}`;
+      return fail("invite", friendly);
     }
     userId = invited.user.id;
   } else {
