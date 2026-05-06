@@ -92,8 +92,16 @@ export default async function GlossairePage({
     }
   }
   if (q) {
-    // Recherche simple : ILIKE sur term + définition
-    query = query.or(`term.ilike.%${q}%,definition_md.ilike.%${q}%`);
+    // Recherche : ILIKE sur term + definition + synonyms (PostgreSQL accepte
+    // l'opérateur cs.{value} pour les arrays). On échappe %_ pour ne pas
+    // ouvrir un pattern injection.
+    const safe = q.replace(/[%_]/g, "\\$&");
+    // Pour chercher dans les synonymes (text[]) on utilise array_to_string
+    // côté client n'est pas dispo — on reste sur term + definition (les
+    // index trigram pg_trgm rendent la requête rapide même à grande échelle).
+    query = query.or(
+      `term.ilike.%${safe}%,definition_md.ilike.%${safe}%`
+    );
   }
 
   // Pour les filtres : on liste UNIQUEMENT les blocs qui ont au moins
