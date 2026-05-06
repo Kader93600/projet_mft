@@ -1,5 +1,5 @@
 -- =====================================================================
--- GOTRM Academy — Point #15 : Gamification (XP, niveaux, streak, classement)
+-- MA FORMATION TRANSPORT — Point #15 : Gamification (XP, niveaux, streak, classement)
 -- =====================================================================
 
 -- 1. Table des événements XP -----------------------------------------

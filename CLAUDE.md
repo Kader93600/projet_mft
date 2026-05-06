@@ -1,4 +1,4 @@
-# GOTRM Academy — Notes pour Claude
+# MA FORMATION TRANSPORT — Notes pour Claude
 
 ## Vue d'ensemble
 Plateforme e-learning Next.js 14 + Supabase pour la préparation au titre pro GOTRM (RNCP 40990).

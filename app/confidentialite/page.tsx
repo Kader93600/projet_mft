@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ShieldCheck, Mail, Database, Clock, Scale } from "lucide-react";
 
 export const metadata = {
-  title: "Politique de confidentialité — GOTRM Academy",
+  title: "Politique de confidentialité — MA FORMATION TRANSPORT",
 };
 
 export default function ConfidentialitePage() {
@@ -17,7 +17,7 @@ export default function ConfidentialitePage() {
             Politique de confidentialité
           </h1>
           <p className="mt-3 text-white/70 max-w-2xl">
-            GOTRM Academy s'engage à protéger vos données personnelles
+            MA FORMATION TRANSPORT s'engage à protéger vos données personnelles
             conformément au Règlement (UE) 2016/679 (RGPD) et à la loi
             « Informatique et Libertés ».
           </p>
@@ -27,7 +27,7 @@ export default function ConfidentialitePage() {
       <main className="max-w-3xl mx-auto px-6 py-12 space-y-10">
         <Section icon={ShieldCheck} title="Responsable de traitement">
           <p>
-            GOTRM Academy, organisme de formation déclaré sous le numéro
+            MA FORMATION TRANSPORT, organisme de formation déclaré sous le numéro
             d'activité [à compléter], certifié Qualiopi.
           </p>
           <p className="mt-2">

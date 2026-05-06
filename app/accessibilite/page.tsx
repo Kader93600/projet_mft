@@ -282,7 +282,7 @@ export default async function AccessibilitePage() {
           <CardBody className="prose-lesson max-w-none">
             <h2>Déclaration d'accessibilité</h2>
             <p>
-              <strong>GOTRM Academy</strong> s'engage à rendre sa plateforme accessible
+              <strong>MA FORMATION TRANSPORT</strong> s'engage à rendre sa plateforme accessible
               conformément à l'article 47 de la loi n° 2005-102 du 11 février 2005. Cette
               déclaration s'applique au site et aux contenus pédagogiques.
             </p>

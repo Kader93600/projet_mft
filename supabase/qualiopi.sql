@@ -10,7 +10,7 @@
 CREATE TABLE IF NOT EXISTS public.formation_settings (
   id boolean PRIMARY KEY DEFAULT true CHECK (id),  -- singleton row
   -- Identité organisme
-  organisme_nom text NOT NULL DEFAULT 'GOTRM Academy',
+  organisme_nom text NOT NULL DEFAULT 'MA FORMATION TRANSPORT',
   organisme_siret text,
   organisme_num_da text,       -- numéro de déclaration d'activité
   organisme_adresse text,

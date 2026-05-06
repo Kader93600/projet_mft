@@ -34,7 +34,7 @@ export function AppShell({ children, profile }: AppShellProps) {
   const pageTitle =
     FLAT.find((n) => pathname === n.href || pathname.startsWith(n.href + "/"))
       ?.label ??
-    (pathname.startsWith("/admin") ? "Administration" : "GOTRM Academy");
+    (pathname.startsWith("/admin") ? "Administration" : "MA FORMATION TRANSPORT");
 
   return (
     <div className="min-h-screen flex bg-ivory text-ink">

@@ -1,5 +1,5 @@
 -- =====================================================================
--- GOTRM Academy — Point #12 : Accessibilité & handicap (RGAA)
+-- MA FORMATION TRANSPORT — Point #12 : Accessibilité & handicap (RGAA)
 -- =====================================================================
 -- - Préférences stagiaire (taille, police dyslexia, contraste, motion)
 -- - Demandes d'adaptation (référent handicap)

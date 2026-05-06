@@ -1,5 +1,5 @@
 -- =====================================================================
--- GOTRM Academy — Tracking temps réel & Qualiopi
+-- MA FORMATION TRANSPORT — Tracking temps réel & Qualiopi
 -- À exécuter APRÈS admin_extensions.sql
 -- Idempotent
 -- =====================================================================

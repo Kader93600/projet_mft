@@ -1,5 +1,5 @@
 -- =====================================================================
--- GOTRM Academy — Extensions schema pour l'espace admin
+-- MA FORMATION TRANSPORT — Extensions schema pour l'espace admin
 -- À exécuter APRÈS schema.sql dans le SQL Editor Supabase
 -- Idempotent : peut être ré-exécuté sans casse
 -- =====================================================================

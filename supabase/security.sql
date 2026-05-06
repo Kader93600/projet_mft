@@ -1,5 +1,5 @@
 -- =====================================================================
--- GOTRM Academy — Durcissement sécurité
+-- MA FORMATION TRANSPORT — Durcissement sécurité
 -- À exécuter APRÈS schema.sql et admin_extensions.sql
 -- Idempotent
 -- =====================================================================

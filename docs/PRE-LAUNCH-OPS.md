@@ -251,7 +251,7 @@ Statut : en cours d'investigation
 Mises à jour : {url-status-page} (si applicable)
 
 Merci pour votre patience,
-L'équipe GOTRM Academy
+L'équipe MA FORMATION TRANSPORT
 ```
 
 Si volume > 100 stagiaires actifs : envisager une page de statut publique (Statuspage.io, BetterStack, ou Vercel Status Page).

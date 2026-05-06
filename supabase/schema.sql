@@ -1,5 +1,5 @@
 -- =====================================================================
--- GOTRM Academy — Schéma PostgreSQL (Supabase)
+-- MA FORMATION TRANSPORT — Schéma PostgreSQL (Supabase)
 -- RNCP 40990 — Gestionnaire des Opérations de Transport Routier de Marchandises
 -- =====================================================================
 

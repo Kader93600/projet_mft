@@ -1,5 +1,5 @@
 -- =====================================================================
--- GOTRM Academy — Point #13 : Recherche globale
+-- MA FORMATION TRANSPORT — Point #13 : Recherche globale
 -- =====================================================================
 -- RPC global_search(q text, max_per_kind int) qui renvoie :
 --   kind | id | title | subtitle | url | rank

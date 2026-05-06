@@ -1,5 +1,5 @@
 -- =====================================================================
--- GOTRM Academy — Point #16 : Inscription, paiement, CPF, financeur
+-- MA FORMATION TRANSPORT — Point #16 : Inscription, paiement, CPF, financeur
 -- =====================================================================
 
 -- 1. Financeurs (OPCO, CPF/MonCompteFormation, employeur, auto-financé) --

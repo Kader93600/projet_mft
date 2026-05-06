@@ -1,5 +1,5 @@
 -- =====================================================================
--- GOTRM Academy — Données pédagogiques enrichies
+-- MA FORMATION TRANSPORT — Données pédagogiques enrichies
 -- RNCP 40990 (blocs, modules, leçons, quiz, examens blancs)
 -- Version sans DO blocks pour compatibilité Supabase SQL Editor
 -- =====================================================================
