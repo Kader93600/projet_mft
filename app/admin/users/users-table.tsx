@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import { ConfirmAction } from "@/components/ui/confirm-action";
 import { formatDate, initials, scoreColor } from "@/lib/utils";
 import {
   Search,
@@ -14,9 +15,12 @@ import {
   UserCheck,
   Trash2,
   RotateCcw,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
-import { useState, useTransition, useMemo } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useState, useTransition, useMemo, useRef, useEffect } from "react";
 import {
   deleteUser,
   resetUserResults,
@@ -60,16 +64,56 @@ interface Group {
   color: string;
 }
 
+interface Pagination {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+  q: string;
+}
+
 export function UsersTable({
   users,
   groups,
+  pagination,
 }: {
   users: User[];
   groups: Group[];
+  pagination: Pagination;
 }) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
-  const [search, setSearch] = useState("");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Recherche server-side : auto-submit avec debounce 300 ms
+  const [search, setSearch] = useState(pagination.q);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    setSearch(searchParams.get("q") ?? "");
+  }, [searchParams]);
+
+  function updateUrl(patch: Record<string, string | null>) {
+    const sp = new URLSearchParams(searchParams.toString());
+    for (const [k, v] of Object.entries(patch)) {
+      if (v === null || v === "") sp.delete(k);
+      else sp.set(k, v);
+    }
+    const qs = sp.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname);
+  }
+
+  function onSearchChange(next: string) {
+    setSearch(next);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      // À chaque changement de recherche, on revient page 1
+      updateUrl({ q: next.trim() || null, page: null });
+    }, 300);
+  }
+
+  // Filtres client : rôle, classe, statut — opèrent sur la page courante.
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [groupFilter, setGroupFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -83,16 +127,9 @@ export function UsersTable({
       }
       if (statusFilter === "active" && u.disabled) return false;
       if (statusFilter === "disabled" && !u.disabled) return false;
-      if (search.trim()) {
-        const s = search.toLowerCase();
-        return (
-          u.email.toLowerCase().includes(s) ||
-          (u.full_name ?? "").toLowerCase().includes(s)
-        );
-      }
       return true;
     });
-  }, [users, search, roleFilter, groupFilter, statusFilter]);
+  }, [users, roleFilter, groupFilter, statusFilter]);
 
   const groupsById = new Map(groups.map((g) => [g.id, g]));
 
@@ -115,9 +152,10 @@ export function UsersTable({
           <div className="relative md:col-span-2">
             <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
-              placeholder="Rechercher par nom ou email…"
+              type="search"
+              placeholder="Rechercher par nom ou email (toute la base)…"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => onSearchChange(e.target.value)}
               className="pl-10"
             />
           </div>
@@ -273,47 +311,33 @@ export function UsersTable({
                         </button>
 
                         {/* Réinitialiser résultats */}
-                        <button
-                          type="button"
+                        <ConfirmAction
+                          action={() => resetUserResults(u.id)}
+                          title="Réinitialiser les résultats ?"
+                          description={`Toutes les tentatives de quiz, vues de leçons et progressions de ${
+                            u.full_name ?? u.email
+                          } seront effacées. Le compte reste actif.`}
+                          confirmLabel="Réinitialiser"
+                          successMsg="Résultats réinitialisés"
+                          iconLabel="Réinitialiser tous les résultats et la progression"
+                          icon={<RotateCcw className="h-3.5 w-3.5" />}
+                          tone="rose"
                           disabled={isPending}
-                          title="Réinitialiser tous les résultats de quiz et la progression"
-                          aria-label="Réinitialiser les résultats"
-                          onClick={() => {
-                            if (
-                              confirm(
-                                `Réinitialiser tous les résultats et la progression de "${
-                                  u.full_name ?? u.email
-                                }" ?`
-                              )
-                            )
-                              run(
-                                () => resetUserResults(u.id),
-                                "Résultats réinitialisés"
-                              );
-                          }}
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-rose-200 text-rose-700 hover:bg-rose-50 transition disabled:opacity-50"
-                        >
-                          <RotateCcw className="h-3.5 w-3.5" />
-                        </button>
+                        />
 
                         {/* Supprimer */}
-                        <button
-                          type="button"
+                        <ConfirmAction
+                          action={() => deleteUser(u.id)}
+                          title="Supprimer ce compte ?"
+                          description={`Supprime définitivement le compte ${u.email}. Toutes les données personnelles, progressions et résultats seront perdus.`}
+                          confirmLabel="Supprimer"
+                          successMsg="Compte supprimé"
+                          iconLabel="Supprimer définitivement le compte"
+                          icon={<Trash2 className="h-3.5 w-3.5" />}
+                          tone="rose"
+                          variant="solid"
                           disabled={isPending}
-                          title="Supprimer définitivement le compte"
-                          aria-label="Supprimer le compte"
-                          onClick={() => {
-                            if (
-                              confirm(
-                                `Supprimer définitivement le compte "${u.email}" ? Cette action est irréversible.`
-                              )
-                            )
-                              run(() => deleteUser(u.id), "Compte supprimé");
-                          }}
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-transparent bg-rose-600 text-white hover:bg-rose-700 transition disabled:opacity-50"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                        />
                       </div>
                     </td>
                   </tr>
@@ -330,6 +354,57 @@ export function UsersTable({
           </table>
         </div>
       </Card>
+
+      {/* Pagination — bas de table */}
+      {pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="text-xs text-slate-500">
+            Page <strong className="text-navy-900">{pagination.page}</strong> sur{" "}
+            <strong className="text-navy-900">{pagination.totalPages}</strong>
+            {" · "}
+            {Math.min(
+              (pagination.page - 1) * pagination.pageSize + 1,
+              pagination.total
+            )}
+            –
+            {Math.min(pagination.page * pagination.pageSize, pagination.total)}{" "}
+            sur {pagination.total}
+            {(roleFilter !== "all" ||
+              groupFilter !== "all" ||
+              statusFilter !== "all") && (
+              <span className="ml-2 text-amber-700">
+                · Filtres actifs sur cette page uniquement
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              disabled={pagination.page <= 1}
+              onClick={() =>
+                updateUrl({ page: String(Math.max(1, pagination.page - 1)) })
+              }
+              className="inline-flex h-9 items-center gap-1 rounded-lg border border-navy-200 bg-white px-3 text-sm text-navy-800 hover:bg-navy-50 transition disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft className="h-4 w-4" /> Précédent
+            </button>
+            <button
+              type="button"
+              disabled={pagination.page >= pagination.totalPages}
+              onClick={() =>
+                updateUrl({
+                  page: String(
+                    Math.min(pagination.totalPages, pagination.page + 1)
+                  ),
+                })
+              }
+              className="inline-flex h-9 items-center gap-1 rounded-lg border border-navy-200 bg-white px-3 text-sm text-navy-800 hover:bg-navy-50 transition disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Suivant <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

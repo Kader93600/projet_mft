@@ -21,6 +21,7 @@ import {
   setEnrollmentStatus,
 } from "./actions";
 import { Pencil, Trophy } from "lucide-react";
+import { ConfirmAction } from "@/components/ui/confirm-action";
 
 const REQUEST_STATUS_TONE: Record<string, "slate" | "navy" | "gold" | "success" | "rose"> = {
   nouveau: "slate",
@@ -310,16 +311,17 @@ export default async function AdminEnrollmentsPage() {
                     >
                       <Pencil className="h-3.5 w-3.5" />
                     </Link>
-                    <form action={deleteFunder.bind(null, f.id)}>
-                      <ActionBtn
-                        title="Supprimer le financeur"
-                        tone="rose"
-                        type="submit"
-                        variant="solid"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </ActionBtn>
-                    </form>
+                    <ConfirmAction
+                      action={deleteFunder.bind(null, f.id)}
+                      title="Supprimer ce financeur ?"
+                      description={`Supprime « ${f.name} ». Les dossiers existants rattachés à ce financeur seront détachés (pas supprimés).`}
+                      confirmLabel="Supprimer"
+                      successMsg="Financeur supprimé"
+                      iconLabel="Supprimer le financeur"
+                      icon={<Trash2 className="h-3.5 w-3.5" />}
+                      tone="rose"
+                      variant="solid"
+                    />
                   </div>
                 </CardBody>
               </Card>
@@ -381,16 +383,17 @@ function LeadActions({ request: r }: { request: any }) {
       </form>
 
       {/* Supprimer définitivement */}
-      <form action={deleteEnrollmentRequest.bind(null, r.id)}>
-        <ActionBtn
-          title="Supprimer définitivement"
-          tone="rose"
-          type="submit"
-          variant="solid"
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-        </ActionBtn>
-      </form>
+      <ConfirmAction
+        action={deleteEnrollmentRequest.bind(null, r.id)}
+        title="Supprimer ce lead ?"
+        description={`Supprime définitivement la demande de ${r.full_name} (${r.email}).`}
+        confirmLabel="Supprimer"
+        successMsg="Lead supprimé"
+        iconLabel="Supprimer définitivement"
+        icon={<Trash2 className="h-3.5 w-3.5" />}
+        tone="rose"
+        variant="solid"
+      />
     </div>
   );
 }
@@ -447,16 +450,19 @@ function EnrollmentActions({ enrollment: e }: { enrollment: any }) {
       )}
 
       {/* Suppression définitive */}
-      <form action={deleteEnrollment.bind(null, e.id)}>
-        <ActionBtn
-          title="Supprimer définitivement"
-          tone="rose"
-          type="submit"
-          variant="solid"
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-        </ActionBtn>
-      </form>
+      <ConfirmAction
+        action={deleteEnrollment.bind(null, e.id)}
+        title="Supprimer ce dossier ?"
+        description={`Supprime définitivement le dossier de ${
+          e.user?.full_name ?? e.user?.email ?? "ce stagiaire"
+        }. Toutes les informations financières et historiques liées seront perdues.`}
+        confirmLabel="Supprimer"
+        successMsg="Dossier supprimé"
+        iconLabel="Supprimer définitivement"
+        icon={<Trash2 className="h-3.5 w-3.5" />}
+        tone="rose"
+        variant="solid"
+      />
     </div>
   );
 }
