@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import {
+  sendEmail,
+  newLeadEmail,
+  enrollmentReceivedEmail,
+} from "@/lib/email";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -9,7 +14,9 @@ export const dynamic = "force-dynamic";
  * Stocke la demande dans `enrollment_requests` (table existante)
  * pour que l'admin la traite dans son flux habituel.
  *
- * NB : email transactionnel à brancher plus tard (Resend / Postmark).
+ * Notifications email (best-effort, fire-and-forget) :
+ *   - admin    → nouveau lead à traiter
+ *   - prospect → accusé de réception (sous 48h)
  */
 export async function POST(req: Request) {
   let body: any;
@@ -66,6 +73,37 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
+
+  // Notifications email (best-effort, ne bloque pas la réponse)
+  const adminEmail = process.env.LEADS_NOTIFY_EMAIL || process.env.EMAIL_REPLY_TO;
+  const fullName = `${firstName} ${lastName}`.trim();
+  const appUrl =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    new URL(req.url).origin;
+
+  // Admin : nouveau lead à traiter
+  if (adminEmail) {
+    void sendEmail({
+      to: adminEmail,
+      ...newLeadEmail({
+        fullName,
+        email,
+        phone,
+        fundingKind: financeur,
+        formation,
+        message,
+        adminUrl: `${appUrl}/admin/enrollments`,
+      }),
+      tags: [{ name: "kind", value: "lead_new" }],
+    });
+  }
+
+  // Prospect : accusé de réception
+  void sendEmail({
+    to: email,
+    ...enrollmentReceivedEmail({ fullName }),
+    tags: [{ name: "kind", value: "lead_ack" }],
+  });
 
   return NextResponse.json({ ok: true });
 }

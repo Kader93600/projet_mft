@@ -174,6 +174,42 @@ export function newCopyToGradeEmail(input: {
   };
 }
 
+/** Notif admin : un nouveau lead vient d'arriver dans enrollment_requests. */
+export function newLeadEmail(input: {
+  fullName: string;
+  email: string;
+  phone?: string | null;
+  fundingKind?: string | null;
+  formation?: string | null;
+  message?: string | null;
+  adminUrl: string;
+}) {
+  const lines: string[] = [];
+  lines.push(`<p><strong>${input.fullName}</strong> vient de demander à être recontacté.</p>`);
+  lines.push(`<table style="margin:16px 0;border-collapse:collapse;font-size:14px"><tbody>`);
+  lines.push(`<tr><td style="padding:6px 12px;color:#64748B">Email</td><td style="padding:6px 12px"><a href="mailto:${input.email}" style="color:#0E1240">${input.email}</a></td></tr>`);
+  if (input.phone) {
+    lines.push(`<tr><td style="padding:6px 12px;color:#64748B">Téléphone</td><td style="padding:6px 12px"><a href="tel:${input.phone}" style="color:#0E1240">${input.phone}</a></td></tr>`);
+  }
+  if (input.formation) {
+    lines.push(`<tr><td style="padding:6px 12px;color:#64748B">Formation visée</td><td style="padding:6px 12px">${input.formation}</td></tr>`);
+  }
+  if (input.fundingKind) {
+    lines.push(`<tr><td style="padding:6px 12px;color:#64748B">Financement</td><td style="padding:6px 12px">${input.fundingKind}</td></tr>`);
+  }
+  lines.push(`</tbody></table>`);
+  if (input.message) {
+    lines.push(`<p style="margin-top:12px;font-size:13px;color:#475569"><em>« ${input.message.replace(/</g, "&lt;").slice(0, 500)} »</em></p>`);
+  }
+  lines.push(`<p style="margin:24px 0"><a href="${input.adminUrl}" style="display:inline-block;padding:12px 22px;background:#9FE220;color:#0E1240;text-decoration:none;border-radius:12px;font-weight:600">Traiter le lead</a></p>`);
+  lines.push(`<p style="font-size:12px;color:#94A3B8">Recontactez sous 48 h ouvrées pour maximiser la conversion.</p>`);
+
+  return {
+    subject: `Nouveau lead — ${input.fullName}`,
+    html: emailLayout(`Nouveau lead à contacter`, lines.join("\n")),
+  };
+}
+
 export function paymentReminderEmail(input: {
   fullName: string;
   amount: string;
