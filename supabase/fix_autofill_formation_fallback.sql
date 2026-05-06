@@ -50,23 +50,27 @@ STABLE
 SECURITY DEFINER
 SET search_path = public
 AS $$
-  -- Palier 1 : profil
-  SELECT current_formation_id
-    FROM public.profiles
-   WHERE id = p_user_id
-     AND current_formation_id IS NOT NULL
-  UNION ALL
-  -- Palier 2 : enrollment actif le plus récent
-  SELECT e.formation_id
-    FROM public.enrollments e
-   WHERE e.user_id = p_user_id
-     AND e.formation_id IS NOT NULL
-     AND e.status NOT IN ('refuse', 'abandon')
-   ORDER BY
-     CASE WHEN e.status = 'en_cours' THEN 0 ELSE 1 END,
-     e.created_at DESC
-   LIMIT 1
-  LIMIT 1;
+  SELECT COALESCE(
+    -- Palier 1 : profil (lookup direct, rapide)
+    (
+      SELECT current_formation_id
+        FROM public.profiles
+       WHERE id = p_user_id
+         AND current_formation_id IS NOT NULL
+    ),
+    -- Palier 2 : enrollment actif le plus récent
+    (
+      SELECT e.formation_id
+        FROM public.enrollments e
+       WHERE e.user_id = p_user_id
+         AND e.formation_id IS NOT NULL
+         AND e.status NOT IN ('refuse', 'abandon')
+       ORDER BY
+         CASE WHEN e.status = 'en_cours' THEN 0 ELSE 1 END,
+         e.created_at DESC
+       LIMIT 1
+    )
+  );
 $$;
 
 -- ------------------------------------------------------------------
