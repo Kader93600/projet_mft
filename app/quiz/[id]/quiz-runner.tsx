@@ -190,12 +190,22 @@ export function QuizRunner({
   }
 
   async function submit() {
+    // ⚠️ Ne PAS poser finished=true ici. Si on le pose avant l'INSERT et
+    // que celui-ci échoue, le user voit un écran "Félicitations !" calculé
+    // localement (cf. const result = useMemo...) sans que sa tentative ne
+    // soit en base → stats à 0 alors qu'il pense avoir terminé.
+    // On pose finished=true UNIQUEMENT après le succès de l'INSERT.
     if (finished) return;
-    setFinished(true);
+    setSubmitError(null);
     const finishedAt = new Date();
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      setSubmitError(
+        "Session expirée. Reconnectez-vous puis réessayez de soumettre."
+      );
+      return;
+    }
 
     // Sépare QCM et QR
     const qcmList = orderedQuestions.filter((q) => (q.type ?? "qcm") === "qcm");
@@ -273,6 +283,9 @@ export function QuizRunner({
       return;
     }
     const attemptId = inserted.id;
+    // ✅ INSERT réussi — on bascule en état "fini" (le faux écran de
+    // succès local ne peut plus apparaître sans tentative en BD).
+    setFinished(true);
 
     // Soumettre chaque réponse rédigée via la RPC sécurisée
     if (hasQr) {
@@ -559,20 +572,28 @@ export function QuizRunner({
             <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
               <div className="text-sm font-semibold text-rose-900">
-                Soumission échouée
+                Soumission échouée — votre quiz n'est PAS enregistré
               </div>
               <div className="mt-1 text-sm text-rose-800 leading-relaxed">
                 {submitError}
               </div>
+              <div className="mt-2 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={submit}
+                  className="inline-flex items-center gap-1 h-8 px-3 rounded-lg bg-rose-600 text-white text-xs font-semibold hover:bg-rose-700 transition"
+                >
+                  Réessayer la soumission
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSubmitError(null)}
+                  className="text-rose-700 hover:text-rose-900 text-xs font-medium px-2 h-8 rounded hover:bg-rose-100 transition"
+                >
+                  Masquer
+                </button>
+              </div>
             </div>
-            <button
-              type="button"
-              onClick={() => setSubmitError(null)}
-              className="text-rose-700 hover:text-rose-900 text-xs font-medium px-2 py-1 rounded hover:bg-rose-100 transition"
-              aria-label="Fermer"
-            >
-              ✕
-            </button>
           </div>
         )}
         <Card>
