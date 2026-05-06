@@ -8,18 +8,18 @@
 
 ### 1.1 Achat / DNS
 
-- [ ] Domaine acheté (`gotrm-academy.fr` ou équivalent) chez OVH / Gandi / Cloudflare.
+- [ ] Domaine acheté (`<votre-domaine>.fr` ou équivalent) chez OVH / Gandi / Cloudflare.
 - [ ] Configurer un alias `www.` qui redirige vers la racine.
 - [ ] DNS pointé sur Vercel :
   - `A` (apex) → `76.76.21.21`
   - `CNAME www` → `cname.vercel-dns.com`
-- [ ] Sur Vercel → Project → Settings → Domains : ajouter `gotrm-academy.fr` ET `www.gotrm-academy.fr`.
+- [ ] Sur Vercel → Project → Settings → Domains : ajouter `<votre-domaine>.fr` ET `www.<votre-domaine>.fr`.
 
 ### 1.2 SSL / HTTPS
 
 - [ ] Certificat Let's Encrypt généré automatiquement par Vercel (vérifier le badge vert).
 - [ ] Forcer HTTPS (Vercel le fait par défaut).
-- [ ] Tester `http://gotrm-academy.fr` → doit rediriger en `https://`.
+- [ ] Tester `http://<votre-domaine>.fr` → doit rediriger en `https://`.
 - [ ] HSTS actif (déjà dans `next.config.mjs` : `Strict-Transport-Security` 2 ans + preload).
 - [ ] Optionnel : soumettre le domaine à https://hstspreload.org après 1 mois de stabilité.
 
@@ -28,7 +28,7 @@
 Tester en prod après déploiement :
 
 ```bash
-curl -sI https://gotrm-academy.fr | grep -iE 'content-security-policy|strict-transport|x-frame|referrer-policy|permissions-policy'
+curl -sI https://<votre-domaine>.fr | grep -iE 'content-security-policy|strict-transport|x-frame|referrer-policy|permissions-policy'
 ```
 
 Tous les headers doivent apparaître.
@@ -83,7 +83,7 @@ Documenter dans le wiki interne :
 ### 3.1 Compte Resend
 
 - [ ] Créer un compte sur https://resend.com (gratuit jusqu'à 3 000 emails/mois).
-- [ ] Vérifier le domaine `gotrm-academy.fr` (ajouter les enregistrements DNS demandés).
+- [ ] Vérifier le domaine `<votre-domaine>.fr` (ajouter les enregistrements DNS demandés).
 - [ ] Récupérer la clé API → `RESEND_API_KEY`.
 
 ### 3.2 SPF / DKIM / DMARC
@@ -92,7 +92,7 @@ Resend gère DKIM automatiquement après vérification du domaine. Vérifier :
 
 - [ ] **SPF** : `v=spf1 include:_spf.resend.com -all` (ou `~all` pour transition).
 - [ ] **DKIM** : 3 enregistrements CNAME ajoutés (vérifiés par Resend).
-- [ ] **DMARC** : `v=DMARC1; p=quarantine; rua=mailto:dpo@gotrm-academy.fr` (commencer en `p=none` pour observer 30 jours).
+- [ ] **DMARC** : `v=DMARC1; p=quarantine; rua=mailto:dpo@<votre-domaine>.fr` (commencer en `p=none` pour observer 30 jours).
 
 ### 3.3 Test de délivrabilité
 
@@ -219,7 +219,7 @@ git log --all --full-history --source -p -- '.env.local' '.env.production'
 
 Manuels (à automatiser plus tard en E2E) :
 
-- [ ] `https://gotrm-academy.fr` → landing publique s'affiche, footer légal visible.
+- [ ] `https://<votre-domaine>.fr` → landing publique s'affiche, footer légal visible.
 - [ ] Visiter `/route-inexistante` → page 404 stylée s'affiche.
 - [ ] Provoquer une erreur runtime (`throw new Error("test")` dans une page) → page `error.tsx` + Sentry reçoit l'event.
 - [ ] Couper le réseau pendant un fetch → `loading.tsx` puis erreur gracieuse.
