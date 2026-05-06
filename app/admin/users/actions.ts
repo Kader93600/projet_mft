@@ -71,12 +71,45 @@ const createStudentSchema = z.object({
  * Sécurité : action gardée par requireAdmin (admin / super_admin uniquement).
  */
 export async function createStudent(raw: unknown) {
+  // Log de phase pour diagnostiquer en prod (visible dans Vercel logs).
+  // Les server actions Next.js sanitisent les erreurs côté client : sans
+  // log, on ne sait pas QUELLE étape a planté.
+  const log = (step: string, extra?: any) =>
+    console.log(`[createStudent] ${step}`, extra ?? "");
+
+  log("0/ start");
   const { admin } = await requireAdmin();
-  const data = validate(createStudentSchema, raw);
+  log("1/ requireAdmin OK", { adminId: admin.id });
+  let data: z.infer<typeof createStudentSchema>;
+  try {
+    data = validate(createStudentSchema, raw);
+  } catch (e: any) {
+    console.error("[createStudent] validation failed", e?.message ?? e);
+    throw e;
+  }
+  log("2/ validate OK", {
+    email: data.email,
+    formation: data.formation_slug,
+    access_mode: data.access_mode,
+  });
 
   // Validation conditionnelle : si mode 'password', le mot de passe est requis
   if (data.access_mode === "password" && !data.initial_password) {
     throw new Error("Mot de passe initial requis en mode 'password'");
+  }
+
+  // Vérification rapide des env vars critiques — message clair à l'admin
+  // au lieu d'une 500 muette en cas d'oubli côté Vercel.
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.error("[createStudent] missing SUPABASE_SERVICE_ROLE_KEY");
+    throw new Error(
+      "Configuration serveur incomplète : SUPABASE_SERVICE_ROLE_KEY manquant côté Vercel."
+    );
+  }
+  if (data.access_mode === "invite" && !process.env.NEXT_PUBLIC_APP_URL) {
+    console.warn(
+      "[createStudent] NEXT_PUBLIC_APP_URL non défini, redirectTo invitation sera relatif"
+    );
   }
 
   const sb = createAdminClient();
@@ -93,7 +126,7 @@ export async function createStudent(raw: unknown) {
   // 1) Création du user auth
   let userId: string;
   if (data.access_mode === "invite") {
-    // Email d'invitation : Supabase envoie un lien magique pour finaliser
+    log("3/ invite mode");
     const redirectTo =
       (process.env.NEXT_PUBLIC_APP_URL ?? "") + "/login";
     const { data: invited, error: invErr } = await sb.auth.admin.inviteUserByEmail(
@@ -103,19 +136,26 @@ export async function createStudent(raw: unknown) {
         redirectTo,
       }
     );
-    if (invErr) throw new Error(`Invitation impossible : ${invErr.message}`);
+    if (invErr) {
+      console.error("[createStudent] inviteUserByEmail failed", invErr);
+      throw new Error(`Invitation impossible : ${invErr.message}`);
+    }
     userId = invited.user.id;
   } else {
-    // Mode password : compte actif immédiatement
+    log("3/ password mode");
     const { data: created, error: cErr } = await sb.auth.admin.createUser({
       email: data.email,
       password: data.initial_password!,
       email_confirm: true,
       user_metadata: { full_name: data.full_name, created_by: admin.id },
     });
-    if (cErr) throw new Error(`Création impossible : ${cErr.message}`);
+    if (cErr) {
+      console.error("[createStudent] createUser failed", cErr);
+      throw new Error(`Création impossible : ${cErr.message}`);
+    }
     userId = created.user.id;
   }
+  log("4/ auth user created", { userId });
 
   // 2) Profil stagiaire complet (le trigger handle_new_user a peut-être déjà
   //    créé une ligne minimale ; on fait un upsert pour compléter)
@@ -141,10 +181,11 @@ export async function createStudent(raw: unknown) {
     .from("profiles")
     .upsert(profilePayload, { onConflict: "id" });
   if (pErr) {
-    // Si le profil n'a pas pu être inséré, supprimer le user auth pour éviter l'orphelin
+    console.error("[createStudent] profile upsert failed", pErr);
     await sb.auth.admin.deleteUser(userId).catch(() => {});
     throw new Error(`Création du profil impossible : ${pErr.message}`);
   }
+  log("5/ profile upserted");
 
   // 3) Création de l'enrollment
   const enrollmentPayload: Record<string, any> = {
@@ -164,17 +205,26 @@ export async function createStudent(raw: unknown) {
   if (eErr) {
     console.error("[createStudent] enrollment insert failed", eErr);
     // Non-bloquant : on garde le compte mais on signale
+  } else {
+    log("6/ enrollment inserted");
   }
 
-  // 4) Audit log
-  await auditLog("create_student", "profile", userId, {
-    email: data.email,
-    formation_slug: data.formation_slug,
-    access_mode: data.access_mode,
-  });
+  // 4) Audit log — wrap dans try/catch pour ne pas planter si la table
+  // audit_log n'est pas dispo (cas exceptionnel mais déjà vu).
+  try {
+    await auditLog("create_student", "profile", userId, {
+      email: data.email,
+      formation_slug: data.formation_slug,
+      access_mode: data.access_mode,
+    });
+    log("7/ audit log written");
+  } catch (e: any) {
+    console.error("[createStudent] audit log failed (non-fatal)", e?.message ?? e);
+  }
 
   revalidatePath("/admin/users");
   revalidatePath("/admin/enrollments");
+  log("8/ done", { userId });
 
   return { ok: true, userId, email: data.email, accessMode: data.access_mode };
 }
