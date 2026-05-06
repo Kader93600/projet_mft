@@ -156,6 +156,12 @@ export function CreateStudentForm({
             f.access_mode === "password" ? f.initial_password : null,
         };
         const res = await createStudent(payload);
+        if (!res.ok) {
+          // Le server action retourne {ok:false, error, step?} pour
+          // contourner la sanitisation Next.js prod des throw().
+          toast(res.error, "error");
+          return;
+        }
         setSuccess({
           email: res.email,
           accessMode: res.accessMode,
@@ -164,7 +170,9 @@ export function CreateStudentForm({
         });
         toast("Stagiaire créé avec succès", "success");
       } catch (e: any) {
-        toast(e.message ?? "Erreur de création", "error");
+        // Filet de sécurité : devrait être rare puisque l'action ne
+        // throw plus, mais on garde au cas où (network error, etc.)
+        toast(e?.message ?? "Erreur de création", "error");
       }
     });
   };
