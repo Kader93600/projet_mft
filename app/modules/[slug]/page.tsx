@@ -145,6 +145,50 @@ export default async function ModuleDetail({
   const done = lessons?.filter((l: any) => doneIds.has(l.id)).length ?? 0;
   const pct = total ? Math.round((done / total) * 100) : 0;
 
+  // Module entièrement validé ? Critère : toutes les leçons + tous les
+  // quiz réussis. Aligne avec computeModuleState côté /modules pour une
+  // expérience cohérente.
+  const allLessonsDone = total > 0 && done >= total;
+  const allQuizzesPassed =
+    (quizzes?.length ?? 0) === 0 ||
+    (quizzes ?? []).every((q: any) => summaryByQuiz.get(q.id)?.bestPassed);
+  const moduleFullyDone = allLessonsDone && allQuizzesPassed;
+
+  // Récupère le module suivant dans l'ordre de la formation (display_order).
+  // Sert au CTA "Module suivant" quand l'actuel est terminé.
+  let nextModuleData: {
+    slug: string;
+    title: string;
+    locked: boolean;
+  } | null = null;
+  if (formationSlug && user) {
+    const { data: form } = await supabase
+      .from("formations")
+      .select("id")
+      .eq("slug", formationSlug)
+      .maybeSingle();
+    if (form?.id) {
+      const { data: orderedModules } = await supabase
+        .from("formation_modules")
+        .select("display_order, module:modules(id, slug, title)")
+        .eq("formation_id", form.id)
+        .order("display_order");
+
+      const ordered = (orderedModules ?? [])
+        .map((r: any) => r.module)
+        .filter(Boolean);
+      const idx = ordered.findIndex((m: any) => m.id === module.id);
+      if (idx >= 0 && idx < ordered.length - 1) {
+        const next = ordered[idx + 1];
+        nextModuleData = {
+          slug: next.slug,
+          title: next.title,
+          locked: !moduleFullyDone,
+        };
+      }
+    }
+  }
+
   // Première leçon non terminée → pour le CTA "Reprendre / Démarrer"
   const nextLesson =
     lessons?.find((l: any) => !doneIds.has(l.id)) ?? lessons?.[0];
@@ -281,6 +325,47 @@ export default async function ModuleDetail({
           </div>
           <div className="mt-4">
             <ProgressBar value={pct} variant="gradient" />
+          </div>
+        </section>
+      )}
+
+      {/* CTA module suivant — apparaît dès que ce module est entièrement
+          validé (toutes leçons + tous quiz réussis) */}
+      {moduleFullyDone && nextModuleData && (
+        <section
+          className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-emerald-50 via-white to-signal-50 p-5 md:p-6 shadow-soft"
+          style={{
+            borderColor: `${accent}66`,
+            animation: "fade-up 0.5s ease-out 100ms both",
+          }}
+        >
+          <div
+            aria-hidden
+            className="absolute -top-10 -right-10 h-32 w-32 rounded-full pointer-events-none opacity-40"
+            style={{
+              background: `radial-gradient(circle, ${accent}55 0%, transparent 70%)`,
+            }}
+          />
+          <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="min-w-0">
+              <div className="inline-flex items-center gap-1.5 rounded-md bg-white/70 backdrop-blur-sm px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-800 border border-emerald-200">
+                <Trophy className="h-3 w-3" />
+                Module validé · suite déverrouillée
+              </div>
+              <div className="mt-2 text-[13px] text-slate-600">
+                Module suivant
+              </div>
+              <div className="mt-0.5 font-display text-lg font-semibold text-navy-900 leading-snug">
+                {nextModuleData.title}
+              </div>
+            </div>
+            <Link
+              href={`/modules/${nextModuleData.slug}`}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-navy-900 px-5 py-3 text-sm font-semibold text-white hover:bg-navy-800 transition-all hover:translate-x-0.5 motion-reduce:hover:translate-x-0 shrink-0"
+            >
+              Démarrer le module suivant
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         </section>
       )}
