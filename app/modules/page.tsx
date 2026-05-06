@@ -130,25 +130,41 @@ export default async function ModulesPage() {
       ]);
 
   // Données de progression utilisateur
+  // ⚠️ 2 sources pour le statut "leçon terminée" :
+  //   - lesson_progress : marqué explicitement via le bouton "Marquer terminé"
+  //   - lesson_views    : tracking implicite (ping après lecture complète)
+  // On fait l'UNION (completed=true dans l'une OU l'autre suffit) pour
+  // éviter qu'un user ayant cliqué "Marquer terminé" voie 0/5 ici alors
+  // que la page détail affiche 5/5.
   let lessonViews: { lesson_id: string; completed: boolean; last_ping_at: string }[] =
     [];
+  let lessonProgressDone: Set<string> = new Set();
   let quizAttempts: {
     quiz_id: string;
     passed: boolean;
     finished_at: string | null;
   }[] = [];
   if (user) {
-    const [{ data: views }, { data: attempts }] = await Promise.all([
-      supabase
-        .from("lesson_views")
-        .select("lesson_id, completed, last_ping_at")
-        .eq("user_id", user.id),
-      supabase
-        .from("quiz_attempts")
-        .select("quiz_id, passed, finished_at")
-        .eq("user_id", user.id),
-    ]);
+    const [{ data: views }, { data: progressRows }, { data: attempts }] =
+      await Promise.all([
+        supabase
+          .from("lesson_views")
+          .select("lesson_id, completed, last_ping_at")
+          .eq("user_id", user.id),
+        supabase
+          .from("lesson_progress")
+          .select("lesson_id, completed")
+          .eq("user_id", user.id)
+          .eq("completed", true),
+        supabase
+          .from("quiz_attempts")
+          .select("quiz_id, passed, finished_at")
+          .eq("user_id", user.id),
+      ]);
     lessonViews = views ?? [];
+    lessonProgressDone = new Set(
+      (progressRows ?? []).map((r: any) => r.lesson_id as string)
+    );
     quizAttempts = attempts ?? [];
   }
 
@@ -176,9 +192,12 @@ export default async function ModulesPage() {
     quizzesByModule.get(q.module_id)!.push(q.id);
   });
 
-  const completedLessonIds = new Set(
-    lessonViews.filter((v) => v.completed).map((v) => v.lesson_id)
-  );
+  // Union des 2 sources : leçon "done" si lesson_views.completed OU
+  // lesson_progress.completed (cf. commentaire plus haut).
+  const completedLessonIds = new Set<string>([
+    ...lessonViews.filter((v) => v.completed).map((v) => v.lesson_id),
+    ...lessonProgressDone,
+  ]);
   const passedQuizIds = new Set(
     quizAttempts.filter((a) => a.passed).map((a) => a.quiz_id)
   );

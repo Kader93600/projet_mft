@@ -24,6 +24,7 @@ export function MarkDoneButton({
       } = await supabase.auth.getUser();
       if (!user) return;
       const newDone = !done;
+      // 1) Source explicite : lesson_progress (utilisée par la page détail)
       await supabase.from("lesson_progress").upsert(
         {
           user_id: user.id,
@@ -33,6 +34,21 @@ export function MarkDoneButton({
         },
         { onConflict: "user_id,lesson_id" }
       );
+      // 2) Source de tracking : lesson_views (utilisée par /modules)
+      //    On synchronise via la RPC ping_lesson_view pour empêcher la
+      //    divergence entre les 2 vues. La RPC ne fait que OR sur
+      //    completed, donc le toggle off n'est répliqué qu'à demi (on
+      //    s'appuie sur l'union côté lecture).
+      if (newDone) {
+        try {
+          await supabase.rpc("ping_lesson_view", {
+            p_lesson_id: lessonId,
+            p_completed: true,
+          });
+        } catch {
+          /* non-bloquant : la lecture fait l'union des 2 tables */
+        }
+      }
       setDone(newDone);
       router.refresh();
     });
