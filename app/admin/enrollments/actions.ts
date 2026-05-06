@@ -144,3 +144,50 @@ export async function deletePayment(id: string) {
   await auditLog("payment_delete", "payment", id);
   revalidatePath("/admin/enrollments");
 }
+
+// ---- Leads (enrollment_requests) ----
+type RequestStatus = "nouveau" | "contacte" | "devis_envoye" | "inscrit" | "refuse";
+
+export async function setRequestStatus(id: string, status: RequestStatus) {
+  const { supabase } = await requireAdmin();
+  const { error } = await supabase
+    .from("enrollment_requests")
+    .update({ status })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+  await auditLog("lead_status", "enrollment_request", id, { status });
+  revalidatePath("/admin/enrollments");
+}
+
+export async function deleteEnrollmentRequest(id: string) {
+  const { supabase } = await requireAdmin();
+  const { error } = await supabase
+    .from("enrollment_requests")
+    .delete()
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+  await auditLog("lead_delete", "enrollment_request", id);
+  revalidatePath("/admin/enrollments");
+}
+
+// ---- Enrollment status (changement rapide depuis la liste) ----
+type EnrollmentStatus =
+  | "prospect"
+  | "devis"
+  | "accord_financeur"
+  | "a_payer"
+  | "en_cours"
+  | "termine"
+  | "abandon"
+  | "refuse";
+
+export async function setEnrollmentStatus(id: string, status: EnrollmentStatus) {
+  const { supabase } = await requireAdmin();
+  const { error } = await supabase
+    .from("enrollments")
+    .update({ status })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+  await auditLog("enrollment_status", "enrollment", id, { status });
+  revalidatePath("/admin/enrollments");
+}

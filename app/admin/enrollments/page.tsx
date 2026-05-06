@@ -4,14 +4,38 @@ import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Briefcase,
-  CreditCard,
   Mail,
   Phone,
   Building2,
-  ExternalLink,
+  UserCheck,
+  FileText,
+  UserPlus,
+  Ban,
+  Trash2,
 } from "lucide-react";
-import { deleteFunder, deleteEnrollment } from "./actions";
+import {
+  deleteFunder,
+  deleteEnrollment,
+  setRequestStatus,
+  deleteEnrollmentRequest,
+  setEnrollmentStatus,
+} from "./actions";
+import { Pencil, Trophy } from "lucide-react";
+
+const REQUEST_STATUS_TONE: Record<string, "slate" | "navy" | "gold" | "success" | "rose"> = {
+  nouveau: "slate",
+  contacte: "navy",
+  devis_envoye: "gold",
+  inscrit: "success",
+  refuse: "rose",
+};
+const REQUEST_STATUS_LABEL: Record<string, string> = {
+  nouveau: "Nouveau",
+  contacte: "Contacté",
+  devis_envoye: "Devis envoyé",
+  inscrit: "Inscrit",
+  refuse: "Refusé",
+};
 
 export const dynamic = "force-dynamic";
 
@@ -99,6 +123,7 @@ export default async function AdminEnrollmentsPage() {
                     <th className="text-left px-4 py-3">Financement</th>
                     <th className="text-left px-4 py-3">Statut</th>
                     <th className="text-left px-4 py-3">Reçue le</th>
+                    <th className="text-right px-4 py-3 whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -106,7 +131,7 @@ export default async function AdminEnrollmentsPage() {
                     <tr key={r.id} className="border-t border-navy-50">
                       <td className="px-4 py-3">
                         <div className="font-medium text-navy-900">{r.full_name}</div>
-                        <div className="text-xs text-slate-500 flex items-center gap-2">
+                        <div className="text-xs text-slate-500 flex items-center gap-2 flex-wrap">
                           <Mail className="h-3 w-3" />
                           <a href={`mailto:${r.email}`} className="hover:text-navy-900">
                             {r.email}
@@ -114,17 +139,29 @@ export default async function AdminEnrollmentsPage() {
                           {r.phone && (
                             <>
                               <Phone className="h-3 w-3 ml-2" />
-                              {r.phone}
+                              <a
+                                href={`tel:${r.phone}`}
+                                className="hover:text-navy-900"
+                              >
+                                {r.phone}
+                              </a>
                             </>
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-3">{r.funding_kind}</td>
-                      <td className="px-4 py-3">
-                        <Badge size="sm">{r.status}</Badge>
+                      <td className="px-4 py-3 capitalize text-slate-700">
+                        {String(r.funding_kind).replace("_", " ")}
                       </td>
-                      <td className="px-4 py-3 text-slate-500">
+                      <td className="px-4 py-3">
+                        <Badge tone={REQUEST_STATUS_TONE[r.status] ?? "slate"} size="sm">
+                          {REQUEST_STATUS_LABEL[r.status] ?? r.status}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3 text-slate-500 whitespace-nowrap">
                         {new Date(r.created_at).toLocaleDateString("fr-FR")}
+                      </td>
+                      <td className="px-4 py-3">
+                        <LeadActions request={r} />
                       </td>
                     </tr>
                   ))}
@@ -154,7 +191,7 @@ export default async function AdminEnrollmentsPage() {
                   <th className="text-right px-4 py-3">Montant</th>
                   <th className="text-right px-4 py-3">Payé</th>
                   <th className="text-left px-4 py-3">Statut</th>
-                  <th className="text-right px-4 py-3"></th>
+                  <th className="text-right px-4 py-3 whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -186,13 +223,8 @@ export default async function AdminEnrollmentsPage() {
                         {e.status}
                       </Badge>
                     </td>
-                    <td className="px-4 py-3 text-right">
-                      <Link
-                        href={`/admin/enrollments/${e.id}`}
-                        className="text-sm font-medium text-navy-900 hover:text-gold-700 inline-flex items-center gap-1"
-                      >
-                        Gérer <ExternalLink className="h-3 w-3" />
-                      </Link>
+                    <td className="px-4 py-3">
+                      <EnrollmentActions enrollment={e} />
                     </td>
                   </tr>
                 ))}
@@ -249,20 +281,44 @@ export default async function AdminEnrollmentsPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="mt-4 flex items-center gap-2">
+                  <div className="mt-4 flex items-center justify-end gap-1">
+                    {f.contact_email && (
+                      <a
+                        href={`mailto:${f.contact_email}`}
+                        title={`Email — ${f.contact_email}`}
+                        aria-label={`Email — ${f.contact_email}`}
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-navy-200 text-navy-800 hover:bg-navy-50 transition"
+                      >
+                        <Mail className="h-3.5 w-3.5" />
+                      </a>
+                    )}
+                    {f.contact_phone && (
+                      <a
+                        href={`tel:${f.contact_phone}`}
+                        title={`Appeler — ${f.contact_phone}`}
+                        aria-label={`Appeler — ${f.contact_phone}`}
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-navy-200 text-navy-800 hover:bg-navy-50 transition"
+                      >
+                        <Phone className="h-3.5 w-3.5" />
+                      </a>
+                    )}
                     <Link
                       href={`/admin/enrollments/funders/${f.id}`}
-                      className="text-xs font-medium text-navy-900 hover:text-gold-700"
+                      title="Modifier"
+                      aria-label="Modifier le financeur"
+                      className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-gold-200 text-gold-800 hover:bg-gold-50 transition"
                     >
-                      Modifier
+                      <Pencil className="h-3.5 w-3.5" />
                     </Link>
                     <form action={deleteFunder.bind(null, f.id)}>
-                      <button
+                      <ActionBtn
+                        title="Supprimer le financeur"
+                        tone="rose"
                         type="submit"
-                        className="text-xs font-medium text-rose-700 hover:underline"
+                        variant="solid"
                       >
-                        Supprimer
-                      </button>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </ActionBtn>
                     </form>
                   </div>
                 </CardBody>
@@ -272,6 +328,177 @@ export default async function AdminEnrollmentsPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+function LeadActions({ request: r }: { request: any }) {
+  const isNouveau = r.status === "nouveau";
+  const isContacte = r.status === "contacte";
+  // Construit l'URL "Créer dossier" en pré-remplissant nom/email
+  const newEnrollmentUrl = `/admin/enrollments/new?email=${encodeURIComponent(
+    r.email
+  )}&name=${encodeURIComponent(r.full_name)}`;
+
+  return (
+    <div className="flex items-center justify-end gap-1">
+      {/* Avancer dans le pipeline : nouveau → contacté */}
+      {isNouveau && (
+        <form action={setRequestStatus.bind(null, r.id, "contacte")}>
+          <ActionBtn
+            title="Marquer comme contacté"
+            tone="navy"
+            type="submit"
+          >
+            <UserCheck className="h-3.5 w-3.5" />
+          </ActionBtn>
+        </form>
+      )}
+
+      {/* contacté → devis envoyé */}
+      {isContacte && (
+        <form action={setRequestStatus.bind(null, r.id, "devis_envoye")}>
+          <ActionBtn title="Devis envoyé" tone="navy" type="submit">
+            <FileText className="h-3.5 w-3.5" />
+          </ActionBtn>
+        </form>
+      )}
+
+      {/* Convertir en dossier (toujours dispo) */}
+      <Link
+        href={newEnrollmentUrl}
+        title="Créer un dossier d'inscription"
+        aria-label="Créer un dossier d'inscription"
+        className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-gold-200 text-gold-800 hover:bg-gold-50 transition"
+      >
+        <UserPlus className="h-3.5 w-3.5" />
+      </Link>
+
+      {/* Refuser */}
+      <form action={setRequestStatus.bind(null, r.id, "refuse")}>
+        <ActionBtn title="Refuser ce lead" tone="rose" type="submit">
+          <Ban className="h-3.5 w-3.5" />
+        </ActionBtn>
+      </form>
+
+      {/* Supprimer définitivement */}
+      <form action={deleteEnrollmentRequest.bind(null, r.id)}>
+        <ActionBtn
+          title="Supprimer définitivement"
+          tone="rose"
+          type="submit"
+          variant="solid"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </ActionBtn>
+      </form>
+    </div>
+  );
+}
+
+function EnrollmentActions({ enrollment: e }: { enrollment: any }) {
+  const closed = ["termine", "abandon", "refuse"].includes(e.status);
+  const inProgress = e.status === "en_cours";
+  const userEmail = e.user?.email as string | undefined;
+
+  return (
+    <div className="flex items-center justify-end gap-1">
+      {/* Contact email */}
+      {userEmail && (
+        <a
+          href={`mailto:${userEmail}`}
+          title={`Email — ${userEmail}`}
+          aria-label={`Email — ${userEmail}`}
+          className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-navy-200 text-navy-800 hover:bg-navy-50 transition"
+        >
+          <Mail className="h-3.5 w-3.5" />
+        </a>
+      )}
+
+      {/* Gérer (détail / édition) — action primaire */}
+      <Link
+        href={`/admin/enrollments/${e.id}`}
+        title="Gérer le dossier"
+        aria-label="Gérer le dossier"
+        className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-gold-200 text-gold-800 hover:bg-gold-50 transition"
+      >
+        <Pencil className="h-3.5 w-3.5" />
+      </Link>
+
+      {/* Marquer terminé : uniquement si en cours */}
+      {inProgress && (
+        <form action={setEnrollmentStatus.bind(null, e.id, "termine")}>
+          <ActionBtn
+            title="Marquer comme terminé"
+            tone="navy"
+            type="submit"
+          >
+            <Trophy className="h-3.5 w-3.5" />
+          </ActionBtn>
+        </form>
+      )}
+
+      {/* Marquer abandon : tant que pas clôturé */}
+      {!closed && (
+        <form action={setEnrollmentStatus.bind(null, e.id, "abandon")}>
+          <ActionBtn title="Marquer abandon" tone="rose" type="submit">
+            <Ban className="h-3.5 w-3.5" />
+          </ActionBtn>
+        </form>
+      )}
+
+      {/* Suppression définitive */}
+      <form action={deleteEnrollment.bind(null, e.id)}>
+        <ActionBtn
+          title="Supprimer définitivement"
+          tone="rose"
+          type="submit"
+          variant="solid"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </ActionBtn>
+      </form>
+    </div>
+  );
+}
+
+function ActionBtn({
+  children,
+  title,
+  tone = "navy",
+  type,
+  variant = "soft",
+}: {
+  children: React.ReactNode;
+  title: string;
+  tone?: "navy" | "gold" | "rose";
+  type?: "button" | "submit";
+  variant?: "soft" | "solid";
+}) {
+  const palette: Record<string, string> = {
+    navy:
+      variant === "solid"
+        ? "bg-navy-900 text-white hover:bg-navy-800"
+        : "border-navy-200 text-navy-800 hover:bg-navy-50",
+    gold:
+      variant === "solid"
+        ? "bg-gold-600 text-white hover:bg-gold-700"
+        : "border-gold-200 text-gold-800 hover:bg-gold-50",
+    rose:
+      variant === "solid"
+        ? "bg-rose-600 text-white hover:bg-rose-700"
+        : "border-rose-200 text-rose-700 hover:bg-rose-50",
+  };
+  return (
+    <button
+      type={type ?? "button"}
+      title={title}
+      aria-label={title}
+      className={`inline-flex h-7 w-7 items-center justify-center rounded-lg border transition ${
+        variant === "solid" ? "border-transparent" : ""
+      } ${palette[tone]}`}
+    >
+      {children}
+    </button>
   );
 }
 
