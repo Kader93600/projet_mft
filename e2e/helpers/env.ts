@@ -22,4 +22,11 @@ export const E2E_ENV = {
   trainerPassword: () => required("E2E_TRAINER_PASSWORD"),
   /** ID UUID du quiz mixte QCM+QR utilisé pour le test. */
   quizId: () => required("E2E_QUIZ_ID"),
+  /**
+   * Slug d'un module qui appartient à une formation OÙ E2E_STUDENT_*
+   * n'est PAS inscrit. Utilisé pour vérifier le cloisonnement (404).
+   * Ex: si le student est inscrit à `capacite-3-5t`, fournir le slug
+   * d'un module GOTRM (ex: "planification-tournees").
+   */
+  forbiddenModuleSlug: () => required("E2E_FORBIDDEN_MODULE_SLUG"),
 };
