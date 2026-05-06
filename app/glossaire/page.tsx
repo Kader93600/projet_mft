@@ -4,10 +4,11 @@ import { Card, CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FormationBadge } from "@/components/formation/formation-badge";
 import { renderMarkdown } from "@/lib/markdown";
-import { BookOpen, Search } from "lucide-react";
+import { BookOpen } from "lucide-react";
+import { GlossaryFilters } from "./glossary-filters";
 
-// Glossaire = lecture publique → ISR 5 min suffit (les recherches q= restent dynamiques côté Next)
-export const revalidate = 300;
+// Glossaire = filtré par formations du stagiaire connecté → dynamique
+export const dynamic = "force-dynamic";
 
 export default async function GlossairePage({
   searchParams,
@@ -15,9 +16,38 @@ export default async function GlossairePage({
   searchParams?: { q?: string; bloc?: string; formation?: string };
 }) {
   const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   const q = searchParams?.q?.trim() ?? "";
   const blocFilter = searchParams?.bloc ?? "";
   const formationFilter = searchParams?.formation ?? "";
+
+  // Formations où le stagiaire est inscrit (ou liste vide pour invité)
+  let enrolledFormationIds: string[] = [];
+  let enrolledFormations: any[] = [];
+  if (user) {
+    const { data: enrollments } = await supabase
+      .from("enrollments")
+      .select("formation_id, formation:formations(slug, code, title, active)")
+      .eq("user_id", user.id)
+      .not("formation_id", "is", null)
+      .not("status", "in", "(refuse,abandon)");
+    enrolledFormationIds = (enrollments ?? [])
+      .map((e: any) => e.formation_id as string)
+      .filter(Boolean);
+    // Dédup pour le dropdown
+    const seen = new Set<string>();
+    enrolledFormations = (enrollments ?? [])
+      .map((e: any) => e.formation)
+      .filter((f: any) => {
+        if (!f?.slug || seen.has(f.slug)) return false;
+        seen.add(f.slug);
+        return true;
+      })
+      .sort((a: any, b: any) => (a.code || "").localeCompare(b.code || ""));
+  }
 
   let query = supabase
     .from("glossary_terms")
@@ -26,37 +56,84 @@ export default async function GlossairePage({
     )
     .order("term");
 
+  // Périmètre de base : termes des formations du stagiaire OU transversaux
+  // (formation_id IS NULL = applicable à toutes formations).
+  // Pour un user sans inscription : seuls les termes transversaux.
+  if (enrolledFormationIds.length > 0) {
+    query = query.or(
+      `formation_id.is.null,formation_id.in.(${enrolledFormationIds.join(",")})`
+    );
+  } else {
+    query = query.is("formation_id", null);
+  }
+
   if (blocFilter) {
     if (blocFilter === "none") query = query.is("bloc_id", null);
     else query = query.eq("bloc_id", Number(blocFilter));
   }
   if (formationFilter) {
-    if (formationFilter === "none") query = query.is("formation_id", null);
-    else {
-      // Sous-requête : on récupère l'id à partir du slug
-      const { data: f } = await supabase
-        .from("formations")
-        .select("id")
-        .eq("slug", formationFilter)
-        .maybeSingle();
-      if (f?.id) query = query.eq("formation_id", f.id);
+    if (formationFilter === "none") {
+      query = query.is("formation_id", null);
+    } else {
+      // On vérifie que la formation demandée fait bien partie des
+      // inscriptions du stagiaire (sinon on l'ignore — pas de fuite par
+      // bidouillage de l'URL).
+      const target = enrolledFormations.find(
+        (f: any) => f.slug === formationFilter
+      );
+      if (target) {
+        const { data: f } = await supabase
+          .from("formations")
+          .select("id")
+          .eq("slug", formationFilter)
+          .maybeSingle();
+        if (f?.id) query = query.eq("formation_id", f.id);
+      }
     }
   }
   if (q) {
-    // Recherche simple : ILIKE sur term + synonyms via OR ; FTS pourrait remplacer
+    // Recherche simple : ILIKE sur term + définition
     query = query.or(`term.ilike.%${q}%,definition_md.ilike.%${q}%`);
   }
 
-  const [{ data: terms }, { data: blocs }, { data: formations }] =
-    await Promise.all([
-      query,
-      supabase.from("blocs").select("id, code, title").order("order"),
-      supabase
-        .from("formations")
-        .select("slug, code, title")
-        .eq("active", true)
-        .order("code"),
-    ]);
+  // Pour les filtres : on liste UNIQUEMENT les blocs qui ont au moins
+  // un terme accessible à l'utilisateur dans son périmètre. Sinon, le
+  // dropdown propose des blocs vides (titres GOTRM affichés à un Capa
+  // par exemple) qui renvoient toujours 0 résultat.
+  let scopedTermsScopeQuery = supabase
+    .from("glossary_terms")
+    .select("bloc_id, blocs(id, code, title)");
+  if (enrolledFormationIds.length > 0) {
+    scopedTermsScopeQuery = scopedTermsScopeQuery.or(
+      `formation_id.is.null,formation_id.in.(${enrolledFormationIds.join(",")})`
+    );
+  } else {
+    scopedTermsScopeQuery = scopedTermsScopeQuery.is("formation_id", null);
+  }
+
+  const [{ data: terms }, { data: scopedTermsForBlocs }] = await Promise.all([
+    query,
+    scopedTermsScopeQuery,
+  ]);
+
+  // Dédup des blocs qui ont effectivement des termes pour cet user
+  const blocSeen = new Set<number>();
+  const blocs = (scopedTermsForBlocs ?? [])
+    .filter((t: any) => {
+      if (!t.bloc_id || blocSeen.has(t.bloc_id)) return false;
+      blocSeen.add(t.bloc_id);
+      return !!t.blocs;
+    })
+    .map((t: any) => t.blocs)
+    .sort((a: any, b: any) => (a.code || "").localeCompare(b.code || ""));
+
+  // Y a-t-il au moins un terme transversal (bloc_id NULL) accessible ?
+  const hasTransversalBloc = (scopedTermsForBlocs ?? []).some(
+    (t: any) => t.bloc_id === null
+  );
+
+  // Dropdown formation : uniquement les formations du stagiaire
+  const formations = enrolledFormations;
 
   // Regroupement alphabétique
   const grouped: Record<string, any[]> = {};
@@ -72,67 +149,29 @@ export default async function GlossairePage({
       <header>
         <div className="flex items-center gap-2">
           <BookOpen className="h-4 w-4 text-gold-700" />
-          <span className="eyebrow text-gold-700">Référence RNCP 40990</span>
+          <span className="eyebrow text-gold-700">Référence pédagogique</span>
         </div>
         <h1 className="mt-2 font-display text-3xl font-semibold text-navy-950 tracking-tight">
           Glossaire
         </h1>
         <p className="mt-2 text-slate-600 text-sm">
-          Définitions clés du métier de gestionnaire des opérations de transport.
+          {enrolledFormations.length > 1
+            ? "Définitions clés des formations auxquelles vous êtes inscrit."
+            : enrolledFormations.length === 1
+            ? `Définitions clés de la formation « ${enrolledFormations[0].title} ».`
+            : "Définitions transversales aux métiers du transport."}
         </p>
       </header>
 
-      <form className="flex flex-wrap gap-2 items-center">
-        <div className="relative flex-1 min-w-[240px]">
-          <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <input
-            name="q"
-            defaultValue={q}
-            placeholder="Rechercher un terme, une définition…"
-            className="h-10 w-full rounded-xl border border-navy-200 bg-white pl-9 pr-3 text-sm text-navy-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-navy-600/15 focus:border-navy-600"
-          />
-        </div>
-        <select
-          name="formation"
-          defaultValue={formationFilter}
-          className="h-10 rounded-xl border border-navy-200 bg-white px-3 text-sm text-navy-900"
-        >
-          <option value="">Toutes formations</option>
-          {formations?.map((f: any) => (
-            <option key={f.slug} value={f.slug}>
-              {f.code} — {f.title}
-            </option>
-          ))}
-          <option value="none">Transversal</option>
-        </select>
-        <select
-          name="bloc"
-          defaultValue={blocFilter}
-          className="h-10 rounded-xl border border-navy-200 bg-white px-3 text-sm text-navy-900"
-        >
-          <option value="">Tous les blocs</option>
-          {blocs?.map((b: any) => (
-            <option key={b.id} value={b.id}>
-              {b.code} — {b.title}
-            </option>
-          ))}
-          <option value="none">Transversal</option>
-        </select>
-        <button
-          type="submit"
-          className="h-10 px-4 rounded-xl bg-navy-900 text-white text-sm font-medium hover:bg-navy-800"
-        >
-          Filtrer
-        </button>
-        {(q || blocFilter || formationFilter) && (
-          <Link
-            href="/glossaire"
-            className="h-10 inline-flex items-center px-3 rounded-xl text-sm text-slate-600 hover:text-navy-900"
-          >
-            Réinitialiser
-          </Link>
-        )}
-      </form>
+      <GlossaryFilters
+        initialQ={q}
+        initialFormation={formationFilter}
+        initialBloc={blocFilter}
+        formations={formations}
+        blocs={blocs}
+        hasTransversalBloc={hasTransversalBloc}
+      />
+
 
       <div className="text-xs text-slate-500">
         {terms?.length ?? 0} terme{(terms?.length ?? 0) > 1 ? "s" : ""}
