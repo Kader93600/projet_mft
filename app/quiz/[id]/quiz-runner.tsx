@@ -6,7 +6,6 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/components/ui/toast";
 import { ProgressBar, RadialProgress } from "@/components/ui/progress";
 import {
   Check, X, Clock, Target, Lightbulb, ArrowRight, ArrowLeft,
@@ -72,8 +71,8 @@ export function QuizRunner({
   formationSlug?: string | null;
 }) {
   const router = useRouter();
-  const { toast } = useToast();
   const [started, setStarted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   // Réponses rédigées (QR) — texte libre du stagiaire
@@ -270,7 +269,7 @@ export function QuizRunner({
       } else if (code === "23505") {
         friendly = "Cette tentative a déjà été enregistrée.";
       }
-      toast(friendly, "error");
+      setSubmitError(friendly);
       return;
     }
     const attemptId = inserted.id;
@@ -552,6 +551,30 @@ export function QuizRunner({
     const flaggedList = orderedQuestions.filter((q) => flagged.has(q.id));
     return (
       <div className="max-w-2xl mx-auto space-y-5">
+        {submitError && (
+          <div
+            role="alert"
+            className="rounded-2xl border border-rose-200 bg-rose-50/80 px-4 py-3 flex items-start gap-3"
+          >
+            <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-semibold text-rose-900">
+                Soumission échouée
+              </div>
+              <div className="mt-1 text-sm text-rose-800 leading-relaxed">
+                {submitError}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSubmitError(null)}
+              className="text-rose-700 hover:text-rose-900 text-xs font-medium px-2 py-1 rounded hover:bg-rose-100 transition"
+              aria-label="Fermer"
+            >
+              ✕
+            </button>
+          </div>
+        )}
         <Card>
           <CardBody className="space-y-4">
             <div className="text-center">
@@ -669,6 +692,32 @@ export function QuizRunner({
 
   return (
     <div className="max-w-2xl mx-auto space-y-5 select-none">
+      {/* Bannière erreur soumission — visible en haut, dismissible */}
+      {submitError && (
+        <div
+          role="alert"
+          className="rounded-2xl border border-rose-200 bg-rose-50/80 px-4 py-3 flex items-start gap-3"
+        >
+          <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-semibold text-rose-900">
+              Soumission échouée
+            </div>
+            <div className="mt-1 text-sm text-rose-800 leading-relaxed">
+              {submitError}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setSubmitError(null)}
+            className="text-rose-700 hover:text-rose-900 text-xs font-medium px-2 py-1 rounded hover:bg-rose-100 transition"
+            aria-label="Fermer"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* Re-prompt plein écran */}
       {showFsPrompt && (
         <div className="fixed inset-0 z-50 bg-navy-950/90 backdrop-blur flex items-center justify-center p-4">
