@@ -197,12 +197,12 @@ export function UsersTable({
             <thead>
               <tr className="bg-navy-50/60 text-[11px] uppercase tracking-wider text-slate-600">
                 <th className="text-left px-5 py-3 font-semibold">Utilisateur</th>
-                <th className="text-left px-5 py-3 font-semibold">Classe</th>
-                <th className="text-left px-5 py-3 font-semibold">Rôle</th>
-                <th className="text-left px-5 py-3 font-semibold">Activité</th>
-                <th className="text-left px-5 py-3 font-semibold">Score moy.</th>
-                <th className="text-left px-5 py-3 font-semibold">Dernière conn.</th>
-                <th className="text-left px-5 py-3 font-semibold">Statut</th>
+                <th className="hidden xl:table-cell text-left px-5 py-3 font-semibold">Classe</th>
+                <th className="hidden md:table-cell text-left px-5 py-3 font-semibold">Rôle</th>
+                <th className="hidden lg:table-cell text-left px-5 py-3 font-semibold">Activité</th>
+                <th className="hidden lg:table-cell text-left px-5 py-3 font-semibold">Score moy.</th>
+                <th className="hidden xl:table-cell text-left px-5 py-3 font-semibold">Dernière conn.</th>
+                <th className="hidden md:table-cell text-left px-5 py-3 font-semibold">Statut</th>
                 <th className="text-right px-5 py-3 font-semibold">Actions</th>
               </tr>
             </thead>
@@ -230,25 +230,25 @@ export function UsersTable({
                         </div>
                       </Link>
                     </td>
-                    <td className="px-5 py-3.5">
+                    <td className="hidden xl:table-cell px-5 py-3.5">
                       {group ? (
                         <Badge tone="navy">{group.name}</Badge>
                       ) : (
                         <span className="text-xs text-slate-400">—</span>
                       )}
                     </td>
-                    <td className="px-5 py-3.5">
+                    <td className="hidden md:table-cell px-5 py-3.5">
                       <Badge tone={ROLE_TONE[u.role] ?? "slate"}>
                         {ROLE_LABEL[u.role] ?? u.role}
                       </Badge>
                     </td>
-                    <td className="px-5 py-3.5">
+                    <td className="hidden lg:table-cell px-5 py-3.5">
                       <div className="text-xs">
                         <strong className="text-navy-900">{u.attempts_count}</strong>
                         <span className="text-slate-500"> quiz</span>
                       </div>
                     </td>
-                    <td className="px-5 py-3.5">
+                    <td className="hidden lg:table-cell px-5 py-3.5">
                       {u.attempts_count > 0 ? (
                         <span className={`font-semibold ${scoreColor(u.avg_score)}`}>
                           {u.avg_score}%
@@ -257,10 +257,10 @@ export function UsersTable({
                         <span className="text-xs text-slate-400">—</span>
                       )}
                     </td>
-                    <td className="px-5 py-3.5 text-xs text-slate-500">
+                    <td className="hidden xl:table-cell px-5 py-3.5 text-xs text-slate-500">
                       {u.last_sign_in_at ? formatDate(u.last_sign_in_at) : "Jamais"}
                     </td>
-                    <td className="px-5 py-3.5">
+                    <td className="hidden md:table-cell px-5 py-3.5">
                       {u.disabled ? (
                         <Badge tone="slate">Désactivé</Badge>
                       ) : (
@@ -346,7 +346,9 @@ export function UsersTable({
               {filtered.length === 0 && (
                 <tr>
                   <td colSpan={8} className="px-5 py-16 text-center text-slate-400">
-                    Aucun utilisateur ne correspond aux filtres.
+                    {pagination.total === 0
+                      ? "Aucun utilisateur dans la base."
+                      : "Aucun utilisateur ne correspond aux filtres sur cette page."}
                   </td>
                 </tr>
               )}

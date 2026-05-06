@@ -121,9 +121,9 @@ export default async function AdminEnrollmentsPage() {
                 <thead className="bg-navy-50 text-[11px] uppercase tracking-wider text-slate-600">
                   <tr>
                     <th className="text-left px-4 py-3">Contact</th>
-                    <th className="text-left px-4 py-3">Financement</th>
-                    <th className="text-left px-4 py-3">Statut</th>
-                    <th className="text-left px-4 py-3">Reçue le</th>
+                    <th className="hidden md:table-cell text-left px-4 py-3">Financement</th>
+                    <th className="hidden sm:table-cell text-left px-4 py-3">Statut</th>
+                    <th className="hidden lg:table-cell text-left px-4 py-3">Reçue le</th>
                     <th className="text-right px-4 py-3 whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
@@ -150,15 +150,15 @@ export default async function AdminEnrollmentsPage() {
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-3 capitalize text-slate-700">
+                      <td className="hidden md:table-cell px-4 py-3 capitalize text-slate-700">
                         {String(r.funding_kind).replace("_", " ")}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="hidden sm:table-cell px-4 py-3">
                         <Badge tone={REQUEST_STATUS_TONE[r.status] ?? "slate"} size="sm">
                           {REQUEST_STATUS_LABEL[r.status] ?? r.status}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 text-slate-500 whitespace-nowrap">
+                      <td className="hidden lg:table-cell px-4 py-3 text-slate-500 whitespace-nowrap">
                         {new Date(r.created_at).toLocaleDateString("fr-FR")}
                       </td>
                       <td className="px-4 py-3">
@@ -187,11 +187,11 @@ export default async function AdminEnrollmentsPage() {
               <thead className="bg-navy-50 text-[11px] uppercase tracking-wider text-slate-600">
                 <tr>
                   <th className="text-left px-4 py-3">Stagiaire</th>
-                  <th className="text-left px-4 py-3">Financeur</th>
-                  <th className="text-left px-4 py-3">Session</th>
-                  <th className="text-right px-4 py-3">Montant</th>
-                  <th className="text-right px-4 py-3">Payé</th>
-                  <th className="text-left px-4 py-3">Statut</th>
+                  <th className="hidden md:table-cell text-left px-4 py-3">Financeur</th>
+                  <th className="hidden xl:table-cell text-left px-4 py-3">Session</th>
+                  <th className="hidden lg:table-cell text-right px-4 py-3">Montant</th>
+                  <th className="hidden lg:table-cell text-right px-4 py-3">Payé</th>
+                  <th className="hidden sm:table-cell text-left px-4 py-3">Statut</th>
                   <th className="text-right px-4 py-3 whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
@@ -204,22 +204,22 @@ export default async function AdminEnrollmentsPage() {
                       </div>
                       <div className="text-xs text-slate-500">{e.user?.email}</div>
                     </td>
-                    <td className="px-4 py-3 text-slate-700">
+                    <td className="hidden md:table-cell px-4 py-3 text-slate-700">
                       {e.funder?.name ?? e.funding_kind}
                     </td>
-                    <td className="px-4 py-3 text-slate-600">
+                    <td className="hidden xl:table-cell px-4 py-3 text-slate-600">
                       {e.session_label ?? "—"}
                       <div className="text-xs text-slate-400">
                         {e.start_date ?? "—"} → {e.end_date ?? "—"}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-right font-medium">
+                    <td className="hidden lg:table-cell px-4 py-3 text-right font-medium">
                       {fmtEuros(e.total_amount_cents)}
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="hidden lg:table-cell px-4 py-3 text-right">
                       {fmtEuros(e.paid_amount_cents)}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="hidden sm:table-cell px-4 py-3">
                       <Badge tone={STATUS_TONE[e.status] ?? "slate"} size="sm">
                         {e.status}
                       </Badge>
