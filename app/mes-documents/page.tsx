@@ -8,6 +8,8 @@ import {
   BookOpen,
   CheckCircle2,
   Download,
+  Target,
+  ArrowRight,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -36,13 +38,22 @@ export default async function MesDocumentsPage() {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data: rows } = await supabase
-    .from("document_acceptances")
-    .select(
-      "id, accepted_at, document_version, document_type, onboarding_documents(id, title, content_md, type)"
-    )
-    .eq("user_id", user.id)
-    .order("accepted_at", { ascending: false });
+  const [{ data: rows }, { data: placement }] = await Promise.all([
+    supabase
+      .from("document_acceptances")
+      .select(
+        "id, accepted_at, document_version, document_type, onboarding_documents(id, title, content_md, type)"
+      )
+      .eq("user_id", user.id)
+      .order("accepted_at", { ascending: false }),
+    supabase
+      .from("placement_results")
+      .select("taken_at")
+      .eq("user_id", user.id)
+      .maybeSingle(),
+  ]);
+
+  const placementTakenAt = placement?.taken_at as string | undefined;
 
   return (
     <div className="space-y-8">
@@ -78,6 +89,34 @@ export default async function MesDocumentsPage() {
                 </p>
               </div>
               <Download className="h-4 w-4 text-slate-400 mt-1" />
+            </CardBody>
+          </Card>
+        </a>
+
+        <a href="/positionnement" className="group">
+          <Card className="transition-all group-hover:shadow-raised">
+            <CardBody className="flex items-start gap-4">
+              <div className="h-11 w-11 rounded-xl bg-gold-50 text-gold-800 flex items-center justify-center">
+                <Target className="h-5 w-5" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <CardTitle className="text-base">
+                    Test de positionnement
+                  </CardTitle>
+                  {placementTakenAt && (
+                    <Badge tone="success" size="sm">
+                      <CheckCircle2 className="h-3 w-3" /> Passé
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-sm text-slate-600">
+                  {placementTakenAt
+                    ? `Passé le ${fmt(placementTakenAt)} — consultez votre profil et votre recommandation.`
+                    : "Évaluation initiale pour adapter votre parcours aux blocs où vous avez le plus à apprendre."}
+                </p>
+              </div>
+              <ArrowRight className="h-4 w-4 text-slate-400 mt-1 transition-transform group-hover:translate-x-0.5" />
             </CardBody>
           </Card>
         </a>

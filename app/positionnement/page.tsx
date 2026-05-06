@@ -115,13 +115,40 @@ export default async function PositionnementPage({
     );
   }
 
-  // Sinon : wizard
-  const { data: questions } = await supabase
-    .from("placement_questions")
-    .select("id, bloc_id, prompt, choices, order, blocs(code, title)")
-    .eq("active", true)
-    .order("bloc_id")
-    .order("order");
+  // Sinon : wizard — on filtre les questions par la formation du stagiaire.
+  // Source de vérité : son inscription (enrollments). On prend la plus
+  // récente (active de préférence) pour gérer les multi-inscriptions.
+  const { data: enrollment } = await supabase
+    .from("enrollments")
+    .select("formation_id, formation_slug, status")
+    .eq("user_id", user.id)
+    .not("formation_id", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const formationId = enrollment?.formation_id as string | undefined;
+
+  let questions: any[] | null = null;
+  if (formationId) {
+    const { data } = await supabase
+      .from("placement_questions")
+      .select("id, bloc_id, prompt, choices, order, blocs(code, title)")
+      .eq("active", true)
+      .eq("formation_id", formationId)
+      .order("bloc_id")
+      .order("order");
+    questions = data;
+  }
+
+  // Récupère le titre de la formation pour personnaliser le hero
+  const { data: formation } = formationId
+    ? await supabase
+        .from("formations")
+        .select("title, code")
+        .eq("id", formationId)
+        .maybeSingle()
+    : { data: null };
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -132,17 +159,41 @@ export default async function PositionnementPage({
         </div>
         <h1 className="mt-2 font-display text-3xl font-semibold text-navy-950 tracking-tight">
           Test de positionnement
+          {formation?.code && (
+            <span className="ml-2 text-base font-normal text-slate-500">
+              · {formation.code}
+            </span>
+          )}
         </h1>
         <p className="mt-2 text-slate-600 text-sm">
-          Quelques questions sur les blocs de compétences pour adapter votre parcours.
-          Aucun impact sur votre certification — c'est juste pour nous aider à vous orienter.
+          Quelques questions
+          {formation?.title ? ` sur « ${formation.title} »` : ""} pour adapter
+          votre parcours. Aucun impact sur votre certification — c'est juste
+          pour nous aider à vous orienter.
         </p>
       </header>
-      {(!questions || questions.length === 0) ? (
+
+      {!formationId ? (
+        <Card>
+          <CardBody className="py-10 text-center space-y-3">
+            <p className="text-slate-700 text-sm">
+              Aucune formation active n'est associée à votre compte.
+            </p>
+            <p className="text-slate-500 text-xs">
+              Contactez votre référent pédagogique pour finaliser votre
+              inscription, puis revenez passer le test.
+            </p>
+            <Link href="/dashboard" className="inline-block mt-2">
+              <Button size="md">Retour au tableau de bord</Button>
+            </Link>
+          </CardBody>
+        </Card>
+      ) : !questions || questions.length === 0 ? (
         <Card>
           <CardBody className="py-10 text-center">
             <p className="text-slate-600 text-sm">
-              Aucune question de positionnement n'est configurée pour l'instant.
+              Aucune question de positionnement n'est configurée pour cette
+              formation pour l'instant.
             </p>
             <Link href="/dashboard" className="inline-block mt-4">
               <Button size="md">Retour au tableau de bord</Button>
