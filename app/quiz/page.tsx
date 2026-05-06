@@ -136,8 +136,16 @@ export default async function QuizListPage() {
   // Tentatives utilisateur (1 requête, agrégée côté JS)
   let userAttempts: any[] = [];
   let userLessonViews: { lesson_id: string; completed: boolean }[] = [];
+  // Source secondaire : lesson_progress (clic explicite "Marquer terminé")
+  // Cf. /modules — on fait l'union des 2 tables pour éviter le désaccord
+  // entre /modules (déverrouillé) et /quiz (verrouillé) signalé par le client.
+  let lessonProgressDoneIds: Set<string> = new Set();
   if (user) {
-    const [{ data: attempts }, { data: views }] = await Promise.all([
+    const [
+      { data: attempts },
+      { data: views },
+      { data: progressRows },
+    ] = await Promise.all([
       supabase
         .from("quiz_attempts")
         .select("id, quiz_id, percentage, passed, started_at, finished_at")
@@ -147,9 +155,17 @@ export default async function QuizListPage() {
         .select("lesson_id, completed")
         .eq("user_id", user.id)
         .eq("completed", true),
+      supabase
+        .from("lesson_progress")
+        .select("lesson_id, completed")
+        .eq("user_id", user.id)
+        .eq("completed", true),
     ]);
     userAttempts = attempts ?? [];
     userLessonViews = views ?? [];
+    lessonProgressDoneIds = new Set(
+      (progressRows ?? []).map((r: any) => r.lesson_id as string)
+    );
   }
 
   // Index module → formation, module → ordre
@@ -170,7 +186,11 @@ export default async function QuizListPage() {
     if (!lessonsByModule.has(l.module_id)) lessonsByModule.set(l.module_id, []);
     lessonsByModule.get(l.module_id)!.push(l.id);
   });
-  const completedLessonIds = new Set(userLessonViews.map((v) => v.lesson_id));
+  // Union : leçon "done" si lesson_views.completed OR lesson_progress.completed
+  const completedLessonIds = new Set<string>([
+    ...userLessonViews.map((v) => v.lesson_id),
+    ...lessonProgressDoneIds,
+  ]);
 
   // Index module → quizzes
   const quizzesByModule = new Map<string, any[]>();
