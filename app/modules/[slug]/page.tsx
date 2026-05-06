@@ -87,6 +87,53 @@ export default async function ModuleDetail({
       : { data: [] as any[] },
   ]);
 
+  // Tentatives du user sur les quiz de ce module — pour afficher les
+  // résultats directement sur la page du module (best score, last attempt).
+  const quizIds = (quizzes ?? []).map((q: any) => q.id);
+  let attempts: any[] = [];
+  if (user && quizIds.length > 0) {
+    const { data: a } = await supabase
+      .from("quiz_attempts")
+      .select(
+        "id, quiz_id, percentage, passed, score, total, finished_at, status, mode"
+      )
+      .eq("user_id", user.id)
+      .in("quiz_id", quizIds)
+      .not("finished_at", "is", null)
+      .order("finished_at", { ascending: false });
+    attempts = a ?? [];
+  }
+
+  // Index par quiz_id : best score + dernière tentative
+  type QuizSummary = {
+    bestPercentage: number;
+    bestPassed: boolean;
+    lastAttempt: any | null;
+    attemptsCount: number;
+  };
+  const summaryByQuiz = new Map<string, QuizSummary>();
+  for (const a of attempts) {
+    const cur = summaryByQuiz.get(a.quiz_id) ?? {
+      bestPercentage: 0,
+      bestPassed: false,
+      lastAttempt: null,
+      attemptsCount: 0,
+    };
+    cur.attemptsCount++;
+    if ((a.percentage ?? 0) > cur.bestPercentage) {
+      cur.bestPercentage = a.percentage ?? 0;
+    }
+    if (a.passed) cur.bestPassed = true;
+    if (
+      !cur.lastAttempt ||
+      (a.finished_at &&
+        new Date(a.finished_at) > new Date(cur.lastAttempt.finished_at))
+    ) {
+      cur.lastAttempt = a;
+    }
+    summaryByQuiz.set(a.quiz_id, cur);
+  }
+
   const formationSlug = await resolveFormationFromModule(module.id);
   const formation = formationSlug ? findFormation(formationSlug) : null;
   const accent = formation?.accent ?? "#9FE220";
@@ -356,46 +403,118 @@ export default async function ModuleDetail({
           className="space-y-5"
           style={{ animation: "fade-up 0.5s ease-out 240ms both" }}
         >
-          <header>
-            <h2 className="font-display text-xl md:text-2xl font-semibold text-navy-900 tracking-tight">
-              Évaluations
-            </h2>
-            <p className="mt-1 text-[13.5px] text-slate-600">
-              Validez vos acquis avant de passer à l'examen national.
-            </p>
+          <header className="flex items-end justify-between gap-3 flex-wrap">
+            <div>
+              <h2 className="font-display text-xl md:text-2xl font-semibold text-navy-900 tracking-tight">
+                Évaluations
+              </h2>
+              <p className="mt-1 text-[13.5px] text-slate-600">
+                Validez vos acquis avant de passer à l'examen national.
+              </p>
+            </div>
+            {/* Récap des résultats du module */}
+            {attempts.length > 0 && (
+              <div className="flex items-center gap-2 text-[12px]">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-1 text-emerald-800 font-semibold">
+                  <Check className="h-3 w-3" />
+                  {[...summaryByQuiz.values()].filter((s) => s.bestPassed).length}{" "}
+                  / {totalQuizzes} validé
+                  {[...summaryByQuiz.values()].filter((s) => s.bestPassed).length > 1
+                    ? "s"
+                    : ""}
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-navy-50 border border-navy-100 px-2.5 py-1 text-navy-800 font-medium">
+                  <ClipboardCheck className="h-3 w-3" />
+                  {attempts.length} tentative{attempts.length > 1 ? "s" : ""}
+                </span>
+              </div>
+            )}
           </header>
 
           <div className="grid md:grid-cols-2 gap-4 md:gap-5">
             {/* Examens blancs en avant (cards accent) */}
-            {examQuizzes.map((q: any) => (
-              <Link
-                key={q.id}
-                href={`/quiz/${q.id}`}
-                className="group relative overflow-hidden rounded-2xl border bg-white p-5 md:p-6 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-raised motion-reduce:hover:translate-y-0"
-                style={{
-                  borderColor: `${accent}66`,
-                }}
-              >
-                {/* Halo dans le coin */}
-                <div
-                  aria-hidden
-                  className="absolute -top-12 -right-12 h-32 w-32 rounded-full pointer-events-none opacity-50"
+            {examQuizzes.map((q: any) => {
+              const s = summaryByQuiz.get(q.id);
+              return (
+                <Link
+                  key={q.id}
+                  href={`/quiz/${q.id}`}
+                  className="group relative overflow-hidden rounded-2xl border bg-white p-5 md:p-6 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-raised motion-reduce:hover:translate-y-0"
                   style={{
-                    background: `radial-gradient(circle, ${accent}55 0%, transparent 70%)`,
+                    borderColor: `${accent}66`,
                   }}
-                />
-                <div className="relative">
-                  <span
-                    className="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em]"
+                >
+                  {/* Halo dans le coin */}
+                  <div
+                    aria-hidden
+                    className="absolute -top-12 -right-12 h-32 w-32 rounded-full pointer-events-none opacity-50"
                     style={{
-                      background: `${accent}26`,
-                      color: "#0E1240",
-                      border: `1px solid ${accent}66`,
+                      background: `radial-gradient(circle, ${accent}55 0%, transparent 70%)`,
                     }}
-                  >
-                    <Flag className="h-3 w-3" />
-                    Mode examen
-                  </span>
+                  />
+                  <div className="relative">
+                    <div className="flex items-start justify-between gap-3">
+                      <span
+                        className="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em]"
+                        style={{
+                          background: `${accent}26`,
+                          color: "#0E1240",
+                          border: `1px solid ${accent}66`,
+                        }}
+                      >
+                        <Flag className="h-3 w-3" />
+                        Mode examen
+                      </span>
+                      {s && <QuizScoreBadge summary={s} />}
+                    </div>
+                    <div className="mt-3 font-display text-base font-semibold text-navy-900 leading-snug">
+                      {q.title}
+                    </div>
+                    {q.description && (
+                      <p className="mt-1.5 text-[13px] text-slate-600 leading-relaxed line-clamp-2">
+                        {q.description}
+                      </p>
+                    )}
+                    <div className="mt-3 flex items-center gap-3 text-[12px] text-slate-500">
+                      {q.time_limit_s && (
+                        <span className="inline-flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {Math.round(q.time_limit_s / 60)} min
+                        </span>
+                      )}
+                      <span className="inline-flex items-center gap-1">
+                        <Target className="h-3 w-3" />
+                        Seuil {q.pass_threshold} %
+                      </span>
+                    </div>
+                    <div
+                      className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold transition-colors"
+                      style={{ color: "#0E1240" }}
+                    >
+                      {s ? "Refaire l'examen" : "Lancer l'examen"}
+                      <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0" />
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+
+            {/* Quiz d'entraînement */}
+            {trainingQuizzes.map((q: any) => {
+              const s = summaryByQuiz.get(q.id);
+              return (
+                <Link
+                  key={q.id}
+                  href={`/quiz/${q.id}`}
+                  className="group rounded-2xl border border-navy-100 bg-white p-5 md:p-6 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-raised hover:border-navy-200 motion-reduce:hover:translate-y-0"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="inline-flex items-center gap-1.5 rounded-md bg-navy-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-navy-700 border border-navy-100">
+                      <Sparkles className="h-3 w-3" />
+                      Entraînement
+                    </span>
+                    {s && <QuizScoreBadge summary={s} />}
+                  </div>
                   <div className="mt-3 font-display text-base font-semibold text-navy-900 leading-snug">
                     {q.title}
                   </div>
@@ -416,56 +535,53 @@ export default async function ModuleDetail({
                       Seuil {q.pass_threshold} %
                     </span>
                   </div>
-                  <div
-                    className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold transition-colors"
-                    style={{ color: "#0E1240" }}
-                  >
-                    Lancer l'examen
+                  <div className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-navy-900 group-hover:text-brand-700 transition-colors">
+                    {s ? "Refaire le quiz" : "Démarrer"}
                     <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0" />
                   </div>
-                </div>
-              </Link>
-            ))}
-
-            {/* Quiz d'entraînement */}
-            {trainingQuizzes.map((q: any) => (
-              <Link
-                key={q.id}
-                href={`/quiz/${q.id}`}
-                className="group rounded-2xl border border-navy-100 bg-white p-5 md:p-6 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-raised hover:border-navy-200 motion-reduce:hover:translate-y-0"
-              >
-                <span className="inline-flex items-center gap-1.5 rounded-md bg-navy-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-navy-700 border border-navy-100">
-                  <Sparkles className="h-3 w-3" />
-                  Entraînement
-                </span>
-                <div className="mt-3 font-display text-base font-semibold text-navy-900 leading-snug">
-                  {q.title}
-                </div>
-                {q.description && (
-                  <p className="mt-1.5 text-[13px] text-slate-600 leading-relaxed line-clamp-2">
-                    {q.description}
-                  </p>
-                )}
-                <div className="mt-3 flex items-center gap-3 text-[12px] text-slate-500">
-                  {q.time_limit_s && (
-                    <span className="inline-flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {Math.round(q.time_limit_s / 60)} min
-                    </span>
-                  )}
-                  <span className="inline-flex items-center gap-1">
-                    <Target className="h-3 w-3" />
-                    Seuil {q.pass_threshold} %
-                  </span>
-                </div>
-                <div className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-navy-900 group-hover:text-brand-700 transition-colors">
-                  Démarrer
-                  <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0" />
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         </section>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------
+// QuizScoreBadge — pastille de score à droite du chip type de quiz
+// ---------------------------------------------------------------------
+function QuizScoreBadge({
+  summary,
+}: {
+  summary: {
+    bestPercentage: number;
+    bestPassed: boolean;
+    attemptsCount: number;
+  };
+}) {
+  const passed = summary.bestPassed;
+  const pct = Math.round(summary.bestPercentage);
+  return (
+    <div
+      className={`inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] border ${
+        passed
+          ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+          : "bg-rose-50 text-rose-800 border-rose-200"
+      }`}
+      title={
+        passed
+          ? `Réussi · meilleur score ${pct}%`
+          : `À retravailler · meilleur ${pct}%`
+      }
+    >
+      {passed ? <Check className="h-3 w-3" /> : <CircleDot className="h-3 w-3" />}
+      {pct}%
+      {summary.attemptsCount > 1 && (
+        <span className="opacity-70 normal-case font-semibold tracking-normal">
+          · {summary.attemptsCount}×
+        </span>
       )}
     </div>
   );
