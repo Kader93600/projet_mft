@@ -19,28 +19,56 @@ export default async function AdminQuizzes() {
   const supabase = createClient();
   const { slugs, isTrainerOnly } = await getAuthorizedFormationSlugs();
 
-  const [{ data: quizzes }, { data: questions }, { data: formationQuizzes }] =
-    await Promise.all([
-      supabase
-        .from("quizzes")
-        .select("*, modules(title)")
-        .order("created_at", { ascending: false }),
-      supabase.from("questions").select("quiz_id"),
-      supabase
-        .from("formation_quizzes")
-        .select("quiz_id, formation:formations(slug, code)"),
-    ]);
+  const [
+    { data: quizzes },
+    { data: questions },
+    { data: questionBank },
+    { data: formationQuizzes },
+    { data: formationModules },
+  ] = await Promise.all([
+    supabase
+      .from("quizzes")
+      .select("*, modules(id, title)")
+      .order("created_at", { ascending: false }),
+    supabase.from("questions").select("quiz_id"),
+    supabase.from("quiz_question_bank").select("quiz_id"),
+    supabase
+      .from("formation_quizzes")
+      .select("quiz_id, formation:formations(slug, code)"),
+    supabase
+      .from("formation_modules")
+      .select("module_id, formation:formations(slug, code)"),
+  ]);
 
+  // Compteur de questions : on additionne `questions` + `quiz_question_bank`
   const counts = new Map<string, number>();
   (questions ?? []).forEach((q: any) => {
     counts.set(q.quiz_id, (counts.get(q.quiz_id) ?? 0) + 1);
   });
+  (questionBank ?? []).forEach((q: any) => {
+    counts.set(q.quiz_id, (counts.get(q.quiz_id) ?? 0) + 1);
+  });
 
-  // Mapping quiz_id → slug formation (1er liaison trouvée)
+  // Mapping module_id → slug formation (via formation_modules)
+  const formationByModule = new Map<string, string>();
+  (formationModules ?? []).forEach((fm: any) => {
+    if (fm.formation?.slug && !formationByModule.has(fm.module_id)) {
+      formationByModule.set(fm.module_id, fm.formation.slug);
+    }
+  });
+
+  // Mapping quiz_id → slug formation : 1) lien direct formation_quizzes, sinon 2) via module
   const formationByQuiz = new Map<string, string>();
   (formationQuizzes ?? []).forEach((fq: any) => {
     if (fq.formation?.slug && !formationByQuiz.has(fq.quiz_id)) {
       formationByQuiz.set(fq.quiz_id, fq.formation.slug);
+    }
+  });
+  (quizzes ?? []).forEach((q: any) => {
+    if (formationByQuiz.has(q.id)) return;
+    const moduleId = q.module_id ?? q.modules?.id;
+    if (moduleId && formationByModule.has(moduleId)) {
+      formationByQuiz.set(q.id, formationByModule.get(moduleId)!);
     }
   });
 

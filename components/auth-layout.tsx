@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { createClient } from "@/lib/supabase/server";
 import { SessionTracker } from "@/components/session-tracker";
+import { isStaff } from "@/lib/permissions";
 
 export async function AuthLayout({
   children,
@@ -21,7 +22,8 @@ export async function AuthLayout({
     .eq("id", user.id)
     .single();
   if (!profile) redirect("/login");
-  if (requireAdmin && profile.role !== "admin") redirect("/dashboard");
+  // requireAdmin autorise admin ET super_admin (cohérent avec requireAdmin() côté actions).
+  if (requireAdmin && !isStaff(profile.role)) redirect("/dashboard");
   return (
     <AppShell profile={profile}>
       <SessionTracker />

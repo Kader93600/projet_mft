@@ -263,10 +263,17 @@ export async function updateUserProfile(userId: string, raw: unknown) {
   validate(uuid, userId);
   const patch = validate(updateProfileSchema, raw);
 
-  // Protection anti auto-rétrogradation : un admin ne peut pas se retirer son
-  // propre rôle admin (éviter de se verrouiller hors de l'interface)
-  if (userId === admin.id && patch.role && patch.role !== "admin") {
-    throw new Error("Vous ne pouvez pas retirer votre propre rôle admin");
+  // Protection anti auto-rétrogradation : un staff (admin OU super_admin) ne
+  // peut pas se rétrograder vers un rôle non-staff (student / trainer) — ça
+  // le verrouillerait hors de l'interface admin. En revanche un admin PEUT
+  // se promouvoir en super_admin, et inversement (entre rôles staff).
+  if (userId === admin.id && patch.role) {
+    const targetIsStaff = patch.role === "admin" || patch.role === "super_admin";
+    if (!targetIsStaff) {
+      throw new Error(
+        "Vous ne pouvez pas retirer votre propre rôle d'administration. Demandez à un autre super administrateur."
+      );
+    }
   }
   if (userId === admin.id && patch.disabled === true) {
     throw new Error("Vous ne pouvez pas désactiver votre propre compte");
@@ -277,6 +284,9 @@ export async function updateUserProfile(userId: string, raw: unknown) {
   await auditLog("update_profile", "profile", userId, { fields: Object.keys(patch) });
   revalidatePath("/admin/users");
   revalidatePath(`/admin/users/${userId}`);
+  // Force le rafraîchissement du shell complet : sidebar, user-menu, etc.
+  // (le rôle apparaît dans le header et conditionne les liens visibles).
+  revalidatePath("/", "layout");
   return { ok: true };
 }
 

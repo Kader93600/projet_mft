@@ -18,10 +18,16 @@ async function ensureStaff() {
   return { supabase, userId: user.id };
 }
 
-/** Met à jour la réponse-modèle + le barème + le score max d'une QR. */
+/**
+ * Met à jour une QR : énoncé, tags, réponse-modèle, barème, score max,
+ * difficulté. Persiste en base via Supabase + trace l'auteur de la
+ * dernière modification (reformulated_at / reformulated_by).
+ */
 export async function updateQrMetadata(
   questionId: string,
   payload: {
+    statement?: string;
+    tags?: string[];
     expected_answer?: string | null;
     scoring_grid?: string | null;
     max_score?: number;
@@ -29,6 +35,12 @@ export async function updateQrMetadata(
   }
 ) {
   const { supabase, userId } = await ensureStaff();
+
+  // Validation côté serveur : statement non vide si fourni
+  if (payload.statement !== undefined && !payload.statement.trim()) {
+    throw new Error("L'énoncé ne peut pas être vide.");
+  }
+
   const { error } = await supabase
     .from("question_bank")
     .update({
@@ -40,6 +52,7 @@ export async function updateQrMetadata(
     .eq("type", "qr");
   if (error) throw new Error(error.message);
   revalidatePath("/admin/banque-questions/validation-qr");
+  revalidatePath("/admin/banque-questions/liste");
 }
 
 /** Active une QR. */

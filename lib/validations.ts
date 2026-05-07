@@ -28,7 +28,7 @@ export const updateProfileSchema = z.object({
     .optional(),
   notes: z.string().trim().max(2000).nullable().optional(),
   level: z.enum(["debutant", "intermediaire", "avance"]).optional(),
-  role: z.enum(["student", "admin"]).optional(),
+  role: z.enum(["student", "trainer", "admin", "super_admin"]).optional(),
   group_id: uuid.nullable().optional(),
   disabled: z.boolean().optional(),
 });

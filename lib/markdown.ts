@@ -70,6 +70,86 @@ function renderInline(text: string): string {
 }
 
 // ---------------------------------------------------------------------
+// Custom blocks :::flow et :::timeline
+// ---------------------------------------------------------------------
+
+/**
+ * :::flow — cards horizontales avec connecteurs (chaîne d'acteurs).
+ * Format attendu par ligne : "1. Titre | Sous-titre"
+ * Le pipe sépare le titre du sous-titre. Le numéro et le ". " optionnels.
+ */
+export function renderFlowDiagram(lines: string[]): string {
+  const items: { num: string; title: string; subtitle: string }[] = [];
+
+  lines.forEach((raw) => {
+    const line = raw.trim();
+    if (!line) return;
+    // Match "1. Titre | Sous-titre" (numéro optionnel)
+    const m = line.match(/^(?:(\d+)\.\s+)?(.+?)(?:\s*\|\s*(.+))?$/);
+    if (!m) return;
+    const [, num, title, subtitle] = m;
+    items.push({
+      num: num || String(items.length + 1),
+      title: renderInline((title || "").trim()),
+      subtitle: subtitle ? renderInline(subtitle.trim()) : "",
+    });
+  });
+
+  if (items.length === 0) return "";
+
+  const cards = items
+    .map(
+      (it, idx) => `
+      <div class="flow-card">
+        <div class="flow-card__num">${it.num}</div>
+        <div class="flow-card__title">${it.title}</div>
+        ${it.subtitle ? `<div class="flow-card__subtitle">${it.subtitle}</div>` : ""}
+      </div>
+      ${idx < items.length - 1 ? '<div class="flow-arrow" aria-hidden="true"></div>' : ""}
+    `
+    )
+    .join("");
+
+  return `<div class="flow-diagram" data-count="${items.length}">${cards}</div>`;
+}
+
+/**
+ * :::timeline — timeline verticale avec puces numérotées.
+ * Format attendu par ligne : "1. Contenu libre (markdown inline OK)"
+ * Le contenu peut utiliser **gras**, *italique*, etc.
+ */
+export function renderTimeline(lines: string[]): string {
+  const items: { num: string; content: string }[] = [];
+
+  lines.forEach((raw) => {
+    const line = raw.trim();
+    if (!line) return;
+    const m = line.match(/^(?:(\d+)\.\s+)?(.+)$/);
+    if (!m) return;
+    const [, num, content] = m;
+    items.push({
+      num: num || String(items.length + 1),
+      content: renderInline((content || "").trim()),
+    });
+  });
+
+  if (items.length === 0) return "";
+
+  const lis = items
+    .map(
+      (it) => `
+      <li class="timeline__item">
+        <div class="timeline__dot">${it.num}</div>
+        <div class="timeline__content">${it.content}</div>
+      </li>
+    `
+    )
+    .join("");
+
+  return `<ol class="timeline">${lis}</ol>`;
+}
+
+// ---------------------------------------------------------------------
 // Détection des emojis callout en tête de blockquote
 // ---------------------------------------------------------------------
 
@@ -111,6 +191,27 @@ export function renderMarkdown(md: string): string {
 
   while (i < lines.length) {
     const line = lines[i];
+
+    // ---- Custom block :::flow / :::timeline ----
+    // :::flow → cards horizontales avec connecteurs (chaîne d'acteurs, processus séquentiels)
+    // :::timeline → timeline verticale avec puces numérotées (méthodologies, étapes chrono)
+    const customFence = line.match(/^:::(flow|timeline)\s*$/);
+    if (customFence) {
+      const variant = customFence[1] as "flow" | "timeline";
+      const blockLines: string[] = [];
+      i++;
+      while (i < lines.length && !/^:::\s*$/.test(lines[i])) {
+        blockLines.push(lines[i]);
+        i++;
+      }
+      i++; // saute le ::: fermant
+      out.push(
+        variant === "flow"
+          ? renderFlowDiagram(blockLines)
+          : renderTimeline(blockLines)
+      );
+      continue;
+    }
 
     // ---- Fenced code block ``` (optional language) ----
     const codeFence = line.match(/^```(\w*)\s*$/);

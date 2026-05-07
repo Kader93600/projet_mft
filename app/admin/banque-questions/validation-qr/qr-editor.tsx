@@ -12,6 +12,8 @@ import {
   Save,
   Power,
   PowerOff,
+  Pencil,
+  X,
 } from "lucide-react";
 import { updateQrMetadata, activateQr, deactivateQr } from "./actions";
 
@@ -36,10 +38,16 @@ export function QrEditor({
   index: number;
   total: number;
 }) {
+  // États édition contenu pédagogique
+  const [statement, setStatement] = useState(question.statement);
+  const [tagsInput, setTagsInput] = useState(question.tags.join(", "));
   const [expected, setExpected] = useState(question.expected_answer ?? "");
   const [grid, setGrid] = useState(question.scoring_grid ?? "");
   const [maxScore, setMaxScore] = useState(String(question.max_score));
   const [difficulty, setDifficulty] = useState(question.difficulty);
+
+  // États UI
+  const [editStatement, setEditStatement] = useState(false);
   const [pending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<"idle" | "ok" | "err">("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -47,23 +55,47 @@ export function QrEditor({
   const moduleTag = question.tags.find((t) => t.startsWith("module-"));
   const moduleLetter = moduleTag ? moduleTag.split("-")[1].toUpperCase() : "?";
 
+  const statementChanged = statement.trim() !== question.statement.trim();
+  const tagsChanged = tagsInput.trim() !== question.tags.join(", ").trim();
+
   function onSave() {
     setErrorMsg(null);
+    if (!statement.trim()) {
+      setFeedback("err");
+      setErrorMsg("L'énoncé ne peut pas être vide.");
+      return;
+    }
     startTransition(async () => {
       try {
+        // Parse les tags depuis la chaîne (séparateur virgule)
+        const parsedTags = tagsInput
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean);
+
         await updateQrMetadata(question.id, {
+          statement: statement.trim(),
+          tags: parsedTags,
           expected_answer: expected.trim() || null,
           scoring_grid: grid.trim() || null,
           max_score: parseFloat(maxScore.replace(",", ".")) || 1,
           difficulty,
         });
         setFeedback("ok");
+        setEditStatement(false);
         setTimeout(() => setFeedback("idle"), 2000);
       } catch (e: any) {
         setFeedback("err");
         setErrorMsg(e.message);
       }
     });
+  }
+
+  function onCancelStatementEdit() {
+    setStatement(question.statement);
+    setTagsInput(question.tags.join(", "));
+    setEditStatement(false);
+    setErrorMsg(null);
   }
 
   function onToggleActive() {
@@ -114,22 +146,95 @@ export function QrEditor({
               </code>
             )}
           </div>
-          <span className="text-xs text-slate-500">
-            {index} / {total}
-          </span>
-        </div>
-
-        {/* Énoncé */}
-        <div className="rounded-xl border border-navy-100 bg-ivory p-4 mb-4">
-          <div className="text-[10px] uppercase tracking-wider text-slate-500 mb-2 font-semibold">
-            Énoncé (visible stagiaire)
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-500">
+              {index} / {total}
+            </span>
+            {/* Toggle édition énoncé */}
+            <button
+              type="button"
+              onClick={() =>
+                editStatement ? onCancelStatementEdit() : setEditStatement(true)
+              }
+              disabled={pending}
+              className={
+                "inline-flex items-center justify-center h-8 w-8 rounded-lg border transition " +
+                (editStatement
+                  ? "border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100"
+                  : "border-navy-200 bg-white text-navy-700 hover:bg-navy-50")
+              }
+              title={editStatement ? "Annuler l'édition" : "Éditer l'énoncé et les tags"}
+              aria-label={editStatement ? "Annuler l'édition" : "Éditer l'énoncé et les tags"}
+            >
+              {editStatement ? (
+                <X className="h-4 w-4" />
+              ) : (
+                <Pencil className="h-4 w-4" />
+              )}
+            </button>
           </div>
-          <p className="text-sm text-navy-900 whitespace-pre-wrap leading-relaxed">
-            {question.statement}
-          </p>
         </div>
 
-        {/* Édition réponse-modèle */}
+        {/* Énoncé : lecture seule OU édition */}
+        {!editStatement ? (
+          <div className="rounded-xl border border-navy-100 bg-ivory p-4 mb-4 group relative">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">
+                Énoncé (visible stagiaire)
+              </div>
+              {(statementChanged || tagsChanged) && (
+                <Badge tone="gold" size="sm">
+                  Non enregistré
+                </Badge>
+              )}
+            </div>
+            <p className="text-sm text-navy-900 whitespace-pre-wrap leading-relaxed">
+              {statement}
+            </p>
+            {question.tags.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-navy-100/60 flex flex-wrap gap-1">
+                {question.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center text-[10px] font-mono text-slate-500 bg-white px-1.5 py-0.5 rounded border border-navy-100"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="rounded-xl border-2 border-brand-300 bg-brand-50/30 p-4 mb-4 space-y-3">
+            <div className="text-[10px] uppercase tracking-wider text-brand-700 font-semibold">
+              Édition de l'énoncé (visible stagiaire)
+            </div>
+            <Textarea
+              value={statement}
+              onChange={(e) => setStatement(e.target.value)}
+              rows={6}
+              placeholder="Texte de la question rédigée…"
+              className="bg-white"
+            />
+            <div>
+              <Label htmlFor={`tags-${question.id}`} className="text-xs">
+                Tags (séparés par des virgules)
+              </Label>
+              <Input
+                id={`tags-${question.id}`}
+                value={tagsInput}
+                onChange={(e) => setTagsInput(e.target.value)}
+                placeholder="module-c, capa-3-5t, qr, ..."
+                className="font-mono text-xs"
+              />
+              <p className="text-[11px] text-slate-500 mt-1">
+                Le préfixe <code>module-x</code> sert au filtrage par module.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Édition réponse-modèle, barème, note max, difficulté */}
         <div className="space-y-3">
           <div>
             <Label htmlFor={`exp-${question.id}`}>

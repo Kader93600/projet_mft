@@ -40,8 +40,8 @@ export const STUDENT_GROUPS: NavGroup[] = [
     label: "Apprendre",
     items: [
       { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard, short: "Accueil" },
-      { href: "/modules", label: "Modules", icon: BookOpen, short: "Modules" },
-      { href: "/quiz", label: "Quiz & Examens", icon: ClipboardCheck, short: "Quiz" },
+      { href: "/modules", label: "Cours", icon: BookOpen, short: "Cours" },
+      { href: "/quiz", label: "Exercices & Examens", icon: ClipboardCheck, short: "Exos" },
       { href: "/glossaire", label: "Glossaire", icon: Library, short: "Gloss." },
     ],
   },
@@ -101,8 +101,8 @@ export const ADMIN_GROUPS: NavGroup[] = [
     items: [
       { href: "/admin/formations", label: "Catalogue formations", icon: BookOpen },
       { href: "/admin/banque-questions", label: "Banque de questions", icon: ClipboardList },
-      { href: "/admin/modules", label: "Modules & leçons", icon: BookOpen },
-      { href: "/admin/quizzes", label: "Quiz & examens", icon: ClipboardList },
+      { href: "/admin/modules", label: "Cours & leçons", icon: BookOpen },
+      { href: "/admin/quizzes", label: "Exercices & examens", icon: ClipboardList },
       { href: "/admin/placement", label: "Positionnement", icon: Target },
       { href: "/admin/glossary", label: "Glossaire", icon: Library },
       { href: "/admin/badges", label: "Badges & certificats", icon: Award },

@@ -421,7 +421,7 @@ export default async function QuizListPage() {
         <h1 className="mt-2 font-display text-[28px] md:text-4xl font-semibold text-navy-950 tracking-tight leading-tight">
           {firstName ? `Bonjour ${firstName},` : "Bonjour,"}{" "}
           <span className="text-slate-600 font-normal">
-            vos quiz et examens.
+            vos exercices et examens.
           </span>
         </h1>
         <p className="mt-2 max-w-2xl text-[14px] text-slate-600 leading-relaxed">
@@ -491,10 +491,10 @@ export default async function QuizListPage() {
         <div className="rounded-3xl border border-navy-100 bg-white px-8 py-16 text-center shadow-soft">
           <Sparkles className="mx-auto h-8 w-8 text-slate-300" />
           <h2 className="mt-4 font-display text-xl font-semibold text-navy-900">
-            Aucun quiz disponible
+            Aucun exercice disponible
           </h2>
           <p className="mt-2 text-sm text-slate-600 max-w-md mx-auto">
-            Les quiz seront publiés progressivement par votre équipe pédagogique.
+            Les exercices seront publiés progressivement par votre équipe pédagogique.
           </p>
         </div>
       )}

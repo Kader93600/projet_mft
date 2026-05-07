@@ -19,7 +19,7 @@
 //   :::
 
 import * as React from "react";
-import { renderMarkdown } from "./markdown";
+import { renderMarkdown, renderFlowDiagram, renderTimeline } from "./markdown";
 import { Callout } from "@/components/lesson/callout";
 import { LawArticle } from "@/components/lesson/law-article";
 import { KeyFigures } from "@/components/lesson/key-figure";
@@ -199,6 +199,26 @@ function renderRichBlock(
       .filter((l) => l.startsWith("- "))
       .map((l) => l.slice(2).trim());
     return <Objectifs key={idx} items={items} />;
+  }
+  if (seg.name === "flow") {
+    return (
+      <div
+        key={idx}
+        dangerouslySetInnerHTML={{
+          __html: renderFlowDiagram(seg.body.split("\n")),
+        }}
+      />
+    );
+  }
+  if (seg.name === "timeline") {
+    return (
+      <div
+        key={idx}
+        dangerouslySetInnerHTML={{
+          __html: renderTimeline(seg.body.split("\n")),
+        }}
+      />
+    );
   }
   return (
     <div

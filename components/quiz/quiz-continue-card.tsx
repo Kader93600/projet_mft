@@ -45,7 +45,7 @@ export function QuizContinueCard({ progress, quiz }: QuizContinueCardProps) {
 
   return (
     <section
-      aria-label={isInProgress ? "Quiz en cours" : "Quiz à refaire"}
+      aria-label={isInProgress ? "Exercice en cours" : "Exercice à refaire"}
       className="relative overflow-hidden rounded-3xl border border-navy-100 bg-white shadow-soft"
     >
       {/* Wash subtil de la couleur formation */}

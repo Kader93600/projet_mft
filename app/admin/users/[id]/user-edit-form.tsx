@@ -30,7 +30,9 @@ export function UserEditForm({
   const [email, setEmail] = useState(user.email ?? "");
   const [phone, setPhone] = useState(user.phone ?? "");
   const [level, setLevel] = useState(user.level ?? "debutant");
-  const [role, setRole] = useState<"student" | "admin">(user.role ?? "student");
+  const [role, setRole] = useState<
+    "student" | "trainer" | "admin" | "super_admin"
+  >(user.role ?? "student");
   const [groupId, setGroupId] = useState<string>(user.group_id ?? "");
   const [notes, setNotes] = useState(user.notes ?? "");
 
