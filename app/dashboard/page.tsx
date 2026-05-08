@@ -23,7 +23,16 @@ import {
   Target,
   Sparkles,
   TrendingUp,
+  Lock,
+  CheckCircle2,
 } from "lucide-react";
+import {
+  applyLinearLocking,
+  computeModuleState,
+  computeModulePercent,
+  getModuleKind,
+  type ModuleProgress,
+} from "@/lib/module-progress";
 
 export default async function DashboardPage() {
   const supabase = createClient();
@@ -55,27 +64,141 @@ export default async function DashboardPage() {
   }
   const noModules = allowedModuleIds.length === 0;
 
-  const [{ data: profile }, { data: modules }, { data: progress }, { data: attempts }] =
-    await Promise.all([
-      supabase.from("profiles").select("*").eq("id", user.id).single(),
-      noModules
-        ? Promise.resolve({ data: [] as any[] })
-        : supabase
-            .from("modules")
-            .select("id, title, slug, duration_min, bloc_id, blocs(code, title)")
-            .in("id", allowedModuleIds)
-            .order("bloc_id"),
-      supabase.from("lesson_progress").select("lesson_id, completed").eq("user_id", user.id),
-      enrolledFormationIds.length > 0
-        ? supabase
-            .from("quiz_attempts")
-            .select("id, percentage, passed, finished_at, quizzes(title)")
-            .eq("user_id", user.id)
-            .in("formation_id", enrolledFormationIds)
-            .order("finished_at", { ascending: false })
-            .limit(5)
-        : Promise.resolve({ data: [] as any[] }),
-    ]);
+  const [
+    { data: profile },
+    { data: modules },
+    { data: progress },
+    { data: attempts },
+    { data: allLessons },
+    { data: allModuleQuizzes },
+    { data: allModuleAttempts },
+    { data: formationModulesOrder },
+  ] = await Promise.all([
+    supabase.from("profiles").select("*").eq("id", user.id).single(),
+    noModules
+      ? Promise.resolve({ data: [] as any[] })
+      : supabase
+          .from("modules")
+          .select("id, title, slug, duration_min, bloc_id, blocs(code, title)")
+          .in("id", allowedModuleIds)
+          .order("bloc_id"),
+    supabase.from("lesson_progress").select("lesson_id, completed").eq("user_id", user.id),
+    enrolledFormationIds.length > 0
+      ? supabase
+          .from("quiz_attempts")
+          .select("id, percentage, passed, finished_at, quizzes(title)")
+          .eq("user_id", user.id)
+          .in("formation_id", enrolledFormationIds)
+          .order("finished_at", { ascending: false })
+          .limit(5)
+      : Promise.resolve({ data: [] as any[] }),
+    // Toutes les leçons des modules autorisés (pour décompte par module)
+    noModules
+      ? Promise.resolve({ data: [] as any[] })
+      : supabase
+          .from("lessons")
+          .select("id, module_id")
+          .in("module_id", allowedModuleIds),
+    // Tous les quizzes des modules autorisés
+    noModules
+      ? Promise.resolve({ data: [] as any[] })
+      : supabase
+          .from("quizzes")
+          .select("id, module_id")
+          .in("module_id", allowedModuleIds),
+    // Toutes les tentatives passed/finished du stagiaire (pour les états in-progress / done)
+    enrolledFormationIds.length > 0
+      ? supabase
+          .from("quiz_attempts")
+          .select("quiz_id, passed, finished_at")
+          .eq("user_id", user.id)
+          .in("formation_id", enrolledFormationIds)
+      : Promise.resolve({ data: [] as any[] }),
+    // Display order des modules dans la formation (pour le verrouillage linéaire)
+    enrolledFormationIds.length > 0
+      ? supabase
+          .from("formation_modules")
+          .select("module_id, display_order")
+          .in("formation_id", enrolledFormationIds)
+      : Promise.resolve({ data: [] as any[] }),
+  ]);
+
+  // ─── Calcul du verrouillage linéaire pour la section "Continuer la formation" ─
+  // Index lookup
+  const lessonsByModule = new Map<string, string[]>();
+  (allLessons ?? []).forEach((l: any) => {
+    const arr = lessonsByModule.get(l.module_id) ?? [];
+    arr.push(l.id);
+    lessonsByModule.set(l.module_id, arr);
+  });
+  const quizzesByModule = new Map<string, string[]>();
+  (allModuleQuizzes ?? []).forEach((q: any) => {
+    const arr = quizzesByModule.get(q.module_id) ?? [];
+    arr.push(q.id);
+    quizzesByModule.set(q.module_id, arr);
+  });
+  const completedLessonIds = new Set(
+    (progress ?? []).filter((p: any) => p.completed).map((p: any) => p.lesson_id)
+  );
+  const passedQuizIds = new Set(
+    (allModuleAttempts ?? []).filter((a: any) => a.passed).map((a: any) => a.quiz_id)
+  );
+  const attemptedQuizIds = new Set(
+    (allModuleAttempts ?? []).map((a: any) => a.quiz_id)
+  );
+  const orderByModule = new Map<string, number>();
+  (formationModulesOrder ?? []).forEach((fm: any) => {
+    if (!orderByModule.has(fm.module_id)) {
+      orderByModule.set(fm.module_id, fm.display_order ?? 0);
+    }
+  });
+
+  // Construction de la liste ModuleProgress pour applyLinearLocking
+  const moduleProgressList: ModuleProgress[] = (modules ?? []).map((m: any) => {
+    const lessonIds = lessonsByModule.get(m.id) ?? [];
+    const lessonsTotal = lessonIds.length;
+    const lessonsDone = lessonIds.filter((id) => completedLessonIds.has(id)).length;
+    const quizIds = quizzesByModule.get(m.id) ?? [];
+    const quizzesTotal = quizIds.length;
+    const quizzesPassed = quizIds.filter((id) => passedQuizIds.has(id)).length;
+    const hasAnyAttempt = quizIds.some((id) => attemptedQuizIds.has(id));
+    const state = computeModuleState({
+      lessonsTotal,
+      lessonsDone,
+      quizzesTotal,
+      quizzesPassed,
+      hasAnyAttempt,
+    });
+    const percent = computeModulePercent({
+      lessonsTotal,
+      lessonsDone,
+      quizzesTotal,
+      quizzesPassed,
+    });
+    return {
+      slug: m.slug,
+      id: m.id,
+      kind: getModuleKind(m.slug),
+      order: orderByModule.get(m.id) ?? 0,
+      lessonsTotal,
+      lessonsDone,
+      quizzesTotal,
+      quizzesPassed,
+      percent,
+      state,
+      lastTouchedAt: null,
+    };
+  });
+  const lockedList = applyLinearLocking(moduleProgressList);
+  const stateById = new Map(lockedList.map((p) => [p.id, p.state]));
+
+  // Modules à afficher dans "Continuer la formation" : on garde l'ordre
+  // d'origine (par bloc + display_order), tous états confondus, top 6.
+  const sortedModules = [...(modules ?? [])].sort((a: any, b: any) => {
+    const oa = orderByModule.get(a.id) ?? 9999;
+    const ob = orderByModule.get(b.id) ?? 9999;
+    return oa - ob;
+  });
 
   // Total de leçons : limité à celles des formations du stagiaire
   const { count: totalLessons } = noModules
@@ -245,34 +368,98 @@ export default async function DashboardPage() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {modules?.slice(0, 6).map((m: any) => (
-            <Link key={m.id} href={`/modules/${m.slug}`} className="group">
-              <Card className="h-full transition-all group-hover:-translate-y-0.5 group-hover:shadow-raised">
-                <CardBody className="flex flex-col h-full">
-                  <div className="flex items-start justify-between gap-3">
-                    <Badge tone={blocTone(m.blocs?.code)} size="sm">
-                      {m.blocs?.code}
-                    </Badge>
-                    <span className="inline-flex items-center gap-1 text-xs text-slate-500">
-                      <Clock className="h-3 w-3" /> {m.duration_min} min
-                    </span>
+          {sortedModules.slice(0, 6).map((m: any) => {
+            const state = stateById.get(m.id) ?? "not-started";
+            const isLocked = state === "locked";
+            const isDone = state === "done";
+            const isInProgress = state === "in-progress";
+
+            const ctaLabel = isLocked
+              ? "Verrouillé"
+              : isDone
+              ? "Revoir"
+              : isInProgress
+              ? "Reprendre"
+              : "Commencer";
+
+            const cardClasses = isLocked
+              ? "h-full transition-all bg-slate-50 border-slate-200 opacity-70"
+              : "h-full transition-all group-hover:-translate-y-0.5 group-hover:shadow-raised";
+
+            const ctaClasses = isLocked
+              ? "inline-flex items-center gap-1 text-slate-400"
+              : "inline-flex items-center gap-1 group-hover:text-gold-700 transition-colors";
+
+            const Wrapper = isLocked
+              ? ({ children }: { children: React.ReactNode }) => (
+                  <div
+                    className="cursor-not-allowed"
+                    aria-disabled="true"
+                    title="Terminez le cours précédent pour débloquer celui-ci"
+                  >
+                    {children}
                   </div>
-                  <h3 className="mt-4 font-display text-lg font-semibold text-navy-900 leading-snug">
-                    {m.title}
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-1 line-clamp-2">
-                    {m.blocs?.title}
-                  </p>
-                  <div className="mt-auto pt-5 flex items-center justify-between text-sm font-medium text-navy-900">
-                    <span className="inline-flex items-center gap-1 group-hover:text-gold-700 transition-colors">
-                      Reprendre
-                      <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-                    </span>
-                  </div>
-                </CardBody>
-              </Card>
-            </Link>
-          ))}
+                )
+              : ({ children }: { children: React.ReactNode }) => (
+                  <Link href={`/modules/${m.slug}`} className="group">
+                    {children}
+                  </Link>
+                );
+
+            return (
+              <Wrapper key={m.id}>
+                <Card className={cardClasses}>
+                  <CardBody className="flex flex-col h-full">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <Badge tone={blocTone(m.blocs?.code)} size="sm">
+                          {m.blocs?.code}
+                        </Badge>
+                        {isDone && (
+                          <Badge tone="success" size="sm">
+                            <CheckCircle2 className="h-3 w-3" /> Terminé
+                          </Badge>
+                        )}
+                        {isLocked && (
+                          <Badge tone="slate" size="sm">
+                            <Lock className="h-3 w-3" /> Verrouillé
+                          </Badge>
+                        )}
+                      </div>
+                      <span className="inline-flex items-center gap-1 text-xs text-slate-500">
+                        <Clock className="h-3 w-3" /> {m.duration_min} min
+                      </span>
+                    </div>
+                    <h3
+                      className={
+                        "mt-4 font-display text-lg font-semibold leading-snug " +
+                        (isLocked ? "text-slate-500" : "text-navy-900")
+                      }
+                    >
+                      {m.title}
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-1 line-clamp-2">
+                      {m.blocs?.title}
+                    </p>
+                    <div
+                      className={
+                        "mt-auto pt-5 flex items-center justify-between text-sm font-medium " +
+                        (isLocked ? "text-slate-400" : "text-navy-900")
+                      }
+                    >
+                      <span className={ctaClasses}>
+                        {isLocked && <Lock className="h-3.5 w-3.5" />}
+                        {ctaLabel}
+                        {!isLocked && (
+                          <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                        )}
+                      </span>
+                    </div>
+                  </CardBody>
+                </Card>
+              </Wrapper>
+            );
+          })}
         </div>
       </section>
 
