@@ -339,29 +339,30 @@ const GROUPS = [
     ],
   },
   {
-    title: "GROUPE 7 — Contenus GOTRM",
-    description: "BC01-03 + dossier pro + examens blancs + MSP final.",
+    title: "GROUPE 7 — Contenus GOTRM CCP1 (v4 livret)",
+    description:
+      "Architecture refondue mai 2026 alignée sur le Livret CCP1 GOTRM V2 (RNCP 40990) : 17 chapitres en 7 parties + examen blanc final transversal.",
     files: [
-      { n: 63, name: "gotrm_bc01_01_v2.sql", desc: "BC01 — Leçon 1" },
-      { n: 64, name: "gotrm_bc01_02_v2.sql", desc: "BC01 — Leçon 2" },
-      { n: 65, name: "gotrm_bc01_03_v2.sql", desc: "BC01 — Leçon 3" },
-      { n: 66, name: "gotrm_bc01_04_v2.sql", desc: "BC01 — Leçon 4" },
-      { n: 67, name: "gotrm_bc01_05_v2.sql", desc: "BC01 — Leçon 5" },
-      { n: 68, name: "gotrm_bc01_06_v2.sql", desc: "BC01 — Leçon 6" },
-      { n: 69, name: "gotrm_bc01_07_v2.sql", desc: "BC01 — Leçon 7" },
-      { n: 70, name: "gotrm_bc01_08_v2.sql", desc: "BC01 — Leçon 8" },
-      { n: 71, name: "gotrm_bc01_09_v2.sql", desc: "BC01 — Leçon 9" },
-      { n: 72, name: "gotrm_bc01_10_v2.sql", desc: "BC01 — Leçon 10" },
-      { n: 73, name: "gotrm_bc02_01_v2.sql", desc: "BC02 — Leçon 1" },
-      { n: 74, name: "gotrm_bc02_02_v2.sql", desc: "BC02 — Leçon 2" },
-      { n: 75, name: "gotrm_bc03_01_v2.sql", desc: "BC03 — Leçon 1" },
-      { n: 76, name: "gotrm_bc03_02_v2.sql", desc: "BC03 — Leçon 2" },
-      { n: 77, name: "gotrm_module_exploitation.sql", desc: "Module exploitation transport" },
-      { n: 78, name: "gotrm_dossier_pro_entretien.sql", desc: "Dossier professionnel + entretien" },
-      { n: 79, name: "gotrm_examen_blanc_bc01.sql", desc: "Examen blanc BC01" },
-      { n: 80, name: "gotrm_examen_blanc_bc02.sql", desc: "Examen blanc BC02" },
-      { n: 81, name: "gotrm_examen_blanc_bc03.sql", desc: "Examen blanc BC03" },
-      { n: 82, name: "gotrm_msp_final.sql", desc: "Mise en Situation Professionnelle finale" },
+      { n: 63, name: "gotrm_purge_legacy.sql", desc: "Purge des anciens modules GOTRM v2/v3 (idempotent)", warn: true },
+      { n: 64, name: "gotrm_ch01_v4_livret.sql", desc: "Ch 1 — Environnement du transport routier de marchandises" },
+      { n: 65, name: "gotrm_ch02_v4_livret.sql", desc: "Ch 2 — Véhicules, carrosseries et marchandises" },
+      { n: 66, name: "gotrm_ch03_v4_livret.sql", desc: "Ch 3 — Analyser une demande et vérifier la faisabilité" },
+      { n: 67, name: "gotrm_ch04_v4_livret.sql", desc: "Ch 4 — Calculer le coût de revient et tarifer" },
+      { n: 68, name: "gotrm_ch05_v4_livret.sql", desc: "Ch 5 — Rédiger une offre commerciale" },
+      { n: 69, name: "gotrm_ch06_v4_livret.sql", desc: "Ch 6 — Choisir et affecter les moyens" },
+      { n: 70, name: "gotrm_ch07_v4_livret.sql", desc: "Ch 7 — Les documents de transport" },
+      { n: 71, name: "gotrm_ch08_v4_livret.sql", desc: "Ch 8 — Planifier et optimiser les opérations" },
+      { n: 72, name: "gotrm_ch09_v4_livret.sql", desc: "Ch 9 — La réglementation sociale européenne (RSE)" },
+      { n: 73, name: "gotrm_ch10_v4_livret.sql", desc: "Ch 10 — Encadrer une équipe de conducteurs" },
+      { n: 74, name: "gotrm_ch11_v4_livret.sql", desc: "Ch 11 — Suivi d'exploitation et gestion des aléas" },
+      { n: 75, name: "gotrm_ch12_v4_livret.sql", desc: "Ch 12 — Facturation, litiges et clôture des dossiers" },
+      { n: 76, name: "gotrm_ch13_v4_livret.sql", desc: "Ch 13 — KPI, seuil de rentabilité, SIG, écarts" },
+      { n: 77, name: "gotrm_ch14_v4_livret.sql", desc: "Ch 14 — Obligations environnementales et RSE entreprise" },
+      { n: 78, name: "gotrm_ch15_v4_livret.sql", desc: "Ch 15 — Transport international opérationnel" },
+      { n: 79, name: "gotrm_ch16_v4_livret.sql", desc: "Ch 16 — Gestion des supports de charge" },
+      { n: 80, name: "gotrm_ch17_v4_livret.sql", desc: "Ch 17 — L'anglais professionnel en transport" },
+      { n: 81, name: "gotrm_ccp1_examen_blanc_final.sql", desc: "CCP1 — Examen blanc final transversal (30 QCM + 6 QR / 120 min)", warn: true },
+      { n: 82, name: "glossary_gotrm_v4_livret_refresh.sql", desc: "Refresh glossaire GOTRM aligné sur le livret (151 termes)" },
     ],
   },
   {
@@ -744,15 +745,15 @@ FILES=(
   capa_module_a_v3_dense.sql capa_module_b_v3_dense.sql
   capa_module_c_v3_dense.sql capa_module_d_v3_dense.sql
   capa_module_e_v3_dense.sql capa_module_f_v3_dense.sql
-  gotrm_bc01_01_v2.sql gotrm_bc01_02_v2.sql gotrm_bc01_03_v2.sql
-  gotrm_bc01_04_v2.sql gotrm_bc01_05_v2.sql gotrm_bc01_06_v2.sql
-  gotrm_bc01_07_v2.sql gotrm_bc01_08_v2.sql gotrm_bc01_09_v2.sql
-  gotrm_bc01_10_v2.sql
-  gotrm_bc02_01_v2.sql gotrm_bc02_02_v2.sql
-  gotrm_bc03_01_v2.sql gotrm_bc03_02_v2.sql
-  gotrm_module_exploitation.sql gotrm_dossier_pro_entretien.sql
-  gotrm_examen_blanc_bc01.sql gotrm_examen_blanc_bc02.sql
-  gotrm_examen_blanc_bc03.sql gotrm_msp_final.sql
+  gotrm_purge_legacy.sql
+  gotrm_ch01_v4_livret.sql gotrm_ch02_v4_livret.sql gotrm_ch03_v4_livret.sql
+  gotrm_ch04_v4_livret.sql gotrm_ch05_v4_livret.sql gotrm_ch06_v4_livret.sql
+  gotrm_ch07_v4_livret.sql gotrm_ch08_v4_livret.sql gotrm_ch09_v4_livret.sql
+  gotrm_ch10_v4_livret.sql gotrm_ch11_v4_livret.sql gotrm_ch12_v4_livret.sql
+  gotrm_ch13_v4_livret.sql gotrm_ch14_v4_livret.sql gotrm_ch15_v4_livret.sql
+  gotrm_ch16_v4_livret.sql gotrm_ch17_v4_livret.sql
+  gotrm_ccp1_examen_blanc_final.sql
+  glossary_gotrm_v4_livret_refresh.sql
   p2_indexes_and_hardening.sql
 )
 

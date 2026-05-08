@@ -243,49 +243,50 @@ const CAPA_TOTAL: Row = {
   lessons: 24, qcm: 288, qr: 54, practice: 30, mock: 6,
 };
 
+// GOTRM v4 livret CCP1 — refonte mai 2026 alignée sur le Livret CCP1
+// GOTRM V2 transmis par le client (RNCP 40990, 17 chapitres en 7 parties).
+// Les anciens BC01-01 à BC03-02 + MSP + dossier pro v2/v3 sont remplacés.
 const GOTRM_ROWS: Row[] = [
-  { label: "BC01-01 · Traiter une demande de transport", lessons: 4, qcm: 48, qr: 8, practice: 4, mock: 1, note: "v3" },
-  { label: "BC01-02 · Contrat de transport (CMR)", lessons: 4, qcm: 28, qr: 5, practice: 4, mock: 1 },
-  { label: "BC01-03 · Élaborer une cotation", lessons: 4, qcm: 28, qr: 5, practice: 4, mock: 1 },
-  { label: "BC01-04 · Réglementation sociale (R561/AETR)", lessons: 4, qcm: 30, qr: 6, practice: 4, mock: 1 },
-  { label: "BC01-05 · Documents et formalités douanières", lessons: 4, qcm: 28, qr: 5, practice: 4, mock: 1 },
-  { label: "BC01-06 · Planifier les tournées", lessons: 4, qcm: 28, qr: 5, practice: 4, mock: 1 },
-  { label: "BC01-07 · TMD/ADR, ATP, exceptionnel", lessons: 4, qcm: 28, qr: 5, practice: 4, mock: 1 },
-  { label: "BC01-08 · Relation client et SLA", lessons: 4, qcm: 25, qr: 4, practice: 4, mock: 1 },
-  { label: "BC01-09 · Litiges et indemnisations", lessons: 4, qcm: 28, qr: 5, practice: 4, mock: 1 },
-  { label: "BC01-10 · KPI exploitation", lessons: 4, qcm: 25, qr: 4, practice: 4, mock: 1 },
-  { label: "BC02-01 · Appel d'offres et sous-traitance", lessons: 4, qcm: 25, qr: 4, practice: 4, mock: 1 },
-  { label: "BC02-02 · Suivi qualité et conformité", lessons: 4, qcm: 25, qr: 4, practice: 4, mock: 1 },
-  { label: "BC03-01 · Coût de revient", lessons: 4, qcm: 28, qr: 5, practice: 4, mock: 1 },
-  { label: "BC03-02 · Démarche RSE et transition", lessons: 4, qcm: 25, qr: 4, practice: 4, mock: 1 },
-  { label: "Module exploitation transport", lessons: 5, qcm: 0, qr: 0, practice: 0, mock: 0 },
-  { label: "Dossier professionnel · entretien", lessons: 5, qcm: 0, qr: 30, practice: 1, mock: 0 },
-  { label: "Mise en Situation Professionnelle (MSP)", lessons: 1, qcm: 0, qr: 4, practice: 0, mock: 1 },
+  { label: "Ch 1 · Environnement du transport routier", lessons: 1, qcm: 10, qr: 3, practice: 1, mock: 0, note: "v4 livret" },
+  { label: "Ch 2 · Véhicules, carrosseries et marchandises", lessons: 1, qcm: 12, qr: 3, practice: 1, mock: 0, note: "v4 livret" },
+  { label: "Ch 3 · Analyser une demande et faisabilité", lessons: 1, qcm: 10, qr: 3, practice: 1, mock: 0, note: "v4 livret" },
+  { label: "Ch 4 · Coût de revient et tarification", lessons: 1, qcm: 12, qr: 4, practice: 1, mock: 0, note: "v4 livret" },
+  { label: "Ch 5 · Rédiger une offre commerciale", lessons: 1, qcm: 10, qr: 3, practice: 1, mock: 0, note: "v4 livret" },
+  { label: "Ch 6 · Affecter les moyens matériels et humains", lessons: 1, qcm: 10, qr: 3, practice: 1, mock: 0, note: "v4 livret" },
+  { label: "Ch 7 · Documents de transport", lessons: 1, qcm: 10, qr: 3, practice: 1, mock: 0, note: "v4 livret" },
+  { label: "Ch 8 · Planifier et optimiser les opérations", lessons: 1, qcm: 10, qr: 3, practice: 1, mock: 0, note: "v4 livret" },
+  { label: "Ch 9 · Réglementation sociale européenne (RSE)", lessons: 1, qcm: 12, qr: 4, practice: 1, mock: 0, note: "v4 livret" },
+  { label: "Ch 10 · Encadrer une équipe de conducteurs", lessons: 1, qcm: 12, qr: 4, practice: 1, mock: 0, note: "v4 livret" },
+  { label: "Ch 11 · Suivi d'exploitation et aléas", lessons: 1, qcm: 12, qr: 4, practice: 1, mock: 0, note: "v4 livret" },
+  { label: "Ch 12 · Facturation, litiges et clôture", lessons: 1, qcm: 12, qr: 4, practice: 1, mock: 0, note: "v4 livret" },
+  { label: "Ch 13 · KPI et analyse financière", lessons: 1, qcm: 12, qr: 4, practice: 1, mock: 0, note: "v4 livret" },
+  { label: "Ch 14 · Obligations environnementales et RSE", lessons: 1, qcm: 10, qr: 3, practice: 1, mock: 0, note: "v4 livret" },
+  { label: "Ch 15 · Transport international opérationnel", lessons: 1, qcm: 12, qr: 4, practice: 1, mock: 0, note: "v4 livret" },
+  { label: "Ch 16 · Gestion des supports de charge", lessons: 1, qcm: 8, qr: 3, practice: 1, mock: 0, note: "v4 livret" },
+  { label: "Ch 17 · L'anglais professionnel en transport", lessons: 1, qcm: 10, qr: 3, practice: 1, mock: 0, note: "v4 livret" },
 ];
 const GOTRM_TOTAL: Row = {
-  label: "Total GOTRM modules pédagogiques",
-  lessons: 67, qcm: 399, qr: 103, practice: 57, mock: 15,
+  label: "Total GOTRM CCP1 (v4 livret)",
+  lessons: 17, qcm: 184, qr: 62, practice: 17, mock: 0,
 };
 
 const EXAM_BLANC_ROWS: Row[] = [
-  { label: "Examen blanc synthétique BC01 (10 modules couverts)", lessons: 1, qcm: 0, qr: 0, practice: 0, mock: 1 },
-  { label: "Examen blanc synthétique BC02", lessons: 1, qcm: 0, qr: 0, practice: 0, mock: 1 },
-  { label: "Examen blanc synthétique BC03", lessons: 1, qcm: 0, qr: 0, practice: 0, mock: 1 },
+  { label: "CCP1 · Examen blanc final transversal (30 QCM + 6 QR)", lessons: 1, qcm: 0, qr: 0, practice: 0, mock: 1 },
 ];
 const EXAM_BLANC_TOTAL: Row = {
-  label: "Total examens blancs synthétiques",
-  lessons: 3, qcm: 0, qr: 0, practice: 0, mock: 3,
+  label: "Total examens blancs CCP1",
+  lessons: 1, qcm: 0, qr: 0, practice: 0, mock: 1,
 };
 
-// Totaux globaux : Capa (24/288/54/30/6) + GOTRM (67/399/103/57/15) + Examens synthèse (3/0/0/0/3)
+// Totaux globaux : Capa (24/288/54/30/6) + GOTRM CCP1 (17/184/62/17/0) + Examen blanc final CCP1 (1/0/0/0/1)
 const GRAND_TOTAL = {
-  lessons: 94,        // 24 + 67 + 3
-  qcm: 687,           // 288 + 399 + 0
-  qr: 157,            // 54 + 103 + 0
-  questions: 844,     // 687 + 157
-  practice: 87,       // 30 + 57 + 0
-  mock: 24,           // 6 + 15 + 3
-  evals: 111,         // 87 + 24
+  lessons: 42,        // 24 + 17 + 1
+  qcm: 472,           // 288 + 184 + 0
+  qr: 116,            // 54 + 62 + 0
+  questions: 588,     // 472 + 116
+  practice: 47,       // 30 + 17 + 0
+  mock: 7,            // 6 + 0 + 1
+  evals: 54,          // 47 + 7
 };
 
 // ---------- Composants ----------
@@ -423,11 +424,13 @@ const PageGotrm: React.FC = () => (
     <Header title="Inventaire GOTRM · RNCP 40990" />
     <Footer />
 
-    <Text style={s.sectionTitle}>2 · GOTRM (RNCP 40990) — modules pédagogiques</Text>
+    <Text style={s.sectionTitle}>2 · GOTRM CCP1 (RNCP 40990) — refonte v4 livret</Text>
     <Text style={s.sectionSub}>
-      Gestionnaire d'Opérations de Transport Routier de Marchandises.
-      14 modules cœur métier (BC01 / BC02 / BC03) + 3 modules transversaux
-      (exploitation, dossier professionnel, mise en situation finale).
+      Gestionnaire d'Opérations de Transport Routier de Marchandises —
+      Certificat de Compétences Professionnelles n° 1. Architecture
+      reconstruite mai 2026 à partir du Livret CCP1 GOTRM V2 transmis
+      par le client : 17 chapitres répartis en 7 parties, contenu
+      strictement aligné sur le référentiel.
     </Text>
     <TableHead />
     {GOTRM_ROWS.map((r, i) => (
@@ -435,10 +438,12 @@ const PageGotrm: React.FC = () => (
     ))}
     <TableTotal row={GOTRM_TOTAL} />
 
-    <Text style={s.sectionTitle}>3 · GOTRM — examens blancs synthétiques</Text>
+    <Text style={s.sectionTitle}>3 · CCP1 — examen blanc final transversal</Text>
     <Text style={s.sectionSub}>
-      Examens transversaux qui réutilisent la banque de questions
-      des modules ci-dessus (pas de double-comptage).
+      Examen blanc reproduisant les conditions de l'épreuve nationale
+      (30 QCM transversaux des 17 chapitres + 6 QR cas pratique métier,
+      durée 120 minutes, seuil 50 %). Réutilise la banque de questions —
+      pas de double comptage avec les modules ci-dessus.
     </Text>
     <TableHead />
     {EXAM_BLANC_ROWS.map((r, i) => (
@@ -447,13 +452,13 @@ const PageGotrm: React.FC = () => (
     <TableTotal row={EXAM_BLANC_TOTAL} />
 
     <View style={s.noteBox}>
-      <Text style={s.noteTitle}>Roadmap d'enrichissement (en cours)</Text>
+      <Text style={s.noteTitle}>Roadmap CCP 2 et CCP 3</Text>
       <Text style={s.noteBody}>
-        BC01-01 a été refondu en standard v3 dense (mai 2026).
-        Les 13 modules GOTRM v2 restants seront progressivement enrichis
-        au même standard : passage de ~28 QCM à 48 QCM par module,
-        de 4-5 QR à 8 QR cas pratiques, ajout d'un examen blanc module,
-        densification des leçons (cas réels, schémas, mémos imprimables).
+        Le titre professionnel GOTRM se compose de 3 CCP. Le CCP1 est
+        complet et conforme au livret transmis par le client. Les livrets
+        CCP 2 et CCP 3 seront produits dès leur transmission, en suivant
+        la même méthode (1 chapitre = 1 module, contenu strictement issu
+        du livret, examen blanc transversal final par CCP).
       </Text>
     </View>
   </Page>
@@ -486,10 +491,9 @@ const PageMethodologie: React.FC = () => (
       de doublons inter-modules.
     </Bullet>
     <Bullet>
-      Les examens blancs synthétiques GOTRM réutilisent la banque de
-      questions des modules : ils n'ajoutent pas de questions nouvelles
-      mais composent un examen transversal de 30 QCM + 2 QR (90 min,
-      seuil 50 %).
+      L'examen blanc final CCP1 réutilise la banque de questions des
+      17 chapitres : il n'ajoute pas de questions nouvelles mais compose
+      un examen transversal de 30 QCM + 6 QR (120 min, seuil 50 %).
     </Bullet>
     <Bullet>
       Les modules « exploitation transport » et « dossier professionnel »
