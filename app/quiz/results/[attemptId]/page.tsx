@@ -8,11 +8,17 @@ import {
   ArrowLeft,
   Clock,
   CheckCircle2,
+  XCircle,
   AlertTriangle,
   Sparkles,
   Hourglass,
   MessageSquare,
   Award,
+  RotateCcw,
+  BarChart3,
+  LayoutDashboard,
+  HelpCircle,
+  Info,
 } from "lucide-react";
 import { cn, scoreColor } from "@/lib/utils";
 import { FormationBadge } from "@/components/formation/formation-badge";
@@ -28,6 +34,25 @@ const STATUS_LABELS: Record<string, string> = {
   graded: "Corrigé",
 };
 
+interface BankChoice {
+  id?: string;
+  label?: string;
+  is_correct?: boolean;
+}
+
+interface BankQuestion {
+  id: string;
+  type: "qcm" | "qr";
+  statement: string;
+  choices: BankChoice[] | null;
+  explanation: string | null;
+  max_score: number;
+}
+
+interface ResolvedQuestion extends BankQuestion {
+  display_order: number;
+}
+
 export default async function QuizResultsPage({
   params,
 }: {
@@ -39,15 +64,15 @@ export default async function QuizResultsPage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // Charger la tentative + quiz
+  // Charger la tentative + quiz (+ answers JSON)
   const { data: attempt } = await supabase
     .from("quiz_attempts")
     .select(
       `id, user_id, quiz_id, score, total, percentage, passed,
        qcm_score, qr_score, final_percentage, final_passed, status,
        finished_at, started_at, duration_s, graded_at, graded_by,
-       trainer_global_comment, mode,
-       quiz:quizzes(title, description, type, is_mock_exam, pass_threshold,
+       trainer_global_comment, mode, answers,
+       quiz:quizzes(id, title, description, type, is_mock_exam, pass_threshold,
                     requires_manual_grading)`
     )
     .eq("id", params.attemptId)
@@ -77,325 +102,546 @@ export default async function QuizResultsPage({
 
   const quiz = (attempt as any).quiz;
   const status = attempt.status ?? "completed";
-  const isGraded = status === "graded";
+  const isGraded = status === "graded" || status === "completed";
   const isAwaiting = status === "awaiting_review";
 
   // Résolution formation pour identification visuelle
   const formationSlug = await resolveFormationFromQuiz(attempt.quiz_id);
 
+  // ─── Charger les questions du quiz pour afficher le détail QCM ────
+  // Modèle moderne : quiz_question_bank → question_bank
+  // (legacy quiz_questions → questions est ignoré, le quiz_runner stocke
+  // déjà la réponse de l'user dans `answers` indexée par question_id qui
+  // est le même côté banque ou legacy)
+  const { data: bankLinks } = await supabase
+    .from("quiz_question_bank")
+    .select(
+      `display_order,
+       question:question_bank(id, type, statement, choices, explanation, max_score)`
+    )
+    .eq("quiz_id", attempt.quiz_id)
+    .order("display_order");
+
+  const resolvedQuestions: ResolvedQuestion[] = (bankLinks ?? [])
+    .map((l: any) => {
+      const q = l.question;
+      if (!q) return null;
+      return {
+        id: q.id,
+        type: q.type,
+        statement: q.statement,
+        choices: q.choices ?? null,
+        explanation: q.explanation,
+        max_score: q.max_score ?? 1,
+        display_order: l.display_order ?? 0,
+      } as ResolvedQuestion;
+    })
+    .filter(Boolean) as ResolvedQuestion[];
+
+  // Réponses utilisateur (jsonb { questionId: choiceId })
+  const userAnswers: Record<string, string> =
+    (attempt as any).answers ?? {};
+
+  // Stats QCM auto-corrigées
+  const qcmQuestions = resolvedQuestions.filter((q) => q.type === "qcm");
+  let qcmCorrect = 0;
+  qcmQuestions.forEach((q) => {
+    const userPick = userAnswers[q.id];
+    const correctChoice = (q.choices ?? []).find((c) => c.is_correct);
+    if (userPick && correctChoice && userPick === correctChoice.id) {
+      qcmCorrect += 1;
+    }
+  });
+
+  const finalScore = attempt.final_percentage ?? attempt.percentage ?? 0;
+  const finalPassed = attempt.final_passed ?? attempt.passed ?? false;
+  const passThreshold = quiz?.pass_threshold ?? 70;
+
+  // Durée formatée
+  const durationMin = attempt.duration_s
+    ? Math.max(1, Math.round(attempt.duration_s / 60))
+    : null;
+
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto pb-20">
       {/* Stripe couleur formation en haut de page */}
       {formationSlug && <FormationStripe slug={formationSlug} />}
 
-      <div className="space-y-8 pt-6">
-      <Link
-        href="/quiz"
-        className="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-navy-900"
-      >
-        <ArrowLeft className="h-4 w-4" /> Retour aux quiz
-      </Link>
-
-      <header>
-        <div className="flex items-center gap-2 mb-2 flex-wrap">
-          {formationSlug && (
-            <FormationBadge slug={formationSlug} size="sm" icon />
-          )}
-          {quiz?.is_mock_exam && (
-            <Badge tone="gold" size="sm">
-              <Award className="h-3 w-3" />
-              Examen blanc
-            </Badge>
-          )}
-          <Badge
-            tone={
-              isGraded ? "success" : isAwaiting ? "gold" : "slate"
-            }
-            size="sm"
-          >
-            {STATUS_LABELS[status]}
-          </Badge>
-        </div>
-        <h1 className="font-display text-2xl md:text-3xl font-semibold text-navy-950 tracking-tight">
-          {quiz?.title ?? "Résultats"}
-        </h1>
-        {attempt.finished_at && (
-          <p className="mt-1 text-sm text-slate-500">
-            Soumis le{" "}
-            {new Date(attempt.finished_at).toLocaleDateString("fr-FR", {
-              day: "2-digit",
-              month: "long",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </p>
-        )}
-      </header>
-
-      {/* === Cas 1 : EN ATTENTE de correction === */}
-      {isAwaiting && (
-        <>
-          <Card>
-            <CardBody className="text-center py-10 space-y-5">
-              <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-gold-400 to-gold-600 text-white flex items-center justify-center shadow-glow-signal">
-                <Hourglass className="h-8 w-8" />
-              </div>
-              <div>
-                <h2 className="font-display text-2xl font-semibold text-navy-950">
-                  Votre copie est en cours de correction
-                </h2>
-                <p className="mt-2 text-slate-600 max-w-md mx-auto">
-                  Cet examen contient des questions rédigées qui doivent être
-                  corrigées par un formateur. Vous recevrez une notification
-                  dès que votre note finale sera disponible.
-                </p>
-              </div>
-              <div className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gold-50 border border-gold-200 text-gold-900 text-sm">
-                <Clock className="h-4 w-4" />
-                Délai habituel : <strong>48 à 72 h ouvrées</strong>
-              </div>
-            </CardBody>
-          </Card>
-
-          {/* Aperçu QCM (si quiz mixte, la partie QCM est déjà calculée) */}
-          {attempt.qcm_score !== null && (
-            <Card>
-              <CardBody>
-                <CardTitle>Score QCM (auto-corrigé)</CardTitle>
-                <p className="text-sm text-slate-600 mt-1 mb-4">
-                  Ce score sera combiné avec la note manuelle des questions
-                  rédigées pour produire la note finale.
-                </p>
-                <div className="flex items-center justify-between gap-4">
-                  <ProgressBar value={attempt.qcm_score ?? 0} />
-                  <span className="font-display text-2xl font-semibold text-navy-900">
-                    {Math.round(attempt.qcm_score ?? 0)}%
-                  </span>
-                </div>
-              </CardBody>
-            </Card>
-          )}
-
-          {/* Liste des QR soumises (sans note) */}
-          {(qrResponses ?? []).length > 0 && (
-            <Card>
-              <CardBody>
-                <CardTitle>Vos questions rédigées</CardTitle>
-                <p className="text-sm text-slate-600 mt-1">
-                  {qrResponses!.length} réponse
-                  {qrResponses!.length > 1 ? "s" : ""} en attente de correction.
-                  La note et les commentaires du formateur seront visibles une
-                  fois la copie finalisée.
-                </p>
-                <ul className="mt-4 space-y-2">
-                  {qrResponses!.map((r: any, i: number) => (
-                    <li
-                      key={r.id}
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl bg-ivory border border-navy-100"
-                    >
-                      <span className="h-7 w-7 rounded-md bg-navy-50 text-navy-700 flex items-center justify-center font-semibold text-xs">
-                        {i + 1}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm text-navy-900">
-                          Question {i + 1}
-                        </div>
-                        <div className="text-xs text-slate-500">
-                          {r.student_answer
-                            ? `${r.student_answer.length} caractères soumis`
-                            : "Aucune réponse"}
-                        </div>
-                      </div>
-                      <Badge tone="gold" size="sm">
-                        <Hourglass className="h-3 w-3" />
-                        En attente
-                      </Badge>
-                    </li>
-                  ))}
-                </ul>
-              </CardBody>
-            </Card>
-          )}
-        </>
-      )}
-
-      {/* === Cas 2 : CORRIGÉ === */}
-      {isGraded && (
-        <>
-          <Card>
-            <CardBody className="text-center py-10">
-              <div className="flex justify-center">
-                <RadialProgress
-                  value={attempt.final_percentage ?? attempt.percentage ?? 0}
-                  size={140}
-                  strokeWidth={12}
-                  label={
-                    <div className="text-center">
-                      <div
-                        className={cn(
-                          "font-display text-4xl font-semibold",
-                          scoreColor(
-                            attempt.final_percentage ??
-                              attempt.percentage ??
-                              0
-                          )
-                        )}
-                      >
-                        {Math.round(
-                          attempt.final_percentage ?? attempt.percentage ?? 0
-                        )}
-                        %
-                      </div>
-                    </div>
-                  }
-                />
-              </div>
-              <div className="mt-5 font-display text-2xl font-semibold text-navy-950">
-                {attempt.final_passed ?? attempt.passed
-                  ? "Félicitations, examen réussi !"
-                  : "Continuez la préparation"}
-              </div>
-              {(attempt.final_passed ?? attempt.passed) ? (
-                <Badge tone="success" size="md" className="mt-3 mx-auto">
-                  <CheckCircle2 className="h-3 w-3" /> Seuil atteint
-                </Badge>
-              ) : (
-                <Badge tone="rose" size="md" className="mt-3 mx-auto">
-                  <AlertTriangle className="h-3 w-3" /> Seuil :{" "}
-                  {quiz?.pass_threshold ?? 70}%
-                </Badge>
-              )}
-
-              {/* Détails QCM/QR si quiz mixte */}
-              {attempt.qcm_score !== null && attempt.qr_score !== null && (
-                <div className="mt-6 grid grid-cols-2 gap-3 max-w-md mx-auto">
-                  <div className="rounded-xl border border-navy-100 bg-ivory p-3">
-                    <div className="text-[10px] uppercase tracking-wider text-slate-500">
-                      QCM
-                    </div>
-                    <div className="font-display text-xl font-semibold text-navy-900 mt-1">
-                      {Math.round(attempt.qcm_score)}%
-                    </div>
-                  </div>
-                  <div className="rounded-xl border border-navy-100 bg-ivory p-3">
-                    <div className="text-[10px] uppercase tracking-wider text-slate-500">
-                      Rédigées
-                    </div>
-                    <div className="font-display text-xl font-semibold text-navy-900 mt-1">
-                      {attempt.qr_score}/
-                      {(qrResponses ?? []).reduce(
-                        (s: number, r: any) => s + (r.max_score ?? 0),
-                        0
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {attempt.graded_at && (
-                <div className="mt-5 text-xs text-slate-500">
-                  Corrigé le{" "}
-                  {new Date(attempt.graded_at).toLocaleDateString("fr-FR", {
-                    day: "2-digit",
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </div>
-              )}
-            </CardBody>
-          </Card>
-
-          {/* Commentaire global du formateur */}
-          {attempt.trainer_global_comment && (
-            <Card variant="gold">
-              <CardBody>
-                <div className="flex items-center gap-2 mb-3">
-                  <MessageSquare className="h-4 w-4 text-gold-700" />
-                  <span className="eyebrow text-gold-800">
-                    Commentaire du formateur
-                  </span>
-                </div>
-                <p className="text-navy-900 leading-relaxed whitespace-pre-wrap">
-                  {attempt.trainer_global_comment}
-                </p>
-              </CardBody>
-            </Card>
-          )}
-
-          {/* Détails par QR avec correction */}
-          {(qrResponses ?? []).length > 0 && (
-            <section>
-              <h2 className="font-display text-xl font-semibold text-navy-900 mb-3 flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-brand-700" />
-                Vos questions rédigées corrigées
-              </h2>
-              <div className="space-y-3">
-                {qrResponses!.map((r: any, i: number) => {
-                  const ratio = r.max_score
-                    ? (r.trainer_score ?? 0) / r.max_score
-                    : 0;
-                  const tone =
-                    ratio >= 0.7 ? "success" : ratio >= 0.4 ? "gold" : "rose";
-                  return (
-                    <Card key={r.id}>
-                      <CardBody>
-                        <div className="flex items-start justify-between gap-3 mb-3">
-                          <div className="text-sm font-medium text-navy-900">
-                            Question {i + 1}
-                          </div>
-                          <Badge tone={tone as any} size="sm">
-                            {r.trainer_score ?? 0} / {r.max_score}
-                          </Badge>
-                        </div>
-                        {r.student_answer && (
-                          <div className="rounded-xl border border-navy-100 bg-ivory p-4">
-                            <div className="text-[10px] uppercase tracking-wider text-slate-500 mb-1">
-                              Votre réponse
-                            </div>
-                            <p className="text-sm text-navy-900 whitespace-pre-wrap">
-                              {r.student_answer}
-                            </p>
-                          </div>
-                        )}
-                        {r.trainer_comment && (
-                          <div className="mt-3 rounded-xl border border-gold-200 bg-gold-50 p-4">
-                            <div className="flex items-center gap-1.5 mb-1">
-                              <MessageSquare className="h-3.5 w-3.5 text-gold-700" />
-                              <div className="text-[10px] uppercase tracking-wider text-gold-800 font-semibold">
-                                Commentaire formateur
-                              </div>
-                            </div>
-                            <p className="text-sm text-navy-900 whitespace-pre-wrap">
-                              {r.trainer_comment}
-                            </p>
-                          </div>
-                        )}
-                      </CardBody>
-                    </Card>
-                  );
-                })}
-              </div>
-            </section>
-          )}
-        </>
-      )}
-
-      {/* CTA */}
-      <div className="flex justify-center pt-4 gap-3">
+      <div className="space-y-8 pt-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <Link
           href="/quiz"
-          className="inline-flex items-center gap-2 rounded-xl border border-navy-200 px-5 py-2.5 text-sm font-medium text-navy-900 hover:bg-navy-50"
+          className="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-navy-900 transition-colors"
         >
-          Retour aux quiz
+          <ArrowLeft className="h-4 w-4" /> Retour aux exercices
         </Link>
-        <Link
-          href="/dashboard"
-          className="inline-flex items-center gap-2 rounded-xl bg-navy-900 text-white px-5 py-2.5 text-sm font-medium hover:bg-navy-800"
-        >
-          Tableau de bord
-        </Link>
-      </div>
+
+        <header>
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            {formationSlug && (
+              <FormationBadge slug={formationSlug} size="sm" icon />
+            )}
+            {quiz?.is_mock_exam && (
+              <Badge tone="gold" size="sm">
+                <Award className="h-3 w-3" />
+                Examen blanc
+              </Badge>
+            )}
+            <Badge
+              tone={isAwaiting ? "gold" : finalPassed ? "success" : "rose"}
+              size="sm"
+            >
+              {STATUS_LABELS[status]}
+            </Badge>
+          </div>
+          <h1 className="font-display text-2xl md:text-3xl font-semibold text-navy-950 tracking-tight">
+            {quiz?.title ?? "Résultats"}
+          </h1>
+          {attempt.finished_at && (
+            <p className="mt-1 text-sm text-slate-500">
+              Soumis le{" "}
+              {new Date(attempt.finished_at).toLocaleDateString("fr-FR", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </p>
+          )}
+        </header>
+
+        {/* === Cas 1 : EN ATTENTE de correction === */}
+        {isAwaiting && (
+          <>
+            <Card>
+              <CardBody className="text-center py-10 space-y-5">
+                <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-gold-400 to-gold-600 text-white flex items-center justify-center shadow-glow-signal animate-in zoom-in duration-500">
+                  <Hourglass className="h-8 w-8" />
+                </div>
+                <div>
+                  <h2 className="font-display text-2xl font-semibold text-navy-950">
+                    Votre copie est en cours de correction
+                  </h2>
+                  <p className="mt-2 text-slate-600 max-w-md mx-auto">
+                    Cet examen contient des questions rédigées qui doivent être
+                    corrigées par un formateur. Vous recevrez une notification
+                    dès que votre note finale sera disponible.
+                  </p>
+                </div>
+                <div className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gold-50 border border-gold-200 text-gold-900 text-sm">
+                  <Clock className="h-4 w-4" />
+                  Délai habituel : <strong>48 à 72 h ouvrées</strong>
+                </div>
+              </CardBody>
+            </Card>
+
+            {/* Aperçu QCM (si quiz mixte, la partie QCM est déjà calculée) */}
+            {attempt.qcm_score !== null && (
+              <Card>
+                <CardBody>
+                  <CardTitle>Score QCM (auto-corrigé)</CardTitle>
+                  <p className="text-sm text-slate-600 mt-1 mb-4">
+                    Ce score sera combiné avec la note manuelle des questions
+                    rédigées pour produire la note finale.
+                  </p>
+                  <div className="flex items-center justify-between gap-4">
+                    <ProgressBar value={attempt.qcm_score ?? 0} />
+                    <span className="font-display text-2xl font-semibold text-navy-900">
+                      {Math.round(attempt.qcm_score ?? 0)}%
+                    </span>
+                  </div>
+                </CardBody>
+              </Card>
+            )}
+          </>
+        )}
+
+        {/* === Cas 2 : SCORE PRÊT (graded ou completed sans QR) === */}
+        {isGraded && (
+          <>
+            {/* Hero score animé */}
+            <Card className="overflow-hidden relative">
+              <div
+                className="absolute inset-0 pointer-events-none opacity-40"
+                style={{
+                  background: finalPassed
+                    ? "radial-gradient(circle at 50% 0%, rgba(159,226,32,0.18) 0%, transparent 60%)"
+                    : "radial-gradient(circle at 50% 0%, rgba(244,114,182,0.12) 0%, transparent 60%)",
+                }}
+                aria-hidden
+              />
+              <CardBody className="text-center py-10 relative">
+                <div className="flex justify-center animate-in zoom-in duration-700">
+                  <RadialProgress
+                    value={finalScore}
+                    size={160}
+                    strokeWidth={14}
+                    label={
+                      <div className="text-center">
+                        <div
+                          className={cn(
+                            "font-display text-5xl font-semibold",
+                            scoreColor(finalScore)
+                          )}
+                        >
+                          {Math.round(finalScore)}
+                          <span className="text-2xl">%</span>
+                        </div>
+                      </div>
+                    }
+                  />
+                </div>
+                <div className="mt-6 font-display text-2xl font-semibold text-navy-950">
+                  {finalPassed
+                    ? quiz?.is_mock_exam
+                      ? "Félicitations, examen réussi !"
+                      : "Bravo, exercice réussi !"
+                    : "Continuez la préparation"}
+                </div>
+                <div className="mt-3">
+                  {finalPassed ? (
+                    <Badge tone="success" size="md" className="mx-auto">
+                      <CheckCircle2 className="h-3 w-3" /> Seuil atteint
+                    </Badge>
+                  ) : (
+                    <Badge tone="rose" size="md" className="mx-auto">
+                      <AlertTriangle className="h-3 w-3" /> Seuil :{" "}
+                      {passThreshold}%
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Stats rapides */}
+                <div className="mt-7 grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-2xl mx-auto">
+                  {qcmQuestions.length > 0 && (
+                    <div className="rounded-xl border border-navy-100 bg-ivory p-3">
+                      <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">
+                        QCM corrects
+                      </div>
+                      <div className="font-display text-xl font-semibold text-navy-900 mt-1">
+                        {qcmCorrect} / {qcmQuestions.length}
+                      </div>
+                    </div>
+                  )}
+                  {attempt.qcm_score !== null && attempt.qr_score !== null && (
+                    <>
+                      <div className="rounded-xl border border-navy-100 bg-ivory p-3">
+                        <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">
+                          Score QCM
+                        </div>
+                        <div className="font-display text-xl font-semibold text-navy-900 mt-1">
+                          {Math.round(attempt.qcm_score ?? 0)}%
+                        </div>
+                      </div>
+                      <div className="rounded-xl border border-navy-100 bg-ivory p-3">
+                        <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">
+                          Rédigées
+                        </div>
+                        <div className="font-display text-xl font-semibold text-navy-900 mt-1">
+                          {attempt.qr_score}/
+                          {(qrResponses ?? []).reduce(
+                            (s: number, r: any) => s + (r.max_score ?? 0),
+                            0
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  {durationMin !== null && (
+                    <div className="rounded-xl border border-navy-100 bg-ivory p-3">
+                      <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">
+                        Durée
+                      </div>
+                      <div className="font-display text-xl font-semibold text-navy-900 mt-1">
+                        {durationMin} min
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {attempt.graded_at && (
+                  <div className="mt-5 text-xs text-slate-500">
+                    Corrigé le{" "}
+                    {new Date(attempt.graded_at).toLocaleDateString("fr-FR", {
+                      day: "2-digit",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </div>
+                )}
+              </CardBody>
+            </Card>
+
+            {/* Commentaire global du formateur */}
+            {attempt.trainer_global_comment && (
+              <Card variant="gold">
+                <CardBody>
+                  <div className="flex items-center gap-2 mb-3">
+                    <MessageSquare className="h-4 w-4 text-gold-700" />
+                    <span className="eyebrow text-gold-800">
+                      Commentaire du formateur
+                    </span>
+                  </div>
+                  <p className="text-navy-900 leading-relaxed whitespace-pre-wrap">
+                    {attempt.trainer_global_comment}
+                  </p>
+                </CardBody>
+              </Card>
+            )}
+
+            {/* === DÉTAIL DES QCM avec correction visuelle === */}
+            {qcmQuestions.length > 0 && (
+              <section>
+                <h2 className="font-display text-xl font-semibold text-navy-900 mb-4 flex items-center gap-2">
+                  <HelpCircle className="h-5 w-5 text-brand-700" />
+                  Correction détaillée
+                  <span className="ml-2 text-sm font-normal text-slate-500">
+                    {qcmQuestions.length} question
+                    {qcmQuestions.length > 1 ? "s" : ""}
+                  </span>
+                </h2>
+                <div className="space-y-3">
+                  {qcmQuestions.map((q, idx) => {
+                    const userPick = userAnswers[q.id];
+                    const correctChoice = (q.choices ?? []).find(
+                      (c) => c.is_correct
+                    );
+                    const isCorrect =
+                      userPick && correctChoice && userPick === correctChoice.id;
+
+                    return (
+                      <Card
+                        key={q.id}
+                        className={cn(
+                          "overflow-hidden",
+                          isCorrect
+                            ? "border-emerald-200"
+                            : "border-rose-200"
+                        )}
+                      >
+                        <div
+                          className={cn(
+                            "h-1",
+                            isCorrect ? "bg-emerald-500" : "bg-rose-500"
+                          )}
+                        />
+                        <CardBody>
+                          <div className="flex items-start justify-between gap-3 mb-3">
+                            <div className="flex items-start gap-3 flex-1 min-w-0">
+                              <span className="h-7 w-7 shrink-0 rounded-md bg-navy-50 text-navy-700 flex items-center justify-center font-semibold text-xs">
+                                {idx + 1}
+                              </span>
+                              <div className="flex-1 min-w-0">
+                                <div className="text-[15px] text-navy-900 leading-relaxed">
+                                  {q.statement}
+                                </div>
+                              </div>
+                            </div>
+                            {isCorrect ? (
+                              <Badge tone="success" size="sm">
+                                <CheckCircle2 className="h-3 w-3" /> Correct
+                              </Badge>
+                            ) : (
+                              <Badge tone="rose" size="sm">
+                                <XCircle className="h-3 w-3" /> Incorrect
+                              </Badge>
+                            )}
+                          </div>
+
+                          {/* Liste des choix avec mise en évidence */}
+                          <ul className="space-y-2 mt-4">
+                            {(q.choices ?? []).map((c) => {
+                              const isUserPick = userPick === c.id;
+                              const isRight = !!c.is_correct;
+
+                              return (
+                                <li
+                                  key={c.id ?? c.label}
+                                  className={cn(
+                                    "flex items-start gap-3 px-4 py-3 rounded-xl border-2 transition-colors",
+                                    isRight &&
+                                      "border-emerald-300 bg-emerald-50/60",
+                                    !isRight &&
+                                      isUserPick &&
+                                      "border-rose-300 bg-rose-50/60",
+                                    !isRight &&
+                                      !isUserPick &&
+                                      "border-navy-100 bg-white"
+                                  )}
+                                >
+                                  <span
+                                    className={cn(
+                                      "h-5 w-5 shrink-0 rounded-full flex items-center justify-center text-[11px] font-bold uppercase mt-0.5",
+                                      isRight && "bg-emerald-600 text-white",
+                                      !isRight &&
+                                        isUserPick &&
+                                        "bg-rose-600 text-white",
+                                      !isRight &&
+                                        !isUserPick &&
+                                        "bg-navy-50 text-navy-600"
+                                    )}
+                                  >
+                                    {c.id?.toUpperCase() ?? "?"}
+                                  </span>
+                                  <div className="flex-1 min-w-0">
+                                    <div
+                                      className={cn(
+                                        "text-sm",
+                                        isRight
+                                          ? "text-emerald-900 font-medium"
+                                          : !isRight && isUserPick
+                                          ? "text-rose-900"
+                                          : "text-navy-900"
+                                      )}
+                                    >
+                                      {c.label}
+                                    </div>
+                                    <div className="mt-0.5 text-[11px] flex items-center gap-2 flex-wrap">
+                                      {isRight && (
+                                        <span className="inline-flex items-center gap-1 text-emerald-700">
+                                          <CheckCircle2 className="h-3 w-3" />
+                                          Bonne réponse
+                                        </span>
+                                      )}
+                                      {isUserPick && (
+                                        <span
+                                          className={cn(
+                                            "inline-flex items-center gap-1",
+                                            isRight
+                                              ? "text-emerald-700"
+                                              : "text-rose-700"
+                                          )}
+                                        >
+                                          {isRight ? (
+                                            <CheckCircle2 className="h-3 w-3" />
+                                          ) : (
+                                            <XCircle className="h-3 w-3" />
+                                          )}
+                                          Votre choix
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </li>
+                              );
+                            })}
+                            {!userPick && (
+                              <li className="text-xs text-slate-500 italic px-4">
+                                Vous n'avez pas répondu à cette question.
+                              </li>
+                            )}
+                          </ul>
+
+                          {/* Explication */}
+                          {q.explanation && (
+                            <div className="mt-4 rounded-xl border border-brand-200 bg-brand-50/50 p-4">
+                              <div className="flex items-center gap-1.5 mb-1.5">
+                                <Info className="h-3.5 w-3.5 text-brand-700" />
+                                <div className="text-[10px] uppercase tracking-wider text-brand-800 font-semibold">
+                                  Explication
+                                </div>
+                              </div>
+                              <p className="text-sm text-navy-900 leading-relaxed whitespace-pre-wrap">
+                                {q.explanation}
+                              </p>
+                            </div>
+                          )}
+                        </CardBody>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            {/* Détails par QR avec correction (si applicable) */}
+            {(qrResponses ?? []).length > 0 && (
+              <section>
+                <h2 className="font-display text-xl font-semibold text-navy-900 mb-4 flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-brand-700" />
+                  Vos questions rédigées corrigées
+                </h2>
+                <div className="space-y-3">
+                  {qrResponses!.map((r: any, i: number) => {
+                    const ratio = r.max_score
+                      ? (r.trainer_score ?? 0) / r.max_score
+                      : 0;
+                    const tone =
+                      ratio >= 0.7
+                        ? "success"
+                        : ratio >= 0.4
+                        ? "gold"
+                        : "rose";
+                    return (
+                      <Card key={r.id}>
+                        <CardBody>
+                          <div className="flex items-start justify-between gap-3 mb-3">
+                            <div className="text-sm font-medium text-navy-900">
+                              Question {i + 1}
+                            </div>
+                            <Badge tone={tone as any} size="sm">
+                              {r.trainer_score ?? 0} / {r.max_score}
+                            </Badge>
+                          </div>
+                          {r.student_answer && (
+                            <div className="rounded-xl border border-navy-100 bg-ivory p-4">
+                              <div className="text-[10px] uppercase tracking-wider text-slate-500 mb-1">
+                                Votre réponse
+                              </div>
+                              <p className="text-sm text-navy-900 whitespace-pre-wrap">
+                                {r.student_answer}
+                              </p>
+                            </div>
+                          )}
+                          {r.trainer_comment && (
+                            <div className="mt-3 rounded-xl border border-gold-200 bg-gold-50 p-4">
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <MessageSquare className="h-3.5 w-3.5 text-gold-700" />
+                                <div className="text-[10px] uppercase tracking-wider text-gold-800 font-semibold">
+                                  Commentaire formateur
+                                </div>
+                              </div>
+                              <p className="text-sm text-navy-900 whitespace-pre-wrap">
+                                {r.trainer_comment}
+                              </p>
+                            </div>
+                          )}
+                        </CardBody>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+          </>
+        )}
+
+        {/* CTA — 3 boutons (recommencer / mes résultats / dashboard) */}
+        <div className="grid sm:grid-cols-3 gap-3 pt-2">
+          {quiz?.id && (
+            <Link
+              href={`/quiz/${quiz.id}`}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-navy-200 bg-white px-5 py-3 text-sm font-medium text-navy-900 hover:bg-navy-50 transition-colors"
+            >
+              <RotateCcw className="h-4 w-4" />
+              Recommencer
+            </Link>
+          )}
+          <Link
+            href="/stats"
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-navy-200 bg-white px-5 py-3 text-sm font-medium text-navy-900 hover:bg-navy-50 transition-colors"
+          >
+            <BarChart3 className="h-4 w-4" />
+            Voir mes résultats
+          </Link>
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-navy-900 text-white px-5 py-3 text-sm font-medium hover:bg-navy-800 transition-colors"
+          >
+            <LayoutDashboard className="h-4 w-4" />
+            Tableau de bord
+          </Link>
+        </div>
       </div>
     </div>
   );
