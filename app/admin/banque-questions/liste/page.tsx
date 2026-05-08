@@ -198,7 +198,7 @@ export default async function BanqueQuestionsListPage({
             buildUrl={(v) => buildUrl({ status: v || undefined, page: "1" })}
           />
           <SelectFilter
-            label="Module"
+            label="Cours"
             value={moduleFilter}
             options={[
               { v: "", l: "Tous" },

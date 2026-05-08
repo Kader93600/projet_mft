@@ -77,7 +77,7 @@ export default async function AdminHome() {
       href: "/admin/groups",
     },
     {
-      label: "Modules",
+      label: "Cours",
       value: modulesCount ?? 0,
       icon: BookOpen,
       tone: "emerald",

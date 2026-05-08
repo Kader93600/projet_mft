@@ -50,7 +50,7 @@ export function ContinueCard({
 
     return (
       <section
-        aria-label="Module à reprendre"
+        aria-label="Cours à reprendre"
         className="relative overflow-hidden rounded-3xl border border-navy-100 bg-white shadow-soft"
       >
         {/* Accent formation en wash subtil — pas de glassmorphism décoratif */}

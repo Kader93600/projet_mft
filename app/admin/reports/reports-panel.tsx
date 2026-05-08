@@ -83,7 +83,7 @@ export function ReportsPanel({ users }: { users: User[] }) {
               <th className="text-left px-5 py-3 font-semibold">Stagiaire</th>
               <th className="text-left px-5 py-3 font-semibold">Temps connecté</th>
               <th className="text-left px-5 py-3 font-semibold">Leçons</th>
-              <th className="text-left px-5 py-3 font-semibold">Quiz</th>
+              <th className="text-left px-5 py-3 font-semibold">Exercice</th>
               <th className="text-left px-5 py-3 font-semibold">Score</th>
               <th className="text-right px-5 py-3 font-semibold">Rapports</th>
             </tr>

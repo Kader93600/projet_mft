@@ -221,7 +221,7 @@ export default async function StudentDetailPage({
         />
         <Kpi
           icon={Sparkles}
-          label="Quiz réussis"
+          label="Exercices réussis"
           value={totalQuizzesPassed}
           tone="brand"
         />
@@ -352,7 +352,7 @@ export default async function StudentDetailPage({
               <table className="w-full text-sm">
                 <thead className="bg-navy-50 text-[11px] uppercase tracking-wider text-slate-600">
                   <tr>
-                    <th className="text-left px-6 py-3">Quiz</th>
+                    <th className="text-left px-6 py-3">Exercice</th>
                     <th className="text-left px-3 py-3">Mode</th>
                     <th className="text-right px-3 py-3">Score</th>
                     <th className="text-left px-3 py-3">Statut</th>

@@ -70,7 +70,7 @@ export function ModuleForm({
             order,
             cover_url: coverUrl || null,
           });
-          toast("Module mis à jour", "success");
+          toast("Cours mis à jour", "success");
           router.refresh();
         } else {
           await createModule({

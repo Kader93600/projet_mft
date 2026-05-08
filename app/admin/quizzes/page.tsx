@@ -86,7 +86,7 @@ export default async function AdminQuizzes() {
         <div>
           <span className="eyebrow text-gold-700">Administration</span>
           <h1 className="mt-2 font-display text-3xl font-semibold text-navy-950 tracking-tight">
-            Quiz & examens
+            Exercices & examens
           </h1>
           <p className="mt-2 text-slate-600">
             {visibleQuizzes.length} évaluation
@@ -104,7 +104,7 @@ export default async function AdminQuizzes() {
         </div>
         <Link href="/admin/quizzes/new">
           <Button variant="gold">
-            <Plus className="h-4 w-4" /> Nouveau quiz
+            <Plus className="h-4 w-4" /> Nouvel exercice
           </Button>
         </Link>
       </header>
@@ -126,10 +126,10 @@ export default async function AdminQuizzes() {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-navy-50/60 text-[11px] uppercase tracking-wider text-slate-600">
-                <th className="text-left px-5 py-3 font-semibold">Quiz</th>
+                <th className="text-left px-5 py-3 font-semibold">Exercice</th>
                 <th className="text-left px-5 py-3 font-semibold">Formation</th>
                 <th className="text-left px-5 py-3 font-semibold">Type</th>
-                <th className="text-left px-5 py-3 font-semibold">Module</th>
+                <th className="text-left px-5 py-3 font-semibold">Cours</th>
                 <th className="text-left px-5 py-3 font-semibold">Questions</th>
                 <th className="text-left px-5 py-3 font-semibold">Chrono</th>
                 <th className="text-left px-5 py-3 font-semibold">Seuil</th>

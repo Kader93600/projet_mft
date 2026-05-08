@@ -219,7 +219,7 @@ export default async function DashboardPage() {
         />
         <StatCard
           icon={ClipboardCheck}
-          label="Quiz passés"
+          label="Exercices passés"
           value={String(attempts?.length ?? 0)}
           hint="entraînements + examens"
           color="emerald"

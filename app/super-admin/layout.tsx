@@ -86,8 +86,8 @@ export default async function SuperAdminLayout({
           <NavLink href="/admin" icon={LayoutDashboard} label="Tableau admin" />
           <NavLink href="/admin/users" icon={UserCog} label="Utilisateurs" />
           <NavLink href="/admin/formations" icon={ShieldCheck} label="Catalogue formations" />
-          <NavLink href="/admin/modules" icon={Settings} label="Modules & leçons" />
-          <NavLink href="/admin/quizzes" icon={Activity} label="Quiz & examens" />
+          <NavLink href="/admin/modules" icon={Settings} label="Cours & leçons" />
+          <NavLink href="/admin/quizzes" icon={Activity} label="Exercices & examens" />
           <NavLink href="/admin/enrollments" icon={Settings} label="Inscriptions" />
           <NavLink href="/admin/announcements" icon={Activity} label="Annonces" />
         </nav>

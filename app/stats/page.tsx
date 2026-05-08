@@ -482,7 +482,7 @@ export default async function StatsPage() {
             />
             <KpiTile
               icon={Trophy}
-              label="Quiz réussis"
+              label="Exercices réussis"
               value={
                 <AnimatedCounter
                   value={nbPassed}
@@ -823,7 +823,7 @@ export default async function StatsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-navy-50/60 text-[11px] uppercase tracking-wider text-slate-600">
-                  <th className="text-left px-5 py-3 font-semibold">Quiz</th>
+                  <th className="text-left px-5 py-3 font-semibold">Exercice</th>
                   <th className="text-left px-5 py-3 font-semibold">Type</th>
                   <th className="text-left px-5 py-3 font-semibold">Score</th>
                   <th className="text-left px-5 py-3 font-semibold">Statut</th>

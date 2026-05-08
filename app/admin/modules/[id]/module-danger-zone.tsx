@@ -13,11 +13,11 @@ export function ModuleDangerZone({ moduleId }: { moduleId: string }) {
   const [isPending, startTransition] = useTransition();
 
   function onDelete() {
-    if (!confirm("Supprimer ce module et toutes ses leçons ? Action irréversible.")) return;
+    if (!confirm("Supprimer ce cours et toutes ses leçons ? Action irréversible.")) return;
     startTransition(async () => {
       try {
         await deleteModule(moduleId);
-        toast("Module supprimé", "success");
+        toast("Cours supprimé", "success");
         router.push("/admin/modules");
       } catch (e: any) {
         toast(e.message, "error");

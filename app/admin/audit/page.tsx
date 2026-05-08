@@ -7,15 +7,15 @@ import { Shield } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 const ACTION_LABELS: Record<string, { label: string; tone: string }> = {
-  create_module: { label: "Module créé", tone: "success" },
-  update_module: { label: "Module modifié", tone: "navy" },
-  delete_module: { label: "Module supprimé", tone: "slate" },
+  create_module: { label: "Cours créé", tone: "success" },
+  update_module: { label: "Cours modifié", tone: "navy" },
+  delete_module: { label: "Cours supprimé", tone: "slate" },
   create_lesson: { label: "Leçon créée", tone: "success" },
   update_lesson: { label: "Leçon modifiée", tone: "navy" },
   delete_lesson: { label: "Leçon supprimée", tone: "slate" },
-  create_quiz: { label: "Quiz créé", tone: "success" },
-  update_quiz: { label: "Quiz modifié", tone: "navy" },
-  delete_quiz: { label: "Quiz supprimé", tone: "slate" },
+  create_quiz: { label: "Exercice créé", tone: "success" },
+  update_quiz: { label: "Exercice modifié", tone: "navy" },
+  delete_quiz: { label: "Exercice supprimé", tone: "slate" },
   create_question: { label: "Question créée", tone: "success" },
   update_question: { label: "Question modifiée", tone: "navy" },
   delete_question: { label: "Question supprimée", tone: "slate" },

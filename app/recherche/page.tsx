@@ -15,9 +15,9 @@ const ICONS = {
 } as const;
 
 const KIND_LABEL: Record<string, string> = {
-  module: "Modules",
+  module: "Cours",
   lesson: "Leçons",
-  quiz: "Quiz & examens",
+  quiz: "Exercices & examens",
   glossary: "Glossaire",
 };
 

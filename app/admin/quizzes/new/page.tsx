@@ -37,7 +37,7 @@ export default async function NewQuizPage() {
       </Link>
       <Card>
         <div className="px-6 pt-5 pb-3 border-b border-navy-50">
-          <CardTitle>Nouveau quiz</CardTitle>
+          <CardTitle>Nouvel exercice</CardTitle>
         </div>
         <CardBody>
           <QuizSettingsForm

@@ -420,7 +420,7 @@ function buildOverlayTagline(
   percent: number
 ): string {
   if (state === "done") {
-    return "Module terminé. Revisitez les notions clés ou refaites un quiz.";
+    return "Cours terminé. Revisitez les notions clés ou refaites un exercice.";
   }
   if (state === "in-progress") {
     if (percent >= 75) return `Plus que ${100 - percent} % avant de boucler ce module.`;

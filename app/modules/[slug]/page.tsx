@@ -319,7 +319,7 @@ export default async function ModuleDetail({
                 }}
               >
                 <Trophy className="h-3.5 w-3.5" />
-                Module terminé
+                Cours terminé
               </span>
             )}
           </div>
@@ -350,10 +350,10 @@ export default async function ModuleDetail({
             <div className="min-w-0">
               <div className="inline-flex items-center gap-1.5 rounded-md bg-white/70 backdrop-blur-sm px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-800 border border-emerald-200">
                 <Trophy className="h-3 w-3" />
-                Module validé · suite déverrouillée
+                Cours validé · suite déverrouillée
               </div>
               <div className="mt-2 text-[13px] text-slate-600">
-                Module suivant
+                Cours suivant
               </div>
               <div className="mt-0.5 font-display text-lg font-semibold text-navy-900 leading-snug">
                 {nextModuleData.title}
