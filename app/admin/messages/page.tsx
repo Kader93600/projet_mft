@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 /**
  * Messagerie premium multi-conversations (espace admin).
  * Réutilise le même MessagingShell — les admins voient en plus toutes
- * les conversations grâce à la RLS spéciale `is_admin()`.
+ * les conversations grâce à la RLS spéciale `is_staff()`.
  */
 export default async function AdminMessagesPage() {
   const supabase = createClient();
@@ -18,7 +18,7 @@ export default async function AdminMessagesPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, full_name")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -29,6 +29,7 @@ export default async function AdminMessagesPage() {
   return (
     <MessagingShell
       viewerId={user.id}
+      viewerName={profile?.full_name ?? null}
       viewerRole={profile.role as "admin" | "super_admin"}
       basePath="/admin/messages"
     />

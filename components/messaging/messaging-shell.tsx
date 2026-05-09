@@ -19,6 +19,8 @@ import {
   setConversationMuted,
   editMessage,
   deleteMessage,
+  leaveConversation,
+  deleteConversation,
 } from "@/app/messages/actions";
 import { ConversationsList } from "@/components/messaging/conversations-list";
 import { MessageThreadV2 } from "@/components/messaging/message-thread-v2";
@@ -31,10 +33,12 @@ import type {
   ConversationSummary,
   MessageRow,
   MinimalProfile,
+  ParticipantWithReadState,
 } from "@/lib/messaging-types";
 
 interface Props {
   viewerId: string;
+  viewerName: string | null;
   viewerRole: "student" | "trainer" | "admin" | "super_admin";
   /** URL de base (ex: /messages, /formateur/messages, /admin/messages) — pour la query string `?c=` */
   basePath: string;
@@ -49,7 +53,12 @@ interface Props {
  *   - URL state ?c=<conv_id> pour deep-linking
  *   - Mobile : 2 niveaux (liste / thread) avec retour
  */
-export function MessagingShell({ viewerId, viewerRole, basePath }: Props) {
+export function MessagingShell({
+  viewerId,
+  viewerName,
+  viewerRole,
+  basePath,
+}: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const selectedId = searchParams.get("c");
@@ -57,6 +66,7 @@ export function MessagingShell({ viewerId, viewerRole, basePath }: Props) {
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [messages, setMessages] = useState<MessageRow[]>([]);
   const [participants, setParticipants] = useState<Record<string, MinimalProfile>>({});
+  const [liveParticipants, setLiveParticipants] = useState<ParticipantWithReadState[]>([]);
   const [loadingList, setLoadingList] = useState(true);
   const [newOpen, setNewOpen] = useState(false);
   const [replyTo, setReplyTo] = useState<MessageRow | null>(null);
@@ -113,14 +123,43 @@ export function MessagingShell({ viewerId, viewerRole, basePath }: Props) {
     }
   }, []);
 
+  // ── Charge les participants (avec last_read_at) de la conv sélectionnée ──
+  const loadLiveParticipants = useCallback(async (convId: string) => {
+    const supabase = createClient();
+    const { data: parts } = await supabase
+      .from("conversation_participants")
+      .select("user_id, last_read_at")
+      .eq("conversation_id", convId);
+    if (!parts) return;
+
+    const ids = parts.map((p: any) => p.user_id);
+    const { data: profs } = await supabase
+      .from("profiles")
+      .select("id, full_name, email, role")
+      .in("id", ids);
+    const profMap: Record<string, any> = {};
+    for (const p of profs ?? []) profMap[(p as any).id] = p;
+
+    const merged: ParticipantWithReadState[] = parts.map((p: any) => ({
+      user_id: p.user_id,
+      last_read_at: p.last_read_at,
+      full_name: profMap[p.user_id]?.full_name ?? null,
+      email: profMap[p.user_id]?.email ?? "",
+      role: profMap[p.user_id]?.role ?? "",
+    }));
+    setLiveParticipants(merged);
+  }, []);
+
   // Charge messages quand selectedId change + mark as read
   useEffect(() => {
     if (!selectedId) {
       setMessages([]);
+      setLiveParticipants([]);
       setReplyTo(null);
       return;
     }
     void loadMessages(selectedId);
+    void loadLiveParticipants(selectedId);
     setReplyTo(null);
     void markConversationRead(selectedId);
     // Optimistic : reset unread localement
@@ -131,7 +170,50 @@ export function MessagingShell({ viewerId, viewerRole, basePath }: Props) {
           : c
       )
     );
-  }, [selectedId, loadMessages]);
+  }, [selectedId, loadMessages, loadLiveParticipants]);
+
+  // ── Realtime : participants de la conv sélectionnée (read receipts live) ──
+  useEffect(() => {
+    if (!selectedId) return;
+    const supabase = createClient();
+    const ch = supabase.channel(`live-parts:${selectedId}:${instanceIdRef.current}`);
+    ch.on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "conversation_participants",
+        filter: `conversation_id=eq.${selectedId}`,
+      },
+      (payload) => {
+        if (payload.eventType === "UPDATE" || payload.eventType === "INSERT") {
+          const row = payload.new as { user_id: string; last_read_at: string | null };
+          setLiveParticipants((prev) => {
+            const idx = prev.findIndex((p) => p.user_id === row.user_id);
+            if (idx === -1) {
+              // Nouveau participant : recharge tout (pour récupérer profil)
+              void loadLiveParticipants(selectedId);
+              return prev;
+            }
+            const next = [...prev];
+            next[idx] = { ...next[idx], last_read_at: row.last_read_at };
+            return next;
+          });
+        } else if (payload.eventType === "DELETE") {
+          const old = payload.old as { user_id?: string };
+          if (old.user_id) {
+            setLiveParticipants((prev) =>
+              prev.filter((p) => p.user_id !== old.user_id)
+            );
+          }
+        }
+      }
+    );
+    ch.subscribe();
+    return () => {
+      void supabase.removeChannel(ch);
+    };
+  }, [selectedId, loadLiveParticipants]);
 
   // ── Realtime : conversations + messages ──────────────────────
   useEffect(() => {
@@ -316,6 +398,34 @@ export function MessagingShell({ viewerId, viewerRole, basePath }: Props) {
     });
   }, [selected]);
 
+  const handleLeave = useCallback(async () => {
+    if (!selected) return;
+    const id = selected.id;
+    // Optimistic : retire de la liste + désélectionne
+    setConversations((prev) => prev.filter((c) => c.id !== id));
+    handleBack();
+    try {
+      await leaveConversation(id);
+    } catch (err) {
+      // En cas d'erreur, on resync depuis la BDD
+      void refreshConversations();
+      throw err;
+    }
+  }, [selected, handleBack, refreshConversations]);
+
+  const handleDeleteForAll = useCallback(async () => {
+    if (!selected) return;
+    const id = selected.id;
+    setConversations((prev) => prev.filter((c) => c.id !== id));
+    handleBack();
+    try {
+      await deleteConversation(id);
+    } catch (err) {
+      void refreshConversations();
+      throw err;
+    }
+  }, [selected, handleBack, refreshConversations]);
+
   const handleEdit = useCallback(async (msg: MessageRow, body: string) => {
     setMessages((prev) =>
       prev.map((m) =>
@@ -388,12 +498,20 @@ export function MessagingShell({ viewerId, viewerRole, basePath }: Props) {
             conversation={selected}
             messages={messages}
             viewerId={viewerId}
+            viewerRole={viewerRole}
             participants={participants}
+            liveParticipants={liveParticipants}
             replyTo={replyTo}
             onSetReplyTo={setReplyTo}
             onTogglePin={handleTogglePin}
             onToggleArchive={handleToggleArchive}
             onToggleMute={handleToggleMute}
+            onLeave={handleLeave}
+            onDeleteForAll={
+              viewerRole === "admin" || viewerRole === "super_admin"
+                ? handleDeleteForAll
+                : undefined
+            }
             onEdit={handleEdit}
             onDelete={handleDelete}
             onBack={handleBack}
@@ -413,6 +531,9 @@ export function MessagingShell({ viewerId, viewerRole, basePath }: Props) {
                           : "Écrire…"
                 }
                 onSend={handleSend}
+                conversationId={selected.id}
+                viewerId={viewerId}
+                viewerName={viewerName}
               />
             }
           />

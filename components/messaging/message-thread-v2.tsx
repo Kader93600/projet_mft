@@ -15,6 +15,8 @@ import {
   Loader2,
   Reply,
   MoreHorizontal,
+  LogOut,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -33,14 +35,21 @@ import type {
   ConversationSummary,
   MessageRow,
   MinimalProfile,
+  ParticipantWithReadState,
 } from "@/lib/messaging-types";
+import { TypingIndicator } from "@/components/messaging/typing-indicator";
+import { ReadReceipts } from "@/components/messaging/read-receipts";
 
 interface Props {
   conversation: ConversationSummary;
   messages: MessageRow[];
   viewerId: string;
+  /** Rôle du viewer — pour afficher l'option "Supprimer pour tous" si staff. */
+  viewerRole: "student" | "trainer" | "admin" | "super_admin";
   /** Map id → profil pour résoudre les noms/avatars des autres expéditeurs. */
   participants: Record<string, MinimalProfile>;
+  /** Liste des participants de la conv (avec last_read_at) — pour read receipts. */
+  liveParticipants: ParticipantWithReadState[];
   /** Action d'envoi appelée par le composer (passé en props). */
   composer: React.ReactNode;
   /** Reply-to active (le composer la lit) */
@@ -50,6 +59,10 @@ interface Props {
   onTogglePin: () => void;
   onToggleArchive: () => void;
   onToggleMute: () => void;
+  /** Quitte la conv (retire le viewer des participants). */
+  onLeave: () => Promise<void>;
+  /** Supprime la conv pour tous (admin / owner uniquement). */
+  onDeleteForAll?: () => Promise<void>;
   // ── Actions message ──
   onEdit: (msg: MessageRow, body: string) => Promise<void>;
   onDelete: (msg: MessageRow) => Promise<void>;
@@ -69,13 +82,17 @@ export function MessageThreadV2({
   conversation,
   messages,
   viewerId,
+  viewerRole,
   participants,
+  liveParticipants,
   composer,
   replyTo,
   onSetReplyTo,
   onTogglePin,
   onToggleArchive,
   onToggleMute,
+  onLeave,
+  onDeleteForAll,
   onEdit,
   onDelete,
   onBack,
@@ -99,10 +116,13 @@ export function MessageThreadV2({
       {/* En-tête conversation */}
       <ConversationHeader
         conversation={conversation}
+        viewerRole={viewerRole}
         onBack={onBack}
         onTogglePin={onTogglePin}
         onToggleArchive={onToggleArchive}
         onToggleMute={onToggleMute}
+        onLeave={onLeave}
+        onDeleteForAll={onDeleteForAll}
       />
 
       {/* Flux de messages */}
@@ -135,6 +155,20 @@ export function MessageThreadV2({
         )}
       </div>
 
+      {/* Read receipts (sous le dernier message envoyé par le viewer) */}
+      <ReadReceipts
+        conversationKind={conversation.kind}
+        messages={messages}
+        participants={liveParticipants}
+        viewerId={viewerId}
+      />
+
+      {/* Typing indicator (X écrit…) */}
+      <TypingIndicator
+        conversationId={conversation.id}
+        viewerId={viewerId}
+      />
+
       {/* Reply preview */}
       {replyTo && (
         <ReplyPreview
@@ -154,16 +188,22 @@ export function MessageThreadV2({
 
 function ConversationHeader({
   conversation,
+  viewerRole,
   onBack,
   onTogglePin,
   onToggleArchive,
   onToggleMute,
+  onLeave,
+  onDeleteForAll,
 }: {
   conversation: ConversationSummary;
+  viewerRole: "student" | "trainer" | "admin" | "super_admin";
   onBack?: () => void;
   onTogglePin: () => void;
   onToggleArchive: () => void;
   onToggleMute: () => void;
+  onLeave: () => Promise<void>;
+  onDeleteForAll?: () => Promise<void>;
 }) {
   const c = conversation;
   const title = conversationTitle(c);
@@ -171,6 +211,29 @@ function ConversationHeader({
   const kindLabel = conversationKindLabel(c);
   const kindTone = conversationKindTone(c);
   const [actionsOpen, setActionsOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState<null | "leave" | "delete">(null);
+  const [actionPending, setActionPending] = useState(false);
+  const isStaff = viewerRole === "admin" || viewerRole === "super_admin";
+
+  const closeActions = () => setActionsOpen(false);
+
+  const handleConfirm = async () => {
+    if (!confirmOpen) return;
+    setActionPending(true);
+    try {
+      if (confirmOpen === "leave") {
+        await onLeave();
+      } else if (confirmOpen === "delete" && onDeleteForAll) {
+        await onDeleteForAll();
+      }
+      setConfirmOpen(null);
+    } catch (err: any) {
+      // L'erreur sera typiquement un toast au niveau parent ; on rouvre.
+      setConfirmOpen(null);
+    } finally {
+      setActionPending(false);
+    }
+  };
 
   return (
     <header className="bg-white border-b border-navy-100 px-3 sm:px-5 py-3 flex items-center gap-3 backdrop-blur-md">
@@ -217,7 +280,7 @@ function ConversationHeader({
         </div>
       </div>
 
-      {/* Actions desktop */}
+      {/* Actions desktop : pin / mute / archive direct + menu pour delete */}
       <div className="hidden sm:flex items-center gap-0.5">
         <ActionButton
           onClick={onTogglePin}
@@ -237,6 +300,37 @@ function ConversationHeader({
           icon={c.archived_at ? ArchiveRestore : Archive}
           label={c.archived_at ? "Désarchiver" : "Archiver"}
         />
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setActionsOpen((v) => !v)}
+            aria-label="Plus d'actions"
+            aria-expanded={actionsOpen}
+            className="h-9 w-9 rounded-lg flex items-center justify-center text-slate-500 hover:text-navy-900 hover:bg-navy-50 transition-colors"
+          >
+            <MoreHorizontal className="h-4 w-4" />
+          </button>
+          {actionsOpen && (
+            <div
+              className="absolute right-0 top-full mt-1 w-56 bg-white border border-navy-100 rounded-xl shadow-float py-1 animate-notif-pop z-20"
+              onClick={closeActions}
+            >
+              <MenuItem
+                icon={LogOut}
+                label="Quitter la conversation"
+                onClick={() => setConfirmOpen("leave")}
+              />
+              {isStaff && onDeleteForAll && (
+                <MenuItem
+                  icon={Trash2}
+                  label="Supprimer pour tous"
+                  tone="danger"
+                  onClick={() => setConfirmOpen("delete")}
+                />
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Actions mobile (menu compact) */}
@@ -251,8 +345,8 @@ function ConversationHeader({
         </button>
         {actionsOpen && (
           <div
-            className="absolute right-0 top-full mt-1 w-48 bg-white border border-navy-100 rounded-xl shadow-float py-1 animate-notif-pop z-20"
-            onClick={() => setActionsOpen(false)}
+            className="absolute right-0 top-full mt-1 w-56 bg-white border border-navy-100 rounded-xl shadow-float py-1 animate-notif-pop z-20"
+            onClick={closeActions}
           >
             <MenuItem
               icon={c.pinned_at ? PinOff : Pin}
@@ -269,10 +363,165 @@ function ConversationHeader({
               label={c.archived_at ? "Désarchiver" : "Archiver"}
               onClick={onToggleArchive}
             />
+            <div className="my-1 mx-2 h-px bg-navy-50" aria-hidden />
+            <MenuItem
+              icon={LogOut}
+              label="Quitter la conversation"
+              onClick={() => setConfirmOpen("leave")}
+            />
+            {isStaff && onDeleteForAll && (
+              <MenuItem
+                icon={Trash2}
+                label="Supprimer pour tous"
+                tone="danger"
+                onClick={() => setConfirmOpen("delete")}
+              />
+            )}
           </div>
         )}
       </div>
+
+      {/* Modal confirmation */}
+      {confirmOpen && (
+        <ConfirmDeleteDialog
+          mode={confirmOpen}
+          conversationTitle={title}
+          pending={actionPending}
+          onConfirm={handleConfirm}
+          onCancel={() => setConfirmOpen(null)}
+        />
+      )}
     </header>
+  );
+}
+
+// ── Dialog de confirmation ────────────────────────────────────
+
+function ConfirmDeleteDialog({
+  mode,
+  conversationTitle,
+  pending,
+  onConfirm,
+  onCancel,
+}: {
+  mode: "leave" | "delete";
+  conversationTitle: string;
+  pending: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  // Fermeture sur Escape
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !pending) onCancel();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [pending, onCancel]);
+
+  const isDelete = mode === "delete";
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 bg-navy-950/50 backdrop-blur-sm z-50 animate-notif-backdrop"
+        onClick={() => !pending && onCancel()}
+        aria-hidden
+      />
+      <div
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="confirm-title"
+        className={cn(
+          "fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
+          "w-[min(92vw,440px)] bg-white rounded-2xl border border-navy-100 shadow-float",
+          "animate-notif-pop p-5"
+        )}
+      >
+        <div className="flex items-start gap-3">
+          <div
+            className={cn(
+              "h-10 w-10 rounded-xl flex items-center justify-center shrink-0 border",
+              isDelete
+                ? "bg-rose-50 text-rose-700 border-rose-200"
+                : "bg-amber-50 text-amber-800 border-amber-200"
+            )}
+            aria-hidden
+          >
+            <AlertTriangle className="h-4 w-4" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3
+              id="confirm-title"
+              className="font-display text-base font-semibold text-navy-950 tracking-tight"
+            >
+              {isDelete
+                ? "Supprimer la conversation pour tous ?"
+                : "Quitter cette conversation ?"}
+            </h3>
+            <p className="mt-1.5 text-[12.5px] text-slate-600 leading-relaxed">
+              {isDelete ? (
+                <>
+                  La conversation{" "}
+                  <span className="font-semibold text-navy-900">
+                    « {conversationTitle} »
+                  </span>{" "}
+                  sera <strong>définitivement supprimée pour tous les
+                  participants</strong>, ainsi que tout l&apos;historique des
+                  messages. Cette action est irréversible.
+                </>
+              ) : (
+                <>
+                  Tu seras retiré·e de la conversation{" "}
+                  <span className="font-semibold text-navy-900">
+                    « {conversationTitle} »
+                  </span>
+                  . Les autres participants la conserveront. Tu pourras
+                  toujours en démarrer une nouvelle plus tard.
+                </>
+              )}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={pending}
+            className={cn(
+              "inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12.5px] font-semibold",
+              "text-slate-600 bg-white border border-navy-100 hover:bg-navy-50 hover:text-navy-900",
+              "transition-colors duration-150 disabled:opacity-50"
+            )}
+          >
+            Annuler
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={pending}
+            autoFocus
+            className={cn(
+              "inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12.5px] font-semibold text-white shadow-sm",
+              "transition-colors duration-150 disabled:opacity-60",
+              isDelete
+                ? "bg-rose-600 hover:bg-rose-700"
+                : "bg-navy-900 hover:bg-navy-950"
+            )}
+          >
+            {pending ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : isDelete ? (
+              <Trash2 className="h-3.5 w-3.5" />
+            ) : (
+              <LogOut className="h-3.5 w-3.5" />
+            )}
+            {isDelete ? "Supprimer pour tous" : "Quitter"}
+          </button>
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -310,18 +559,30 @@ function MenuItem({
   icon: Icon,
   label,
   onClick,
+  tone = "neutral",
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   onClick: () => void;
+  tone?: "neutral" | "danger";
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="w-full flex items-center gap-2.5 px-3 py-2 text-[12.5px] font-medium text-navy-800 hover:bg-navy-50 transition-colors"
+      className={cn(
+        "w-full flex items-center gap-2.5 px-3 py-2 text-[12.5px] font-medium transition-colors",
+        tone === "danger"
+          ? "text-rose-700 hover:bg-rose-50"
+          : "text-navy-800 hover:bg-navy-50"
+      )}
     >
-      <Icon className="h-3.5 w-3.5 text-slate-500" />
+      <Icon
+        className={cn(
+          "h-3.5 w-3.5",
+          tone === "danger" ? "text-rose-600" : "text-slate-500"
+        )}
+      />
       {label}
     </button>
   );

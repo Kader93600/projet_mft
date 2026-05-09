@@ -992,4 +992,13 @@
   .animate-notif-slide-up { animation: notif-slide-up 260ms cubic-bezier(0.22, 1, 0.36, 1) both; }
   .animate-notif-pop      { animation: notif-pop 200ms cubic-bezier(0.22, 1, 0.36, 1) both; }
   .animate-notif-backdrop { animation: notif-backdrop 200ms ease-out both; }
+
+  /* Typing dots — bounce sinusoïdal subtil pour "X écrit…" */
+  @keyframes typing-bounce {
+    0%, 80%, 100% { transform: translateY(0);    opacity: 0.4; }
+    40%           { transform: translateY(-3px); opacity: 1;   }
+  }
+  .animate-typing-bounce {
+    animation: typing-bounce 1100ms ease-in-out infinite;
+  }
 }

@@ -9,6 +9,7 @@ import {
 } from "react";
 import { Send, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
 
 interface Props {
   /** Désactive l'envoi (ex: classe en lecture seule pour stagiaire) */
@@ -19,7 +20,15 @@ interface Props {
   placeholder?: string;
   /** Callback d'envoi : retourne quand l'envoi est confirmé */
   onSend: (body: string) => Promise<void>;
+  /** Conv id : si présent, broadcast typing events sur le canal `typing:<id>` */
+  conversationId?: string | null;
+  /** Identité du viewer : nécessaire pour broadcast typing */
+  viewerId?: string;
+  viewerName?: string | null;
 }
+
+/** Throttle : envoie au plus un événement toutes les N ms. */
+const TYPING_THROTTLE_MS = 2_500;
 
 /**
  * Composer minimaliste avec :
@@ -33,11 +42,58 @@ export function MessageComposer({
   disabledReason,
   placeholder = "Écrivez votre message…",
   onSend,
+  conversationId,
+  viewerId,
+  viewerName,
 }: Props) {
   const [body, setBody] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // ── Realtime typing channel ──────────────────────────────────
+  const typingChannelRef = useRef<ReturnType<
+    ReturnType<typeof createClient>["channel"]
+  > | null>(null);
+  const lastTypingSentRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (!conversationId) return;
+    const supabase = createClient();
+    const ch = supabase.channel(`typing:${conversationId}`, {
+      config: { broadcast: { self: false } },
+    });
+    ch.subscribe();
+    typingChannelRef.current = ch;
+    return () => {
+      void supabase.removeChannel(ch);
+      typingChannelRef.current = null;
+    };
+  }, [conversationId]);
+
+  const broadcastTyping = useCallback(() => {
+    const ch = typingChannelRef.current;
+    if (!ch || !viewerId) return;
+    const now = Date.now();
+    if (now - lastTypingSentRef.current < TYPING_THROTTLE_MS) return;
+    lastTypingSentRef.current = now;
+    void ch.send({
+      type: "broadcast",
+      event: "typing",
+      payload: { user_id: viewerId, name: viewerName ?? "" },
+    });
+  }, [viewerId, viewerName]);
+
+  const broadcastStop = useCallback(() => {
+    const ch = typingChannelRef.current;
+    if (!ch || !viewerId) return;
+    lastTypingSentRef.current = 0;
+    void ch.send({
+      type: "broadcast",
+      event: "stop",
+      payload: { user_id: viewerId },
+    });
+  }, [viewerId]);
 
   // Auto-resize
   const resize = useCallback(() => {
@@ -62,17 +118,29 @@ export function MessageComposer({
     try {
       await onSend(trimmed);
       setBody("");
+      broadcastStop();
     } catch (err: any) {
       setError(err?.message ?? "Échec de l'envoi");
     } finally {
       setPending(false);
     }
-  }, [body, disabled, onSend, pending]);
+  }, [body, disabled, onSend, pending, broadcastStop]);
 
   const handleKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       submit();
+    }
+  };
+
+  const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    const next = e.target.value;
+    setBody(next);
+    if (next.trim().length > 0) {
+      broadcastTyping();
+    } else {
+      // Champ vide → arrêt immédiat de l'indicateur
+      broadcastStop();
     }
   };
 
@@ -97,7 +165,10 @@ export function MessageComposer({
           <textarea
             ref={textareaRef}
             value={body}
-            onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setBody(e.target.value)}
+            onChange={handleChange}
+            onBlur={() => {
+              if (!body.trim()) broadcastStop();
+            }}
             onKeyDown={handleKey}
             placeholder={placeholder}
             rows={1}

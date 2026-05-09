@@ -176,6 +176,39 @@ export async function deleteMessage(messageId: string) {
   return { ok: true };
 }
 
+// ─── Suppression de conversation ──────────────────────────────
+
+/**
+ * Quitte une conversation : retire le participant courant.
+ * Si plus personne ne reste, la conv est nettoyée automatiquement
+ * (cascade messages). Les autres participants la conservent.
+ */
+export async function leaveConversation(conversationId: string) {
+  const supabase = createClient();
+  const id = UUID.parse(conversationId);
+  const { error } = await supabase.rpc("leave_conversation", {
+    p_conversation_id: id,
+  });
+  if (error) throw new Error(error.message);
+  revalidateAll();
+  return { ok: true };
+}
+
+/**
+ * Supprime une conversation pour tout le monde (cascade messages).
+ * Admin/super_admin OU owner de la conv uniquement.
+ */
+export async function deleteConversation(conversationId: string) {
+  const supabase = createClient();
+  const id = UUID.parse(conversationId);
+  const { error } = await supabase.rpc("delete_conversation", {
+    p_conversation_id: id,
+  });
+  if (error) throw new Error(error.message);
+  revalidateAll();
+  return { ok: true };
+}
+
 // ─── Compat legacy : ensureMyConversation ────────────────────
 // Conservé temporairement pour ne pas casser les anciens appels.
 // En interne, redirige vers la nouvelle conv "Équipe admin".

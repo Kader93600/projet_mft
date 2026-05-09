@@ -76,3 +76,20 @@ export interface ConversationParticipantInfo {
   muted: boolean;
   archived_at: string | null;
 }
+
+/** Participant + profil minimal + dernier read — pour les read receipts */
+export interface ParticipantWithReadState {
+  user_id: string;
+  full_name: string | null;
+  email: string;
+  role: string;
+  last_read_at: string | null;
+}
+
+/** Utilisateur en train de taper (état UI éphémère, alimenté par Realtime broadcast) */
+export interface TypingUser {
+  user_id: string;
+  name: string;
+  /** Timestamp d'expiration côté client (Date.now() + 5s typiquement). */
+  expires_at: number;
+}

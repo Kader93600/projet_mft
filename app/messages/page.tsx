@@ -17,7 +17,7 @@ export default async function MessagesPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, full_name")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -30,6 +30,7 @@ export default async function MessagesPage() {
   return (
     <MessagingShell
       viewerId={user.id}
+      viewerName={profile?.full_name ?? null}
       viewerRole={role}
       basePath="/messages"
     />
