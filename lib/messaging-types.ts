@@ -123,3 +123,25 @@ export interface ReactionAggregate {
   /** Vrai si l'utilisateur courant a posé cet emoji. */
   mine: boolean;
 }
+
+/** Lien d'épinglage (PK composite conv+message) */
+export interface PinnedMessage {
+  conversation_id: string;
+  message_id: string;
+  pinned_by: string | null;
+  pinned_at: string;
+}
+
+/** Résultat de la recherche globale dans les messages */
+export interface MessageSearchResult {
+  id: string;
+  conversation_id: string;
+  conversation_title: string;
+  conversation_kind: ConversationKind;
+  conversation_scope: ConversationScope;
+  sender_id: string;
+  sender_name: string | null;
+  sender_role: MessageSenderRole;
+  body: string;
+  created_at: string;
+}

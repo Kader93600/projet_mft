@@ -277,6 +277,33 @@ export async function deleteAttachment(attachmentId: string) {
   return { ok: true };
 }
 
+// ─── Pin de messages individuels ──────────────────────────────
+
+const togglePinSchema = z.object({
+  conversation_id: UUID,
+  message_id: UUID,
+});
+
+/**
+ * Toggle le pin d'un message dans une conversation. Tout participant
+ * peut épingler / désépingler. Retourne `pinned: true` si vient d'être
+ * épinglé, `false` si désépinglé.
+ */
+export async function togglePinnedMessage(raw: unknown) {
+  const supabase = createClient();
+  const parsed = togglePinSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(parsed.error.errors[0]?.message ?? "Invalide");
+  }
+  const { data, error } = await supabase.rpc("toggle_pinned_message", {
+    p_conversation_id: parsed.data.conversation_id,
+    p_message_id: parsed.data.message_id,
+  });
+  if (error) throw new Error(error.message);
+  revalidateAll();
+  return { ok: true, pinned: !!data };
+}
+
 // ─── Suppression de conversation ──────────────────────────────
 
 /**

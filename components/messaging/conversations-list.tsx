@@ -8,6 +8,7 @@ import {
   MessageCircle,
   Users,
   Archive,
+  SearchCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -28,6 +29,8 @@ interface Props {
   selectedId: string | null;
   onSelect: (id: string) => void;
   onNewMessage: () => void;
+  /** Ouvre la recherche globale dans tous les messages */
+  onOpenGlobalSearch: () => void;
   /** Compteur affiché dans le tab "Tous" (= visibles non archivés) */
   totalCount: number;
   unreadCount: number;
@@ -42,6 +45,8 @@ const TABS: {
 }[] = [
   { key: "all", label: "Tous", icon: Inbox },
   { key: "unread", label: "Non lus", icon: MessageCircle },
+  { key: "dm", label: "DM", icon: MessageCircle },
+  { key: "groups", label: "Groupes", icon: Users },
   { key: "pinned", label: "Épinglés", icon: Pin },
   { key: "archived", label: "Archivés", icon: Archive },
 ];
@@ -55,6 +60,7 @@ export function ConversationsList({
   selectedId,
   onSelect,
   onNewMessage,
+  onOpenGlobalSearch,
   totalCount,
   unreadCount,
   pinnedCount,
@@ -68,13 +74,25 @@ export function ConversationsList({
     [conversations, filter, query]
   );
 
+  // Compte DM / Groupes parmi les non-archivées
+  const { dmCount, groupCount } = useMemo(() => {
+    let d = 0;
+    let g = 0;
+    for (const c of conversations) {
+      if (c.archived_at) continue;
+      if (c.kind === "dm") d++;
+      else g++;
+    }
+    return { dmCount: d, groupCount: g };
+  }, [conversations]);
+
   const counts: Record<ConversationFilter, number> = {
     all: totalCount,
     unread: unreadCount,
     pinned: pinnedCount,
     archived: archivedCount,
-    dm: 0,
-    groups: 0,
+    dm: dmCount,
+    groups: groupCount,
   };
 
   return (
@@ -85,19 +103,35 @@ export function ConversationsList({
           <h1 className="font-display text-lg font-semibold text-navy-950 tracking-tight">
             Messages
           </h1>
-          <button
-            type="button"
-            onClick={onNewMessage}
-            className={cn(
-              "inline-flex items-center gap-1.5 px-3 h-8 rounded-lg text-[12px] font-semibold",
-              "bg-navy-900 text-white hover:bg-navy-950 shadow-sm",
-              "transition-colors duration-150 ease-out",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400"
-            )}
-          >
-            <Users className="h-3.5 w-3.5" />
-            Nouveau
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={onOpenGlobalSearch}
+              aria-label="Rechercher dans tous les messages"
+              title="Rechercher dans tous les messages"
+              className={cn(
+                "inline-flex items-center justify-center h-8 w-8 rounded-lg",
+                "text-slate-500 hover:text-navy-900 hover:bg-navy-50",
+                "transition-colors duration-150 ease-out",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-300"
+              )}
+            >
+              <SearchCheck className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={onNewMessage}
+              className={cn(
+                "inline-flex items-center gap-1.5 px-3 h-8 rounded-lg text-[12px] font-semibold",
+                "bg-navy-900 text-white hover:bg-navy-950 shadow-sm",
+                "transition-colors duration-150 ease-out",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400"
+              )}
+            >
+              <Users className="h-3.5 w-3.5" />
+              Nouveau
+            </button>
+          </div>
         </div>
 
         {/* Recherche */}

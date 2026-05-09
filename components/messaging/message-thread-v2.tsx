@@ -17,6 +17,7 @@ import {
   MoreHorizontal,
   LogOut,
   AlertTriangle,
+  Pin as PinIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -38,12 +39,14 @@ import type {
   ParticipantWithReadState,
   MessageAttachment,
   MessageReaction,
+  PinnedMessage,
 } from "@/lib/messaging-types";
 import { TypingIndicator } from "@/components/messaging/typing-indicator";
 import { ReadReceipts } from "@/components/messaging/read-receipts";
 import { AttachmentPreview } from "@/components/messaging/attachment-preview";
 import { MessageReactions } from "@/components/messaging/message-reactions";
 import { EmojiPicker } from "@/components/messaging/emoji-picker";
+import { PinnedMessagesPanel } from "@/components/messaging/pinned-messages-panel";
 import { Smile } from "lucide-react";
 
 interface Props {
@@ -62,6 +65,10 @@ interface Props {
   reactionsByMsg: Record<string, MessageReaction[]>;
   /** Toggle d'une réaction (mode optimistic dans le shell) */
   onToggleReaction: (messageId: string, emoji: string) => Promise<void>;
+  /** Liste des messages épinglés de cette conversation */
+  pinnedMessages: PinnedMessage[];
+  /** Toggle pin sur un message */
+  onTogglePinMessage: (messageId: string) => Promise<void>;
   /** Action d'envoi appelée par le composer (passé en props). */
   composer: React.ReactNode;
   /** Reply-to active (le composer la lit) */
@@ -100,6 +107,8 @@ export function MessageThreadV2({
   attachmentsByMsg,
   reactionsByMsg,
   onToggleReaction,
+  pinnedMessages,
+  onTogglePinMessage,
   composer,
   replyTo,
   onSetReplyTo,
@@ -115,6 +124,15 @@ export function MessageThreadV2({
   const buckets = useMemo(
     () => bucketMessagesByDayAndSender(messages),
     [messages]
+  );
+  const messagesById = useMemo(() => {
+    const m: Record<string, MessageRow> = {};
+    for (const msg of messages) m[msg.id] = msg;
+    return m;
+  }, [messages]);
+  const pinnedIds = useMemo(
+    () => new Set(pinnedMessages.map((p) => p.message_id)),
+    [pinnedMessages]
   );
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastMessageId = messages[messages.length - 1]?.id;
@@ -140,6 +158,14 @@ export function MessageThreadV2({
         onDeleteForAll={onDeleteForAll}
       />
 
+      {/* Panel des messages épinglés (collapsible) */}
+      <PinnedMessagesPanel
+        pins={pinnedMessages}
+        messagesById={messagesById}
+        profiles={participants}
+        onUnpin={(id) => void onTogglePinMessage(id)}
+      />
+
       {/* Flux de messages */}
       <div
         ref={scrollRef}
@@ -161,10 +187,12 @@ export function MessageThreadV2({
                     allMessages={messages}
                     attachmentsByMsg={attachmentsByMsg}
                     reactionsByMsg={reactionsByMsg}
+                    pinnedIds={pinnedIds}
                     onReply={onSetReplyTo}
                     onEdit={onEdit}
                     onDelete={onDelete}
                     onToggleReaction={onToggleReaction}
+                    onTogglePinMessage={onTogglePinMessage}
                   />
                 ))}
               </div>
@@ -629,10 +657,12 @@ function MessageGroupBlock({
   allMessages,
   attachmentsByMsg,
   reactionsByMsg,
+  pinnedIds,
   onReply,
   onEdit,
   onDelete,
   onToggleReaction,
+  onTogglePinMessage,
 }: {
   group: { senderId: string; senderRole: string; messages: MessageRow[] };
   viewerId: string;
@@ -640,10 +670,12 @@ function MessageGroupBlock({
   allMessages: MessageRow[];
   attachmentsByMsg: Record<string, MessageAttachment[]>;
   reactionsByMsg: Record<string, MessageReaction[]>;
+  pinnedIds: Set<string>;
   onReply: (msg: MessageRow) => void;
   onEdit: (msg: MessageRow, body: string) => Promise<void>;
   onDelete: (msg: MessageRow) => Promise<void>;
   onToggleReaction: (messageId: string, emoji: string) => Promise<void>;
+  onTogglePinMessage: (messageId: string) => Promise<void>;
 }) {
   const mine = group.senderId === viewerId;
   const senderName = profile?.full_name || profile?.email || "Utilisateur";
@@ -692,11 +724,13 @@ function MessageGroupBlock({
             }
             attachments={attachmentsByMsg[m.id] ?? []}
             reactions={reactionsByMsg[m.id] ?? []}
+            isPinned={pinnedIds.has(m.id)}
             viewerId={viewerId}
             onReply={() => onReply(m)}
             onEdit={onEdit}
             onDelete={() => onDelete(m)}
             onToggleReaction={(emoji) => onToggleReaction(m.id, emoji)}
+            onTogglePin={() => onTogglePinMessage(m.id)}
           />
         ))}
       </div>
@@ -734,11 +768,13 @@ function MessageBubble({
   replyTarget,
   attachments,
   reactions,
+  isPinned,
   viewerId,
   onReply,
   onEdit,
   onDelete,
   onToggleReaction,
+  onTogglePin,
 }: {
   message: MessageRow;
   mine: boolean;
@@ -747,11 +783,13 @@ function MessageBubble({
   replyTarget: MessageRow | null;
   attachments: MessageAttachment[];
   reactions: MessageReaction[];
+  isPinned: boolean;
   viewerId: string;
   onReply: () => void;
   onEdit: (msg: MessageRow, body: string) => Promise<void>;
   onDelete: () => Promise<void>;
   onToggleReaction: (emoji: string) => Promise<void>;
+  onTogglePin: () => Promise<void>;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(message.body);
@@ -805,6 +843,20 @@ function MessageBubble({
 
   return (
     <div className={cn("group/msg relative max-w-[80%] sm:max-w-[70%]", mine ? "self-end" : "self-start")}>
+      {/* Indicateur "épinglé" — petit ruban en haut */}
+      {isPinned && (
+        <div
+          className={cn(
+            "flex items-center gap-1 mb-1 text-[10px] font-bold uppercase tracking-wide text-gold-700",
+            mine ? "justify-end" : "justify-start"
+          )}
+          aria-label="Épinglé"
+        >
+          <PinIcon className="h-2.5 w-2.5" />
+          Épinglé
+        </div>
+      )}
+
       {/* Reply target preview */}
       {replyTarget && (
         <div
@@ -949,6 +1001,12 @@ function MessageBubble({
             onClick={() => setPickerOpen((v) => !v)}
           />
           <BubbleAction icon={Reply} label="Répondre" onClick={onReply} />
+          <BubbleAction
+            icon={isPinned ? PinOff : PinIcon}
+            label={isPinned ? "Désépingler" : "Épingler"}
+            onClick={() => void onTogglePin()}
+            tone={isPinned ? "active" : "neutral"}
+          />
           {mine && (
             <BubbleAction
               icon={Edit3}
@@ -990,7 +1048,7 @@ function BubbleAction({
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   onClick: () => void;
-  tone?: "neutral" | "danger";
+  tone?: "neutral" | "danger" | "active";
 }) {
   return (
     <button
@@ -1002,7 +1060,9 @@ function BubbleAction({
         "h-6 w-6 rounded flex items-center justify-center transition-colors",
         tone === "danger"
           ? "text-rose-500 hover:bg-rose-50"
-          : "text-slate-500 hover:text-navy-900 hover:bg-navy-50"
+          : tone === "active"
+            ? "text-gold-700 bg-gold-50 hover:bg-gold-100"
+            : "text-slate-500 hover:text-navy-900 hover:bg-navy-50"
       )}
     >
       <Icon className="h-3 w-3" />

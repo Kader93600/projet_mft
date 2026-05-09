@@ -23,7 +23,9 @@ import {
   deleteConversation,
   toggleReaction,
   insertAttachments,
+  togglePinnedMessage,
 } from "@/app/messages/actions";
+import { MessageSearchModal } from "@/components/messaging/message-search-modal";
 import { ConversationsList } from "@/components/messaging/conversations-list";
 import { MessageThreadV2 } from "@/components/messaging/message-thread-v2";
 import { MessageComposer } from "@/components/messaging/message-composer";
@@ -38,6 +40,7 @@ import type {
   ParticipantWithReadState,
   MessageAttachment,
   MessageReaction,
+  PinnedMessage,
 } from "@/lib/messaging-types";
 
 const ATTACH_BUCKET = "message-attachments";
@@ -99,8 +102,10 @@ export function MessagingShell({
   const [reactionsByMsg, setReactionsByMsg] = useState<
     Record<string, MessageReaction[]>
   >({});
+  const [pinnedMessages, setPinnedMessages] = useState<PinnedMessage[]>([]);
   const [loadingList, setLoadingList] = useState(true);
   const [newOpen, setNewOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [replyTo, setReplyTo] = useState<MessageRow | null>(null);
   const [, startTransition] = useTransition();
 
@@ -182,6 +187,17 @@ export function MessagingShell({
     setLiveParticipants(merged);
   }, []);
 
+  // ── Charge les messages épinglés de la conv ──────────────────
+  const loadPinnedMessages = useCallback(async (convId: string) => {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("pinned_messages")
+      .select("conversation_id, message_id, pinned_by, pinned_at")
+      .eq("conversation_id", convId)
+      .order("pinned_at", { ascending: false });
+    if (data) setPinnedMessages(data as PinnedMessage[]);
+  }, []);
+
   // ── Charge attachments + reactions de la conv ────────────────
   const loadAttachmentsAndReactions = useCallback(async (convId: string) => {
     const supabase = createClient();
@@ -225,12 +241,14 @@ export function MessagingShell({
       setLiveParticipants([]);
       setAttachmentsByMsg({});
       setReactionsByMsg({});
+      setPinnedMessages([]);
       setReplyTo(null);
       return;
     }
     void loadMessages(selectedId);
     void loadLiveParticipants(selectedId);
     void loadAttachmentsAndReactions(selectedId);
+    void loadPinnedMessages(selectedId);
     setReplyTo(null);
     void markConversationRead(selectedId);
     // Optimistic : reset unread localement
@@ -241,7 +259,7 @@ export function MessagingShell({
           : c
       )
     );
-  }, [selectedId, loadMessages, loadLiveParticipants, loadAttachmentsAndReactions]);
+  }, [selectedId, loadMessages, loadLiveParticipants, loadAttachmentsAndReactions, loadPinnedMessages]);
 
   // ── Realtime : reactions + attachments de la conv sélectionnée ──
   useEffect(() => {
@@ -304,9 +322,37 @@ export function MessagingShell({
     );
     attCh.subscribe();
 
+    const pinCh = supabase.channel(`live-pin:${selectedId}:${id}`);
+    pinCh.on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "pinned_messages",
+        filter: `conversation_id=eq.${selectedId}`,
+      },
+      (payload) => {
+        if (payload.eventType === "INSERT") {
+          const p = payload.new as PinnedMessage;
+          setPinnedMessages((prev) => {
+            if (prev.some((x) => x.message_id === p.message_id)) return prev;
+            return [p, ...prev];
+          });
+        } else if (payload.eventType === "DELETE") {
+          const old = payload.old as Partial<PinnedMessage>;
+          if (!old.message_id) return;
+          setPinnedMessages((prev) =>
+            prev.filter((x) => x.message_id !== old.message_id)
+          );
+        }
+      }
+    );
+    pinCh.subscribe();
+
     return () => {
       void supabase.removeChannel(reactCh);
       void supabase.removeChannel(attCh);
+      void supabase.removeChannel(pinCh);
     };
   }, [selectedId]);
 
@@ -461,6 +507,18 @@ export function MessagingShell({
   }, [conversations]);
 
   // ── Actions de conversation ──────────────────────────────────
+  // ── Raccourci global Cmd/Ctrl+K → ouvre la recherche ──────────
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
+
   const handleSelect = useCallback(
     (id: string) => {
       const sp = new URLSearchParams(searchParams.toString());
@@ -579,6 +637,55 @@ export function MessagingShell({
       setReplyTo(null);
     },
     [selectedId, replyTo]
+  );
+
+  const handleTogglePinMessage = useCallback(
+    async (messageId: string) => {
+      if (!selectedId) return;
+      // Optimistic
+      const wasPinned = pinnedMessages.some(
+        (p) => p.message_id === messageId
+      );
+      if (wasPinned) {
+        setPinnedMessages((prev) =>
+          prev.filter((p) => p.message_id !== messageId)
+        );
+      } else {
+        setPinnedMessages((prev) => [
+          {
+            conversation_id: selectedId,
+            message_id: messageId,
+            pinned_by: viewerId,
+            pinned_at: new Date().toISOString(),
+          },
+          ...prev,
+        ]);
+      }
+      try {
+        await togglePinnedMessage({
+          conversation_id: selectedId,
+          message_id: messageId,
+        });
+      } catch (err) {
+        // Rollback
+        if (wasPinned) {
+          setPinnedMessages((prev) => [
+            {
+              conversation_id: selectedId,
+              message_id: messageId,
+              pinned_by: viewerId,
+              pinned_at: new Date().toISOString(),
+            },
+            ...prev,
+          ]);
+        } else {
+          setPinnedMessages((prev) =>
+            prev.filter((p) => p.message_id !== messageId)
+          );
+        }
+      }
+    },
+    [selectedId, pinnedMessages, viewerId]
   );
 
   const handleToggleReaction = useCallback(
@@ -764,6 +871,7 @@ export function MessagingShell({
             selectedId={selectedId}
             onSelect={handleSelect}
             onNewMessage={() => setNewOpen(true)}
+            onOpenGlobalSearch={() => setSearchOpen(true)}
             totalCount={counts.total}
             unreadCount={counts.unread}
             pinnedCount={counts.pinned}
@@ -790,6 +898,8 @@ export function MessagingShell({
             attachmentsByMsg={attachmentsByMsg}
             reactionsByMsg={reactionsByMsg}
             onToggleReaction={handleToggleReaction}
+            pinnedMessages={pinnedMessages}
+            onTogglePinMessage={handleTogglePinMessage}
             replyTo={replyTo}
             onSetReplyTo={setReplyTo}
             onTogglePin={handleTogglePin}
@@ -840,6 +950,14 @@ export function MessagingShell({
           // Refresh la liste car on vient d'ajouter une conv
           void refreshConversations();
         }}
+      />
+
+      {/* Modal recherche globale */}
+      <MessageSearchModal
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        onPickConversation={(id) => handleSelect(id)}
+        viewerId={viewerId}
       />
     </div>
   );
