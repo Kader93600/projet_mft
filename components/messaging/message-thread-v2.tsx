@@ -18,6 +18,7 @@ import {
   LogOut,
   AlertTriangle,
   Pin as PinIcon,
+  FileDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -259,7 +260,41 @@ function ConversationHeader({
   const [actionsOpen, setActionsOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState<null | "leave" | "delete">(null);
   const [actionPending, setActionPending] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const isStaff = viewerRole === "admin" || viewerRole === "super_admin";
+
+  const handleExportPdf = async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      const res = await fetch(
+        `/api/messages/export?c=${encodeURIComponent(c.id)}`,
+        { credentials: "include" }
+      );
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || `HTTP ${res.status}`);
+      }
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      // Tente de lire le filename depuis Content-Disposition
+      const cd = res.headers.get("content-disposition") ?? "";
+      const m = /filename="?([^"]+)"?/.exec(cd);
+      const filename = m?.[1] ?? `conversation-${c.id}.pdf`;
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch (err: any) {
+      // Affichage simple — l'utilisateur ré-essaie si besoin
+      window.alert("Échec de l'export PDF : " + (err?.message ?? String(err)));
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const closeActions = () => setActionsOpen(false);
 
@@ -358,9 +393,15 @@ function ConversationHeader({
           </button>
           {actionsOpen && (
             <div
-              className="absolute right-0 top-full mt-1 w-56 bg-white border border-navy-100 rounded-xl shadow-float py-1 animate-notif-pop z-20"
+              className="absolute right-0 top-full mt-1 w-60 bg-white border border-navy-100 rounded-xl shadow-float py-1 animate-notif-pop z-20"
               onClick={closeActions}
             >
+              <MenuItem
+                icon={exporting ? Loader2 : FileDown}
+                label={exporting ? "Export en cours…" : "Exporter en PDF"}
+                onClick={handleExportPdf}
+              />
+              <div className="my-1 mx-2 h-px bg-navy-50" aria-hidden />
               <MenuItem
                 icon={LogOut}
                 label="Quitter la conversation"
@@ -410,6 +451,11 @@ function ConversationHeader({
               onClick={onToggleArchive}
             />
             <div className="my-1 mx-2 h-px bg-navy-50" aria-hidden />
+            <MenuItem
+              icon={exporting ? Loader2 : FileDown}
+              label={exporting ? "Export en cours…" : "Exporter en PDF"}
+              onClick={handleExportPdf}
+            />
             <MenuItem
               icon={LogOut}
               label="Quitter la conversation"
