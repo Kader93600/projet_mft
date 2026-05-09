@@ -955,4 +955,41 @@
     background-size: 200% 100%;
     @apply animate-shimmer;
   }
+
+  /* ───────────────────────────────────────────────────────────
+     Centre de notifications — animations dédiées
+     - notif-ring   : pulse one-shot sur la cloche à l'arrivée
+                      d'une nouvelle notif (ring vert lime qui grandit
+                      et disparaît, sans déformer l'icône)
+     - notif-flash  : flash gold subtil sur un item qui vient
+                      d'apparaître via Realtime
+     - notif-slide-up : entrée du drawer bottom mobile
+     - notif-pop    : entrée du popover desktop (fade + translate-y)
+     ─────────────────────────────────────────────────────────── */
+  @keyframes notif-ring {
+    0%   { transform: scale(1);    opacity: 0.9; }
+    80%  { transform: scale(1.65); opacity: 0;   }
+    100% { transform: scale(1.65); opacity: 0;   }
+  }
+  @keyframes notif-flash {
+    0%   { background-color: rgba(159, 226, 32, 0.22); }
+    100% { background-color: transparent; }
+  }
+  @keyframes notif-slide-up {
+    0%   { transform: translateY(16px); opacity: 0; }
+    100% { transform: translateY(0);    opacity: 1; }
+  }
+  @keyframes notif-pop {
+    0%   { transform: translateY(-6px) scale(0.985); opacity: 0; }
+    100% { transform: translateY(0)    scale(1);     opacity: 1; }
+  }
+  @keyframes notif-backdrop {
+    0%   { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  .animate-notif-ring     { animation: notif-ring 1100ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .animate-notif-flash    { animation: notif-flash 900ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .animate-notif-slide-up { animation: notif-slide-up 260ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .animate-notif-pop      { animation: notif-pop 200ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .animate-notif-backdrop { animation: notif-backdrop 200ms ease-out both; }
 }
