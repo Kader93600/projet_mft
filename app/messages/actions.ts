@@ -176,6 +176,107 @@ export async function deleteMessage(messageId: string) {
   return { ok: true };
 }
 
+// ─── Réactions emoji ──────────────────────────────────────────
+
+const reactionSchema = z.object({
+  message_id: UUID,
+  emoji: z.string().trim().min(1).max(16),
+});
+
+/**
+ * Toggle d'une réaction emoji sur un message. Le RPC vérifie que
+ * l'utilisateur est bien participant de la conversation parente.
+ * Retourne `added: true` si la réaction vient d'être ajoutée,
+ * `added: false` si elle vient d'être retirée.
+ */
+export async function toggleReaction(raw: unknown) {
+  const supabase = createClient();
+  const parsed = reactionSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(parsed.error.errors[0]?.message ?? "Invalide");
+  }
+  const { data, error } = await supabase.rpc("toggle_reaction", {
+    p_message_id: parsed.data.message_id,
+    p_emoji: parsed.data.emoji,
+  });
+  if (error) throw new Error(error.message);
+  return { ok: true, added: !!data };
+}
+
+// ─── Pièces jointes ───────────────────────────────────────────
+
+const ATTACH_BUCKET = "message-attachments";
+
+/**
+ * Insère les lignes message_attachments après un upload réussi côté client.
+ * Le client reçoit en retour la liste avec leurs ids générés en base.
+ */
+const attachmentRowSchema = z.object({
+  message_id: UUID,
+  storage_path: z.string().min(1).max(2048),
+  mime_type: z.string().min(1).max(255),
+  size_bytes: z.number().int().min(0).max(50 * 1024 * 1024), // 50 MB max
+  original_name: z.string().min(1).max(512),
+  width: z.number().int().nullable().optional(),
+  height: z.number().int().nullable().optional(),
+});
+
+export async function insertAttachments(raw: unknown[]) {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Non authentifié");
+
+  const items = z.array(attachmentRowSchema).parse(raw);
+  if (items.length === 0) return { ok: true, ids: [] };
+
+  const { data, error } = await supabase
+    .from("message_attachments")
+    .insert(
+      items.map((it) => ({
+        message_id: it.message_id,
+        storage_path: it.storage_path,
+        mime_type: it.mime_type,
+        size_bytes: it.size_bytes,
+        original_name: it.original_name,
+        width: it.width ?? null,
+        height: it.height ?? null,
+      }))
+    )
+    .select("id");
+  if (error) throw new Error(error.message);
+  revalidateAll();
+  return { ok: true, ids: (data ?? []).map((d: any) => d.id as string) };
+}
+
+/**
+ * Supprime une pièce jointe : ligne en base + fichier dans Storage.
+ * Restreint à l'auteur du message ou au staff (RLS).
+ */
+export async function deleteAttachment(attachmentId: string) {
+  const supabase = createClient();
+  const id = UUID.parse(attachmentId);
+
+  const { data: att } = await supabase
+    .from("message_attachments")
+    .select("storage_path")
+    .eq("id", id)
+    .maybeSingle();
+
+  const { error: dbErr } = await supabase
+    .from("message_attachments")
+    .delete()
+    .eq("id", id);
+  if (dbErr) throw new Error(dbErr.message);
+
+  if (att?.storage_path) {
+    await supabase.storage.from(ATTACH_BUCKET).remove([att.storage_path]);
+  }
+  revalidateAll();
+  return { ok: true };
+}
+
 // ─── Suppression de conversation ──────────────────────────────
 
 /**

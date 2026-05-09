@@ -36,9 +36,15 @@ import type {
   MessageRow,
   MinimalProfile,
   ParticipantWithReadState,
+  MessageAttachment,
+  MessageReaction,
 } from "@/lib/messaging-types";
 import { TypingIndicator } from "@/components/messaging/typing-indicator";
 import { ReadReceipts } from "@/components/messaging/read-receipts";
+import { AttachmentPreview } from "@/components/messaging/attachment-preview";
+import { MessageReactions } from "@/components/messaging/message-reactions";
+import { EmojiPicker } from "@/components/messaging/emoji-picker";
+import { Smile } from "lucide-react";
 
 interface Props {
   conversation: ConversationSummary;
@@ -50,6 +56,12 @@ interface Props {
   participants: Record<string, MinimalProfile>;
   /** Liste des participants de la conv (avec last_read_at) — pour read receipts. */
   liveParticipants: ParticipantWithReadState[];
+  /** Pièces jointes par message_id */
+  attachmentsByMsg: Record<string, MessageAttachment[]>;
+  /** Réactions par message_id */
+  reactionsByMsg: Record<string, MessageReaction[]>;
+  /** Toggle d'une réaction (mode optimistic dans le shell) */
+  onToggleReaction: (messageId: string, emoji: string) => Promise<void>;
   /** Action d'envoi appelée par le composer (passé en props). */
   composer: React.ReactNode;
   /** Reply-to active (le composer la lit) */
@@ -85,6 +97,9 @@ export function MessageThreadV2({
   viewerRole,
   participants,
   liveParticipants,
+  attachmentsByMsg,
+  reactionsByMsg,
+  onToggleReaction,
   composer,
   replyTo,
   onSetReplyTo,
@@ -144,9 +159,12 @@ export function MessageThreadV2({
                     viewerId={viewerId}
                     profile={participants[g.senderId]}
                     allMessages={messages}
+                    attachmentsByMsg={attachmentsByMsg}
+                    reactionsByMsg={reactionsByMsg}
                     onReply={onSetReplyTo}
                     onEdit={onEdit}
                     onDelete={onDelete}
+                    onToggleReaction={onToggleReaction}
                   />
                 ))}
               </div>
@@ -609,17 +627,23 @@ function MessageGroupBlock({
   viewerId,
   profile,
   allMessages,
+  attachmentsByMsg,
+  reactionsByMsg,
   onReply,
   onEdit,
   onDelete,
+  onToggleReaction,
 }: {
   group: { senderId: string; senderRole: string; messages: MessageRow[] };
   viewerId: string;
   profile?: MinimalProfile;
   allMessages: MessageRow[];
+  attachmentsByMsg: Record<string, MessageAttachment[]>;
+  reactionsByMsg: Record<string, MessageReaction[]>;
   onReply: (msg: MessageRow) => void;
   onEdit: (msg: MessageRow, body: string) => Promise<void>;
   onDelete: (msg: MessageRow) => Promise<void>;
+  onToggleReaction: (messageId: string, emoji: string) => Promise<void>;
 }) {
   const mine = group.senderId === viewerId;
   const senderName = profile?.full_name || profile?.email || "Utilisateur";
@@ -666,9 +690,13 @@ function MessageGroupBlock({
                 ? allMessages.find((x) => x.id === m.reply_to_id) ?? null
                 : null
             }
+            attachments={attachmentsByMsg[m.id] ?? []}
+            reactions={reactionsByMsg[m.id] ?? []}
+            viewerId={viewerId}
             onReply={() => onReply(m)}
             onEdit={onEdit}
             onDelete={() => onDelete(m)}
+            onToggleReaction={(emoji) => onToggleReaction(m.id, emoji)}
           />
         ))}
       </div>
@@ -704,23 +732,33 @@ function MessageBubble({
   firstInGroup,
   lastInGroup,
   replyTarget,
+  attachments,
+  reactions,
+  viewerId,
   onReply,
   onEdit,
   onDelete,
+  onToggleReaction,
 }: {
   message: MessageRow;
   mine: boolean;
   firstInGroup: boolean;
   lastInGroup: boolean;
   replyTarget: MessageRow | null;
+  attachments: MessageAttachment[];
+  reactions: MessageReaction[];
+  viewerId: string;
   onReply: () => void;
   onEdit: (msg: MessageRow, body: string) => Promise<void>;
   onDelete: () => Promise<void>;
+  onToggleReaction: (emoji: string) => Promise<void>;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(message.body);
   const [saving, setSaving] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const isDeleted = !!message.deleted_at;
+  const hasBody = message.body && message.body.trim().length > 0;
 
   const radius = mine
     ? cn(
@@ -786,8 +824,8 @@ function MessageBubble({
         </div>
       )}
 
-      {/* Bulle */}
-      <div
+      {/* Bulle (uniquement si body présent — attachments seuls = pas de bulle texte) */}
+      {hasBody && <div
         className={cn(
           "px-3.5 py-2 text-[13px] leading-relaxed whitespace-pre-wrap break-words shadow-soft",
           radius,
@@ -856,7 +894,25 @@ function MessageBubble({
         ) : (
           message.body
         )}
-      </div>
+      </div>}
+
+      {/* Pièces jointes */}
+      {attachments.length > 0 && (
+        <AttachmentPreview
+          attachments={attachments}
+          align={mine ? "right" : "left"}
+        />
+      )}
+
+      {/* Réactions */}
+      {reactions.length > 0 && (
+        <MessageReactions
+          reactions={reactions}
+          viewerId={viewerId}
+          onToggle={(emoji) => void onToggleReaction(emoji)}
+          align={mine ? "right" : "left"}
+        />
+      )}
 
       {/* Footer : timestamp + edited */}
       {lastInGroup && !editing && (
@@ -881,13 +937,24 @@ function MessageBubble({
         <div
           className={cn(
             "absolute -top-3 flex items-center gap-0.5 rounded-lg bg-white border border-navy-100 shadow-soft p-0.5",
-            "opacity-0 group-hover/msg:opacity-100 transition-opacity duration-150",
+            "opacity-0 group-hover/msg:opacity-100 focus-within:opacity-100",
+            (pickerOpen) && "opacity-100",
+            "transition-opacity duration-150",
             mine ? "right-1" : "left-1"
           )}
         >
+          <BubbleAction
+            icon={Smile}
+            label="Réagir"
+            onClick={() => setPickerOpen((v) => !v)}
+          />
           <BubbleAction icon={Reply} label="Répondre" onClick={onReply} />
           {mine && (
-            <BubbleAction icon={Edit3} label="Éditer" onClick={() => setEditing(true)} />
+            <BubbleAction
+              icon={Edit3}
+              label="Éditer"
+              onClick={() => setEditing(true)}
+            />
           )}
           {mine && (
             <BubbleAction
@@ -898,6 +965,17 @@ function MessageBubble({
             />
           )}
         </div>
+      )}
+
+      {/* Popover emoji picker */}
+      {pickerOpen && (
+        <EmojiPicker
+          align={mine ? "right" : "left"}
+          onPick={(emoji) => {
+            void onToggleReaction(emoji);
+          }}
+          onClose={() => setPickerOpen(false)}
+        />
       )}
     </div>
   );

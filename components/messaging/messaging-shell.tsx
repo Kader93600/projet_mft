@@ -21,6 +21,8 @@ import {
   deleteMessage,
   leaveConversation,
   deleteConversation,
+  toggleReaction,
+  insertAttachments,
 } from "@/app/messages/actions";
 import { ConversationsList } from "@/components/messaging/conversations-list";
 import { MessageThreadV2 } from "@/components/messaging/message-thread-v2";
@@ -34,7 +36,31 @@ import type {
   MessageRow,
   MinimalProfile,
   ParticipantWithReadState,
+  MessageAttachment,
+  MessageReaction,
 } from "@/lib/messaging-types";
+
+const ATTACH_BUCKET = "message-attachments";
+
+/** Lit width/height d'une image en mémoire (pour stocker en BDD). */
+function readImageDimensions(
+  file: File
+): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const dim = { width: img.naturalWidth, height: img.naturalHeight };
+      URL.revokeObjectURL(url);
+      resolve(dim);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Image invalide"));
+    };
+    img.src = url;
+  });
+}
 
 interface Props {
   viewerId: string;
@@ -67,6 +93,12 @@ export function MessagingShell({
   const [messages, setMessages] = useState<MessageRow[]>([]);
   const [participants, setParticipants] = useState<Record<string, MinimalProfile>>({});
   const [liveParticipants, setLiveParticipants] = useState<ParticipantWithReadState[]>([]);
+  const [attachmentsByMsg, setAttachmentsByMsg] = useState<
+    Record<string, MessageAttachment[]>
+  >({});
+  const [reactionsByMsg, setReactionsByMsg] = useState<
+    Record<string, MessageReaction[]>
+  >({});
   const [loadingList, setLoadingList] = useState(true);
   const [newOpen, setNewOpen] = useState(false);
   const [replyTo, setReplyTo] = useState<MessageRow | null>(null);
@@ -150,16 +182,55 @@ export function MessagingShell({
     setLiveParticipants(merged);
   }, []);
 
+  // ── Charge attachments + reactions de la conv ────────────────
+  const loadAttachmentsAndReactions = useCallback(async (convId: string) => {
+    const supabase = createClient();
+    const { data: msgs } = await supabase
+      .from("messages")
+      .select("id")
+      .eq("conversation_id", convId)
+      .limit(500);
+    const ids = (msgs ?? []).map((m: any) => m.id);
+    if (ids.length === 0) {
+      setAttachmentsByMsg({});
+      setReactionsByMsg({});
+      return;
+    }
+    const [attsRes, reactsRes] = await Promise.all([
+      supabase
+        .from("message_attachments")
+        .select("id, message_id, storage_path, mime_type, size_bytes, original_name, width, height, created_at")
+        .in("message_id", ids),
+      supabase
+        .from("message_reactions")
+        .select("message_id, user_id, emoji, created_at")
+        .in("message_id", ids),
+    ]);
+    const aMap: Record<string, MessageAttachment[]> = {};
+    for (const a of (attsRes.data ?? []) as MessageAttachment[]) {
+      (aMap[a.message_id] ??= []).push(a);
+    }
+    const rMap: Record<string, MessageReaction[]> = {};
+    for (const r of (reactsRes.data ?? []) as MessageReaction[]) {
+      (rMap[r.message_id] ??= []).push(r);
+    }
+    setAttachmentsByMsg(aMap);
+    setReactionsByMsg(rMap);
+  }, []);
+
   // Charge messages quand selectedId change + mark as read
   useEffect(() => {
     if (!selectedId) {
       setMessages([]);
       setLiveParticipants([]);
+      setAttachmentsByMsg({});
+      setReactionsByMsg({});
       setReplyTo(null);
       return;
     }
     void loadMessages(selectedId);
     void loadLiveParticipants(selectedId);
+    void loadAttachmentsAndReactions(selectedId);
     setReplyTo(null);
     void markConversationRead(selectedId);
     // Optimistic : reset unread localement
@@ -170,7 +241,74 @@ export function MessagingShell({
           : c
       )
     );
-  }, [selectedId, loadMessages, loadLiveParticipants]);
+  }, [selectedId, loadMessages, loadLiveParticipants, loadAttachmentsAndReactions]);
+
+  // ── Realtime : reactions + attachments de la conv sélectionnée ──
+  useEffect(() => {
+    if (!selectedId) return;
+    const supabase = createClient();
+    const id = instanceIdRef.current;
+
+    const reactCh = supabase.channel(`live-react:${selectedId}:${id}`);
+    reactCh.on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "message_reactions" },
+      (payload) => {
+        if (payload.eventType === "INSERT") {
+          const r = payload.new as MessageReaction;
+          setReactionsByMsg((prev) => {
+            const cur = prev[r.message_id] ?? [];
+            if (cur.some((x) => x.user_id === r.user_id && x.emoji === r.emoji))
+              return prev;
+            return { ...prev, [r.message_id]: [...cur, r] };
+          });
+        } else if (payload.eventType === "DELETE") {
+          const old = payload.old as Partial<MessageReaction>;
+          if (!old.message_id) return;
+          setReactionsByMsg((prev) => {
+            const cur = prev[old.message_id!] ?? [];
+            const next = cur.filter(
+              (x) => !(x.user_id === old.user_id && x.emoji === old.emoji)
+            );
+            return { ...prev, [old.message_id!]: next };
+          });
+        }
+      }
+    );
+    reactCh.subscribe();
+
+    const attCh = supabase.channel(`live-att:${selectedId}:${id}`);
+    attCh.on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "message_attachments" },
+      (payload) => {
+        if (payload.eventType === "INSERT") {
+          const a = payload.new as MessageAttachment;
+          setAttachmentsByMsg((prev) => {
+            const cur = prev[a.message_id] ?? [];
+            if (cur.some((x) => x.id === a.id)) return prev;
+            return { ...prev, [a.message_id]: [...cur, a] };
+          });
+        } else if (payload.eventType === "DELETE") {
+          const old = payload.old as Partial<MessageAttachment>;
+          if (!old.id || !old.message_id) return;
+          setAttachmentsByMsg((prev) => {
+            const cur = prev[old.message_id!] ?? [];
+            return {
+              ...prev,
+              [old.message_id!]: cur.filter((x) => x.id !== old.id),
+            };
+          });
+        }
+      }
+    );
+    attCh.subscribe();
+
+    return () => {
+      void supabase.removeChannel(reactCh);
+      void supabase.removeChannel(attCh);
+    };
+  }, [selectedId]);
 
   // ── Realtime : participants de la conv sélectionnée (read receipts live) ──
   useEffect(() => {
@@ -340,20 +478,168 @@ export function MessagingShell({
   }, [router, basePath, searchParams]);
 
   const handleSend = useCallback(
-    async (body: string) => {
+    async (body: string, files: File[]) => {
       if (!selectedId) return;
+      const supabase = createClient();
+      const hasFiles = files.length > 0;
+
+      // 1) Upload des fichiers (si présents) AVANT le message, dans
+      //    {conv_id}/{batch_id}/{filename}
+      const batchId =
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : Math.random().toString(36).slice(2);
+      const uploaded: {
+        path: string;
+        file: File;
+        width?: number;
+        height?: number;
+      }[] = [];
+
+      if (hasFiles) {
+        for (const f of files) {
+          const safeName = f.name.replace(/[^\w.\-]/g, "_");
+          const path = `${selectedId}/${batchId}/${safeName}`;
+          const { error: upErr } = await supabase.storage
+            .from(ATTACH_BUCKET)
+            .upload(path, f, {
+              cacheControl: "3600",
+              upsert: false,
+              contentType: f.type || undefined,
+            });
+          if (upErr) {
+            // Cleanup partiel et on remonte l'erreur
+            for (const u of uploaded) {
+              await supabase.storage.from(ATTACH_BUCKET).remove([u.path]);
+            }
+            throw new Error(`Upload échoué : ${upErr.message}`);
+          }
+
+          // Calcule width/height pour images via FileReader + Image
+          let width: number | undefined;
+          let height: number | undefined;
+          if (f.type.startsWith("image/")) {
+            try {
+              const dim = await readImageDimensions(f);
+              width = dim.width;
+              height = dim.height;
+            } catch {
+              /* ignore */
+            }
+          }
+          uploaded.push({ path, file: f, width, height });
+        }
+      }
+
+      // 2) Envoi du message texte (peut être vide si attachments seuls)
+      const placeholderBody = body.length > 0 ? body : "📎";
+      let createdMessageId: string | null = null;
       try {
-        await sendMessage({
-          conversation_id: selectedId,
-          body,
-          reply_to_id: replyTo?.id ?? null,
-        });
-        setReplyTo(null);
+        // sendMessage RPC retourne l'id via le RPC (mais notre wrapper ne le
+        // retourne pas). On a besoin de l'id pour lier les attachments.
+        // Utilisation directe du RPC ici pour récupérer l'id.
+        const { data: msgId, error: rpcErr } = await supabase.rpc(
+          "send_message",
+          {
+            p_conversation_id: selectedId,
+            p_body: placeholderBody,
+            p_reply_to: replyTo?.id ?? null,
+          }
+        );
+        if (rpcErr) throw new Error(rpcErr.message);
+        createdMessageId = msgId as string;
       } catch (err) {
+        // Cleanup uploads en cas d'échec
+        for (const u of uploaded) {
+          await supabase.storage.from(ATTACH_BUCKET).remove([u.path]);
+        }
         throw err;
       }
+
+      // 3) Insert des lignes attachments
+      if (createdMessageId && uploaded.length > 0) {
+        try {
+          await insertAttachments(
+            uploaded.map((u) => ({
+              message_id: createdMessageId!,
+              storage_path: u.path,
+              mime_type: u.file.type || "application/octet-stream",
+              size_bytes: u.file.size,
+              original_name: u.file.name,
+              width: u.width ?? null,
+              height: u.height ?? null,
+            }))
+          );
+        } catch (err) {
+          // Le message est envoyé mais pas les attachments — on log seulement
+          console.warn("Échec insert attachments:", err);
+        }
+      }
+
+      setReplyTo(null);
     },
     [selectedId, replyTo]
+  );
+
+  const handleToggleReaction = useCallback(
+    async (messageId: string, emoji: string) => {
+      // Optimistic
+      const existed = (reactionsByMsg[messageId] ?? []).some(
+        (r) => r.user_id === viewerId && r.emoji === emoji
+      );
+      setReactionsByMsg((prev) => {
+        const cur = prev[messageId] ?? [];
+        if (existed) {
+          return {
+            ...prev,
+            [messageId]: cur.filter(
+              (r) => !(r.user_id === viewerId && r.emoji === emoji)
+            ),
+          };
+        }
+        return {
+          ...prev,
+          [messageId]: [
+            ...cur,
+            {
+              message_id: messageId,
+              user_id: viewerId,
+              emoji,
+              created_at: new Date().toISOString(),
+            },
+          ],
+        };
+      });
+      try {
+        await toggleReaction({ message_id: messageId, emoji });
+      } catch (err) {
+        // Rollback en cas d'erreur
+        setReactionsByMsg((prev) => {
+          const cur = prev[messageId] ?? [];
+          if (!existed) {
+            return {
+              ...prev,
+              [messageId]: cur.filter(
+                (r) => !(r.user_id === viewerId && r.emoji === emoji)
+              ),
+            };
+          }
+          return {
+            ...prev,
+            [messageId]: [
+              ...cur,
+              {
+                message_id: messageId,
+                user_id: viewerId,
+                emoji,
+                created_at: new Date().toISOString(),
+              },
+            ],
+          };
+        });
+      }
+    },
+    [reactionsByMsg, viewerId]
   );
 
   const handleTogglePin = useCallback(() => {
@@ -501,6 +787,9 @@ export function MessagingShell({
             viewerRole={viewerRole}
             participants={participants}
             liveParticipants={liveParticipants}
+            attachmentsByMsg={attachmentsByMsg}
+            reactionsByMsg={reactionsByMsg}
+            onToggleReaction={handleToggleReaction}
             replyTo={replyTo}
             onSetReplyTo={setReplyTo}
             onTogglePin={handleTogglePin}

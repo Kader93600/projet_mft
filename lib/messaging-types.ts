@@ -93,3 +93,33 @@ export interface TypingUser {
   /** Timestamp d'expiration côté client (Date.now() + 5s typiquement). */
   expires_at: number;
 }
+
+/** Pièce jointe d'un message (lecture seule côté UI). */
+export interface MessageAttachment {
+  id: string;
+  message_id: string;
+  storage_path: string;
+  mime_type: string;
+  size_bytes: number;
+  original_name: string;
+  width: number | null;
+  height: number | null;
+  created_at: string;
+}
+
+/** Réaction emoji posée par un user sur un message. */
+export interface MessageReaction {
+  message_id: string;
+  user_id: string;
+  emoji: string;
+  created_at: string;
+}
+
+/** Réactions agrégées pour l'affichage : 1 entrée par emoji, avec compteur et user_ids. */
+export interface ReactionAggregate {
+  emoji: string;
+  count: number;
+  user_ids: string[];
+  /** Vrai si l'utilisateur courant a posé cet emoji. */
+  mine: boolean;
+}
