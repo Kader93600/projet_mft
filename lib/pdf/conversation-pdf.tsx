@@ -12,24 +12,44 @@ import {
 } from "@react-pdf/renderer";
 
 // ─── Charte couleur (DESIGN.md) ───────────────────────────────
-const NAVY = "#0E1240";
-const NAVY_700 = "#1E26B0";
-const BRAND = "#2530D9";
-const SIGNAL = "#9FE220";
-const SIGNAL_DARK = "#609015";
-const EMERALD = "#059669";
-const EMERALD_BG = "#ECFDF5";
-const ROSE = "#E11D48";
-const ROSE_BG = "#FEF2F2";
-const GOLD_BG = "#F4FCE0";
-const SLATE_400 = "#94A3B8";
-const SLATE_500 = "#64748b";
-const SLATE_700 = "#334155";
-const SLATE_900 = "#0f172a";
-const NAVY_50 = "#f8fafc";
-const NAVY_100 = "#EEF0F7";
-const SKY_BG = "#EFF6FF";
-const SKY = "#0369A1";
+export const PDF_COLORS = {
+  NAVY: "#0E1240",
+  NAVY_700: "#1E26B0",
+  BRAND: "#2530D9",
+  SIGNAL: "#9FE220",
+  SIGNAL_DARK: "#609015",
+  EMERALD: "#059669",
+  EMERALD_BG: "#ECFDF5",
+  ROSE: "#E11D48",
+  ROSE_BG: "#FEF2F2",
+  GOLD_BG: "#F4FCE0",
+  SLATE_400: "#94A3B8",
+  SLATE_500: "#64748b",
+  SLATE_700: "#334155",
+  SLATE_900: "#0f172a",
+  NAVY_50: "#f8fafc",
+  NAVY_100: "#EEF0F7",
+  SKY_BG: "#EFF6FF",
+  SKY: "#0369A1",
+} as const;
+
+const NAVY = PDF_COLORS.NAVY;
+const NAVY_700 = PDF_COLORS.NAVY_700;
+const SIGNAL = PDF_COLORS.SIGNAL;
+const SIGNAL_DARK = PDF_COLORS.SIGNAL_DARK;
+const EMERALD = PDF_COLORS.EMERALD;
+const EMERALD_BG = PDF_COLORS.EMERALD_BG;
+const ROSE = PDF_COLORS.ROSE;
+const ROSE_BG = PDF_COLORS.ROSE_BG;
+const GOLD_BG = PDF_COLORS.GOLD_BG;
+const SLATE_400 = PDF_COLORS.SLATE_400;
+const SLATE_500 = PDF_COLORS.SLATE_500;
+const SLATE_700 = PDF_COLORS.SLATE_700;
+const SLATE_900 = PDF_COLORS.SLATE_900;
+const NAVY_50 = PDF_COLORS.NAVY_50;
+const NAVY_100 = PDF_COLORS.NAVY_100;
+const SKY_BG = PDF_COLORS.SKY_BG;
+const SKY = PDF_COLORS.SKY;
 
 // ─── Types ────────────────────────────────────────────────────
 export interface PdfConversation {
@@ -72,7 +92,7 @@ export interface PdfData {
 }
 
 // ─── Styles ────────────────────────────────────────────────────
-const s = StyleSheet.create({
+export const pdfStyles = StyleSheet.create({
   page: {
     paddingTop: 36,
     paddingBottom: 60,
@@ -303,7 +323,7 @@ const s = StyleSheet.create({
 });
 
 // ─── Helpers de format ─────────────────────────────────────────
-function formatDateLong(iso: string): string {
+export function formatDateLong(iso: string): string {
   const d = new Date(iso);
   return d.toLocaleDateString("fr-FR", {
     weekday: "long",
@@ -313,12 +333,12 @@ function formatDateLong(iso: string): string {
   });
 }
 
-function formatDayKey(iso: string): string {
+export function formatDayKey(iso: string): string {
   const d = new Date(iso);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-function formatTime(iso: string): string {
+export function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString("fr-FR", {
     hour: "2-digit",
     minute: "2-digit",
@@ -331,7 +351,7 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`;
 }
 
-function roleLabel(role: string): string {
+export function roleLabel(role: string): string {
   switch (role) {
     case "student":
       return "Stagiaire";
@@ -348,15 +368,15 @@ function roleLabel(role: string): string {
 function roleStyle(role: string) {
   switch (role) {
     case "student":
-      return s.roleStudent;
+      return pdfStyles.roleStudent;
     case "trainer":
-      return s.roleTrainer;
+      return pdfStyles.roleTrainer;
     default:
-      return s.roleAdmin;
+      return pdfStyles.roleAdmin;
   }
 }
 
-function conversationKindLabel(c: PdfConversation): string {
+export function conversationKindLabel(c: PdfConversation): string {
   if (c.kind === "dm") return "Message direct";
   if (c.scope === "admin_team") return "Conversation Équipe admin";
   if (c.scope === "class") return "Conversation de classe";
@@ -401,16 +421,16 @@ export function ConversationPDF({ data }: { data: PdfData }) {
       subject="Preuve de communication"
       creator="MA FORMATION TRANSPORT"
     >
-      <Page size="A4" style={s.page}>
-        <View style={s.topBar} fixed />
-        <View style={s.brandRow} fixed>
-          <Text style={s.brandTitle}>MA FORMATION TRANSPORT</Text>
-          <Text style={s.brandSub}>Export de conversation</Text>
+      <Page size="A4" style={pdfStyles.page}>
+        <View style={pdfStyles.topBar} fixed />
+        <View style={pdfStyles.brandRow} fixed>
+          <Text style={pdfStyles.brandTitle}>MA FORMATION TRANSPORT</Text>
+          <Text style={pdfStyles.brandSub}>Export de conversation</Text>
         </View>
 
         {/* Titre */}
-        <Text style={s.h1}>Export de conversation</Text>
-        <Text style={s.intro}>
+        <Text style={pdfStyles.h1}>Export de conversation</Text>
+        <Text style={pdfStyles.intro}>
           Ce document constitue une preuve formelle des échanges électroniques
           intervenus dans la conversation indiquée ci-dessous, conformément au
           parcours pédagogique du stagiaire et aux exigences de traçabilité
@@ -418,20 +438,20 @@ export function ConversationPDF({ data }: { data: PdfData }) {
         </Text>
 
         {/* Résumé conv */}
-        <View style={s.summaryCard}>
-          <View style={s.summaryRow}>
-            <Text style={s.summaryLabel}>Titre</Text>
-            <Text style={s.summaryValue}>{data.conversation.title}</Text>
+        <View style={pdfStyles.summaryCard}>
+          <View style={pdfStyles.summaryRow}>
+            <Text style={pdfStyles.summaryLabel}>Titre</Text>
+            <Text style={pdfStyles.summaryValue}>{data.conversation.title}</Text>
           </View>
-          <View style={s.summaryRow}>
-            <Text style={s.summaryLabel}>Type</Text>
-            <Text style={s.summaryValue}>
+          <View style={pdfStyles.summaryRow}>
+            <Text style={pdfStyles.summaryLabel}>Type</Text>
+            <Text style={pdfStyles.summaryValue}>
               {conversationKindLabel(data.conversation)}
             </Text>
           </View>
-          <View style={s.summaryRow}>
-            <Text style={s.summaryLabel}>Participants</Text>
-            <Text style={s.summaryValue}>
+          <View style={pdfStyles.summaryRow}>
+            <Text style={pdfStyles.summaryLabel}>Participants</Text>
+            <Text style={pdfStyles.summaryValue}>
               {data.participants.length === 0
                 ? "Aucun"
                 : data.participants
@@ -442,56 +462,56 @@ export function ConversationPDF({ data }: { data: PdfData }) {
                     .join(", ")}
             </Text>
           </View>
-          <View style={s.summaryRow}>
-            <Text style={s.summaryLabel}>Période</Text>
-            <Text style={s.summaryValue}>{dateRange}</Text>
+          <View style={pdfStyles.summaryRow}>
+            <Text style={pdfStyles.summaryLabel}>Période</Text>
+            <Text style={pdfStyles.summaryValue}>{dateRange}</Text>
           </View>
-          <View style={s.summaryRow}>
-            <Text style={s.summaryLabel}>Messages</Text>
-            <Text style={s.summaryValue}>
+          <View style={pdfStyles.summaryRow}>
+            <Text style={pdfStyles.summaryLabel}>Messages</Text>
+            <Text style={pdfStyles.summaryValue}>
               {data.totalMessageCount}
               {data.truncated
                 ? ` — ${data.messages.length} affichés dans cet export (limite atteinte)`
                 : ""}
             </Text>
           </View>
-          <View style={s.summaryRow}>
-            <Text style={s.summaryLabel}>Généré le</Text>
-            <Text style={s.summaryValue}>
+          <View style={pdfStyles.summaryRow}>
+            <Text style={pdfStyles.summaryLabel}>Généré le</Text>
+            <Text style={pdfStyles.summaryValue}>
               {formatDateLong(data.generatedAt)} à {formatTime(data.generatedAt)}
             </Text>
           </View>
-          <View style={s.summaryRow}>
-            <Text style={s.summaryLabel}>Généré par</Text>
-            <Text style={s.summaryValue}>{data.generatedBy}</Text>
+          <View style={pdfStyles.summaryRow}>
+            <Text style={pdfStyles.summaryLabel}>Généré par</Text>
+            <Text style={pdfStyles.summaryValue}>{data.generatedBy}</Text>
           </View>
         </View>
 
         {/* Bandeau troncature si applicable */}
         {data.truncated && (
-          <View style={s.truncBanner}>
+          <View style={pdfStyles.truncBanner}>
             <Text>
               Cette conversation contient {data.totalMessageCount} messages au
               total. Pour des raisons de lisibilité du document, seuls les{" "}
               {data.messages.length} messages les plus récents sont reproduits
-              ci-après. La copie intégrale est disponible sur demande auprès
+              ci-aprèpdfStyles. La copie intégrale est disponible sur demande auprès
               de l&apos;organisme de formation.
             </Text>
           </View>
         )}
 
         {/* Section échanges */}
-        <Text style={s.sectionHeader}>Historique des échanges</Text>
+        <Text style={pdfStyles.sectionHeader}>Historique des échanges</Text>
 
         {data.messages.length === 0 ? (
-          <Text style={s.intro}>Aucun message dans cette conversation.</Text>
+          <Text style={pdfStyles.intro}>Aucun message dans cette conversation.</Text>
         ) : (
           buckets.map((bucket) => (
             <View key={bucket.dayKey} wrap={false}>
-              <View style={s.dayDivider}>
-                <View style={s.dayLine} />
-                <Text style={s.dayLabel}>{bucket.label}</Text>
-                <View style={s.dayLine} />
+              <View style={pdfStyles.dayDivider}>
+                <View style={pdfStyles.dayLine} />
+                <Text style={pdfStyles.dayLabel}>{bucket.label}</Text>
+                <View style={pdfStyles.dayLine} />
               </View>
               {bucket.messages.map((m) => (
                 <MessageBlock
@@ -506,9 +526,9 @@ export function ConversationPDF({ data }: { data: PdfData }) {
         )}
 
         {/* Footer */}
-        <View style={s.footer} fixed>
+        <View style={pdfStyles.footer} fixed>
           <Text>
-            <Text style={s.footerBrand}>MA FORMATION TRANSPORT</Text>
+            <Text style={pdfStyles.footerBrand}>MA FORMATION TRANSPORT</Text>
             {" — "}Document généré le {new Date(data.generatedAt).toLocaleDateString("fr-FR")}
           </Text>
           <Text
@@ -523,7 +543,7 @@ export function ConversationPDF({ data }: { data: PdfData }) {
 }
 
 // ─── Message block ─────────────────────────────────────────────
-function MessageBlock({
+export function MessageBlock({
   message,
   profileMap,
   allMessages,
@@ -542,33 +562,33 @@ function MessageBlock({
     : null;
 
   const containerStyle = [
-    s.msg,
-    ...(message.is_pinned ? [s.msgPinned] : []),
-    ...(message.deleted_at ? [s.msgDeleted] : []),
+    pdfStyles.msg,
+    ...(message.is_pinned ? [pdfStyles.msgPinned] : []),
+    ...(message.deleted_at ? [pdfStyles.msgDeleted] : []),
   ];
 
   return (
     <View style={containerStyle} wrap={false}>
       {/* Header : sender + role + time + flags */}
-      <View style={s.msgHeader}>
-        <Text style={s.senderName}>{senderName}</Text>
-        <Text style={[s.rolePill, roleStyle(message.sender_role)]}>
+      <View style={pdfStyles.msgHeader}>
+        <Text style={pdfStyles.senderName}>{senderName}</Text>
+        <Text style={[pdfStyles.rolePill, roleStyle(message.sender_role)]}>
           {roleLabel(message.sender_role)}
         </Text>
-        {message.is_pinned && <Text style={s.pinnedTag}>· Épinglé</Text>}
-        <Text style={s.timestamp}>
+        {message.is_pinned && <Text style={pdfStyles.pinnedTag}>· Épinglé</Text>}
+        <Text style={pdfStyles.timestamp}>
           {formatTime(message.created_at)}
         </Text>
       </View>
 
       {/* Reply preview */}
       {replyTarget && (
-        <View style={s.replyPreview}>
-          <Text style={s.replyLabel}>
+        <View style={pdfStyles.replyPreview}>
+          <Text style={pdfStyles.replyLabel}>
             Réponse à{" "}
             {replySender?.full_name ?? replySender?.email ?? "Utilisateur"}
           </Text>
-          <Text style={s.replyBody}>
+          <Text style={pdfStyles.replyBody}>
             {replyTarget.deleted_at
               ? "Message supprimé"
               : truncate(replyTarget.body, 200)}
@@ -578,23 +598,23 @@ function MessageBlock({
 
       {/* Body */}
       {message.deleted_at ? (
-        <Text style={[s.body, s.bodyDeleted]}>Message supprimé</Text>
+        <Text style={[pdfStyles.body, pdfStyles.bodyDeleted]}>Message supprimé</Text>
       ) : message.body && message.body.trim().length > 0 ? (
-        <Text style={s.body}>{message.body}</Text>
+        <Text style={pdfStyles.body}>{message.body}</Text>
       ) : null}
 
       {message.edited_at && !message.deleted_at && (
-        <Text style={s.edited}>Modifié le {formatTime(message.edited_at)}</Text>
+        <Text style={pdfStyles.edited}>Modifié le {formatTime(message.edited_at)}</Text>
       )}
 
       {/* Attachments */}
       {message.attachments.length > 0 && (
-        <View style={s.attBlock}>
-          <Text style={s.attTitle}>
+        <View style={pdfStyles.attBlock}>
+          <Text style={pdfStyles.attTitle}>
             Pièces jointes ({message.attachments.length})
           </Text>
           {message.attachments.map((a, i) => (
-            <Text key={i} style={s.attRow}>
+            <Text key={i} style={pdfStyles.attRow}>
               • {a.original_name} ({a.mime_type}, {formatBytes(a.size_bytes)})
             </Text>
           ))}
@@ -603,9 +623,9 @@ function MessageBlock({
 
       {/* Réactions */}
       {message.reactions.length > 0 && (
-        <View style={s.reactBlock}>
+        <View style={pdfStyles.reactBlock}>
           {message.reactions.map((r, i) => (
-            <Text key={i} style={s.reactPill}>
+            <Text key={i} style={pdfStyles.reactPill}>
               {r.emoji} ×{r.count}
             </Text>
           ))}
