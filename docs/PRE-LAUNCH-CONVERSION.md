@@ -35,7 +35,7 @@
 Indispensable : sans webhook, le serveur ne sait pas quand un paiement est validé.
 
 1. Dashboard Stripe → Developers → **Webhooks** → "Add endpoint".
-2. URL : `https://gotrm-academy.fr/api/stripe/webhook`
+2. URL : `https://maformationtransport.fr/api/stripe/webhook`
 3. Évènements à écouter :
    - `checkout.session.completed`
    - `checkout.session.async_payment_succeeded`
@@ -43,7 +43,7 @@ Indispensable : sans webhook, le serveur ne sait pas quand un paiement est valid
 4. Récupérer le **Signing secret** → `STRIPE_WEBHOOK_SECRET`.
 5. Tester avec la CLI Stripe :
    ```bash
-   stripe listen --forward-to https://gotrm-academy.fr/api/stripe/webhook
+   stripe listen --forward-to https://maformationtransport.fr/api/stripe/webhook
    stripe trigger checkout.session.completed
    ```
 

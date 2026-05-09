@@ -33,10 +33,10 @@ export default function ConfidentialitePage() {
           <p className="mt-2">
             Délégué à la protection des données (DPO) :{" "}
             <a
-              href="mailto:dpo@gotrm-academy.fr"
+              href="mailto:dpo@maformationtransport.fr"
               className="text-navy-900 underline"
             >
-              dpo@gotrm-academy.fr
+              dpo@maformationtransport.fr
             </a>
           </p>
         </Section>

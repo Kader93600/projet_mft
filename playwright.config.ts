@@ -8,6 +8,9 @@ export default defineConfig({
   timeout: 60_000,
   expect: { timeout: 10_000 },
   fullyParallel: false, // un seul stagiaire de test, pas de course
+  // 1 seul worker en local : le serveur dev Next.js sature en RAM et
+  // crashe (ECONNRESET) avec 3 workers parallèles. CI peut paralléliser.
+  workers: process.env.CI ? 2 : 1,
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? "github" : "list",
 

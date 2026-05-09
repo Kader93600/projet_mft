@@ -41,10 +41,11 @@ test.describe("Flux QR end-to-end", () => {
           "Réponse de test E2E — argumentaire pédagogique synthétique."
         );
       } else {
-        // QCM : sélectionner la 1ʳᵉ option visible
-        const choice = page.locator('input[type="radio"]').first();
+        // QCM : sélectionner la 1ʳᵉ option (boutons custom avec
+        // data-testid="quiz-choice", pas de <input type="radio">)
+        const choice = page.locator('[data-testid="quiz-choice"]').first();
         if (await choice.isVisible().catch(() => false)) {
-          await choice.check();
+          await choice.click();
         }
       }
 
@@ -70,8 +71,21 @@ test.describe("Flux QR end-to-end", () => {
       .getByRole("button", { name: /valider définitivement/i })
       .click();
 
-    // Redirection vers la page résultats
-    await page.waitForURL(/\/quiz\/results\/.+/, { timeout: 30_000 });
+    // Diagnostic : si la redirection ne se fait pas, on dump le texte
+    // visible (souvent un setSubmitError() RLS / contrainte) avant de
+    // remonter le timeout.
+    try {
+      await page.waitForURL(/\/quiz\/results\/.+/, { timeout: 15_000 });
+    } catch (err) {
+      const visibleText = await page.locator("body").innerText();
+      // eslint-disable-next-line no-console
+      console.log(
+        "\n[E2E DEBUG submit failed] visible text on screen:\n" +
+          visibleText.slice(0, 2500) +
+          "\n[/E2E DEBUG]\n"
+      );
+      throw err;
+    }
 
     // Si le quiz contient des QR, on doit voir un état "en attente"
     await expect(
@@ -85,29 +99,65 @@ test.describe("Flux QR end-to-end", () => {
     await login(page, E2E_ENV.trainerEmail(), E2E_ENV.trainerPassword());
 
     await page.goto("/formateur/corrections");
-    // Au moins une copie à corriger
-    const firstRow = page.locator("a[href*='/formateur/corrections/']").first();
-    await expect(firstRow).toBeVisible({ timeout: 15_000 });
-    await firstRow.click();
 
-    // Page de correction : noter chaque QR avec un score plein
+    // Cible spécifiquement la copie du stagiaire E2E (et pas une autre
+    // copie ancienne déjà corrigée qui pourrait apparaître en premier
+    // dans le DOM).
+    const e2eRow = page
+      .locator("a[href*='/formateur/corrections/']")
+      .filter({ hasText: /Stagiaire E2E/i })
+      .first();
+    await expect(e2eRow).toBeVisible({ timeout: 15_000 });
+    await e2eRow.click();
+
+    // Attend que les inputs de scoring apparaissent. La page peut
+    // mettre un peu de temps à charger les qr_responses (joins SQL).
     const scoreInputs = page.locator('input[type="number"]');
+    try {
+      await expect(scoreInputs.first()).toBeVisible({ timeout: 15_000 });
+    } catch (err) {
+      // Diagnostic : dump du contenu visible pour comprendre où on est
+      const url = page.url();
+      const visibleText = await page.locator("body").innerText();
+      // eslint-disable-next-line no-console
+      console.log(
+        "\n[E2E DEBUG correction page failed]" +
+          "\nURL: " +
+          url +
+          "\n--- VISIBLE TEXT ---\n" +
+          visibleText.slice(0, 3000) +
+          "\n[/E2E DEBUG]\n"
+      );
+      throw err;
+    }
     const count = await scoreInputs.count();
     expect(count).toBeGreaterThan(0);
+
+    // Pour chaque QR : fill le score puis click "Noter cette réponse"
+    // (chaque carte a son propre bouton ; après save il passe à
+    // "Modifier la note" → on cible toujours le 1er restant non noté).
     for (let i = 0; i < count; i++) {
       await scoreInputs.nth(i).fill("3");
+      const noteBtn = page
+        .getByRole("button", { name: /noter cette réponse/i })
+        .first();
+      await noteBtn.click();
+      // Petite pause pour laisser le state se propager
+      await page.waitForTimeout(600);
     }
 
-    // Saisir un feedback global (textarea)
+    // Saisir un feedback global (textarea de finalisation)
     const feedback = page.locator("textarea").first();
     if (await feedback.isVisible().catch(() => false)) {
       await feedback.fill("Correction E2E : OK");
     }
 
-    // Finaliser
+    // Finaliser (le bouton ne s'active qu'après que toutes les QR
+    // soient notées)
     const finalize = page.getByRole("button", {
       name: /finaliser|valider.*correction/i,
     });
+    await expect(finalize).toBeEnabled({ timeout: 10_000 });
     await finalize.click();
 
     // Confirmation visible
@@ -119,18 +169,20 @@ test.describe("Flux QR end-to-end", () => {
   test("le stagiaire voit son résultat finalisé", async ({ page }) => {
     await login(page, E2E_ENV.studentEmail(), E2E_ENV.studentPassword());
 
-    // On va sur l'historique des quiz / dashboard et on clique sur la copie
-    await page.goto("/dashboard");
+    // On revient sur la page du quiz et on cherche un lien direct vers
+    // /quiz/results/<attempt_id> (plus précis qu'un match texte qui
+    // pouvait matcher d'autres liens type "Voir mes statistiques").
     await page.goto(`/quiz/${QUIZ_ID()}`);
 
-    // Le bouton "Voir mes résultats" / lien doit apparaître
-    const result = page.getByRole("link", { name: /résultat|voir.*copie/i });
-    if (await result.isVisible().catch(() => false)) {
-      await result.click();
+    const resultLink = page.locator('a[href*="/quiz/results/"]').first();
+    if (await resultLink.isVisible().catch(() => false)) {
+      await resultLink.click();
       await expect(page).toHaveURL(/\/quiz\/results\/.+/);
     }
 
     // Le score doit être affiché (% visible)
-    await expect(page.locator("text=/%/").first()).toBeVisible();
+    await expect(page.locator("text=/%/").first()).toBeVisible({
+      timeout: 10_000,
+    });
   });
 });

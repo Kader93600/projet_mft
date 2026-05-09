@@ -568,8 +568,18 @@ export function QuizRunner({
   }
 
   // ----- Écran de relecture avant soumission (examen) -----
+  // Helper : une question est "répondue" si :
+  //   - QCM : un choice est sélectionné dans `answers`
+  //   - QR  : `qrAnswers` contient un texte non vide après trim
+  const isQuestionAnswered = (q: Question) => {
+    if ((q.type ?? "qcm") === "qr") {
+      return ((qrAnswers[q.id] ?? "").trim().length > 0);
+    }
+    return !!answers[q.id];
+  };
+
   if (showReview) {
-    const unanswered = orderedQuestions.filter((q) => !answers[q.id]);
+    const unanswered = orderedQuestions.filter((q) => !isQuestionAnswered(q));
     const flaggedList = orderedQuestions.filter((q) => flagged.has(q.id));
     return (
       <div className="max-w-2xl mx-auto space-y-5">
@@ -640,7 +650,7 @@ export function QuizRunner({
 
             <div className="grid grid-cols-6 gap-2 sm:grid-cols-10">
               {orderedQuestions.map((qq, idx) => {
-                const answered = !!answers[qq.id];
+                const answered = isQuestionAnswered(qq);
                 const flag = flagged.has(qq.id);
                 return (
                   <button
@@ -938,6 +948,7 @@ export function QuizRunner({
                   <button
                     key={c.id}
                     type="button"
+                    data-testid="quiz-choice"
                     onClick={() => setAnswers({ ...answers, [q.id]: c.id })}
                     className={cn(
                       "w-full text-left px-4 py-3.5 rounded-xl border flex items-center gap-3 transition-all",

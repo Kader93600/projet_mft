@@ -35,7 +35,7 @@ async function sendToSentry(payload: any) {
         "Content-Type": "application/json",
         "X-Sentry-Auth":
           `Sentry sentry_version=7, sentry_key=${parsed.publicKey}, ` +
-          `sentry_client=gotrm-academy/1.0`,
+          `sentry_client=ma-formation-transport/1.0`,
       },
       body: JSON.stringify(payload),
       cache: "no-store",

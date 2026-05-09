@@ -1,8 +1,8 @@
 {
-  "name": "gotrm-academy",
+  "name": "ma-formation-transport",
   "version": "0.1.0",
   "private": true,
-  "description": "Plateforme e-learning pour la préparation de l'examen GOTRM (RNCP 40990)",
+  "description": "MA FORMATION TRANSPORT — Plateforme e-learning multi-formations transport (GOTRM RNCP 40990, Capacité 3,5 t, FIMO/FCO, Taxi/VTC, etc.)",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

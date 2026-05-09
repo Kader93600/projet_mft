@@ -42,9 +42,27 @@ BEGIN
       'Créez-le d''abord dans Supabase Studio → Authentication → Users.';
   END IF;
 
-  -- ─── 1) Rôles ────────────────────────────────────────────────────
-  UPDATE public.profiles SET role = 'student' WHERE id = v_student;
-  UPDATE public.profiles SET role = 'trainer' WHERE id = v_trainer;
+  -- ─── 0b) Cleanup des artefacts des runs précédents ───────────
+  -- Supprime les tentatives anciennes du stagiaire E2E afin que
+  -- /formateur/corrections n'affiche pas une copie déjà corrigée
+  -- d'un run précédent en première position (qui ferait échouer
+  -- le test "formateur voit la copie").
+  -- Cascade : qr_responses sont supprimées via FK ON DELETE CASCADE.
+  DELETE FROM public.quiz_attempts WHERE user_id = v_student;
+
+  -- ─── 1) Rôles + noms (pour titres de conversation lisibles) ─────
+  -- On force le full_name car le trigger handle_new_user copie
+  -- l'email comme full_name par défaut, ce qui est moche pour les
+  -- titres de conversation. Les valeurs E2E ne sont pas utilisées
+  -- en prod donc on peut écraser sans risque.
+  UPDATE public.profiles
+     SET role = 'student',
+         full_name = 'Stagiaire E2E'
+   WHERE id = v_student;
+  UPDATE public.profiles
+     SET role = 'trainer',
+         full_name = 'Formateur E2E'
+   WHERE id = v_trainer;
 
   -- ─── 2) Bypass onboarding + positionnement ──────────────────────
   UPDATE public.profiles
@@ -133,6 +151,37 @@ BEGIN
   INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order)
   VALUES (v_quiz_id, v_qr_id, 2)
   ON CONFLICT DO NOTHING;
+
+  -- ─── 7b) DM stagiaire ↔ formateur (pour les tests messagerie) ────
+  -- Crée une conversation DM directe entre les 2 comptes E2E si elle
+  -- n'existe pas déjà. Permet aux tests messaging.spec.ts de cibler
+  -- une conversation existante au lieu de devoir la créer via l'UI.
+  DECLARE
+    v_dm_id uuid;
+  BEGIN
+    SELECT c.id INTO v_dm_id
+      FROM public.conversations c
+     WHERE c.kind = 'dm'
+       AND EXISTS (SELECT 1 FROM public.conversation_participants
+                    WHERE conversation_id = c.id AND user_id = v_student)
+       AND EXISTS (SELECT 1 FROM public.conversation_participants
+                    WHERE conversation_id = c.id AND user_id = v_trainer)
+       AND (SELECT count(*) FROM public.conversation_participants
+             WHERE conversation_id = c.id) = 2
+     LIMIT 1;
+
+    IF v_dm_id IS NULL THEN
+      INSERT INTO public.conversations (kind, created_by)
+      VALUES ('dm', v_student)
+      RETURNING id INTO v_dm_id;
+
+      INSERT INTO public.conversation_participants
+        (conversation_id, user_id, role_in_conv)
+      VALUES
+        (v_dm_id, v_student, 'owner'),
+        (v_dm_id, v_trainer, 'member');
+    END IF;
+  END;
 
   -- ─── 8) Affichage final ─────────────────────────────────────────
   RAISE NOTICE '';
