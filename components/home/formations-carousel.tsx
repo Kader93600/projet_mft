@@ -37,43 +37,38 @@ const MODALITY_LABEL: Record<string, string> = {
   mixte: "Mixte présentiel / distanciel",
 };
 
-/** Pixels par tick de scroll auto (lent, défilement continu). */
-const AUTO_SCROLL_STEP = 1;
-/** Intervalle entre 2 ticks (ms). */
-const AUTO_SCROLL_INTERVAL = 30;
-/** Décalage manuel quand on clique sur les flèches. */
-const MANUAL_SCROLL_AMOUNT = 320;
+/** Vitesse normale du défilement auto (secondes pour 1 boucle complète). */
+const NORMAL_DURATION_S = 35;
+/** Durée de l'accélération quand on clique une flèche. */
+const BOOST_DURATION_MS = 1500;
+/** Vitesse boostée (temporaire, à chaque click flèche). */
+const BOOST_DURATION_S = 4;
 
 /**
- * Carousel des formations avec :
- *  - Scroll horizontal natif (overflow-x: auto, scroll-snap)
- *  - Auto-scroll continu via setInterval (1px / 30ms ≈ 33px/s)
- *  - Pause au hover, focus, touch, ou flip d'une carte
- *  - Flèches gauche/droite pour navigation manuelle
- *  - Boucle visuelle : duplication des cartes pour seamless wrap
- *  - Cartes flip 3D individuelles (UX inchangée)
- *  - prefers-reduced-motion : pas d'auto-scroll, scroll manuel only
+ * Marquee infini des formations — défile lentement et en continu, avec
+ * cartes flip 3D individuelles + flèches gauche/droite pour boost manuel.
+ *
+ *  - Inner row : flex gap, width: max-content, animation translateX 0 → -50%
+ *  - Cartes dupliquées (×2) → boucle parfaitement sans saut
+ *  - Auto-pause au hover, flip de carte, ou touch récent
+ *  - Flèches gauche/droite : boost temporaire (4s/loop pendant 1,5s)
+ *    → effet "fast-forward" / "rewind" instinctif
+ *  - prefers-reduced-motion : marquee figée
  */
 export function FormationsCarousel() {
-  const scrollRef = React.useRef<HTMLDivElement>(null);
   const [flippedSlugs, setFlippedSlugs] = React.useState<Set<string>>(
     () => new Set()
   );
-  const [isPaused, setIsPaused] = React.useState(false);
-  const [reducedMotion, setReducedMotion] = React.useState(false);
+  const [touchPaused, setTouchPaused] = React.useState(false);
+  const [boostMode, setBoostMode] = React.useState<"normal" | "fwd" | "bwd">(
+    "normal"
+  );
   const touchTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
     null
   );
-
-  // Détecte prefers-reduced-motion
-  React.useEffect(() => {
-    if (typeof window === "undefined") return;
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReducedMotion(mq.matches);
-    const onChange = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
+  const boostTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
 
   const toggleFlip = (slug: string) => {
     setFlippedSlugs((prev) => {
@@ -86,52 +81,34 @@ export function FormationsCarousel() {
 
   const handleTouchStart = () => {
     if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
-    setIsPaused(true);
-    touchTimerRef.current = setTimeout(() => setIsPaused(false), 4000);
+    setTouchPaused(true);
+    touchTimerRef.current = setTimeout(() => setTouchPaused(false), 4000);
   };
 
-  // Pause si flip ou touch récent
-  const shouldPause = flippedSlugs.size > 0 || isPaused;
-
-  // Auto-scroll : 1px par tick
-  React.useEffect(() => {
-    if (reducedMotion) return;
-    if (shouldPause) return;
-    const el = scrollRef.current;
-    if (!el) return;
-
-    const id = window.setInterval(() => {
-      if (!scrollRef.current) return;
-      const node = scrollRef.current;
-      const max = node.scrollWidth - node.clientWidth;
-      if (node.scrollLeft >= max - 1) {
-        // Boucle : retour au début sans animation
-        node.scrollLeft = 0;
-      } else {
-        node.scrollLeft += AUTO_SCROLL_STEP;
-      }
-    }, AUTO_SCROLL_INTERVAL);
-
-    return () => window.clearInterval(id);
-  }, [reducedMotion, shouldPause]);
+  const handleArrow = (direction: "fwd" | "bwd") => {
+    if (boostTimerRef.current) clearTimeout(boostTimerRef.current);
+    setBoostMode(direction);
+    boostTimerRef.current = setTimeout(() => {
+      setBoostMode("normal");
+    }, BOOST_DURATION_MS);
+  };
 
   React.useEffect(() => {
     return () => {
       if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
+      if (boostTimerRef.current) clearTimeout(boostTimerRef.current);
     };
   }, []);
 
-  const scrollByAmount = (amount: number) => {
-    const node = scrollRef.current;
-    if (!node) return;
-    // Pause l'auto-scroll quelques secondes après un click manuel
-    setIsPaused(true);
-    if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
-    touchTimerRef.current = setTimeout(() => setIsPaused(false), 4000);
-    node.scrollBy({ left: amount, behavior: "smooth" });
-  };
+  // Pause si flip ou touch récent
+  const isPaused = flippedSlugs.size > 0 || touchPaused;
 
-  // Duplique les formations pour la boucle visuelle
+  // Calcule l'animation selon le mode
+  const animationDuration =
+    boostMode === "normal" ? `${NORMAL_DURATION_S}s` : `${BOOST_DURATION_S}s`;
+  const animationDirection = boostMode === "bwd" ? "reverse" : "normal";
+
+  // Duplique les formations pour la boucle parfaite
   const items = [...FORMATIONS, ...FORMATIONS];
 
   return (
@@ -159,69 +136,63 @@ export function FormationsCarousel() {
           </h2>
           <p className="mt-3 text-white/70 text-base md:text-lg leading-relaxed">
             Survolez (ou tapez) une carte pour la retourner et accéder au
-            détail. Utilisez les flèches pour naviguer plus vite.
+            détail. Le défilement se met en pause automatiquement.
           </p>
         </div>
 
-        {/* Carousel ─────────────────────────────────────────────────── */}
+        {/* Marquee ───────────────────────────────────────────────────── */}
         <div
-          className="relative mt-12 group/carousel"
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
+          className="relative mt-12"
           onTouchStart={handleTouchStart}
         >
-          {/* Flèche gauche */}
+          {/* Flèche gauche (rewind) */}
           <button
             type="button"
-            onClick={() => scrollByAmount(-MANUAL_SCROLL_AMOUNT)}
-            aria-label="Faire défiler vers la gauche"
-            className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-10 h-11 w-11 rounded-full bg-night-300/90 border border-white/15 text-white backdrop-blur-md shadow-float flex items-center justify-center transition-all duration-200 hover:bg-night-200 hover:border-signal-400/60 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-night"
+            onClick={() => handleArrow("bwd")}
+            aria-label="Revenir en arrière dans le carrousel"
+            className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 h-11 w-11 rounded-full bg-night-300/90 border border-white/15 text-white backdrop-blur-md shadow-float flex items-center justify-center transition-all duration-200 hover:bg-night-200 hover:border-signal-400/60 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-night"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
 
-          {/* Flèche droite */}
+          {/* Flèche droite (fast-forward) */}
           <button
             type="button"
-            onClick={() => scrollByAmount(MANUAL_SCROLL_AMOUNT)}
-            aria-label="Faire défiler vers la droite"
-            className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-10 h-11 w-11 rounded-full bg-night-300/90 border border-white/15 text-white backdrop-blur-md shadow-float flex items-center justify-center transition-all duration-200 hover:bg-night-200 hover:border-signal-400/60 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-night"
+            onClick={() => handleArrow("fwd")}
+            aria-label="Avancer rapidement dans le carrousel"
+            className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 h-11 w-11 rounded-full bg-night-300/90 border border-white/15 text-white backdrop-blur-md shadow-float flex items-center justify-center transition-all duration-200 hover:bg-night-200 hover:border-signal-400/60 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-night"
           >
             <ArrowRight className="h-5 w-5" />
           </button>
 
-          {/* Container scrollable */}
           <div
-            ref={scrollRef}
-            className="overflow-x-auto overflow-y-hidden no-scrollbar py-6 scroll-smooth"
             style={{
+              // Masques fade gauche/droite (les cartes apparaissent/disparaissent en douceur)
               maskImage:
                 "linear-gradient(to right, transparent 0, black 6%, black 94%, transparent 100%)",
               WebkitMaskImage:
                 "linear-gradient(to right, transparent 0, black 6%, black 94%, transparent 100%)",
-              scrollSnapType: "x proximity",
-            }}
-            tabIndex={0}
-            aria-label="Liste des formations transport — utilisez les flèches du clavier pour naviguer"
-            onKeyDown={(e) => {
-              if (e.key === "ArrowLeft") {
-                e.preventDefault();
-                scrollByAmount(-MANUAL_SCROLL_AMOUNT);
-              } else if (e.key === "ArrowRight") {
-                e.preventDefault();
-                scrollByAmount(MANUAL_SCROLL_AMOUNT);
-              }
             }}
           >
-            <div className="flex gap-5 w-max px-12 sm:px-16">
-              {items.map((f, i) => (
-                <FlipCard
-                  key={`${f.slug}-${i}`}
-                  formation={f}
-                  flipped={flippedSlugs.has(f.slug)}
-                  onToggle={() => toggleFlip(f.slug)}
-                />
-              ))}
+            {/* Wrapper marquee : pause au hover (CSS) + pause forcée si flip ou touch */}
+            <div className="group overflow-hidden py-6">
+              <div
+                className="flex gap-5 w-max group-hover:[animation-play-state:paused] motion-reduce:!animation-none"
+                style={{
+                  animation: `marquee-x ${animationDuration} linear infinite`,
+                  animationDirection,
+                  animationPlayState: isPaused ? "paused" : undefined,
+                }}
+              >
+                {items.map((f, i) => (
+                  <FlipCard
+                    key={`${f.slug}-${i}`}
+                    formation={f}
+                    flipped={flippedSlugs.has(f.slug)}
+                    onToggle={() => toggleFlip(f.slug)}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -257,7 +228,7 @@ function FlipCard({
   return (
     <div
       className="shrink-0 w-[260px] sm:w-[280px] md:w-[300px]"
-      style={{ aspectRatio: "3 / 4", scrollSnapAlign: "center" }}
+      style={{ aspectRatio: "3 / 4" }}
     >
       <div
         className="flip-card group/card relative w-full h-full cursor-pointer"
