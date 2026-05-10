@@ -41,8 +41,8 @@ const MODALITY_LABEL: Record<string, string> = {
 const NORMAL_DURATION_S = 35;
 /** Durée de l'accélération quand on clique une flèche. */
 const BOOST_DURATION_MS = 1500;
-/** Vitesse boostée (temporaire, à chaque click flèche). */
-const BOOST_DURATION_S = 4;
+/** Vitesse boostée (temporaire, à chaque click flèche) — plus doux que 4s. */
+const BOOST_DURATION_S = 10;
 
 /**
  * Marquee infini des formations — défile lentement et en continu, avec
@@ -104,9 +104,12 @@ export function FormationsCarousel() {
   const isPaused = flippedSlugs.size > 0 || touchPaused;
 
   // Calcule l'animation selon le mode
+  // Convention :
+  //   - Click flèche GAUCHE (←) → "bwd" → contenu défile vers la GAUCHE (sens normal, accéléré)
+  //   - Click flèche DROITE (→) → "fwd" → contenu défile vers la DROITE (sens reverse, accéléré)
   const animationDuration =
     boostMode === "normal" ? `${NORMAL_DURATION_S}s` : `${BOOST_DURATION_S}s`;
-  const animationDirection = boostMode === "bwd" ? "reverse" : "normal";
+  const animationDirection = boostMode === "fwd" ? "reverse" : "normal";
 
   // Duplique les formations pour la boucle parfaite
   const items = [...FORMATIONS, ...FORMATIONS];
