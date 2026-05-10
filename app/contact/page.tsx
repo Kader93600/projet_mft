@@ -86,34 +86,86 @@ export default function ContactPage() {
             </div>
           </div>
 
-          {/* Carte Google Maps embed (sans clé API requise) */}
+          {/* Carte d'adresse — sans iframe (compatible adblockers / corp networks) */}
           <div className="rounded-2xl border border-white/10 bg-night-100 overflow-hidden">
-            <iframe
-              src={`https://maps.google.com/maps?q=${encodeURIComponent(
-                `${LEGAL.address.street}, ${LEGAL.address.postalCode} ${LEGAL.address.city}`
-              )}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
-              width="100%"
-              height="240"
-              style={{ border: 0 }}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              title={`Carte de ${LEGAL.brand} — ${LEGAL.address.city}`}
-              allowFullScreen
-            />
-            <div className="px-4 py-3 text-xs text-white/55 flex items-center justify-between gap-3">
-              <span>
-                Centre de {LEGAL.brand} — {LEGAL.address.city}
-              </span>
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                  `${LEGAL.address.street}, ${LEGAL.address.postalCode} ${LEGAL.address.city}`
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-signal-400 hover:text-signal-300 underline-offset-2 hover:underline"
-              >
-                Itinéraire →
-              </a>
+            {/* Visuel : gradient + grid + pin animé */}
+            <div className="relative h-48 sm:h-52 overflow-hidden bg-gradient-to-br from-brand-900/40 via-night-100 to-signal-500/15">
+              <div
+                aria-hidden
+                className="absolute inset-0 bg-grid-night opacity-40"
+                style={{ backgroundSize: "28px 28px" }}
+              />
+              {/* Halo radial signal */}
+              <div
+                aria-hidden
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background:
+                    "radial-gradient(ellipse 50% 60% at 50% 55%, rgba(159,226,32,0.18) 0%, transparent 70%)",
+                }}
+              />
+              {/* Pin animé */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="relative">
+                  <span
+                    aria-hidden
+                    className="absolute inset-0 -m-3 rounded-full bg-signal-500/25 motion-reduce:hidden"
+                    style={{
+                      animation: "glow-pulse 2.4s ease-in-out infinite",
+                    }}
+                  />
+                  <span
+                    aria-hidden
+                    className="absolute inset-0 -m-1.5 rounded-full bg-signal-500/40"
+                  />
+                  <div className="relative h-12 w-12 rounded-full bg-signal-500 text-night-900 flex items-center justify-center shadow-glow-signal">
+                    <MapPin className="h-6 w-6" strokeWidth={2.4} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Adresse + CTAs */}
+            <div className="p-5 space-y-4">
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.18em] font-semibold text-signal-400">
+                  Centre de formation
+                </div>
+                <div className="mt-1.5 font-semibold text-white text-[15px]">
+                  {LEGAL.brand}
+                </div>
+                <div className="mt-1 text-white/80 text-sm leading-relaxed">
+                  {LEGAL.address.street}
+                  <br />
+                  {LEGAL.address.postalCode} {LEGAL.address.city},{" "}
+                  {LEGAL.address.country}
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                    `${LEGAL.address.street}, ${LEGAL.address.postalCode} ${LEGAL.address.city}`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-semibold bg-white/[0.06] border border-white/10 text-white hover:bg-white/[0.10] hover:border-white/20 transition-colors"
+                >
+                  <MapPin className="h-3.5 w-3.5" />
+                  Voir sur Google Maps
+                </a>
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                    `${LEGAL.address.street}, ${LEGAL.address.postalCode} ${LEGAL.address.city}`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-semibold bg-signal-500 text-night-900 hover:bg-signal-400 transition-colors shadow-sm"
+                >
+                  Itinéraire
+                  <span aria-hidden>→</span>
+                </a>
+              </div>
             </div>
           </div>
         </aside>
