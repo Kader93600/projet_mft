@@ -86,18 +86,34 @@ export default function ContactPage() {
             </div>
           </div>
 
-          {/* Carte (placeholder OSM/iframe) */}
+          {/* Carte Google Maps embed (sans clé API requise) */}
           <div className="rounded-2xl border border-white/10 bg-night-100 overflow-hidden">
             <iframe
-              src={`https://www.openstreetmap.org/export/embed.html?bbox=2.85%2C48.93%2C2.92%2C48.97&layer=mapnik&marker=48.9528%2C2.8839`}
+              src={`https://maps.google.com/maps?q=${encodeURIComponent(
+                `${LEGAL.address.street}, ${LEGAL.address.postalCode} ${LEGAL.address.city}`
+              )}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
               width="100%"
-              height="220"
+              height="240"
               style={{ border: 0 }}
               loading="lazy"
-              title="Carte du centre"
+              referrerPolicy="no-referrer-when-downgrade"
+              title={`Carte de ${LEGAL.brand} — ${LEGAL.address.city}`}
+              allowFullScreen
             />
-            <div className="px-4 py-3 text-xs text-white/55">
-              Centre de {LEGAL.brand} — {LEGAL.address.city}
+            <div className="px-4 py-3 text-xs text-white/55 flex items-center justify-between gap-3">
+              <span>
+                Centre de {LEGAL.brand} — {LEGAL.address.city}
+              </span>
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                  `${LEGAL.address.street}, ${LEGAL.address.postalCode} ${LEGAL.address.city}`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-signal-400 hover:text-signal-300 underline-offset-2 hover:underline"
+              >
+                Itinéraire →
+              </a>
             </div>
           </div>
         </aside>

@@ -12,6 +12,7 @@ import {
   Award,
   ShieldCheck,
   ArrowRight,
+  ArrowLeft,
   RotateCw,
   Clock,
   MapPin,
@@ -36,28 +37,43 @@ const MODALITY_LABEL: Record<string, string> = {
   mixte: "Mixte présentiel / distanciel",
 };
 
+/** Pixels par tick de scroll auto (lent, défilement continu). */
+const AUTO_SCROLL_STEP = 1;
+/** Intervalle entre 2 ticks (ms). */
+const AUTO_SCROLL_INTERVAL = 30;
+/** Décalage manuel quand on clique sur les flèches. */
+const MANUAL_SCROLL_AMOUNT = 320;
+
 /**
- * Marquee infini des formations — défile lentement et en continu, avec
- * cartes flip 3D individuelles.
- *
- *  - Inner row : flex gap, width: max-content, animation translateX 0 → -50%
- *  - Cartes dupliquées (×2) → boucle parfaitement sans saut
- *  - CSS :hover sur le row → animation-play-state: paused
- *  - Si une carte est flippée → pause forcée via inline style
- *  - prefers-reduced-motion : marquee figée, swipe horizontal possible
- *  - Mobile : touchstart pause 4s, puis reprise
- *
- * Pas de scroll-snap, pas d'IntersectionObserver, pas de RAF.
- * La marquee CSS gère tout.
+ * Carousel des formations avec :
+ *  - Scroll horizontal natif (overflow-x: auto, scroll-snap)
+ *  - Auto-scroll continu via setInterval (1px / 30ms ≈ 33px/s)
+ *  - Pause au hover, focus, touch, ou flip d'une carte
+ *  - Flèches gauche/droite pour navigation manuelle
+ *  - Boucle visuelle : duplication des cartes pour seamless wrap
+ *  - Cartes flip 3D individuelles (UX inchangée)
+ *  - prefers-reduced-motion : pas d'auto-scroll, scroll manuel only
  */
 export function FormationsCarousel() {
+  const scrollRef = React.useRef<HTMLDivElement>(null);
   const [flippedSlugs, setFlippedSlugs] = React.useState<Set<string>>(
     () => new Set()
   );
-  const [touchPaused, setTouchPaused] = React.useState(false);
+  const [isPaused, setIsPaused] = React.useState(false);
+  const [reducedMotion, setReducedMotion] = React.useState(false);
   const touchTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
     null
   );
+
+  // Détecte prefers-reduced-motion
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReducedMotion(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
 
   const toggleFlip = (slug: string) => {
     setFlippedSlugs((prev) => {
@@ -70,9 +86,34 @@ export function FormationsCarousel() {
 
   const handleTouchStart = () => {
     if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
-    setTouchPaused(true);
-    touchTimerRef.current = setTimeout(() => setTouchPaused(false), 4000);
+    setIsPaused(true);
+    touchTimerRef.current = setTimeout(() => setIsPaused(false), 4000);
   };
+
+  // Pause si flip ou touch récent
+  const shouldPause = flippedSlugs.size > 0 || isPaused;
+
+  // Auto-scroll : 1px par tick
+  React.useEffect(() => {
+    if (reducedMotion) return;
+    if (shouldPause) return;
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const id = window.setInterval(() => {
+      if (!scrollRef.current) return;
+      const node = scrollRef.current;
+      const max = node.scrollWidth - node.clientWidth;
+      if (node.scrollLeft >= max - 1) {
+        // Boucle : retour au début sans animation
+        node.scrollLeft = 0;
+      } else {
+        node.scrollLeft += AUTO_SCROLL_STEP;
+      }
+    }, AUTO_SCROLL_INTERVAL);
+
+    return () => window.clearInterval(id);
+  }, [reducedMotion, shouldPause]);
 
   React.useEffect(() => {
     return () => {
@@ -80,10 +121,17 @@ export function FormationsCarousel() {
     };
   }, []);
 
-  // Pause si au moins une carte est flippée OU pause tactile récente
-  const isPaused = flippedSlugs.size > 0 || touchPaused;
+  const scrollByAmount = (amount: number) => {
+    const node = scrollRef.current;
+    if (!node) return;
+    // Pause l'auto-scroll quelques secondes après un click manuel
+    setIsPaused(true);
+    if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
+    touchTimerRef.current = setTimeout(() => setIsPaused(false), 4000);
+    node.scrollBy({ left: amount, behavior: "smooth" });
+  };
 
-  // Duplique les formations pour la boucle parfaite
+  // Duplique les formations pour la boucle visuelle
   const items = [...FORMATIONS, ...FORMATIONS];
 
   return (
@@ -111,31 +159,61 @@ export function FormationsCarousel() {
           </h2>
           <p className="mt-3 text-white/70 text-base md:text-lg leading-relaxed">
             Survolez (ou tapez) une carte pour la retourner et accéder au
-            détail. Le défilement se met en pause automatiquement.
+            détail. Utilisez les flèches pour naviguer plus vite.
           </p>
         </div>
 
-        {/* Marquee ───────────────────────────────────────────────────── */}
+        {/* Carousel ─────────────────────────────────────────────────── */}
         <div
-          className="relative mt-12"
+          className="relative mt-12 group/carousel"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
           onTouchStart={handleTouchStart}
-          style={{
-            // Masques fade gauche/droite (les cartes apparaissent/disparaissent en douceur)
-            maskImage:
-              "linear-gradient(to right, transparent 0, black 6%, black 94%, transparent 100%)",
-            WebkitMaskImage:
-              "linear-gradient(to right, transparent 0, black 6%, black 94%, transparent 100%)",
-          }}
         >
-          {/* Wrapper marquee : pause au hover (CSS) + pause forcée si flip ou touch */}
-          <div className="group overflow-hidden py-6">
-            <div
-              className="flex gap-5 w-max group-hover:[animation-play-state:paused] motion-reduce:!animation-none"
-              style={{
-                animation: "marquee-x 90s linear infinite",
-                animationPlayState: isPaused ? "paused" : undefined,
-              }}
-            >
+          {/* Flèche gauche */}
+          <button
+            type="button"
+            onClick={() => scrollByAmount(-MANUAL_SCROLL_AMOUNT)}
+            aria-label="Faire défiler vers la gauche"
+            className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-10 h-11 w-11 rounded-full bg-night-300/90 border border-white/15 text-white backdrop-blur-md shadow-float flex items-center justify-center transition-all duration-200 hover:bg-night-200 hover:border-signal-400/60 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-night"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+
+          {/* Flèche droite */}
+          <button
+            type="button"
+            onClick={() => scrollByAmount(MANUAL_SCROLL_AMOUNT)}
+            aria-label="Faire défiler vers la droite"
+            className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-10 h-11 w-11 rounded-full bg-night-300/90 border border-white/15 text-white backdrop-blur-md shadow-float flex items-center justify-center transition-all duration-200 hover:bg-night-200 hover:border-signal-400/60 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-night"
+          >
+            <ArrowRight className="h-5 w-5" />
+          </button>
+
+          {/* Container scrollable */}
+          <div
+            ref={scrollRef}
+            className="overflow-x-auto overflow-y-hidden no-scrollbar py-6 scroll-smooth"
+            style={{
+              maskImage:
+                "linear-gradient(to right, transparent 0, black 6%, black 94%, transparent 100%)",
+              WebkitMaskImage:
+                "linear-gradient(to right, transparent 0, black 6%, black 94%, transparent 100%)",
+              scrollSnapType: "x proximity",
+            }}
+            tabIndex={0}
+            aria-label="Liste des formations transport — utilisez les flèches du clavier pour naviguer"
+            onKeyDown={(e) => {
+              if (e.key === "ArrowLeft") {
+                e.preventDefault();
+                scrollByAmount(-MANUAL_SCROLL_AMOUNT);
+              } else if (e.key === "ArrowRight") {
+                e.preventDefault();
+                scrollByAmount(MANUAL_SCROLL_AMOUNT);
+              }
+            }}
+          >
+            <div className="flex gap-5 w-max px-12 sm:px-16">
               {items.map((f, i) => (
                 <FlipCard
                   key={`${f.slug}-${i}`}
@@ -179,7 +257,7 @@ function FlipCard({
   return (
     <div
       className="shrink-0 w-[260px] sm:w-[280px] md:w-[300px]"
-      style={{ aspectRatio: "3 / 4" }}
+      style={{ aspectRatio: "3 / 4", scrollSnapAlign: "center" }}
     >
       <div
         className="flip-card group/card relative w-full h-full cursor-pointer"
