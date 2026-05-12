@@ -163,20 +163,53 @@ export function emailLayout(
       .mft-cta a { display: block !important; }
     }
 
-    /* Dark mode iOS / Apple Mail / Outlook iOS */
+    /* Dark mode iOS / Apple Mail / Outlook iOS — couvre TOUT le contenu */
     @media (prefers-color-scheme: dark) {
       .mft-body { background-color: #0a0d24 !important; }
       .mft-container { background-color: #131838 !important; }
-      .mft-h1 { color: #f8fafc !important; }
-      .mft-text { color: #e2e8f0 !important; }
-      .mft-muted { color: #94a3b8 !important; }
-      .mft-footer { background-color: #0a0d24 !important; color: #94a3b8 !important; border-color: #2d3458 !important; }
-      .mft-card { background-color: #1c2349 !important; border-color: #2d3458 !important; }
-      .mft-footer a { color: #cbd5e1 !important; }
+
+      /* Texte général */
+      .mft-h1, .mft-text strong, .mft-step-title { color: #f8fafc !important; }
+      .mft-text, .mft-text p, .mft-text li { color: #e2e8f0 !important; }
+      .mft-muted, .mft-step-desc { color: #cbd5e1 !important; }
+      .mft-text a { color: #93c5fd !important; }
+      .mft-text a.mft-link-break { color: #93c5fd !important; }
+
+      /* Cards génériques */
+      .mft-card { background-color: #1c2349 !important; border-color: #2d3458 !important; color: #e2e8f0 !important; }
+      .mft-card strong { color: #f8fafc !important; }
+      .mft-card a { color: #93c5fd !important; }
+
+      /* Variantes infoCard avec contraste élevé */
+      .mft-info { background-color: #1e2a5e !important; border-color: #3b4d8c !important; color: #c7d2fe !important; }
+      .mft-info strong, .mft-info a { color: #e0e7ff !important; }
+      .mft-success { background-color: #064e3b !important; border-color: #047857 !important; color: #6ee7b7 !important; }
+      .mft-success strong { color: #d1fae5 !important; }
+      .mft-warning { background-color: #451a03 !important; border-color: #92400e !important; color: #fcd34d !important; }
+      .mft-warning strong { color: #fef3c7 !important; }
+      .mft-error { background-color: #450a0a !important; border-color: #b91c1c !important; color: #fca5a5 !important; }
+      .mft-error strong { color: #fee2e2 !important; }
+
+      /* Force les div/span internes des cards à hériter de la couleur du parent */
+      .mft-info div, .mft-info span,
+      .mft-success div, .mft-success span,
+      .mft-warning div, .mft-warning span,
+      .mft-error div, .mft-error span { color: inherit !important; }
+
+      /* Score block */
+      .mft-score-bg-success { background-color: #064e3b !important; border-color: #047857 !important; }
+      .mft-score-bg-fail { background-color: #450a0a !important; border-color: #b91c1c !important; }
+      .mft-score-text-success { color: #6ee7b7 !important; }
+      .mft-score-text-fail { color: #fca5a5 !important; }
+
+      /* Footer */
+      .mft-footer { background-color: #0a0d24 !important; color: #cbd5e1 !important; border-color: #2d3458 !important; }
+      .mft-footer strong { color: #f8fafc !important; }
+      .mft-footer a { color: #e2e8f0 !important; }
     }
   </style>
 </head>
-<body class="mft-body" style="margin: 0; padding: 0; background-color: ${COLORS.ivory}; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: ${COLORS.slate900};">
+<body class="mft-body" style="margin: 0; padding: 0; background-color: ${COLORS.ivory}; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: ${COLORS.slate900};">
   <!-- Preheader caché (preview inbox) -->
   <div style="display: none; max-height: 0; overflow: hidden; mso-hide: all; font-size: 1px; line-height: 1px; color: transparent;">
     ${escapeHtml(preheader)}
@@ -198,10 +231,10 @@ export function emailLayout(
           <!-- Header navy -->
           <tr>
             <td class="mft-px" style="background-color: ${COLORS.navy}; padding: 28px 36px; text-align: left;">
-              <div style="font-family: Georgia, 'Times New Roman', serif; font-size: 11px; font-weight: 700; letter-spacing: 2.2px; text-transform: uppercase; color: ${COLORS.signal};">
+              <div style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif; font-size: 11px; font-weight: 800; letter-spacing: 2.4px; text-transform: uppercase; color: ${COLORS.signal};">
                 Ma Formation Transport
               </div>
-              <div style="margin-top: 6px; font-size: 12.5px; color: rgba(255,255,255,0.7); letter-spacing: 0.3px;">
+              <div style="margin-top: 6px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif; font-size: 12.5px; color: rgba(255,255,255,0.75); letter-spacing: 0.2px;">
                 Préparation aux titres pros &amp; certifications transport
               </div>
             </td>
@@ -210,7 +243,7 @@ export function emailLayout(
           <!-- Titre h1 -->
           <tr>
             <td class="mft-px" style="padding: 36px 36px 12px;">
-              <h1 class="mft-h1" style="margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 26px; line-height: 1.22; font-weight: 600; color: ${COLORS.navy}; letter-spacing: -0.01em;">
+              <h1 class="mft-h1" style="margin: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif; font-size: 27px; line-height: 1.22; font-weight: 700; color: ${COLORS.navy}; letter-spacing: -0.02em;">
                 ${title}
               </h1>
             </td>
@@ -308,13 +341,13 @@ export function nextSteps(
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
         <tr>
           <td width="40" valign="top" style="padding-right: 14px; width: 40px;">
-            <div style="width: 30px; height: 30px; border-radius: 50%; background-color: ${COLORS.signal}; color: ${COLORS.navy}; text-align: center; line-height: 30px; font-weight: 700; font-size: 13px;">
+            <div style="width: 30px; height: 30px; border-radius: 50%; background-color: ${COLORS.signal}; color: ${COLORS.navy}; text-align: center; line-height: 30px; font-weight: 800; font-size: 13px; font-family: 'Inter', -apple-system, Helvetica, Arial, sans-serif;">
               ${i + 1}
             </div>
           </td>
           <td valign="top">
-            <div style="font-weight: 600; color: ${COLORS.navy}; font-size: 15px;">${escapeHtml(step.title)}</div>
-            <div class="mft-muted" style="margin-top: 3px; color: ${COLORS.slate500}; font-size: 14px; line-height: 1.55;">${escapeHtml(step.description)}</div>
+            <div class="mft-step-title" style="font-weight: 600; color: ${COLORS.navy}; font-size: 15px; font-family: 'Inter', -apple-system, Helvetica, Arial, sans-serif;">${escapeHtml(step.title)}</div>
+            <div class="mft-step-desc" style="margin-top: 3px; color: ${COLORS.slate500}; font-size: 14px; line-height: 1.55;">${escapeHtml(step.description)}</div>
           </td>
         </tr>
       </table>
@@ -328,6 +361,11 @@ export function nextSteps(
 /**
  * Carte d'info colorée (success / warning / info) pour mettre en avant
  * un point important (succès paiement, échec quiz, alerte échéance).
+ *
+ * Note dark mode : chaque tone reçoit une classe spécifique (`mft-info`,
+ * `mft-success`, etc.) qu'on overrride dans `@media (prefers-color-scheme: dark)`
+ * pour garantir un contraste max (les couleurs claires deviennent claires
+ * mais sur fond sombre, et inversement).
  */
 export function infoCard(
   content: string,
@@ -340,8 +378,9 @@ export function infoCard(
     error: { bg: "#FEF2F2", fg: COLORS.rose, border: "#FECACA" },
   };
   const p = palettes[tone];
+  const toneClass = `mft-${tone}`;
   return `
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="mft-card" style="margin: 20px 0; background-color: ${p.bg}; border: 1px solid ${p.border}; border-radius: 12px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="${toneClass}" style="margin: 20px 0; background-color: ${p.bg}; border: 1px solid ${p.border}; border-radius: 12px;">
   <tr>
     <td style="padding: 16px 18px; color: ${p.fg}; font-size: 14.5px; line-height: 1.6;">
       ${content}
@@ -357,14 +396,16 @@ export function scoreBlock(percent: number, passed: boolean): string {
   const color = passed ? COLORS.emerald : COLORS.rose;
   const bg = passed ? "#ECFDF5" : "#FEF2F2";
   const border = passed ? "#A7F3D0" : "#FECACA";
+  const bgClass = passed ? "mft-score-bg-success" : "mft-score-bg-fail";
+  const textClass = passed ? "mft-score-text-success" : "mft-score-text-fail";
   return `
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="mft-card" style="margin: 24px 0; background-color: ${bg}; border: 1px solid ${border}; border-radius: 14px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="${bgClass}" style="margin: 24px 0; background-color: ${bg}; border: 1px solid ${border}; border-radius: 14px;">
   <tr>
     <td align="center" style="padding: 28px 20px;">
-      <div style="font-family: Georgia, 'Times New Roman', serif; font-size: 48px; line-height: 1; font-weight: 700; color: ${color};">
+      <div class="${textClass}" style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif; font-size: 52px; line-height: 1; font-weight: 800; color: ${color}; letter-spacing: -0.02em;">
         ${Math.round(percent)}%
       </div>
-      <div style="margin-top: 8px; font-size: 13px; font-weight: 600; letter-spacing: 1.3px; text-transform: uppercase; color: ${color};">
+      <div class="${textClass}" style="margin-top: 8px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: ${color};">
         ${passed ? "Examen réussi" : "Continuez la préparation"}
       </div>
     </td>

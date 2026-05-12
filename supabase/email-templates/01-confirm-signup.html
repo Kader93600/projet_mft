@@ -29,16 +29,35 @@
     @media (prefers-color-scheme: dark) {
       .mft-body { background-color: #0a0d24 !important; }
       .mft-container { background-color: #131838 !important; }
-      .mft-h1 { color: #f8fafc !important; }
-      .mft-text { color: #e2e8f0 !important; }
-      .mft-muted { color: #94a3b8 !important; }
-      .mft-footer { background-color: #0a0d24 !important; color: #94a3b8 !important; border-color: #2d3458 !important; }
-      .mft-card { background-color: #1c2349 !important; border-color: #2d3458 !important; }
-      .mft-footer a { color: #cbd5e1 !important; }
+      /* Texte général */
+      .mft-h1, .mft-text strong, .mft-step-title { color: #f8fafc !important; }
+      .mft-text, .mft-text p, .mft-text li { color: #e2e8f0 !important; }
+      .mft-muted, .mft-step-desc { color: #cbd5e1 !important; }
+      .mft-text a { color: #93c5fd !important; }
+      /* Cards tone-specific */
+      .mft-card { background-color: #1c2349 !important; border-color: #2d3458 !important; color: #e2e8f0 !important; }
+      .mft-card strong { color: #f8fafc !important; }
+      .mft-info { background-color: #1e2a5e !important; border-color: #3b4d8c !important; color: #c7d2fe !important; }
+      .mft-info strong, .mft-info a { color: #e0e7ff !important; }
+      .mft-success { background-color: #064e3b !important; border-color: #047857 !important; color: #6ee7b7 !important; }
+      .mft-success strong { color: #d1fae5 !important; }
+      .mft-warning { background-color: #451a03 !important; border-color: #92400e !important; color: #fcd34d !important; }
+      .mft-warning strong { color: #fef3c7 !important; }
+      .mft-error { background-color: #450a0a !important; border-color: #b91c1c !important; color: #fca5a5 !important; }
+      .mft-error strong { color: #fee2e2 !important; }
+      /* Force les div/span internes des cards à hériter de la couleur du parent */
+      .mft-info div, .mft-info span,
+      .mft-success div, .mft-success span,
+      .mft-warning div, .mft-warning span,
+      .mft-error div, .mft-error span { color: inherit !important; }
+      /* Footer */
+      .mft-footer { background-color: #0a0d24 !important; color: #cbd5e1 !important; border-color: #2d3458 !important; }
+      .mft-footer strong { color: #f8fafc !important; }
+      .mft-footer a { color: #e2e8f0 !important; }
     }
   </style>
 </head>
-<body class="mft-body" style="margin: 0; padding: 0; background-color: #FAF8F4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #0F172A;">
+<body class="mft-body" style="margin: 0; padding: 0; background-color: #FAF8F4; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #0F172A;">
   <!-- Preheader -->
   <div style="display: none; max-height: 0; overflow: hidden; mso-hide: all; font-size: 1px; line-height: 1px; color: transparent;">
     Bienvenue chez MA FORMATION TRANSPORT. Confirmez votre email en un clic.
@@ -55,7 +74,7 @@
           <!-- Header navy -->
           <tr>
             <td class="mft-px" style="background-color: #0E1240; padding: 28px 36px; text-align: left;">
-              <div style="font-family: Georgia, 'Times New Roman', serif; font-size: 11px; font-weight: 700; letter-spacing: 2.2px; text-transform: uppercase; color: #9FE220;">
+              <div style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2.2px; text-transform: uppercase; color: #9FE220;">
                 Ma Formation Transport
               </div>
               <div style="margin-top: 6px; font-size: 12.5px; color: rgba(255,255,255,0.7); letter-spacing: 0.3px;">
@@ -67,7 +86,7 @@
           <!-- Titre -->
           <tr>
             <td class="mft-px" style="padding: 36px 36px 12px;">
-              <h1 class="mft-h1" style="margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 26px; line-height: 1.22; font-weight: 600; color: #0E1240; letter-spacing: -0.01em;">
+              <h1 class="mft-h1" style="margin: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif; font-size: 26px; line-height: 1.22; font-weight: 600; color: #0E1240; letter-spacing: -0.01em;">
                 Bienvenue ! Une dernière étape.
               </h1>
             </td>
@@ -90,7 +109,7 @@
               </table>
 
               <!-- Info card sécurité -->
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="mft-card" style="margin: 20px 0; background-color: #EEF2FF; border: 1px solid #C7D2FE; border-radius: 12px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="mft-info" style="margin: 20px 0; background-color: #EEF2FF; border: 1px solid #C7D2FE; border-radius: 12px;">
                 <tr>
                   <td style="padding: 16px 18px; color: #0E1240; font-size: 14.5px; line-height: 1.6;">
                     <strong>Ce lien expire dans 24 heures.</strong> Si vous n'êtes pas à l'origine de cette inscription, ignorez simplement cet email — aucun compte ne sera créé sans confirmation.
