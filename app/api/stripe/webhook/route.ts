@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { verifyStripeSignature } from "@/lib/stripe";
 import { captureException } from "@/lib/observability";
-import { sendEmail, emailLayout } from "@/lib/email";
+import { sendEmail, paymentReceivedEmail } from "@/lib/email";
 import { LEGAL } from "@/lib/legal-config";
 
 export const runtime = "nodejs";
@@ -89,25 +89,28 @@ async function handlePaid(session: any) {
     });
   }
 
-  // 3) Email de confirmation
+  // 3) Email de confirmation (template MFT brandé)
   if (email) {
+    const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || LEGAL.website}/login`;
+    const fullName =
+      session.customer_details?.name ||
+      session.customer_details?.email?.split("@")[0] ||
+      null;
+    const tmpl = paymentReceivedEmail({
+      fullName,
+      amountCents,
+      loginUrl,
+      invoiceUrl: session.invoice
+        ? `https://dashboard.stripe.com/invoices/${session.invoice}`
+        : null,
+    });
     await sendEmail({
       to: email,
-      subject: "Paiement reçu — Bienvenue à bord 🎉",
-      html: emailLayout(
-        "Paiement confirmé",
-        `<p>Merci pour votre confiance. Votre paiement de <strong>${(amountCents / 100).toLocaleString("fr-FR", { style: "currency", currency: "EUR" })}</strong> a bien été enregistré.</p>
-         <p>Vous allez recevoir d'ici quelques minutes :</p>
-         <ul>
-           <li>Votre <strong>convention de formation</strong> (PDF)</li>
-           <li>Votre <strong>convocation officielle</strong> avec les modalités d'accès</li>
-           <li>Vos identifiants de connexion à la plateforme</li>
-         </ul>
-         <p style="margin:24px 0">
-           <a href="${process.env.NEXT_PUBLIC_APP_URL}/login" style="display:inline-block;padding:12px 22px;background:#0E1240;color:#fff;text-decoration:none;border-radius:12px;font-weight:500">Accéder à ma plateforme</a>
-         </p>
-         <p style="font-size:13px;color:#64748B">Une question ? Répondez à cet email — réponse sous 4 h ouvrées.</p>`
-      ),
+      ...tmpl,
+      tags: [
+        { name: "kind", value: "payment_received" },
+        ...(planId ? [{ name: "plan_id", value: String(planId) }] : []),
+      ],
     });
   }
 }

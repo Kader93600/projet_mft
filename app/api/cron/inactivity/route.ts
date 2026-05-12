@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { sendEmail, emailLayout } from "@/lib/email";
+import { sendEmail, inactivityReminderEmail } from "@/lib/email";
 import { LEGAL } from "@/lib/legal-config";
 import { captureException } from "@/lib/observability";
 
@@ -51,20 +51,17 @@ export async function GET(req: Request) {
 
     // Email aux nouvellement notifiés (ceux dont last_pinged_at était nul ou >7j)
     const toEmail = (alerts ?? []).slice(0, 50);
+    const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL || LEGAL.website}/dashboard`;
     let sent = 0;
     for (const a of toEmail) {
+      const tmpl = inactivityReminderEmail({
+        fullName: a.full_name,
+        daysInactive: a.days_inactive,
+        dashboardUrl,
+      });
       const r = await sendEmail({
         to: a.email,
-        subject: "On vous attend pour reprendre votre formation",
-        html: emailLayout(
-          "Reprenons votre préparation !",
-          `<p>Bonjour ${a.full_name ?? ""},</p>
-           <p>Votre dernière activité sur la plateforme remonte à <strong>${Math.round(a.days_inactive)} jours</strong>. La régularité est la clé de la réussite à l'examen ${LEGAL.rncpCode}.</p>
-           <p style="margin:24px 0">
-             <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" style="display:inline-block;padding:12px 22px;background:#0E1240;color:#fff;text-decoration:none;border-radius:12px;font-weight:500">Reprendre maintenant</a>
-           </p>
-           <p style="font-size:13px;color:#64748B">Besoin d'aide ? Répondez à cet email — votre référent pédagogique vous recontactera sous 24 h.</p>`
-        ),
+        ...tmpl,
         tags: [{ name: "kind", value: "inactivity" }],
       });
       if (r.ok) sent++;
