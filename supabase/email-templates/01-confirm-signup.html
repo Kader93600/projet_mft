@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="x-apple-disable-message-reformatting" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="supported-color-schemes" content="light dark" />
+  <title>Confirmez votre inscription</title>
+  <!--[if mso]>
+  <style type="text/css">
+    table, td, div, h1, h2, p, a { font-family: Arial, Helvetica, sans-serif !important; }
+  </style>
+  <![endif]-->
+  <style>
+    body, table, td, p, a, h1, h2, div { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-collapse: collapse; }
+    img { border: 0; line-height: 100%; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }
+    p { display: block; margin: 0; padding: 0; }
+    a { text-decoration: none; }
+
+    @media only screen and (max-width: 600px) {
+      .mft-container { width: 100% !important; max-width: 100% !important; border-radius: 0 !important; }
+      .mft-px { padding-left: 22px !important; padding-right: 22px !important; }
+      .mft-h1 { font-size: 22px !important; line-height: 1.25 !important; }
+      .mft-cta a { display: block !important; }
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .mft-body { background-color: #0a0d24 !important; }
+      .mft-container { background-color: #131838 !important; }
+      .mft-h1 { color: #f8fafc !important; }
+      .mft-text { color: #e2e8f0 !important; }
+      .mft-muted { color: #94a3b8 !important; }
+      .mft-footer { background-color: #0a0d24 !important; color: #94a3b8 !important; border-color: #2d3458 !important; }
+      .mft-card { background-color: #1c2349 !important; border-color: #2d3458 !important; }
+      .mft-footer a { color: #cbd5e1 !important; }
+    }
+  </style>
+</head>
+<body class="mft-body" style="margin: 0; padding: 0; background-color: #FAF8F4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #0F172A;">
+  <!-- Preheader -->
+  <div style="display: none; max-height: 0; overflow: hidden; mso-hide: all; font-size: 1px; line-height: 1px; color: transparent;">
+    Bienvenue chez MA FORMATION TRANSPORT. Confirmez votre email en un clic.
+  </div>
+
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="mft-body" style="background-color: #FAF8F4; padding: 32px 12px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="mft-container" style="max-width: 600px; background-color: #FFFFFF; border-radius: 18px; overflow: hidden; box-shadow: 0 4px 32px rgba(14, 18, 64, 0.08);">
+
+          <!-- Stripe signal -->
+          <tr><td style="height: 5px; background-color: #9FE220; line-height: 5px; font-size: 0;">&nbsp;</td></tr>
+
+          <!-- Header navy -->
+          <tr>
+            <td class="mft-px" style="background-color: #0E1240; padding: 28px 36px; text-align: left;">
+              <div style="font-family: Georgia, 'Times New Roman', serif; font-size: 11px; font-weight: 700; letter-spacing: 2.2px; text-transform: uppercase; color: #9FE220;">
+                Ma Formation Transport
+              </div>
+              <div style="margin-top: 6px; font-size: 12.5px; color: rgba(255,255,255,0.7); letter-spacing: 0.3px;">
+                Préparation aux titres pros &amp; certifications transport
+              </div>
+            </td>
+          </tr>
+
+          <!-- Titre -->
+          <tr>
+            <td class="mft-px" style="padding: 36px 36px 12px;">
+              <h1 class="mft-h1" style="margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 26px; line-height: 1.22; font-weight: 600; color: #0E1240; letter-spacing: -0.01em;">
+                Bienvenue ! Une dernière étape.
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Corps -->
+          <tr>
+            <td class="mft-px mft-text" style="padding: 12px 36px 32px; font-size: 15.5px; line-height: 1.65; color: #334155;">
+              <p>Merci de vous être inscrit chez <strong>MA FORMATION TRANSPORT</strong>. Avant d'accéder à votre espace stagiaire, nous devons confirmer que <strong>{{ .Email }}</strong> est bien votre adresse email.</p>
+
+              <!-- CTA bulletproof -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" class="mft-cta" style="margin: 32px auto;">
+                <tr>
+                  <td align="center" style="border-radius: 12px; background-color: #9FE220;">
+                    <a href="{{ .ConfirmationURL }}" target="_blank" style="display: inline-block; padding: 14px 30px; font-size: 15px; font-weight: 600; color: #0E1240; text-decoration: none; border-radius: 12px; background-color: #9FE220; mso-padding-alt: 14px 30px; letter-spacing: 0.2px;">
+                      Confirmer mon inscription
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Info card sécurité -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="mft-card" style="margin: 20px 0; background-color: #EEF2FF; border: 1px solid #C7D2FE; border-radius: 12px;">
+                <tr>
+                  <td style="padding: 16px 18px; color: #0E1240; font-size: 14.5px; line-height: 1.6;">
+                    <strong>Ce lien expire dans 24 heures.</strong> Si vous n'êtes pas à l'origine de cette inscription, ignorez simplement cet email — aucun compte ne sera créé sans confirmation.
+                  </td>
+                </tr>
+              </table>
+
+              <p class="mft-muted" style="font-size: 13px; color: #64748B; margin-top: 16px;">
+                Le bouton ne fonctionne pas&nbsp;? Copiez-collez ce lien dans votre navigateur&nbsp;:<br/>
+                <a href="{{ .ConfirmationURL }}" style="color: #0E1240; word-break: break-all;">{{ .ConfirmationURL }}</a>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td class="mft-footer mft-px" style="background-color: #F1F5F9; padding: 22px 36px 26px; font-size: 12px; color: #64748B; border-top: 1px solid #E5E7EB;">
+              <div style="line-height: 1.65;">
+                <strong style="color: #334155; letter-spacing: 0.2px;">MA FORMATION TRANSPORT</strong>
+                &middot; SIRET 908 851 280 00028
+              </div>
+              <div style="margin-top: 3px;">
+                N° activité OF 11 77 09 47177 &middot; Qualiopi CW202525-4287
+              </div>
+              <div style="margin-top: 14px;">
+                <a href="https://www.maformationtransport.fr/confidentialite" style="color: #0E1240; text-decoration: underline;">Confidentialité</a>
+                &nbsp;&middot;&nbsp;
+                <a href="https://www.maformationtransport.fr/mes-donnees" style="color: #0E1240; text-decoration: underline;">Mes préférences</a>
+                &nbsp;&middot;&nbsp;
+                <a href="https://www.maformationtransport.fr/contact" style="color: #0E1240; text-decoration: underline;">Nous contacter</a>
+              </div>
+              <div class="mft-muted" style="margin-top: 14px; color: #64748B; font-size: 11px; line-height: 1.5;">
+                Cet email vous a été envoyé suite à votre inscription. Si vous n'êtes pas à l'origine de cette demande, ignorez-le ou <a href="https://www.maformationtransport.fr/contact" style="color: #64748B; text-decoration: underline;">contactez-nous</a>.
+              </div>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
