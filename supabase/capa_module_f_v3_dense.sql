@@ -57,7 +57,7 @@ BEGIN
     v_bloc,
     'Maîtriser permis et formations obligatoires (FIMO/FCO), entretenir un véhicule conforme, charger en respectant gabarit et arrimage, transporter des marchandises spéciales (ADR) et déployer une politique sécurité-environnement (EPI, écoconduite, ZFE).',
     'intermediaire',
-    200,
+    510, -- durée officielle Capacité ≤ 3,5 t (révision client 2026-05)
     60
   ) RETURNING id INTO v_module;
 

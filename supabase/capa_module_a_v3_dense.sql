@@ -91,7 +91,7 @@ BEGIN
     v_bloc,
     'Les fondamentaux juridiques pour créer et faire vivre une entreprise de transport léger : personnalité juridique, formes de société, facturation, effets de commerce, garanties, recouvrement, procédures collectives.',
     'intermediaire',
-    240,
+    540, -- durée officielle Capacité ≤ 3,5 t (révision client 2026-05)
     10
   ) RETURNING id INTO v_module;
 

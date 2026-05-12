@@ -60,7 +60,7 @@ BEGIN
     v_bloc,
     'Maîtriser les sources du droit social, embaucher, gérer et licencier en sécurité juridique. Convention collective transport, durée du travail des conducteurs, rémunération et bulletin de paie, représentation du personnel et conditions de travail.',
     'intermediaire',
-    210,
+    1050, -- durée officielle Capacité ≤ 3,5 t (révision client 2026-05)
     50
   ) RETURNING id INTO v_module;
 

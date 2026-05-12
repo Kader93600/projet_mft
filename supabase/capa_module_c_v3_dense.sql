@@ -70,7 +70,7 @@ BEGIN
     v_bloc,
     'Maîtriser l''organisation de la profession (DREAL, CRSR, CCT), les conditions d''accès (capacité, honorabilité, capacité financière), le contrat de transport, la lettre de voiture, les contrats spéciaux et les assurances.',
     'avance',
-    240,
+    630, -- durée officielle Capacité ≤ 3,5 t (révision client 2026-05)
     30
   ) RETURNING id INTO v_module;
 

@@ -64,7 +64,7 @@ BEGIN
     v_bloc,
     'Calculer son coût de revient kilométrique, lire un bilan et un compte de résultat, mesurer la santé financière (BFR, trésorerie, ratios), choisir un financement et maîtriser la fiscalité de l''entreprise de transport.',
     'avance',
-    240,
+    3150, -- durée officielle Capacité ≤ 3,5 t (révision client 2026-05)
     40
   ) RETURNING id INTO v_module;
 
