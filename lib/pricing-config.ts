@@ -28,6 +28,21 @@ export interface Plan {
 
 export const PLANS: Plan[] = [
   {
+    // ⚠️ PLAN TEMPORAIRE — uniquement pour valider le tunnel Stripe end-to-end
+    // À SUPPRIMER après le test (revert du commit qui l'a ajouté).
+    id: "test-1e",
+    name: "TEST 1€ — Ne pas commander",
+    tagline: "Plan de test interne",
+    description:
+      "Plan technique temporaire pour valider l'intégration Stripe en production. À supprimer après le test.",
+    priceCents: 100, // 1 €
+    hours: 0,
+    durationWeeks: 0,
+    modality: "distanciel",
+    features: ["Plan technique de test — ne pas commander"],
+    funding: ["auto"],
+  },
+  {
     id: "essentiel",
     name: "Essentiel",
     tagline: "Préparation autonome",
