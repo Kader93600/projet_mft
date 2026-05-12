@@ -9,6 +9,7 @@ import {
   computeModulePercent,
   computeModuleState,
   getModuleKind,
+  getUnlockMode,
   pickNextModule,
   type ModuleProgress,
 } from "@/lib/module-progress";
@@ -201,6 +202,9 @@ export default async function ModulesPage() {
   const passedQuizIds = new Set(
     quizAttempts.filter((a) => a.passed).map((a) => a.quiz_id)
   );
+  // Quiz essayés (au moins 1 tentative, peu importe le score) — utilisé par
+  // les formations en mode déverrouillage 'flexible' (ex: Capacité ≤ 3,5 t).
+  const attemptedQuizIds = new Set(quizAttempts.map((a) => a.quiz_id));
 
   // Dernière interaction par module : max(last_ping_at, finished_at)
   const lastTouchByModule = new Map<string, string>();
@@ -237,18 +241,27 @@ export default async function ModulesPage() {
       .length;
     const quizzesTotal = quizIds.length;
     const quizzesPassed = quizIds.filter((id) => passedQuizIds.has(id)).length;
+    const quizzesAttempted = quizIds.filter((id) => attemptedQuizIds.has(id))
+      .length;
     const hasAnyAttempt =
       lessonsDone > 0 ||
       quizzesPassed > 0 ||
       lessonIds.some((id) => lessonViews.some((v) => v.lesson_id === id)) ||
       quizIds.some((id) => quizAttempts.some((a) => a.quiz_id === id));
 
+    // Mode de déverrouillage : 'flexible' pour Capacité ≤ 3,5 t, 'strict'
+    // ailleurs (révision client 2026-05).
+    const formationSlug = formationByModule.get(m.id) ?? null;
+    const unlockMode = getUnlockMode(formationSlug);
+
     const baseState = computeModuleState({
       lessonsTotal,
       lessonsDone,
       quizzesTotal,
       quizzesPassed,
+      quizzesAttempted,
       hasAnyAttempt,
+      unlockMode,
     });
 
     const percent = computeModulePercent({
@@ -256,6 +269,8 @@ export default async function ModulesPage() {
       lessonsDone,
       quizzesTotal,
       quizzesPassed,
+      quizzesAttempted,
+      unlockMode,
     });
 
     const kind = getModuleKind(m.slug);
@@ -270,9 +285,11 @@ export default async function ModulesPage() {
       lessonsDone,
       quizzesTotal,
       quizzesPassed,
+      quizzesAttempted,
       percent,
       state: baseState,
       lastTouchedAt: lastTouchByModule.get(m.id) ?? null,
+      formationSlug: formationSlug ?? undefined,
     };
 
     return {
@@ -282,7 +299,7 @@ export default async function ModulesPage() {
       summary: m.summary,
       duration_min: m.duration_min,
       difficulty: m.difficulty,
-      formation_slug: formationByModule.get(m.id) ?? null,
+      formation_slug: formationSlug,
       lessons_count: lessonsTotal,
       quizzes_count: quizzesTotal,
       lessons_done: lessonsDone,

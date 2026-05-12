@@ -6,6 +6,7 @@ import { FormationStripe } from "@/components/formation/formation-stripe";
 import { FormationBadge } from "@/components/formation/formation-badge";
 import { resolveFormationFromModule } from "@/lib/formation-resolver";
 import { findFormation } from "@/lib/formations-config";
+import { isFlexibleUnlockFormation } from "@/lib/module-progress";
 import {
   ArrowLeft,
   BookOpen,
@@ -145,14 +146,23 @@ export default async function ModuleDetail({
   const done = lessons?.filter((l: any) => doneIds.has(l.id)).length ?? 0;
   const pct = total ? Math.round((done / total) * 100) : 0;
 
-  // Module entièrement validé ? Critère : toutes les leçons + tous les
-  // quiz réussis. Aligne avec computeModuleState côté /modules pour une
-  // expérience cohérente.
+  // Module entièrement validé ? Critère adapté au mode de déverrouillage
+  // de la formation (révision client 2026-05) :
+  //   - 'strict'   (défaut) : leçons + quiz RÉUSSIS (alignement /modules)
+  //   - 'flexible' (Capacité ≤ 3,5 t) : leçons + quiz ESSAYÉS (score ignoré)
   const allLessonsDone = total > 0 && done >= total;
   const allQuizzesPassed =
     (quizzes?.length ?? 0) === 0 ||
     (quizzes ?? []).every((q: any) => summaryByQuiz.get(q.id)?.bestPassed);
-  const moduleFullyDone = allLessonsDone && allQuizzesPassed;
+  const allQuizzesAttempted =
+    (quizzes?.length ?? 0) === 0 ||
+    (quizzes ?? []).every(
+      (q: any) => (summaryByQuiz.get(q.id)?.attemptsCount ?? 0) > 0
+    );
+  const isFlexibleUnlock = isFlexibleUnlockFormation(formationSlug);
+  const moduleFullyDone = isFlexibleUnlock
+    ? allLessonsDone && allQuizzesAttempted
+    : allLessonsDone && allQuizzesPassed;
 
   // Récupère le module suivant dans l'ordre de la formation (display_order).
   // Sert au CTA "Module suivant" quand l'actuel est terminé.

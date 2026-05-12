@@ -12,6 +12,7 @@ import {
 } from "@/lib/quiz-progress";
 import {
   applyLinearLocking,
+  getUnlockMode,
   computeModulePercent,
   computeModuleState,
   getModuleKind,
@@ -202,6 +203,13 @@ export default async function QuizListPage() {
 
   // Pour le verrouillage des examens synthèse/final : on a besoin du
   // ModuleProgress de chaque module pour savoir si tous les "course" sont done.
+  // (Précalculs hors map pour éviter les Set recréés par module.)
+  const passedQuizIds = new Set(
+    userAttempts.filter((a) => a.passed).map((a) => a.quiz_id)
+  );
+  // Quiz essayés (au moins 1 attempt) — utilisé en mode 'flexible' (Capacité ≤ 3,5 t)
+  const attemptedQuizIds = new Set(userAttempts.map((a) => a.quiz_id));
+
   const modulesProgress: ModuleProgress[] = (modulesRaw ?? []).map((m: any) => {
     const lessonIds = lessonsByModule.get(m.id) ?? [];
     const quizIds = (quizzesByModule.get(m.id) ?? []).map((q: any) => q.id);
@@ -210,11 +218,11 @@ export default async function QuizListPage() {
       completedLessonIds.has(id)
     ).length;
     const quizzesTotal = quizIds.length;
-    const passedQuizIds = new Set(
-      userAttempts.filter((a) => a.passed).map((a) => a.quiz_id)
-    );
     const quizzesPassed = quizIds.filter((id: string) =>
       passedQuizIds.has(id)
+    ).length;
+    const quizzesAttempted = quizIds.filter((id: string) =>
+      attemptedQuizIds.has(id)
     ).length;
     const hasAnyAttempt =
       lessonsDone > 0 ||
@@ -223,12 +231,20 @@ export default async function QuizListPage() {
       quizIds.some((id: string) =>
         userAttempts.some((a) => a.quiz_id === id)
       );
+
+    // Mode de déverrouillage : 'flexible' pour Capacité ≤ 3,5 t,
+    // 'strict' ailleurs (révision client 2026-05).
+    const formationSlug = formationByModule.get(m.id);
+    const unlockMode = getUnlockMode(formationSlug);
+
     const baseState = computeModuleState({
       lessonsTotal,
       lessonsDone,
       quizzesTotal,
       quizzesPassed,
+      quizzesAttempted,
       hasAnyAttempt,
+      unlockMode,
     });
     return {
       slug: m.slug,
@@ -239,14 +255,18 @@ export default async function QuizListPage() {
       lessonsDone,
       quizzesTotal,
       quizzesPassed,
+      quizzesAttempted,
       percent: computeModulePercent({
         lessonsTotal,
         lessonsDone,
         quizzesTotal,
         quizzesPassed,
+        quizzesAttempted,
+        unlockMode,
       }),
       state: baseState,
       lastTouchedAt: null,
+      formationSlug,
     };
   });
 

@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { useState } from "react";
 import { findFormation } from "@/lib/formations-config";
-import type { ModuleState, ModuleKind } from "@/lib/module-progress";
+import {
+  isFlexibleUnlockFormation,
+  type ModuleState,
+  type ModuleKind,
+} from "@/lib/module-progress";
 import { cn } from "@/lib/utils";
 import {
   ArrowRight,
@@ -78,10 +82,17 @@ export function ModuleCard({ module: m }: { module: ModuleCardData }) {
 
   // ----- Locked : div statique, pas de Link
   if (state === "locked") {
+    // Message adapté au mode de déverrouillage de la formation
+    // (révision client 2026-05) : la Capacité ≤ 3,5 t accepte des quiz
+    // ratés tant qu'ils sont essayés.
+    const isFlexible = isFlexibleUnlockFormation(m.formation_slug);
+    const lockedHelp = isFlexible
+      ? "Terminez toutes les leçons et tentez les exercices du module précédent pour débloquer celui-ci."
+      : "Terminez le module précédent pour débloquer celui-ci.";
     return (
       <div
         aria-disabled="true"
-        aria-label={`${m.title} (verrouillé, terminez le module précédent pour débloquer)`}
+        aria-label={`${m.title} (verrouillé — ${lockedHelp})`}
         className={cn(
           "relative block overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/60",
           "transition-colors duration-200 select-none cursor-not-allowed"
@@ -110,7 +121,7 @@ export function ModuleCard({ module: m }: { module: ModuleCardData }) {
             </p>
           )}
           <div className="mt-auto pt-5 text-[12px] text-slate-500 leading-snug">
-            Terminez le module précédent pour débloquer celui-ci.
+            {lockedHelp}
           </div>
         </div>
       </div>

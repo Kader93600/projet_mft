@@ -31,6 +31,7 @@ import {
   computeModuleState,
   computeModulePercent,
   getModuleKind,
+  getUnlockMode,
   type ModuleProgress,
 } from "@/lib/module-progress";
 
@@ -115,10 +116,12 @@ export default async function DashboardPage() {
           .in("formation_id", enrolledFormationIds)
       : Promise.resolve({ data: [] as any[] }),
     // Display order des modules dans la formation (pour le verrouillage linéaire)
+    // + slug de la formation (pour déterminer le mode 'strict' vs 'flexible'
+    //   de déverrouillage — révision client 2026-05).
     enrolledFormationIds.length > 0
       ? supabase
           .from("formation_modules")
-          .select("module_id, display_order")
+          .select("module_id, display_order, formations(slug)")
           .in("formation_id", enrolledFormationIds)
       : Promise.resolve({ data: [] as any[] }),
   ]);
@@ -147,9 +150,19 @@ export default async function DashboardPage() {
     (allModuleAttempts ?? []).map((a: any) => a.quiz_id)
   );
   const orderByModule = new Map<string, number>();
+  // module_id → slug de la formation (pour le mode de déverrouillage)
+  const formationSlugByModule = new Map<string, string>();
   (formationModulesOrder ?? []).forEach((fm: any) => {
     if (!orderByModule.has(fm.module_id)) {
       orderByModule.set(fm.module_id, fm.display_order ?? 0);
+    }
+    // Supabase retourne `formations` comme objet (ou array selon le client)
+    const formationSlug =
+      Array.isArray(fm.formations)
+        ? fm.formations[0]?.slug
+        : fm.formations?.slug;
+    if (formationSlug && !formationSlugByModule.has(fm.module_id)) {
+      formationSlugByModule.set(fm.module_id, formationSlug);
     }
   });
 
@@ -161,19 +174,31 @@ export default async function DashboardPage() {
     const quizIds = quizzesByModule.get(m.id) ?? [];
     const quizzesTotal = quizIds.length;
     const quizzesPassed = quizIds.filter((id) => passedQuizIds.has(id)).length;
+    const quizzesAttempted = quizIds.filter((id) => attemptedQuizIds.has(id))
+      .length;
     const hasAnyAttempt = quizIds.some((id) => attemptedQuizIds.has(id));
+
+    // Mode de déverrouillage : 'flexible' pour Capacité ≤ 3,5 t (révision
+    // client 2026-05), 'strict' ailleurs.
+    const formationSlug = formationSlugByModule.get(m.id);
+    const unlockMode = getUnlockMode(formationSlug);
+
     const state = computeModuleState({
       lessonsTotal,
       lessonsDone,
       quizzesTotal,
       quizzesPassed,
+      quizzesAttempted,
       hasAnyAttempt,
+      unlockMode,
     });
     const percent = computeModulePercent({
       lessonsTotal,
       lessonsDone,
       quizzesTotal,
       quizzesPassed,
+      quizzesAttempted,
+      unlockMode,
     });
     return {
       slug: m.slug,
@@ -184,9 +209,11 @@ export default async function DashboardPage() {
       lessonsDone,
       quizzesTotal,
       quizzesPassed,
+      quizzesAttempted,
       percent,
       state,
       lastTouchedAt: null,
+      formationSlug,
     };
   });
   const lockedList = applyLinearLocking(moduleProgressList);
@@ -390,12 +417,20 @@ export default async function DashboardPage() {
               ? "inline-flex items-center gap-1 text-slate-400"
               : "inline-flex items-center gap-1 group-hover:text-gold-700 transition-colors";
 
+            // Message verrouillé adapté à la formation (révision client 2026-05) :
+            // Capacité ≤ 3,5 t = "essayer les exercices suffit" (mode flexible).
+            const moduleFormationSlug = formationSlugByModule.get(m.id);
+            const lockedHelp =
+              getUnlockMode(moduleFormationSlug) === "flexible"
+                ? "Terminez les leçons et tentez les exercices du module précédent pour débloquer celui-ci."
+                : "Terminez le cours précédent pour débloquer celui-ci.";
+
             const Wrapper = isLocked
               ? ({ children }: { children: React.ReactNode }) => (
                   <div
                     className="cursor-not-allowed"
                     aria-disabled="true"
-                    title="Terminez le cours précédent pour débloquer celui-ci"
+                    title={lockedHelp}
                   >
                     {children}
                   </div>
