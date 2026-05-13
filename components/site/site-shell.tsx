@@ -33,6 +33,9 @@ export function SiteHeader() {
           <Link href="/financements" className="hover:text-white transition">
             Financements
           </Link>
+          <Link href="/tarifs" className="hover:text-white transition">
+            Tarifs
+          </Link>
           <Link href="/temoignages" className="hover:text-white transition">
             Témoignages
           </Link>
@@ -88,6 +91,11 @@ function SiteFooterContact() {
             <li>
               <Link href="/financements" className="hover:text-white">
                 Financements
+              </Link>
+            </li>
+            <li>
+              <Link href="/tarifs" className="hover:text-white">
+                Tarifs
               </Link>
             </li>
             <li>
