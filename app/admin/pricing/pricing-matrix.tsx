@@ -137,10 +137,10 @@ export function PricingMatrix({ formations, priceMap }: Props) {
   };
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-white/10 bg-night-100">
+    <div className="overflow-x-auto rounded-2xl border border-navy-100 bg-white shadow-soft">
       <table className="w-full">
         <thead>
-          <tr className="border-b border-white/10 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/45">
+          <tr className="border-b border-navy-100 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 bg-slate-50/50">
             <th className="text-left p-4 w-1/3">Formation</th>
             {PACK_SLUGS.map((p) => (
               <th key={p} className="text-left p-4">
@@ -157,11 +157,11 @@ export function PricingMatrix({ formations, priceMap }: Props) {
           {formations.map((f) => (
             <tr
               key={f.id}
-              className="border-b border-white/5 last:border-b-0"
+              className="border-b border-navy-100 last:border-b-0 hover:bg-slate-50/50 transition-colors"
             >
               <td className="p-4">
-                <div className="font-medium text-white text-sm">{f.code}</div>
-                <div className="text-xs text-white/55 mt-0.5 line-clamp-1">
+                <div className="font-semibold text-navy-950 text-sm">{f.code}</div>
+                <div className="text-xs text-slate-500 mt-0.5 line-clamp-1">
                   {f.title}
                 </div>
               </td>
@@ -179,13 +179,13 @@ export function PricingMatrix({ formations, priceMap }: Props) {
                 return (
                   <td key={pack} className="p-3 align-top">
                     {!available ? (
-                      <div className="text-xs text-white/35 italic">
+                      <div className="text-xs text-slate-400 italic">
                         Non vendable
                       </div>
                     ) : isEditing ? (
                       <div className="space-y-2">
                         <div>
-                          <label className="text-[10px] uppercase tracking-wider text-white/45 block mb-1">
+                          <label className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold block mb-1">
                             Prix (€)
                           </label>
                           <input
@@ -198,14 +198,15 @@ export function PricingMatrix({ formations, priceMap }: Props) {
                                 priceEuros: e.target.value,
                               })
                             }
-                            className="w-full bg-night-50 border border-white/15 rounded-md px-2.5 py-1.5 text-sm text-white focus:outline-none focus:border-signal-500/50"
+                            className="w-full bg-white border border-navy-200 rounded-md px-2.5 py-1.5 text-sm text-navy-950 focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500/30"
                             disabled={isPending}
                             autoFocus
                           />
                         </div>
                         <div>
-                          <label className="text-[10px] uppercase tracking-wider text-white/45 block mb-1">
-                            Prix barré (€) <span className="text-white/30">— optionnel</span>
+                          <label className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold block mb-1">
+                            Prix barré (€){" "}
+                            <span className="text-slate-400 font-normal">— optionnel</span>
                           </label>
                           <input
                             type="text"
@@ -218,11 +219,11 @@ export function PricingMatrix({ formations, priceMap }: Props) {
                               })
                             }
                             placeholder="—"
-                            className="w-full bg-night-50 border border-white/15 rounded-md px-2.5 py-1.5 text-sm text-white focus:outline-none focus:border-signal-500/50"
+                            className="w-full bg-white border border-navy-200 rounded-md px-2.5 py-1.5 text-sm text-navy-950 placeholder:text-slate-400 focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500/30"
                             disabled={isPending}
                           />
                         </div>
-                        <label className="flex items-center gap-2 text-xs text-white/70 cursor-pointer">
+                        <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
                           <input
                             type="checkbox"
                             checked={editing.active}
@@ -233,7 +234,7 @@ export function PricingMatrix({ formations, priceMap }: Props) {
                               })
                             }
                             disabled={isPending}
-                            className="accent-signal-500"
+                            className="accent-emerald-600 h-4 w-4"
                           />
                           Actif (visible publiquement)
                         </label>
@@ -242,7 +243,7 @@ export function PricingMatrix({ formations, priceMap }: Props) {
                             type="button"
                             onClick={saveEdit}
                             disabled={isPending}
-                            className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-signal-500 text-night-900 hover:bg-signal-400 disabled:opacity-50 transition-colors"
+                            className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-navy-900 text-white hover:bg-navy-800 disabled:opacity-50 transition-colors"
                           >
                             {isPending ? (
                               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -255,13 +256,13 @@ export function PricingMatrix({ formations, priceMap }: Props) {
                             type="button"
                             onClick={cancelEdit}
                             disabled={isPending}
-                            className="inline-flex items-center justify-center px-2.5 py-1.5 rounded-md text-xs font-semibold bg-white/5 text-white/70 hover:bg-white/10 disabled:opacity-50 transition-colors"
+                            className="inline-flex items-center justify-center px-2.5 py-1.5 rounded-md text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 disabled:opacity-50 transition-colors"
                           >
                             <X className="h-3.5 w-3.5" />
                           </button>
                         </div>
                         {cellFeedback?.type === "error" && (
-                          <div className="text-[11px] text-rose-400 flex items-start gap-1 leading-tight">
+                          <div className="text-[11px] text-rose-600 flex items-start gap-1 leading-tight bg-rose-50 border border-rose-200 rounded px-2 py-1.5">
                             <AlertCircle className="h-3 w-3 mt-0.5 shrink-0" />
                             <span>{cellFeedback.message}</span>
                           </div>
@@ -271,7 +272,7 @@ export function PricingMatrix({ formations, priceMap }: Props) {
                       <button
                         type="button"
                         onClick={() => startEdit(f.id, pack, cell)}
-                        className="group w-full text-left p-2 -m-2 rounded-md hover:bg-white/5 transition-colors"
+                        className="group w-full text-left p-2 -m-2 rounded-md hover:bg-slate-100 transition-colors"
                       >
                         {cell ? (
                           <>
@@ -280,34 +281,34 @@ export function PricingMatrix({ formations, priceMap }: Props) {
                                 className={
                                   "font-semibold text-lg " +
                                   (cell.active
-                                    ? "text-white"
-                                    : "text-white/40 line-through")
+                                    ? "text-navy-950"
+                                    : "text-slate-400 line-through")
                                 }
                               >
                                 {fmtEuros(cell.priceCents)}
                               </span>
                               {cell.compareAtCents && (
-                                <span className="text-xs text-white/35 line-through">
+                                <span className="text-xs text-slate-400 line-through">
                                   {fmtEuros(cell.compareAtCents)}
                                 </span>
                               )}
                             </div>
-                            <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-white/40 group-hover:text-white/60 transition-colors">
+                            <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-slate-400 group-hover:text-gold-700 transition-colors">
                               <Pencil className="h-2.5 w-2.5" />
                               {cell.active ? "Modifier" : "Inactif — modifier"}
                             </div>
                           </>
                         ) : (
-                          <div className="text-xs text-white/40 italic">
+                          <div className="text-xs text-slate-400 italic">
                             <span className="block">Pas de prix</span>
-                            <span className="text-[10px] text-signal-500 mt-0.5 inline-flex items-center gap-1">
+                            <span className="text-[10px] text-gold-700 mt-0.5 inline-flex items-center gap-1 font-semibold not-italic">
                               <Pencil className="h-2.5 w-2.5" />
                               Définir
                             </span>
                           </div>
                         )}
                         {cellFeedback?.type === "ok" && (
-                          <div className="text-[10px] text-signal-500 mt-1 flex items-center gap-1">
+                          <div className="text-[10px] text-emerald-700 mt-1 flex items-center gap-1 font-semibold">
                             <Check className="h-2.5 w-2.5" />
                             {cellFeedback.message}
                           </div>
