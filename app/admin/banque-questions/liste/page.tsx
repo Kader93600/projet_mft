@@ -14,6 +14,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { findFormation, FORMATIONS } from "@/lib/formations-config";
+import { getQuestionFilterConfig } from "@/lib/question-filters";
 import { ToggleActiveButton } from "./toggle-active-button";
 import { ConfirmAction } from "@/components/ui/confirm-action";
 import { deleteQuestion } from "../validation-qr/actions";
@@ -22,6 +23,9 @@ export const dynamic = "force-dynamic";
 
 const PAGE_SIZE = 25;
 
+// Labels affichés dans le sélecteur "Cours" (par défaut : modules Capacité)
+// Note : pour GOTRM le filtre devient automatiquement "Chapitre" via
+// getQuestionFilterConfig() ci-dessous.
 const MODULE_LABELS: Record<string, string> = {
   a: "A — Droit",
   b: "B — Commercial",
@@ -78,7 +82,11 @@ export default async function BanqueQuestionsListPage({
   }
   if (statusFilter === "active") query = query.eq("active", true);
   if (statusFilter === "inactive") query = query.eq("active", false);
-  if (moduleFilter) query = query.contains("tags", [`module-${moduleFilter}`]);
+  // Filtre par "groupe" (Chapitre pour GOTRM, Module pour Capacité…).
+  // Le préfixe du tag dépend de la formation sélectionnée.
+  const filterConfig = getQuestionFilterConfig(formationSlug);
+  if (moduleFilter)
+    query = query.contains("tags", [`${filterConfig.tagPrefix}${moduleFilter}`]);
   if (search) query = query.ilike("statement", `%${search}%`);
 
   const { data, count } = await query.range(
@@ -201,11 +209,16 @@ export default async function BanqueQuestionsListPage({
             buildUrl={(v) => buildUrl({ status: v || undefined, page: "1" })}
           />
           <SelectFilter
-            label="Cours"
+            label={filterConfig.label}
             value={moduleFilter}
             options={[
               { v: "", l: "Tous" },
-              ...Object.entries(MODULE_LABELS).map(([v, l]) => ({ v, l })),
+              ...filterConfig.keys.map((k) => ({
+                v: k,
+                l: filterConfig.formatLong
+                  ? filterConfig.formatLong(k)
+                  : filterConfig.formatPill(k),
+              })),
             ]}
             buildUrl={(v) => buildUrl({ module: v || undefined, page: "1" })}
           />
@@ -244,11 +257,16 @@ export default async function BanqueQuestionsListPage({
           ) : (
             <ul className="divide-y divide-navy-50">
               {(data ?? []).map((q: any) => {
-                const moduleTag = q.tags?.find((t: string) =>
-                  t.startsWith("module-")
+                // Détecte le tag de groupe : chapitre-N ou module-X selon
+                // la nomenclature pédagogique de la formation.
+                const groupTag = q.tags?.find((t: string) =>
+                  t.startsWith(filterConfig.tagPrefix)
                 );
-                const moduleLetter = moduleTag
-                  ? moduleTag.split("-")[1].toUpperCase()
+                const groupKey = groupTag
+                  ? groupTag.slice(filterConfig.tagPrefix.length)
+                  : null;
+                const groupLabel = groupKey
+                  ? filterConfig.formatPill(groupKey)
                   : "?";
                 const correctChoices = (q.choices ?? []).filter(
                   (c: any) => c.is_correct
@@ -264,7 +282,7 @@ export default async function BanqueQuestionsListPage({
                           {q.type.toUpperCase()}
                         </Badge>
                         <span className="text-[10px] font-semibold text-slate-400">
-                          M.{moduleLetter}
+                          {groupLabel}
                         </span>
                       </div>
                       <div className="flex-1 min-w-0">

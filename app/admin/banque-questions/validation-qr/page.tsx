@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody } from "@/components/ui/card";
 import { ArrowLeft, Filter, CheckCircle2 } from "lucide-react";
 import { findFormation, FORMATIONS } from "@/lib/formations-config";
+import { getQuestionFilterConfig } from "@/lib/question-filters";
 import { QrEditor } from "./qr-editor";
 import { ActivateAllButton } from "./activate-all-button";
 
@@ -15,7 +16,7 @@ export default async function ValidationQrPage({
 }) {
   const supabase = createClient();
   const slug = searchParams?.f ?? "capacite-3-5t";
-  const moduleFilter = searchParams?.module ?? "";
+  const groupFilter = searchParams?.module ?? "";
 
   const formation = findFormation(slug);
   if (!formation) return <div>Formation introuvable</div>;
@@ -27,6 +28,10 @@ export default async function ValidationQrPage({
     .single();
   if (!dbF) return <div>Formation absente en BDD.</div>;
 
+  // Configuration des filtres selon la formation (Chapitres pour GOTRM,
+  // Modules A-F pour Capacité, fallback générique sinon).
+  const filterConfig = getQuestionFilterConfig(slug);
+
   let query = supabase
     .from("question_bank")
     .select(
@@ -36,27 +41,54 @@ export default async function ValidationQrPage({
     .eq("type", "qr")
     .order("source_ref", { ascending: true });
 
-  if (moduleFilter) {
-    query = query.contains("tags", [`module-${moduleFilter}`]);
+  if (groupFilter) {
+    query = query.contains("tags", [`${filterConfig.tagPrefix}${groupFilter}`]);
   }
 
   const { data: questions } = await query;
   const list = (questions ?? []) as any[];
   const inactiveCount = list.filter((q) => !q.active).length;
 
-  // Stats par module
-  const moduleCounts: Record<string, { total: number; inactive: number }> = {};
-  for (const letter of ["a", "b", "c", "d", "e", "f"]) {
-    const { data: rows } = await supabase
-      .from("question_bank")
-      .select("active")
-      .eq("formation_id", dbF.id)
-      .eq("type", "qr")
-      .contains("tags", [`module-${letter}`]);
-    const total = rows?.length ?? 0;
-    const inactive = (rows ?? []).filter((r: any) => !r.active).length;
-    moduleCounts[letter] = { total, inactive };
+  // Stats par groupe (Chapitre / Module selon la formation)
+  // On agrège côté JS en une seule passe pour éviter N requêtes parallèles.
+  // Fetch dédié léger : juste tags + active de toutes les QR de la formation.
+  const { data: allTagRows } = await supabase
+    .from("question_bank")
+    .select("tags, active")
+    .eq("formation_id", dbF.id)
+    .eq("type", "qr");
+
+  const groupCounts: Record<string, { total: number; inactive: number }> = {};
+  for (const key of filterConfig.keys) {
+    groupCounts[key] = { total: 0, inactive: 0 };
   }
+  // Plus quelques clés "extra" trouvées dans les tags mais hors config
+  // (utile si le client ajoute un Chapitre 13 ou un Module G plus tard).
+  const extraKeys = new Set<string>();
+  for (const row of allTagRows ?? []) {
+    const tags: string[] = (row as any).tags ?? [];
+    for (const t of tags) {
+      if (!t.startsWith(filterConfig.tagPrefix)) continue;
+      const k = t.slice(filterConfig.tagPrefix.length);
+      if (!groupCounts[k]) {
+        groupCounts[k] = { total: 0, inactive: 0 };
+        if (!filterConfig.keys.includes(k as any)) extraKeys.add(k);
+      }
+      groupCounts[k].total += 1;
+      if (!(row as any).active) groupCounts[k].inactive += 1;
+    }
+  }
+
+  // Ordre d'affichage : clés de la config en premier, puis extra (triés).
+  const orderedKeys: string[] = [
+    ...filterConfig.keys,
+    ...Array.from(extraKeys).sort((a, b) => {
+      const na = parseInt(a, 10);
+      const nb = parseInt(b, 10);
+      if (!isNaN(na) && !isNaN(nb)) return na - nb;
+      return a.localeCompare(b);
+    }),
+  ];
 
   return (
     <div className="space-y-8">
@@ -88,25 +120,28 @@ export default async function ValidationQrPage({
         </p>
       </header>
 
-      {/* Filtres modules */}
+      {/* Filtres par chapitre / module selon la formation */}
       <section className="flex flex-wrap items-center gap-2">
         <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500 mr-2">
-          <Filter className="h-3.5 w-3.5" /> Module
+          <Filter className="h-3.5 w-3.5" /> {filterConfig.label}
         </span>
         <FilterPill
           href={`/admin/banque-questions/validation-qr?f=${slug}`}
           label={`Tous (${list.length})`}
-          active={!moduleFilter}
+          active={!groupFilter}
         />
-        {(["a", "b", "c", "d", "e", "f"] as const).map((letter) => (
-          <FilterPill
-            key={letter}
-            href={`/admin/banque-questions/validation-qr?f=${slug}&module=${letter}`}
-            label={`${letter.toUpperCase()} (${moduleCounts[letter].total})`}
-            active={moduleFilter === letter}
-            highlight={moduleCounts[letter].inactive > 0}
-          />
-        ))}
+        {orderedKeys.map((key) => {
+          const counts = groupCounts[key] ?? { total: 0, inactive: 0 };
+          return (
+            <FilterPill
+              key={key}
+              href={`/admin/banque-questions/validation-qr?f=${slug}&module=${key}`}
+              label={`${filterConfig.formatPill(key)} (${counts.total})`}
+              active={groupFilter === key}
+              highlight={counts.inactive > 0}
+            />
+          );
+        })}
       </section>
 
       {/* Activation en lot */}
