@@ -299,7 +299,23 @@ export const FEATURE_LABEL: Record<PackFeature, string> = {
 };
 
 // ---------------------------------------------------------------------
-// 6. Type guard
+// 6. Format euros (helper d'affichage)
+// ---------------------------------------------------------------------
+
+/**
+ * Formate un prix en centimes vers une string lisible "6 000 €".
+ * Locale FR, sans décimales (les prix de formation sont des montants ronds).
+ */
+export function fmtEuros(cents: number): string {
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+    maximumFractionDigits: 0,
+  }).format(cents / 100);
+}
+
+// ---------------------------------------------------------------------
+// 7. Type guard
 // ---------------------------------------------------------------------
 
 /**
