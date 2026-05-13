@@ -6,6 +6,13 @@ import {
   resolveFormationIdFromQuiz,
 } from "@/lib/formation-resolver";
 
+interface QuestionAnnex {
+  pageNumber: number;
+  label: string;
+  /** URL signée (Supabase Storage), valide 1h. */
+  signedUrl: string;
+}
+
 interface UnifiedQuestion {
   /** id de la question (table source : "questions" ou "question_bank") */
   id: string;
@@ -24,6 +31,8 @@ interface UnifiedQuestion {
   }>;
   /** QR : barème max */
   max_score?: number;
+  /** Annexes PDF à afficher à côté de l'énoncé pendant la réponse. */
+  annexes?: QuestionAnnex[];
 }
 
 export default async function QuizPage({ params }: { params: { id: string } }) {
@@ -84,7 +93,7 @@ export default async function QuizPage({ params }: { params: { id: string } }) {
   const { data: bankLinks } = await supabase
     .from("quiz_question_bank")
     .select(
-      "display_order, question:question_bank(id, type, statement, choices, max_score, explanation)"
+      "display_order, question:question_bank(id, type, statement, choices, max_score, explanation, annex_pages, annex_labels, import_id)"
     )
     .eq("quiz_id", quiz.id)
     .order("display_order");
@@ -100,9 +109,11 @@ export default async function QuizPage({ params }: { params: { id: string } }) {
         explanation: q.explanation ?? null,
         choices: [],
         max_score: q.max_score ?? 4,
-      };
+        annex_pages_raw: q.annex_pages,
+        annex_labels_raw: q.annex_labels,
+        import_id_raw: q.import_id,
+      } as any;
     }
-    // QCM venant de la banque : choices sont en jsonb
     const choices = ((q.choices as any[]) ?? []).map((c, idx) => ({
       id: c.id ?? String.fromCharCode(97 + idx),
       label: c.label,
@@ -116,7 +127,10 @@ export default async function QuizPage({ params }: { params: { id: string } }) {
       statement: q.statement,
       explanation: q.explanation ?? null,
       choices,
-    };
+      annex_pages_raw: q.annex_pages,
+      annex_labels_raw: q.annex_labels,
+      import_id_raw: q.import_id,
+    } as any;
   });
 
   const list = [...fromLegacy, ...fromBank];
@@ -177,6 +191,58 @@ export default async function QuizPage({ params }: { params: { id: string } }) {
         }
       }
     }
+  }
+
+  // ── Annexes : pour chaque question qui en a, on génère une signed URL
+  // vers le PDF source stocké. On regroupe par import_id pour éviter de
+  // ré-générer la même URL plusieurs fois.
+  const importIds = new Set<string>();
+  for (const q of list as any[]) {
+    if (q.import_id_raw && q.annex_pages_raw && q.annex_pages_raw.length > 0) {
+      importIds.add(q.import_id_raw);
+    }
+  }
+  const signedByImport = new Map<string, string>();
+  if (importIds.size > 0) {
+    const { data: importRows } = await supabase
+      .from("question_imports")
+      .select("id, pdf_storage_path")
+      .in("id", [...importIds]);
+    for (const ir of importRows ?? []) {
+      if (!ir.pdf_storage_path) continue;
+      const { data: signed } = await supabase.storage
+        .from("question-imports")
+        .createSignedUrl(ir.pdf_storage_path, 60 * 60); // 1h
+      if (signed?.signedUrl) {
+        signedByImport.set(ir.id, signed.signedUrl);
+      }
+    }
+  }
+
+  for (const q of list as any[]) {
+    if (!q.annex_pages_raw || q.annex_pages_raw.length === 0) {
+      delete q.annex_pages_raw;
+      delete q.annex_labels_raw;
+      delete q.import_id_raw;
+      continue;
+    }
+    const signedUrl = signedByImport.get(q.import_id_raw);
+    if (!signedUrl) {
+      delete q.annex_pages_raw;
+      delete q.annex_labels_raw;
+      delete q.import_id_raw;
+      continue;
+    }
+    q.annexes = (q.annex_pages_raw as number[]).map(
+      (pageNumber: number, i: number) => ({
+        pageNumber,
+        label: q.annex_labels_raw?.[i] ?? `Annexe page ${pageNumber}`,
+        signedUrl,
+      }),
+    );
+    delete q.annex_pages_raw;
+    delete q.annex_labels_raw;
+    delete q.import_id_raw;
   }
 
   const { data: attemptState } = await supabase.rpc("quiz_attempt_state", {

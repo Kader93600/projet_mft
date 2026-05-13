@@ -40,7 +40,15 @@ const cspDirectives = {
     "https://api.resend.com",
     "https://api.stripe.com",
   ],
-  "frame-src": ["'self'", "https://js.stripe.com", "https://hooks.stripe.com"],
+  "frame-src": [
+    "'self'",
+    "https://js.stripe.com",
+    "https://hooks.stripe.com",
+    // Annexes PDF stockées dans Supabase Storage et affichées en iframe
+    // pendant les quiz (cf. /quiz/[id] AnnexPanel).
+    `https://${supabaseHost}`,
+    "https://*.supabase.co",
+  ],
   "frame-ancestors": ["'none'"],
   "base-uri": ["'self'"],
   "form-action": ["'self'"],

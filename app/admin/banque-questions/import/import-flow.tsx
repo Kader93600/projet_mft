@@ -13,6 +13,7 @@ import {
   Trash2,
   Plus,
   RotateCcw,
+  Paperclip,
 } from "lucide-react";
 
 interface FormationOpt {
@@ -23,6 +24,12 @@ interface FormationOpt {
 }
 
 interface ModuleOpt {
+  id: string;
+  slug: string;
+  title: string;
+}
+
+interface LessonOpt {
   id: string;
   slug: string;
   title: string;
@@ -46,13 +53,22 @@ interface DraftQuestion {
   tags: string[];
   explanation?: string;
   warnings: string[];
+  annexPages?: number[];
+  annexLabels?: string[];
   /** Indique si l'admin l'a marquée pour suppression dans cette session. */
   _drop?: boolean;
+}
+
+interface AnnexEntry {
+  pageNumber: number;
+  label: string;
+  ref: string;
 }
 
 interface Props {
   formations: FormationOpt[];
   modulesByFormation: Record<string, ModuleOpt[]>;
+  lessonsByModule: Record<string, LessonOpt[]>;
 }
 
 type Step = "upload" | "review" | "saving" | "done";
@@ -64,7 +80,11 @@ const EXPECTED_TYPES: { value: string; label: string; desc: string }[] = [
   { value: "exam", label: "Examen blanc", desc: "Sujet complet, sections" },
 ];
 
-export function ImportFlow({ formations, modulesByFormation }: Props) {
+export function ImportFlow({
+  formations,
+  modulesByFormation,
+  lessonsByModule,
+}: Props) {
   const [step, setStep] = useState<Step>("upload");
 
   // Étape 1 — Upload
@@ -72,6 +92,7 @@ export function ImportFlow({ formations, modulesByFormation }: Props) {
   const [pastedText, setPastedText] = useState("");
   const [formationId, setFormationId] = useState<string>("");
   const [moduleId, setModuleId] = useState<string>("");
+  const [lessonId, setLessonId] = useState<string>("");
   const [expectedType, setExpectedType] = useState<string>("mixed");
   const [notes, setNotes] = useState("");
   const [inputMode, setInputMode] = useState<"file" | "paste">("file");
@@ -82,6 +103,7 @@ export function ImportFlow({ formations, modulesByFormation }: Props) {
   const [questions, setQuestions] = useState<DraftQuestion[]>([]);
   const [showRawText, setShowRawText] = useState(false);
   const [detectedFormat, setDetectedFormat] = useState<string>("unknown");
+  const [annexes, setAnnexes] = useState<AnnexEntry[]>([]);
 
   // Étape 3 — Result
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -94,6 +116,11 @@ export function ImportFlow({ formations, modulesByFormation }: Props) {
   const modules = useMemo(
     () => (formationId ? modulesByFormation[formationId] ?? [] : []),
     [formationId, modulesByFormation],
+  );
+
+  const lessons = useMemo(
+    () => (moduleId ? lessonsByModule[moduleId] ?? [] : []),
+    [moduleId, lessonsByModule],
   );
 
   const visibleQuestions = useMemo(
@@ -134,6 +161,7 @@ export function ImportFlow({ formations, modulesByFormation }: Props) {
       fd.append("formation_slug", formation?.slug ?? "");
       fd.append("expected_type", expectedType);
       if (moduleId) fd.append("module_id", moduleId);
+      if (lessonId) fd.append("lesson_id", lessonId);
       if (notes) fd.append("notes", notes);
       if (inputMode === "file" && file) fd.append("file", file);
       if (inputMode === "paste") fd.append("pasted_text", pastedText);
@@ -150,11 +178,14 @@ export function ImportFlow({ formations, modulesByFormation }: Props) {
       setImportId(json.import_id);
       setRawText(json.raw_text);
       setDetectedFormat(json.summary?.detectedFormat ?? "unknown");
+      setAnnexes(json.annexes ?? []);
       // Mappe en interne (camelCase)
       setQuestions(
         (json.questions ?? []).map((q: any) => ({
           ...q,
           warnings: q.warnings ?? [],
+          annexPages: q.annexPages ?? [],
+          annexLabels: q.annexLabels ?? [],
           choices: q.choices?.map((c: any) => ({
             letter: c.letter,
             label: c.label,
@@ -223,6 +254,7 @@ export function ImportFlow({ formations, modulesByFormation }: Props) {
         import_id: importId,
         formation_id: formationId,
         module_id: moduleId || null,
+        lesson_id: lessonId || null,
         questions: visibleQuestions.map((q) => ({
           type: q.type,
           statement: q.statement,
@@ -240,6 +272,8 @@ export function ImportFlow({ formations, modulesByFormation }: Props) {
           difficulty: q.difficulty,
           tags: q.tags,
           explanation: q.explanation || null,
+          annex_pages: q.annexPages ?? [],
+          annex_labels: q.annexLabels ?? [],
         })),
       };
       const res = await fetch("/api/admin/questions/import/save", {
@@ -292,13 +326,20 @@ export function ImportFlow({ formations, modulesByFormation }: Props) {
         <UploadStep
           formations={formations}
           modules={modules}
+          lessons={lessons}
           formationId={formationId}
           setFormationId={(id) => {
             setFormationId(id);
-            setModuleId(""); // reset module quand on change de formation
+            setModuleId("");
+            setLessonId("");
           }}
           moduleId={moduleId}
-          setModuleId={setModuleId}
+          setModuleId={(id) => {
+            setModuleId(id);
+            setLessonId("");
+          }}
+          lessonId={lessonId}
+          setLessonId={setLessonId}
           expectedType={expectedType}
           setExpectedType={setExpectedType}
           notes={notes}
@@ -318,6 +359,7 @@ export function ImportFlow({ formations, modulesByFormation }: Props) {
         <ReviewStep
           summary={summary}
           detectedFormat={detectedFormat}
+          annexes={annexes}
           rawText={rawText}
           setRawText={setRawText}
           showRawText={showRawText}
@@ -426,10 +468,13 @@ function Stepper({ step }: { step: Step }) {
 function UploadStep(props: {
   formations: FormationOpt[];
   modules: ModuleOpt[];
+  lessons: LessonOpt[];
   formationId: string;
   setFormationId: (s: string) => void;
   moduleId: string;
   setModuleId: (s: string) => void;
+  lessonId: string;
+  setLessonId: (s: string) => void;
   expectedType: string;
   setExpectedType: (s: string) => void;
   notes: string;
@@ -445,7 +490,7 @@ function UploadStep(props: {
 }) {
   return (
     <div className="space-y-5">
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid md:grid-cols-3 gap-4">
         <div>
           <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1.5 block">
             Formation
@@ -477,6 +522,29 @@ function UploadStep(props: {
             {props.modules.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.title}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1.5 block">
+            Leçon (optionnel)
+          </label>
+          <select
+            value={props.lessonId}
+            onChange={(e) => props.setLessonId(e.target.value)}
+            disabled={props.lessons.length === 0}
+            className="w-full h-11 rounded-xl border border-navy-200 bg-white px-3.5 text-[15px] text-navy-900 disabled:bg-slate-50 disabled:text-slate-400"
+            title={
+              props.lessons.length === 0
+                ? "Sélectionnez d'abord un module"
+                : undefined
+            }
+          >
+            <option value="">— Aucune (module entier) —</option>
+            {props.lessons.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.title}
               </option>
             ))}
           </select>
@@ -633,6 +701,7 @@ const FORMAT_LABELS: Record<string, string> = {
 function ReviewStep(props: {
   summary: { total: number; qcm: number; qr: number; warn: number };
   detectedFormat: string;
+  annexes: AnnexEntry[];
   rawText: string;
   setRawText: (s: string) => void;
   showRawText: boolean;
@@ -686,16 +755,51 @@ function ReviewStep(props: {
 
   return (
     <div className="space-y-4">
-      {/* Bandeau format détecté */}
-      <div className="rounded-xl bg-signal-50/40 border border-signal-200 px-3.5 py-2 text-[12px] text-signal-900 inline-flex items-center gap-2">
-        <CheckCircle2 className="h-3.5 w-3.5 text-signal-700" />
-        <span>
-          Format détecté&nbsp;:{" "}
-          <strong>
-            {FORMAT_LABELS[props.detectedFormat] ?? props.detectedFormat}
-          </strong>
-        </span>
+      {/* Bandeau format détecté + annexes */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <div className="rounded-xl bg-signal-50/40 border border-signal-200 px-3.5 py-2 text-[12px] text-signal-900 inline-flex items-center gap-2">
+          <CheckCircle2 className="h-3.5 w-3.5 text-signal-700" />
+          <span>
+            Format&nbsp;:{" "}
+            <strong>
+              {FORMAT_LABELS[props.detectedFormat] ?? props.detectedFormat}
+            </strong>
+          </span>
+        </div>
+        {props.annexes.length > 0 && (
+          <div className="rounded-xl bg-amber-50 border border-amber-200 px-3.5 py-2 text-[12px] text-amber-900 inline-flex items-center gap-2">
+            <Paperclip className="h-3.5 w-3.5 text-amber-700" />
+            <span>
+              <strong>{props.annexes.length}</strong> annexe(s) détectée(s)
+              dans le PDF
+            </span>
+          </div>
+        )}
       </div>
+
+      {/* Liste des annexes (collapsible si > 3) */}
+      {props.annexes.length > 0 && (
+        <details className="rounded-xl border border-amber-200 bg-amber-50/40 px-3.5 py-2">
+          <summary className="text-[12px] font-semibold text-amber-900 cursor-pointer">
+            Voir les {props.annexes.length} annexe(s) du PDF
+          </summary>
+          <ul className="mt-2 space-y-1 text-[12.5px] text-amber-900">
+            {props.annexes.map((a) => (
+              <li key={a.pageNumber} className="flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-7 h-5 rounded bg-amber-200 text-amber-900 text-[10px] font-bold tabular-nums">
+                  p.{a.pageNumber}
+                </span>
+                <span>{a.label}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-[11.5px] text-amber-800/80 leading-relaxed">
+            Les questions qui mentionnent "Annexe N°…" sont automatiquement
+            liées à la page correspondante. Au moment du quiz, le stagiaire
+            verra l'annexe à côté de l'énoncé.
+          </p>
+        </details>
+      )}
 
       {/* Bandeau résumé */}
       <div className="rounded-2xl bg-ivory border border-navy-100 px-4 py-3 flex items-center gap-4 flex-wrap">
@@ -914,6 +1018,27 @@ function QuestionCard({
               <div>
                 {q.warnings.join(" · ")}
               </div>
+            </div>
+          )}
+
+          {/* Annexes liées */}
+          {q.annexPages && q.annexPages.length > 0 && (
+            <div className="mb-2 flex items-center gap-1.5 flex-wrap">
+              <Paperclip className="h-3 w-3 text-amber-700" />
+              {q.annexPages.map((p, i) => (
+                <span
+                  key={i}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-amber-100 text-amber-900 border border-amber-200"
+                  title={q.annexLabels?.[i] ?? `Page ${p}`}
+                >
+                  <span className="font-mono">p.{p}</span>
+                  {q.annexLabels?.[i] && (
+                    <span className="font-normal max-w-[200px] truncate">
+                      {q.annexLabels[i]}
+                    </span>
+                  )}
+                </span>
+              ))}
             </div>
           )}
 

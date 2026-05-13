@@ -1,14 +1,14 @@
 // =====================================================================
 // Extraction texte depuis un PDF (server-only).
 //
-// Wrapper minimaliste autour de pdf-parse. Renvoie le texte brut + des
-// métadonnées légères. Le parsing en questions vit dans question-parser.ts.
+// Capture le texte global ET le texte par page. Le texte par page est
+// nécessaire pour deux choses :
+//   - Détecter les pages d'annexes ("ANNEXE", "Annexe N°", tableaux)
+//   - Localiser à quelle page se trouve chaque exercice / question
 //
-// Limites volontaires :
-//   - Pas d'OCR (les PDFs scannés ne sortiront que du texte vide → fallback
-//     côté UI : "Le PDF ne contient pas de texte sélectionnable. Copier-
-//     coller le contenu dans le champ texte ci-dessous").
-//   - Pas d'images, pas de mise en forme.
+// IMPORTANT : import direct de `pdf-parse/lib/pdf-parse.js` pour
+// contourner le bug de debug-auto-load de pdf-parse v1.x quand il est
+// require()-é depuis Webpack/Next.js serverless.
 // =====================================================================
 
 import "server-only";
@@ -16,23 +16,18 @@ import "server-only";
 export interface PdfExtractResult {
   /** Texte brut concaténé de toutes les pages. */
   text: string;
+  /** Texte par page (index = numéro de page - 1). */
+  pageTexts: string[];
   /** Nombre de pages. */
   pages: number;
-  /** Métadonnées PDF (titre, auteur, etc.) si présentes. */
+  /** Métadonnées PDF (titre, auteur, etc.). */
   info?: Record<string, unknown>;
   /** Taille originale du fichier en octets. */
   byteLength: number;
 }
 
 /**
- * Extrait le texte d'un buffer PDF.
- * Throw si le PDF est invalide ou chiffré.
- *
- * IMPORTANT : on importe `pdf-parse/lib/pdf-parse.js` directement (pas
- * `pdf-parse` tout court) pour contourner le bug bien connu du `index.js`
- * qui tente de lire `./test/data/05-versions-space.pdf` au démarrage quand
- * `module.parent` est null (cas Webpack / Next.js / serverless Vercel).
- * Cf. https://gitlab.com/autokent/pdf-parse/-/issues/24
+ * Extrait le texte d'un buffer PDF, en gardant la séparation par page.
  */
 export async function extractPdfText(
   buffer: Buffer,
@@ -40,28 +35,68 @@ export async function extractPdfText(
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const pdfParse = require("pdf-parse/lib/pdf-parse.js") as (
     b: Buffer,
+    opts?: PdfParseOptions,
   ) => Promise<{
     text: string;
     numpages: number;
     info?: Record<string, unknown>;
   }>;
 
-  const result = await pdfParse(buffer);
+  const pageTexts: string[] = [];
+
+  const options: PdfParseOptions = {
+    pagerender: async (pageData: PdfPageData) => {
+      try {
+        const content = await pageData.getTextContent({
+          // Important : préserve l'ordre de lecture sans normaliser.
+          normalizeWhitespace: false,
+          disableCombineTextItems: false,
+        });
+        // Reconstruit le texte de la page en gérant les sauts de ligne.
+        // Chaque item.str représente un "run" de texte ; on insère un \n
+        // si la position Y change beaucoup entre deux items.
+        let lastY: number | null = null;
+        const lines: string[] = [];
+        let current = "";
+        for (const item of content.items as Array<{ str: string; transform?: number[] }>) {
+          const y = item.transform?.[5];
+          if (lastY != null && y != null && Math.abs(y - lastY) > 4) {
+            if (current.trim()) lines.push(current.trim());
+            current = "";
+          }
+          current += item.str;
+          if (y != null) lastY = y;
+        }
+        if (current.trim()) lines.push(current.trim());
+        const pageText = lines.join("\n");
+        pageTexts.push(pageText);
+        return pageText;
+      } catch (e) {
+        pageTexts.push("");
+        return "";
+      }
+    },
+  };
+
+  const result = await pdfParse(buffer, options);
+
+  // pdf-parse concatène ses retours de pagerender avec "\n\n" pour
+  // produire result.text. Si pour une raison étrange pageTexts est
+  // vide (ex. PDF chiffré), on fallback sur result.text.
+  if (pageTexts.length === 0 && result.text) {
+    pageTexts.push(result.text);
+  }
+
   return {
-    text: result.text ?? "",
-    pages: result.numpages ?? 0,
+    text: result.text ?? pageTexts.join("\n\n"),
+    pageTexts,
+    pages: result.numpages ?? pageTexts.length,
     info: result.info,
     byteLength: buffer.byteLength,
   };
 }
 
-/**
- * Normalise le texte extrait :
- *   - Convertit les CRLF en LF
- *   - Supprime les espaces multiples
- *   - Supprime les sauts de ligne triples ou plus (→ double)
- *   - Trim chaque ligne
- */
+/** Normalise le texte extrait (LF, espaces, sauts de ligne). */
 export function normalizePdfText(raw: string): string {
   return raw
     .replace(/\r\n/g, "\n")
@@ -70,4 +105,23 @@ export function normalizePdfText(raw: string): string {
     .map((line) => line.replace(/[ \t]+/g, " ").trim())
     .join("\n")
     .replace(/\n{3,}/g, "\n\n");
+}
+
+// ---------------------------------------------------------------------
+// Types internes (interface pdf-parse non typée nativement)
+// ---------------------------------------------------------------------
+
+interface PdfParseOptions {
+  pagerender?: (page: PdfPageData) => Promise<string>;
+  max?: number;
+  version?: string;
+}
+
+interface PdfPageData {
+  getTextContent: (opts: {
+    normalizeWhitespace?: boolean;
+    disableCombineTextItems?: boolean;
+  }) => Promise<{
+    items: unknown[];
+  }>;
 }

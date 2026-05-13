@@ -51,12 +51,15 @@ const questionSchema = z.object({
   difficulty: z.enum(["facile", "moyen", "difficile"]),
   tags: z.array(z.string().trim().max(40)).max(20),
   explanation: z.string().max(4000).optional().nullable(),
+  annex_pages: z.array(z.number().int().min(1).max(2000)).max(20).optional().nullable(),
+  annex_labels: z.array(z.string().trim().max(160)).max(20).optional().nullable(),
 });
 
 const payloadSchema = z.object({
   import_id: z.string().uuid(),
   formation_id: z.string().uuid().nullable().optional(),
   module_id: z.string().uuid().nullable().optional(),
+  lesson_id: z.string().uuid().nullable().optional(),
   questions: z.array(questionSchema).min(1).max(500),
 });
 
@@ -72,7 +75,7 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       );
     }
-    const { import_id, formation_id, module_id, questions } = parsed.data;
+    const { import_id, formation_id, module_id, lesson_id, questions } = parsed.data;
 
     // Verifie que l'import existe et appartient au current admin (ou
     // est libre d'être complété — pas de check stricte sur created_by
@@ -100,6 +103,7 @@ export async function POST(req: NextRequest) {
     const rows = questions.map((q) => ({
       formation_id: formation_id ?? importRow.formation_id ?? null,
       module_id: module_id ?? null,
+      lesson_id: lesson_id ?? null,
       type: q.type,
       statement: q.statement,
       choices:
@@ -120,6 +124,8 @@ export async function POST(req: NextRequest) {
       import_id,
       created_by: admin.id,
       active: false, // par défaut : désactivé tant que pas relu/validé
+      annex_pages: q.annex_pages ?? [],
+      annex_labels: q.annex_labels ?? [],
     }));
 
     const { data: inserted, error: insErr } = await supabase

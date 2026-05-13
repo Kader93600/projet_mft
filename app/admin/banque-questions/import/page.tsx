@@ -26,25 +26,33 @@ const STATUS_TONE: Record<string, { bg: string; fg: string; label: string }> = {
 export default async function ImportPage() {
   const supabase = createClient();
 
-  const [{ data: formations }, { data: modules }, { data: recentImports }] =
-    await Promise.all([
-      supabase
-        .from("formations")
-        .select("id, slug, code, title")
-        .order("code"),
-      supabase
-        .from("modules")
-        .select("id, slug, title, formation_id")
-        .order("display_order"),
-      supabase
-        .from("question_imports")
-        .select(
-          "id, file_name, status, questions_count, created_at, formation_id, " +
-            "formation:formations(code)",
-        )
-        .order("created_at", { ascending: false })
-        .limit(10),
-    ]);
+  const [
+    { data: formations },
+    { data: modules },
+    { data: lessons },
+    { data: recentImports },
+  ] = await Promise.all([
+    supabase
+      .from("formations")
+      .select("id, slug, code, title")
+      .order("code"),
+    supabase
+      .from("modules")
+      .select("id, slug, title, formation_id")
+      .order("display_order"),
+    supabase
+      .from("lessons")
+      .select("id, slug, title, module_id, \"order\"")
+      .order("order"),
+    supabase
+      .from("question_imports")
+      .select(
+        "id, file_name, status, questions_count, created_at, formation_id, " +
+          "formation:formations(code)",
+      )
+      .order("created_at", { ascending: false })
+      .limit(10),
+  ]);
 
   const formationsOpts = (formations ?? []).map((f: any) => ({
     id: f.id,
@@ -53,7 +61,10 @@ export default async function ImportPage() {
     title: f.title,
   }));
 
-  const modulesByFormation: Record<string, { id: string; slug: string; title: string }[]> = {};
+  const modulesByFormation: Record<
+    string,
+    { id: string; slug: string; title: string }[]
+  > = {};
   for (const m of modules ?? []) {
     if (!m.formation_id) continue;
     if (!modulesByFormation[m.formation_id]) modulesByFormation[m.formation_id] = [];
@@ -61,6 +72,20 @@ export default async function ImportPage() {
       id: m.id,
       slug: m.slug,
       title: m.title,
+    });
+  }
+
+  const lessonsByModule: Record<
+    string,
+    { id: string; slug: string; title: string }[]
+  > = {};
+  for (const l of lessons ?? []) {
+    if (!l.module_id) continue;
+    if (!lessonsByModule[l.module_id]) lessonsByModule[l.module_id] = [];
+    lessonsByModule[l.module_id].push({
+      id: l.id,
+      slug: l.slug,
+      title: l.title,
     });
   }
 
@@ -90,6 +115,7 @@ export default async function ImportPage() {
           <ImportFlow
             formations={formationsOpts}
             modulesByFormation={modulesByFormation}
+            lessonsByModule={lessonsByModule}
           />
         </CardBody>
       </Card>

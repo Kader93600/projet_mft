@@ -1,31 +1,33 @@
 // =====================================================================
 // POST /api/admin/questions/import/extract
 //
-// Reçoit un PDF en multipart/form-data + métadonnées (formation_slug,
-// expected_type, module_id?), extrait le texte, le parse en
-// DraftQuestion[], crée une ligne d'audit dans question_imports.
-//
-// Réponse :
-//   {
-//     import_id: uuid,
-//     raw_text: string,            // texte brut (éditable côté UI)
-//     questions: DraftQuestion[],  // découpage heuristique
-//     summary: {...}
-//   }
-//
-// L'insert effectif des questions est fait par /api/.../save.
+// Workflow :
+//   1. Reçoit un PDF (multipart) ou un pasted_text
+//   2. Upload le PDF dans Supabase Storage (bucket "question-imports")
+//      pour pouvoir l'afficher au stagiaire plus tard (annexes)
+//   3. Extrait le texte (global + par page)
+//   4. Détecte les pages d'annexes
+//   5. Parse les questions, résout les références aux annexes
+//   6. Crée la ligne question_imports
+//   7. Renvoie { import_id, raw_text, questions, summary, annexes }
 // =====================================================================
 
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin-guard";
 import { extractPdfText, normalizePdfText } from "@/lib/pdf-extract";
 import { parseQuestions } from "@/lib/question-parser";
+import {
+  detectAnnexPages,
+  resolveAnnexesForQuestion,
+  type AnnexPage,
+} from "@/lib/annex-detect";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-const MAX_BYTES = 12 * 1024 * 1024; // 12 MB
+const MAX_BYTES = 12 * 1024 * 1024;
+const STORAGE_BUCKET = "question-imports";
 
 export async function POST(req: NextRequest) {
   try {
@@ -36,10 +38,10 @@ export async function POST(req: NextRequest) {
     const formationSlug = String(form.get("formation_slug") ?? "");
     const expectedType = String(form.get("expected_type") ?? "mixed");
     const moduleId = (form.get("module_id") as string) || null;
+    const lessonId = (form.get("lesson_id") as string) || null;
     const notes = (form.get("notes") as string) || null;
     const pastedText = (form.get("pasted_text") as string) || null;
 
-    // Validation
     if (!["qcm", "qr", "mixed", "exam"].includes(expectedType)) {
       return NextResponse.json(
         { error: "expected_type_invalid" },
@@ -48,9 +50,11 @@ export async function POST(req: NextRequest) {
     }
 
     let rawText = "";
+    let pageTexts: string[] = [];
     let byteLength = 0;
     let fileName = "paste.txt";
     let fileKind: "pdf" | "txt" | "paste" = "paste";
+    let pdfBuffer: Buffer | null = null;
 
     if (file instanceof File) {
       if (file.size > MAX_BYTES) {
@@ -61,18 +65,25 @@ export async function POST(req: NextRequest) {
       }
       fileName = file.name || "document.pdf";
       byteLength = file.size;
+      pdfBuffer = Buffer.from(await file.arrayBuffer());
 
-      const buffer = Buffer.from(await file.arrayBuffer());
-      if (file.type === "application/pdf" || fileName.toLowerCase().endsWith(".pdf")) {
-        const extracted = await extractPdfText(buffer);
+      if (
+        file.type === "application/pdf" ||
+        fileName.toLowerCase().endsWith(".pdf")
+      ) {
+        const extracted = await extractPdfText(pdfBuffer);
         rawText = extracted.text;
+        pageTexts = extracted.pageTexts;
         fileKind = "pdf";
       } else {
-        rawText = buffer.toString("utf-8");
+        rawText = pdfBuffer.toString("utf-8");
+        pageTexts = [rawText];
         fileKind = "txt";
+        pdfBuffer = null; // pas un PDF, pas d'upload Storage
       }
     } else if (pastedText) {
       rawText = pastedText;
+      pageTexts = [pastedText];
       fileKind = "paste";
       fileName = "paste-" + new Date().toISOString().slice(0, 16) + ".txt";
       byteLength = pastedText.length;
@@ -107,10 +118,43 @@ export async function POST(req: NextRequest) {
       formationId = f?.id ?? null;
     }
 
-    // Parse heuristique
-    const parsed = parseQuestions(rawText);
+    // Détecte annexes par page
+    const annexes: AnnexPage[] = detectAnnexPages(pageTexts);
 
-    // Crée une ligne d'audit (status = 'parsed', pas encore inséré)
+    // Parse questions + résout les références d'annexes
+    const parsed = parseQuestions(rawText);
+    for (const q of parsed.questions) {
+      const { pages, labels } = resolveAnnexesForQuestion(
+        q.statement,
+        annexes,
+      );
+      q.annexPages = pages;
+      q.annexLabels = labels;
+      if (pages.length > 0) {
+        q.warnings = q.warnings.filter((w) => !w.includes("Annexe"));
+      }
+    }
+
+    // Upload PDF dans Storage si on en a un
+    let pdfStoragePath: string | null = null;
+    if (pdfBuffer && fileKind === "pdf") {
+      const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 100);
+      pdfStoragePath = `${admin.id}/${Date.now()}-${safeName}`;
+      const { error: upErr } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .upload(pdfStoragePath, pdfBuffer, {
+          contentType: "application/pdf",
+          upsert: false,
+        });
+      if (upErr) {
+        // Non bloquant : on continue sans annexes utilisables côté stagiaire
+        // eslint-disable-next-line no-console
+        console.warn("[import] upload Storage échoué :", upErr.message);
+        pdfStoragePath = null;
+      }
+    }
+
+    // Crée la ligne d'audit
     const { data: importRow, error: importErr } = await supabase
       .from("question_imports")
       .insert({
@@ -125,6 +169,9 @@ export async function POST(req: NextRequest) {
         raw_text: rawText,
         notes,
         created_by: admin.id,
+        pdf_storage_path: pdfStoragePath,
+        annex_pages: annexes.map((a) => a.pageNumber),
+        annex_labels: annexes.map((a) => a.label),
       })
       .select("id")
       .single();
@@ -141,6 +188,9 @@ export async function POST(req: NextRequest) {
       raw_text: rawText,
       questions: parsed.questions,
       summary: parsed.summary,
+      annexes,
+      pdf_storage_path: pdfStoragePath,
+      lesson_id: lessonId, // renvoie ce que le client a sélectionné
     });
   } catch (e: any) {
     return NextResponse.json(

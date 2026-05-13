@@ -10,13 +10,18 @@ import { ProgressBar, RadialProgress } from "@/components/ui/progress";
 import {
   Check, X, Clock, Target, Lightbulb, ArrowRight, ArrowLeft,
   AlertTriangle, Maximize, ShieldAlert, Lock, Flag, Grid3X3,
-  CheckCircle2,
+  CheckCircle2, Paperclip, ExternalLink,
 } from "lucide-react";
 import { cn, scoreColor } from "@/lib/utils";
 import { FormationBadge } from "@/components/formation/formation-badge";
 import { FormationStripe } from "@/components/formation/formation-stripe";
 
 interface Choice { id: string; label: string; is_correct: boolean; order: number; }
+interface QuestionAnnex {
+  pageNumber: number;
+  label: string;
+  signedUrl: string;
+}
 interface Question {
   id: string;
   statement: string;
@@ -25,6 +30,7 @@ interface Question {
   type?: "qcm" | "qr";
   source?: "legacy" | "bank";
   max_score?: number;
+  annexes?: QuestionAnnex[];
 }
 interface Quiz {
   id: string;
@@ -919,6 +925,9 @@ export function QuizRunner({
           <h2 className="font-display text-xl font-semibold text-navy-900 leading-snug whitespace-pre-wrap">
             {q.statement}
           </h2>
+          {q.annexes && q.annexes.length > 0 && (
+            <AnnexPanel annexes={q.annexes} />
+          )}
           {q.type === "qr" ? (
             <div>
               <textarea
@@ -1016,6 +1025,92 @@ function Stat({ label, value }: { label: string; value: string }) {
       <div className="font-display text-xl font-semibold text-navy-900 mt-0.5">
         {value}
       </div>
+    </div>
+  );
+}
+
+/**
+ * Panneau d'annexes — affiche les pages PDF référencées par l'énoncé.
+ * Le stagiaire peut basculer entre annexes en cliquant sur les onglets,
+ * ou ouvrir l'annexe dans un nouvel onglet pour la lire en grand.
+ *
+ * Utilise un <iframe> qui charge la signed URL avec le fragment #page=N.
+ * Compatible Chrome / Safari / Firefox (via pdf.js viewer natif).
+ */
+function AnnexPanel({ annexes }: { annexes: QuestionAnnex[] }) {
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [expanded, setExpanded] = useState(false);
+  const active = annexes[activeIdx];
+  if (!active) return null;
+
+  // URL avec fragment de page (viewer PDF natif des navigateurs)
+  const viewerUrl = `${active.signedUrl}#page=${active.pageNumber}&toolbar=0&navpanes=0`;
+
+  return (
+    <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50/40 overflow-hidden">
+      <div className="px-3.5 py-2 flex items-center gap-2 flex-wrap border-b border-amber-200 bg-amber-50/70">
+        <Paperclip className="h-3.5 w-3.5 text-amber-700 shrink-0" />
+        <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-amber-900">
+          {annexes.length === 1
+            ? "Annexe à consulter"
+            : `${annexes.length} annexes à consulter`}
+        </span>
+        {annexes.length > 1 && (
+          <div className="ml-1 inline-flex rounded-md border border-amber-300 bg-white p-0.5">
+            {annexes.map((a, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setActiveIdx(i)}
+                className={cn(
+                  "px-2 py-0.5 rounded text-[11px] font-semibold transition",
+                  i === activeIdx
+                    ? "bg-amber-500 text-night-900"
+                    : "text-amber-900 hover:bg-amber-100"
+                )}
+              >
+                {a.label.length > 24
+                  ? `p.${a.pageNumber}`
+                  : a.label}
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="ml-auto flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setExpanded(!expanded)}
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold text-amber-900 hover:bg-amber-100"
+            title={expanded ? "Réduire" : "Agrandir"}
+          >
+            <Maximize className="h-3 w-3" />
+            {expanded ? "Réduire" : "Agrandir"}
+          </button>
+          <a
+            href={active.signedUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold text-amber-900 hover:bg-amber-100"
+            title="Ouvrir dans un nouvel onglet"
+          >
+            <ExternalLink className="h-3 w-3" />
+            Nouvel onglet
+          </a>
+        </div>
+      </div>
+      <div className="px-3.5 py-1.5 text-[12px] text-amber-900/90">
+        <strong>{active.label}</strong>
+        <span className="text-amber-800/70"> — page {active.pageNumber}</span>
+      </div>
+      <iframe
+        key={active.signedUrl + active.pageNumber}
+        src={viewerUrl}
+        title={active.label}
+        className={cn(
+          "w-full bg-white border-t border-amber-200 transition-all",
+          expanded ? "h-[800px]" : "h-[440px]"
+        )}
+      />
     </div>
   );
 }

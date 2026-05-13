@@ -38,6 +38,10 @@ export interface DraftQuestion {
   tags: string[];
   explanation?: string;
   warnings: string[];
+  /** Pages d'annexes liées à cette question (résolu depuis l'énoncé). */
+  annexPages?: number[];
+  /** Libellés humains des annexes liées (même ordre que annexPages). */
+  annexLabels?: string[];
 }
 
 export interface ParseResult {
