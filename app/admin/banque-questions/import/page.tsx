@@ -28,6 +28,7 @@ export default async function ImportPage() {
 
   const [
     { data: formations },
+    { data: allModules },
     { data: formationModules },
     { data: lessons },
     { data: recentImports },
@@ -36,13 +37,17 @@ export default async function ImportPage() {
       .from("formations")
       .select("id, slug, code, title")
       .order("code"),
-    // Jointure N-N : formations ↔ modules via formation_modules.
-    // On embarque le module pour avoir id/slug/title en une requête.
+    // Tous les modules. On les liera aux formations en JS via la table
+    // de jointure ci-dessous. Fallback : si une formation n'a aucun
+    // module rattaché, on affiche tous les modules (mieux qu'un select
+    // vide qui empêche l'admin d'avancer).
+    supabase
+      .from("modules")
+      .select("id, slug, title, \"order\"")
+      .order("order"),
     supabase
       .from("formation_modules")
-      .select(
-        "formation_id, display_order, module:modules(id, slug, title)",
-      )
+      .select("formation_id, module_id, display_order")
       .order("display_order"),
     supabase
       .from("lessons")
@@ -65,23 +70,37 @@ export default async function ImportPage() {
     title: f.title,
   }));
 
+  // Index des modules par id
+  const moduleById = new Map<
+    string,
+    { id: string; slug: string; title: string }
+  >();
+  for (const m of allModules ?? []) {
+    moduleById.set(m.id, { id: m.id, slug: m.slug, title: m.title });
+  }
+  const allModulesOpts = Array.from(moduleById.values());
+
+  // Map formation → modules rattachés via la jointure
   const modulesByFormation: Record<
     string,
     { id: string; slug: string; title: string }[]
   > = {};
   for (const fm of formationModules ?? []) {
     const formationId = (fm as any).formation_id;
-    const moduleRel = (fm as any).module;
-    if (!formationId || !moduleRel) continue;
-    // Supabase peut renvoyer la relation sous forme d'objet OU d'array
-    const m = Array.isArray(moduleRel) ? moduleRel[0] : moduleRel;
-    if (!m) continue;
+    const moduleId = (fm as any).module_id;
+    const m = moduleById.get(moduleId);
+    if (!formationId || !m) continue;
     if (!modulesByFormation[formationId]) modulesByFormation[formationId] = [];
-    modulesByFormation[formationId].push({
-      id: m.id,
-      slug: m.slug,
-      title: m.title,
-    });
+    modulesByFormation[formationId].push(m);
+  }
+
+  // Fallback : pour les formations sans rattachement explicite, on
+  // expose tous les modules disponibles. L'admin peut ainsi avancer
+  // sans devoir d'abord aller dans /admin/modules pour faire le mapping.
+  for (const f of formationsOpts) {
+    if (!modulesByFormation[f.id] || modulesByFormation[f.id].length === 0) {
+      modulesByFormation[f.id] = allModulesOpts;
+    }
   }
 
   const lessonsByModule: Record<
