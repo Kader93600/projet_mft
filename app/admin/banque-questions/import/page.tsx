@@ -1,0 +1,165 @@
+// =====================================================================
+// /admin/banque-questions/import
+//
+// Workflow d'import en lot depuis un PDF (ou un copier-coller).
+// Server component : fetch les formations + modules + historique des
+// derniers imports. Délègue tout l'interactif au composant client
+// ImportFlow.
+// =====================================================================
+
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import { Card, CardBody, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, FileUp, Clock, CheckCircle2, AlertTriangle } from "lucide-react";
+import { ImportFlow } from "./import-flow";
+
+export const dynamic = "force-dynamic";
+
+const STATUS_TONE: Record<string, { bg: string; fg: string; label: string }> = {
+  extracted: { bg: "bg-slate-100", fg: "text-slate-700", label: "Extrait" },
+  parsed:    { bg: "bg-amber-50",  fg: "text-amber-800", label: "Parsé" },
+  inserted:  { bg: "bg-emerald-50", fg: "text-emerald-800", label: "Inséré" },
+  failed:    { bg: "bg-rose-50",   fg: "text-rose-800",   label: "Échec" },
+  aborted:   { bg: "bg-slate-100", fg: "text-slate-500",  label: "Annulé" },
+};
+
+export default async function ImportPage() {
+  const supabase = createClient();
+
+  const [{ data: formations }, { data: modules }, { data: recentImports }] =
+    await Promise.all([
+      supabase
+        .from("formations")
+        .select("id, slug, code, title")
+        .order("code"),
+      supabase
+        .from("modules")
+        .select("id, slug, title, formation_id")
+        .order("display_order"),
+      supabase
+        .from("question_imports")
+        .select(
+          "id, file_name, status, questions_count, created_at, formation_id, " +
+            "formation:formations(code)",
+        )
+        .order("created_at", { ascending: false })
+        .limit(10),
+    ]);
+
+  const formationsOpts = (formations ?? []).map((f: any) => ({
+    id: f.id,
+    slug: f.slug,
+    code: f.code,
+    title: f.title,
+  }));
+
+  const modulesByFormation: Record<string, { id: string; slug: string; title: string }[]> = {};
+  for (const m of modules ?? []) {
+    if (!m.formation_id) continue;
+    if (!modulesByFormation[m.formation_id]) modulesByFormation[m.formation_id] = [];
+    modulesByFormation[m.formation_id].push({
+      id: m.id,
+      slug: m.slug,
+      title: m.title,
+    });
+  }
+
+  return (
+    <div className="space-y-8">
+      <header>
+        <Link
+          href="/admin/banque-questions"
+          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-navy-900"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Retour à la banque
+        </Link>
+        <h1 className="mt-2 font-display text-3xl md:text-4xl font-semibold text-navy-950 tracking-tight">
+          Import en lot
+        </h1>
+        <p className="mt-2 text-slate-600 max-w-2xl leading-relaxed">
+          Uploadez un PDF (ou collez du texte) pour transformer rapidement un
+          document fournisseur en questions de la banque. Le parser détecte
+          QCM et QR, vous validez avant insertion.
+        </p>
+      </header>
+
+      <Card>
+        <CardBody>
+          <CardTitle>Nouveau import</CardTitle>
+          <ImportFlow
+            formations={formationsOpts}
+            modulesByFormation={modulesByFormation}
+          />
+        </CardBody>
+      </Card>
+
+      <section>
+        <h2 className="eyebrow text-gold-700 mb-3">Imports récents</h2>
+        {(!recentImports || recentImports.length === 0) ? (
+          <Card>
+            <CardBody>
+              <p className="text-sm text-slate-500">
+                Aucun import effectué pour le moment.
+              </p>
+            </CardBody>
+          </Card>
+        ) : (
+          <Card>
+            <CardBody className="p-0">
+              <table className="w-full text-sm">
+                <thead className="bg-navy-50 text-[11px] uppercase tracking-wider text-slate-600">
+                  <tr>
+                    <th className="text-left px-4 py-2.5">Fichier</th>
+                    <th className="text-left px-4 py-2.5">Formation</th>
+                    <th className="text-right px-4 py-2.5">Questions</th>
+                    <th className="text-left px-4 py-2.5">Statut</th>
+                    <th className="text-left px-4 py-2.5">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentImports.map((r: any) => {
+                    const tone = STATUS_TONE[r.status] ?? STATUS_TONE.aborted;
+                    return (
+                      <tr key={r.id} className="border-t border-navy-50">
+                        <td className="px-4 py-2.5 font-medium text-navy-900 truncate max-w-[280px]">
+                          {r.file_name}
+                        </td>
+                        <td className="px-4 py-2.5 text-slate-600">
+                          {r.formation?.code ?? "—"}
+                        </td>
+                        <td className="px-4 py-2.5 text-right text-navy-900 tabular-nums">
+                          {r.questions_count}
+                        </td>
+                        <td className="px-4 py-2.5">
+                          <span
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold ${tone.bg} ${tone.fg}`}
+                          >
+                            {r.status === "inserted" && <CheckCircle2 className="h-3 w-3" />}
+                            {r.status === "failed" && <AlertTriangle className="h-3 w-3" />}
+                            {r.status === "parsed" && <FileUp className="h-3 w-3" />}
+                            {r.status === "extracted" && <Clock className="h-3 w-3" />}
+                            {tone.label}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2.5 text-slate-500">
+                          {new Date(r.created_at).toLocaleString("fr-FR", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </CardBody>
+          </Card>
+        )}
+      </section>
+    </div>
+  );
+}

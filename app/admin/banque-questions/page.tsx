@@ -85,16 +85,25 @@ export default async function BanqueQuestionsPage({
 
   return (
     <div className="space-y-10">
-      <header>
-        <span className="eyebrow text-signal-700">Pédagogie</span>
-        <h1 className="mt-2 font-display text-3xl md:text-4xl font-semibold text-navy-950 tracking-tight">
-          Banque de questions
-        </h1>
-        <p className="mt-2 text-slate-600 max-w-2xl">
-          Gestion centralisée des QCM et questions rédigées par formation.
-          Les questions importées doivent être <strong>validées</strong> (bonne
-          réponse cochée) avant d'être actives en circulation.
-        </p>
+      <header className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <span className="eyebrow text-signal-700">Pédagogie</span>
+          <h1 className="mt-2 font-display text-3xl md:text-4xl font-semibold text-navy-950 tracking-tight">
+            Banque de questions
+          </h1>
+          <p className="mt-2 text-slate-600 max-w-2xl">
+            Gestion centralisée des QCM et questions rédigées par formation.
+            Les questions importées doivent être <strong>validées</strong> (bonne
+            réponse cochée) avant d'être actives en circulation.
+          </p>
+        </div>
+        <Link
+          href="/admin/banque-questions/import"
+          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gold-500 text-night-900 font-semibold text-sm hover:bg-gold-400 transition shadow-soft whitespace-nowrap"
+        >
+          <FileText className="h-4 w-4" />
+          Importer un PDF
+        </Link>
       </header>
 
       {/* KPIs globaux */}
