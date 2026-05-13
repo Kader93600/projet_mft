@@ -11,6 +11,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { findFormation } from "@/lib/formations-config";
+import { getQuestionFilterConfig } from "@/lib/question-filters";
 import { ValidationForm } from "./validation-form";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +26,7 @@ export default async function ValidationPage({
   const supabase = createClient();
   const slug = searchParams?.f ?? "capacite-3-5t";
   const page = Math.max(1, parseInt(searchParams?.page ?? "1", 10));
-  const moduleFilter = searchParams?.module ?? "";
+  const groupFilter = searchParams?.module ?? "";
 
   const formation = findFormation(slug);
   if (!formation) {
@@ -41,6 +42,9 @@ export default async function ValidationPage({
     return <div>Formation absente en BDD. Jouez d'abord formations_v2.sql.</div>;
   }
 
+  // Filtres adaptés à la formation (Chapitre pour GOTRM, Module pour Capa…)
+  const filterConfig = getQuestionFilterConfig(slug);
+
   // Liste des questions à valider (active=false, type=qcm)
   let query = supabase
     .from("question_bank")
@@ -52,8 +56,10 @@ export default async function ValidationPage({
     .eq("active", false)
     .order("source_ref", { ascending: true });
 
-  if (moduleFilter) {
-    query = query.contains("tags", [`module-${moduleFilter}`]);
+  if (groupFilter) {
+    query = query.contains("tags", [
+      `${filterConfig.tagPrefix}${groupFilter}`,
+    ]);
   }
 
   const { data: questions, count } = await query.range(
@@ -64,18 +70,39 @@ export default async function ValidationPage({
   const total = count ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
-  // Stats par module pour le filtre
-  const moduleCounts: Record<string, number> = {};
-  for (const letter of ["a", "b", "c", "d", "e", "f"]) {
-    const { count: c } = await supabase
-      .from("question_bank")
-      .select("*", { count: "exact", head: true })
-      .eq("formation_id", dbFormation.id)
-      .eq("type", "qcm")
-      .eq("active", false)
-      .contains("tags", [`module-${letter}`]);
-    moduleCounts[letter] = c ?? 0;
+  // Agrège les counts par clé en une seule requête (au lieu de N requêtes
+  // parallèles). On embarque les clés extra trouvées hors config.
+  const { data: tagRows } = await supabase
+    .from("question_bank")
+    .select("tags")
+    .eq("formation_id", dbFormation.id)
+    .eq("type", "qcm")
+    .eq("active", false);
+
+  const groupCounts: Record<string, number> = {};
+  for (const k of filterConfig.keys) groupCounts[k] = 0;
+  const extraKeys = new Set<string>();
+  for (const row of tagRows ?? []) {
+    const tags: string[] = (row as any).tags ?? [];
+    for (const t of tags) {
+      if (!t.startsWith(filterConfig.tagPrefix)) continue;
+      const k = t.slice(filterConfig.tagPrefix.length);
+      if (!(k in groupCounts)) {
+        groupCounts[k] = 0;
+        if (!filterConfig.keys.includes(k as any)) extraKeys.add(k);
+      }
+      groupCounts[k] += 1;
+    }
   }
+  const orderedKeys: string[] = [
+    ...filterConfig.keys,
+    ...Array.from(extraKeys).sort((a, b) => {
+      const na = parseInt(a, 10);
+      const nb = parseInt(b, 10);
+      if (!isNaN(na) && !isNaN(nb)) return na - nb;
+      return a.localeCompare(b);
+    }),
+  ];
 
   return (
     <div className="space-y-8">
@@ -107,25 +134,25 @@ export default async function ValidationPage({
         </p>
       </header>
 
-      {/* Filtres modules + page */}
+      {/* Filtres par chapitre / module selon la formation */}
       <section className="flex flex-wrap items-center gap-2">
         <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500 mr-2">
-          Module
+          {filterConfig.label}
         </span>
         <FilterPill
           href={`/admin/banque-questions/validation?f=${slug}`}
-          label={`Tous (${total + ["a", "b", "c", "d", "e", "f"].reduce(
-            (s, l) => (l !== moduleFilter ? s + (moduleCounts[l] ?? 0) : s),
-            0
+          label={`Tous (${Object.values(groupCounts).reduce(
+            (s, n) => s + n,
+            0,
           )})`}
-          active={!moduleFilter}
+          active={!groupFilter}
         />
-        {(["a", "b", "c", "d", "e", "f"] as const).map((letter) => (
+        {orderedKeys.map((key) => (
           <FilterPill
-            key={letter}
-            href={`/admin/banque-questions/validation?f=${slug}&module=${letter}`}
-            label={`${letter.toUpperCase()} (${moduleCounts[letter]})`}
-            active={moduleFilter === letter}
+            key={key}
+            href={`/admin/banque-questions/validation?f=${slug}&module=${key}`}
+            label={`${filterConfig.formatPill(key)} (${groupCounts[key] ?? 0})`}
+            active={groupFilter === key}
           />
         ))}
       </section>
@@ -141,8 +168,8 @@ export default async function ValidationPage({
               Tout est validé
             </h3>
             <p className="mt-2 text-sm text-slate-600 max-w-md mx-auto">
-              {moduleFilter
-                ? `Aucun QCM en attente pour le module ${moduleFilter.toUpperCase()}.`
+              {groupFilter
+                ? `Aucun QCM en attente pour ${filterConfig.formatLong ? filterConfig.formatLong(groupFilter) : filterConfig.formatPill(groupFilter)}.`
                 : "Aucun QCM en attente de validation pour cette formation."}
             </p>
             <Link
@@ -177,7 +204,7 @@ export default async function ValidationPage({
               {page > 1 && (
                 <Link
                   href={`/admin/banque-questions/validation?f=${slug}${
-                    moduleFilter ? `&module=${moduleFilter}` : ""
+                    groupFilter ? `&module=${groupFilter}` : ""
                   }&page=${page - 1}`}
                   className="inline-flex items-center gap-1 rounded-lg border border-navy-200 px-3 py-1.5 text-sm hover:bg-navy-50"
                 >
@@ -188,7 +215,7 @@ export default async function ValidationPage({
               {page < totalPages && (
                 <Link
                   href={`/admin/banque-questions/validation?f=${slug}${
-                    moduleFilter ? `&module=${moduleFilter}` : ""
+                    groupFilter ? `&module=${groupFilter}` : ""
                   }&page=${page + 1}`}
                   className="inline-flex items-center gap-1 rounded-lg bg-navy-900 text-white px-3 py-1.5 text-sm hover:bg-navy-800"
                 >

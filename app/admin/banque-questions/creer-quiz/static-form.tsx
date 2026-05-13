@@ -15,6 +15,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { FORMATIONS } from "@/lib/formations-config";
+import { getQuestionFilterConfig } from "@/lib/question-filters";
 import { createStaticQuiz } from "./actions";
 
 interface QuestionRow {
@@ -26,7 +27,9 @@ interface QuestionRow {
   source_ref: string | null;
 }
 
-const MODULE_LABELS: Record<string, string> = {
+// Labels Capa (par défaut). Pour GOTRM, la config bascule sur les
+// chapitres automatiquement (Ch. 1, Ch. 2, …) via getQuestionFilterConfig.
+const CAPA_MODULE_LABELS: Record<string, string> = {
   a: "A — Droit",
   b: "B — Commercial",
   c: "C — Réglementation",
@@ -44,6 +47,12 @@ export function StaticQuizForm({
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("");
   const [moduleFilter, setModuleFilter] = useState<string>("");
+
+  // Configuration des filtres selon la formation choisie
+  const filterConfig = useMemo(
+    () => getQuestionFilterConfig(formationSlug),
+    [formationSlug],
+  );
   const [questions, setQuestions] = useState<QuestionRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -85,13 +94,13 @@ export function StaticQuizForm({
     return questions.filter((q) => {
       if (typeFilter && q.type !== typeFilter) return false;
       if (moduleFilter) {
-        const mt = q.tags?.find((t) => t.startsWith("module-"));
-        if (!mt || mt !== `module-${moduleFilter}`) return false;
+        const wantTag = `${filterConfig.tagPrefix}${moduleFilter}`;
+        if (!q.tags?.includes(wantTag)) return false;
       }
       if (s && !q.statement.toLowerCase().includes(s)) return false;
       return true;
     });
-  }, [questions, search, typeFilter, moduleFilter]);
+  }, [questions, search, typeFilter, moduleFilter, filterConfig]);
 
   // Sélection rapide
   function toggle(id: string) {
@@ -142,6 +151,9 @@ export function StaticQuizForm({
           onChange={(e) => {
             setFormationSlug(e.target.value);
             setSelected(new Set());
+            // Reset le filtre de groupe : "a" Capacité ≠ "1" GOTRM, on
+            // évite l'incohérence en cas de changement de formation.
+            setModuleFilter("");
           }}
           className="w-full h-11 rounded-xl border border-navy-200 bg-white px-3.5"
         >
@@ -187,13 +199,25 @@ export function StaticQuizForm({
               value={moduleFilter}
               onChange={(e) => setModuleFilter(e.target.value)}
               className="h-10 rounded-xl border border-navy-200 bg-white px-3 text-sm"
+              title={`Filtrer par ${filterConfig.label.toLowerCase()}`}
             >
-              <option value="">Tous modules</option>
-              {Object.entries(MODULE_LABELS).map(([v, l]) => (
-                <option key={v} value={v}>
-                  {l}
-                </option>
-              ))}
+              <option value="">Tous {filterConfig.label.toLowerCase()}s</option>
+              {filterConfig.keys.map((k) => {
+                // Pour Capacité, on garde le label détaillé "A — Droit",
+                // pour les autres (GOTRM…), on utilise le format long
+                // de la config ("Chapitre 1").
+                const label =
+                  filterConfig.tagPrefix === "module-" && CAPA_MODULE_LABELS[k]
+                    ? CAPA_MODULE_LABELS[k]
+                    : filterConfig.formatLong
+                      ? filterConfig.formatLong(k)
+                      : filterConfig.formatPill(k);
+                return (
+                  <option key={k} value={k}>
+                    {label}
+                  </option>
+                );
+              })}
             </select>
           </div>
 
@@ -242,11 +266,16 @@ export function StaticQuizForm({
                 {filtered.map((q) => {
                   const isSel = selected.has(q.id);
                   const isExp = expanded.has(q.id);
-                  const moduleTag = q.tags?.find((t) =>
-                    t.startsWith("module-")
+                  // Détecte le tag de groupe (chapitre-N ou module-X)
+                  // selon la nomenclature de la formation choisie.
+                  const groupTag = q.tags?.find((t) =>
+                    t.startsWith(filterConfig.tagPrefix)
                   );
-                  const moduleLetter = moduleTag
-                    ? moduleTag.split("-")[1].toUpperCase()
+                  const groupKey = groupTag
+                    ? groupTag.slice(filterConfig.tagPrefix.length)
+                    : null;
+                  const groupLabel = groupKey
+                    ? filterConfig.formatPill(groupKey)
                     : "?";
                   return (
                     <li
@@ -284,7 +313,7 @@ export function StaticQuizForm({
                               {q.type.toUpperCase()}
                             </Badge>
                             <span className="text-slate-500 font-semibold">
-                              M.{moduleLetter}
+                              {groupLabel}
                             </span>
                             <span className="text-slate-500">
                               · {q.difficulty}
