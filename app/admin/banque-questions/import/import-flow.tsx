@@ -109,6 +109,15 @@ export function ImportFlow({
   // Étape 3 — Result
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [insertedCount, setInsertedCount] = useState(0);
+  const [insertedQuizId, setInsertedQuizId] = useState<string | null>(null);
+
+  // Options d'insertion (étape 2 → 3)
+  const [activateImmediately, setActivateImmediately] = useState(true);
+  const [createQuiz, setCreateQuiz] = useState(true);
+  const [quizTitle, setQuizTitle] = useState("");
+  const [quizType, setQuizType] = useState<"entrainement" | "examen">(
+    "entrainement",
+  );
 
   // Loading
   const [isExtracting, setIsExtracting] = useState(false);
@@ -180,6 +189,18 @@ export function ImportFlow({
       setRawText(json.raw_text);
       setDetectedFormat(json.summary?.detectedFormat ?? "unknown");
       setAnnexes(json.annexes ?? []);
+      // Suggère un titre de quiz par défaut basé sur la formation + nom du fichier
+      const formationCode = formations.find((f) => f.id === formationId)?.code;
+      const moduleName = modules.find((m) => m.id === moduleId)?.title;
+      const baseName = file?.name?.replace(/\.[^.]+$/, "") ?? "Exercices";
+      const suggested =
+        moduleName
+          ? `${formationCode ?? ""} — ${moduleName} — ${baseName}`.replace(
+              /^\s*—\s*/,
+              "",
+            )
+          : `${formationCode ?? ""} — ${baseName}`.replace(/^\s*—\s*/, "");
+      setQuizTitle(suggested.slice(0, 120));
       // Mappe en interne (camelCase)
       setQuestions(
         (json.questions ?? []).map((q: any) => ({
@@ -256,6 +277,10 @@ export function ImportFlow({
         formation_id: formationId,
         module_id: moduleId || null,
         lesson_id: lessonId || null,
+        activate_immediately: activateImmediately,
+        create_quiz: createQuiz,
+        quiz_title: createQuiz ? quizTitle : undefined,
+        quiz_type: quizType,
         questions: visibleQuestions.map((q) => ({
           type: q.type,
           statement: q.statement,
@@ -289,6 +314,7 @@ export function ImportFlow({
         return;
       }
       setInsertedCount(json.inserted ?? 0);
+      setInsertedQuizId(json.quiz_id ?? null);
       setStep("done");
     } catch (e: any) {
       setErrorMsg(e?.message ?? "Erreur réseau");
@@ -367,6 +393,14 @@ export function ImportFlow({
           setShowRawText={setShowRawText}
           questions={questions}
           setQuestions={setQuestions}
+          activateImmediately={activateImmediately}
+          setActivateImmediately={setActivateImmediately}
+          createQuiz={createQuiz}
+          setCreateQuiz={setCreateQuiz}
+          quizTitle={quizTitle}
+          setQuizTitle={setQuizTitle}
+          quizType={quizType}
+          setQuizType={setQuizType}
           isExtracting={isExtracting}
           onReparse={onReparse}
           onBack={() => setStep("upload")}
@@ -390,19 +424,32 @@ export function ImportFlow({
             <div className="flex-1">
               <div className="font-display text-base font-semibold text-emerald-900">
                 {insertedCount} question(s) ajoutée(s) à la banque
+                {activateImmediately ? (
+                  <span className="ml-2 text-[12px] font-semibold bg-emerald-500 text-white px-1.5 py-0.5 rounded">
+                    actives
+                  </span>
+                ) : (
+                  <span className="ml-2 text-[12px] font-semibold bg-amber-400 text-night-900 px-1.5 py-0.5 rounded">
+                    en brouillon
+                  </span>
+                )}
               </div>
-              <p className="mt-1 text-[13px] text-emerald-800 leading-relaxed">
-                Les questions sont insérées <strong>désactivées</strong> par
-                défaut. Vérifiez-les dans{" "}
-                <a
-                  href="/admin/banque-questions/validation"
-                  className="underline underline-offset-2 hover:text-emerald-950"
-                >
-                  Validation
-                </a>{" "}
-                avant de les activer pour les stagiaires.
-              </p>
-              <div className="mt-4 flex gap-2">
+
+              {insertedQuizId ? (
+                <p className="mt-1 text-[13px] text-emerald-800 leading-relaxed">
+                  Le quiz a été créé et les questions y sont rattachées. Le
+                  stagiaire le verra dans son module dès maintenant
+                  {activateImmediately ? "" : " (après activation des questions)"}.
+                </p>
+              ) : (
+                <p className="mt-1 text-[13px] text-emerald-800 leading-relaxed">
+                  {activateImmediately
+                    ? "Les questions sont prêtes mais rattachées à aucun quiz pour l'instant. Liez-les manuellement à un quiz existant ou créez-en un nouveau."
+                    : "Vérifiez-les dans la validation avant de les activer."}
+                </p>
+              )}
+
+              <div className="mt-4 flex flex-wrap gap-2">
                 <button
                   onClick={reset}
                   className="inline-flex items-center gap-1.5 text-sm font-semibold px-3.5 py-2 rounded-lg bg-navy-900 text-white hover:bg-navy-800 transition"
@@ -410,6 +457,15 @@ export function ImportFlow({
                   <RotateCcw className="h-3.5 w-3.5" />
                   Nouvel import
                 </button>
+                {insertedQuizId && (
+                  <a
+                    href={`/admin/quizzes/${insertedQuizId}`}
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold px-3.5 py-2 rounded-lg bg-signal-500 text-night-900 hover:bg-signal-400 transition"
+                  >
+                    Ouvrir le quiz créé
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </a>
+                )}
                 <a
                   href="/admin/banque-questions/validation"
                   className="inline-flex items-center gap-1.5 text-sm font-semibold px-3.5 py-2 rounded-lg border border-emerald-300 bg-white text-emerald-900 hover:bg-emerald-50 transition"
@@ -709,6 +765,14 @@ function ReviewStep(props: {
   setShowRawText: (b: boolean) => void;
   questions: DraftQuestion[];
   setQuestions: (q: DraftQuestion[]) => void;
+  activateImmediately: boolean;
+  setActivateImmediately: (b: boolean) => void;
+  createQuiz: boolean;
+  setCreateQuiz: (b: boolean) => void;
+  quizTitle: string;
+  setQuizTitle: (s: string) => void;
+  quizType: "entrainement" | "examen";
+  setQuizType: (t: "entrainement" | "examen") => void;
   isExtracting: boolean;
   onReparse: () => void;
   onBack: () => void;
@@ -901,6 +965,83 @@ function ReviewStep(props: {
         })}
       </div>
 
+      {/* Options d'insertion : activation + création de quiz */}
+      <div className="rounded-2xl border border-navy-100 bg-ivory p-4 space-y-3">
+        <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-600">
+          Options d'insertion
+        </div>
+
+        {/* Activation immédiate */}
+        <label className="flex items-start gap-2.5 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={props.activateImmediately}
+            onChange={(e) => props.setActivateImmediately(e.target.checked)}
+            className="mt-0.5 h-4 w-4 rounded border-navy-300 text-signal-500 focus:ring-signal-500"
+          />
+          <div className="flex-1">
+            <div className="text-[13.5px] font-semibold text-navy-900">
+              Activer immédiatement les questions
+            </div>
+            <div className="text-[12px] text-slate-600 leading-relaxed">
+              Sinon, elles sont insérées en mode brouillon (visibles seulement
+              dans /admin/banque-questions/validation).
+            </div>
+          </div>
+        </label>
+
+        {/* Création de quiz */}
+        <label className="flex items-start gap-2.5 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={props.createQuiz}
+            onChange={(e) => props.setCreateQuiz(e.target.checked)}
+            className="mt-0.5 h-4 w-4 rounded border-navy-300 text-signal-500 focus:ring-signal-500"
+          />
+          <div className="flex-1">
+            <div className="text-[13.5px] font-semibold text-navy-900">
+              Créer un quiz contenant ces questions
+            </div>
+            <div className="text-[12px] text-slate-600 leading-relaxed">
+              Rattache toutes les questions à un nouveau quiz dans le module
+              sélectionné. Le stagiaire le verra dans la liste des évaluations.
+            </div>
+          </div>
+        </label>
+
+        {props.createQuiz && (
+          <div className="ml-6 grid md:grid-cols-[1fr_180px] gap-2">
+            <div>
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1 block">
+                Titre du quiz
+              </label>
+              <input
+                type="text"
+                value={props.quizTitle}
+                onChange={(e) => props.setQuizTitle(e.target.value)}
+                placeholder="Ex. Exercices Chapitre 1 — GOTRM"
+                className="w-full h-10 rounded-lg border border-navy-200 bg-white px-3 text-[13.5px] text-navy-900"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1 block">
+                Type
+              </label>
+              <select
+                value={props.quizType}
+                onChange={(e) =>
+                  props.setQuizType(e.target.value as "entrainement" | "examen")
+                }
+                className="w-full h-10 rounded-lg border border-navy-200 bg-white px-3 text-[13.5px] text-navy-900"
+              >
+                <option value="entrainement">Entraînement</option>
+                <option value="examen">Examen</option>
+              </select>
+            </div>
+          </div>
+        )}
+      </div>
+
       <div className="flex items-center justify-between border-t border-navy-50 pt-4">
         <button
           type="button"
@@ -913,10 +1054,15 @@ function ReviewStep(props: {
         <button
           type="button"
           onClick={props.onSave}
-          disabled={visible.length === 0}
+          disabled={
+            visible.length === 0 ||
+            (props.createQuiz && props.quizTitle.trim().length < 3)
+          }
           className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gold-500 text-night-900 font-semibold text-sm hover:bg-gold-400 transition disabled:opacity-50"
         >
-          Insérer {visible.length} question(s)
+          {props.createQuiz
+            ? `Insérer ${visible.length} question(s) + créer le quiz`
+            : `Insérer ${visible.length} question(s)`}
           <ArrowRight className="h-4 w-4" />
         </button>
       </div>
