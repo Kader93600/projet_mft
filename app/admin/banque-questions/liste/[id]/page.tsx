@@ -5,6 +5,8 @@ import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft } from "lucide-react";
 import { EditQuestionForm } from "./edit-form";
+import { GroupAssignSelect } from "../../group-assign-select";
+import { getQuestionFilterConfig } from "@/lib/question-filters";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +25,30 @@ export default async function EditQuestionPage({
     .maybeSingle();
   if (!q) notFound();
 
+  // Récupère le slug de la formation pour adapter le sélecteur
+  // (Chapitre pour GOTRM, Module pour Capa…).
+  let formationSlug: string | null = null;
+  if (q.formation_id) {
+    const { data: f } = await supabase
+      .from("formations")
+      .select("slug")
+      .eq("id", q.formation_id)
+      .maybeSingle();
+    formationSlug = f?.slug ?? null;
+  }
+  const filterConfig = getQuestionFilterConfig(formationSlug);
+  const serializableFilterConfig = {
+    tagPrefix: filterConfig.tagPrefix,
+    label: filterConfig.label,
+    entries: filterConfig.keys.map((k) => ({
+      key: k,
+      pill: filterConfig.formatPill(k),
+      long: filterConfig.formatLong
+        ? filterConfig.formatLong(k)
+        : filterConfig.formatPill(k),
+    })),
+  };
+
   return (
     <div className="space-y-6 max-w-3xl">
       <Link
@@ -33,13 +59,22 @@ export default async function EditQuestionPage({
       </Link>
 
       <header>
-        <div className="flex items-center gap-2 mb-2">
+        <div className="flex items-center gap-2 mb-2 flex-wrap">
           <Badge tone={q.type === "qr" ? "gold" : "navy"} size="sm">
             {q.type.toUpperCase()}
           </Badge>
           <Badge tone={q.active ? "success" : "rose"} size="sm">
             {q.active ? "Active" : "Inactive"}
           </Badge>
+          <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 ml-2">
+            {filterConfig.label}
+          </span>
+          <GroupAssignSelect
+            questionId={q.id}
+            currentTags={q.tags ?? []}
+            filterConfig={serializableFilterConfig}
+            size="md"
+          />
           {q.source_ref && (
             <code className="text-xs font-mono text-slate-500">
               {q.source_ref}

@@ -18,6 +18,7 @@ import { getQuestionFilterConfig } from "@/lib/question-filters";
 import { ToggleActiveButton } from "./toggle-active-button";
 import { ConfirmAction } from "@/components/ui/confirm-action";
 import { deleteQuestion } from "../validation-qr/actions";
+import { GroupAssignSelect } from "../group-assign-select";
 
 export const dynamic = "force-dynamic";
 
@@ -85,6 +86,19 @@ export default async function BanqueQuestionsListPage({
   // Filtre par "groupe" (Chapitre pour GOTRM, Module pour Capacité…).
   // Le préfixe du tag dépend de la formation sélectionnée.
   const filterConfig = getQuestionFilterConfig(formationSlug);
+  // Version sérialisable pour les composants client (les fonctions
+  // formatPill/formatLong ne traversent pas la boundary RSC).
+  const serializableFilterConfig = {
+    tagPrefix: filterConfig.tagPrefix,
+    label: filterConfig.label,
+    entries: filterConfig.keys.map((k) => ({
+      key: k,
+      pill: filterConfig.formatPill(k),
+      long: filterConfig.formatLong
+        ? filterConfig.formatLong(k)
+        : filterConfig.formatPill(k),
+    })),
+  };
   if (moduleFilter)
     query = query.contains("tags", [`${filterConfig.tagPrefix}${moduleFilter}`]);
   if (search) query = query.ilike("statement", `%${search}%`);
@@ -274,16 +288,19 @@ export default async function BanqueQuestionsListPage({
                 return (
                   <li key={q.id} className="px-6 py-4">
                     <div className="flex items-start gap-3">
-                      <div className="flex flex-col items-center gap-1 shrink-0">
+                      <div className="flex flex-col items-center gap-1 shrink-0 min-w-[60px]">
                         <Badge
                           tone={q.type === "qr" ? "gold" : "navy"}
                           size="sm"
                         >
                           {q.type.toUpperCase()}
                         </Badge>
-                        <span className="text-[10px] font-semibold text-slate-400">
-                          {groupLabel}
-                        </span>
+                        <GroupAssignSelect
+                          questionId={q.id}
+                          currentTags={q.tags ?? []}
+                          filterConfig={serializableFilterConfig}
+                          size="sm"
+                        />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-navy-900 leading-relaxed">
