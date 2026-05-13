@@ -85,6 +85,9 @@ function Header() {
           <Link href="/tarifs" className="hover:text-white transition">
             Tarifs
           </Link>
+          <Link href="/temoignages" className="hover:text-white transition">
+            Témoignages
+          </Link>
           <Link href="/contact" className="hover:text-white transition">
             Contact
           </Link>
@@ -709,6 +712,11 @@ function FooterContact() {
             <li>
               <Link href="/tarifs" className="hover:text-white">
                 Tarifs
+              </Link>
+            </li>
+            <li>
+              <Link href="/temoignages" className="hover:text-white">
+                Témoignages
               </Link>
             </li>
             <li>
