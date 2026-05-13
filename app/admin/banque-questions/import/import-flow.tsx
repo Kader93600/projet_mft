@@ -81,6 +81,7 @@ export function ImportFlow({ formations, modulesByFormation }: Props) {
   const [rawText, setRawText] = useState("");
   const [questions, setQuestions] = useState<DraftQuestion[]>([]);
   const [showRawText, setShowRawText] = useState(false);
+  const [detectedFormat, setDetectedFormat] = useState<string>("unknown");
 
   // Étape 3 — Result
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -148,6 +149,7 @@ export function ImportFlow({ formations, modulesByFormation }: Props) {
       }
       setImportId(json.import_id);
       setRawText(json.raw_text);
+      setDetectedFormat(json.summary?.detectedFormat ?? "unknown");
       // Mappe en interne (camelCase)
       setQuestions(
         (json.questions ?? []).map((q: any) => ({
@@ -315,6 +317,7 @@ export function ImportFlow({ formations, modulesByFormation }: Props) {
       {step === "review" && (
         <ReviewStep
           summary={summary}
+          detectedFormat={detectedFormat}
           rawText={rawText}
           setRawText={setRawText}
           showRawText={showRawText}
@@ -620,8 +623,16 @@ function UploadStep(props: {
 // =====================================================================
 // Step 2 — Review questions
 // =====================================================================
+const FORMAT_LABELS: Record<string, string> = {
+  exercise: "Livret d'exercices (QR contextualisées)",
+  qcm_qr: "Quiz / Examen blanc (QCM + QR)",
+  numbered: "Liste numérotée simple",
+  unknown: "Format non reconnu",
+};
+
 function ReviewStep(props: {
   summary: { total: number; qcm: number; qr: number; warn: number };
+  detectedFormat: string;
   rawText: string;
   setRawText: (s: string) => void;
   showRawText: boolean;
@@ -675,6 +686,17 @@ function ReviewStep(props: {
 
   return (
     <div className="space-y-4">
+      {/* Bandeau format détecté */}
+      <div className="rounded-xl bg-signal-50/40 border border-signal-200 px-3.5 py-2 text-[12px] text-signal-900 inline-flex items-center gap-2">
+        <CheckCircle2 className="h-3.5 w-3.5 text-signal-700" />
+        <span>
+          Format détecté&nbsp;:{" "}
+          <strong>
+            {FORMAT_LABELS[props.detectedFormat] ?? props.detectedFormat}
+          </strong>
+        </span>
+      </div>
+
       {/* Bandeau résumé */}
       <div className="rounded-2xl bg-ivory border border-navy-100 px-4 py-3 flex items-center gap-4 flex-wrap">
         <SummaryChip label="Total" value={props.summary.total} tone="navy" />
