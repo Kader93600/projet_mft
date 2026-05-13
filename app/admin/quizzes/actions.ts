@@ -214,3 +214,101 @@ export async function setChoices(
   revalidatePath(`/admin/quizzes/${quizId}`);
   return { ok: true };
 }
+
+// ---------- LIAISONS BANQUE → QUIZ (quiz_question_bank) ----------
+//
+// Permet d'ajouter / retirer une question de la banque (question_bank)
+// d'un quiz existant. Le trigger SQL `tg_quiz_check_manual_grading`
+// recalcule automatiquement requires_manual_grading.
+
+export async function attachBankQuestion(
+  quizId: string,
+  questionId: string,
+  displayOrder?: number,
+) {
+  validate(uuid, quizId);
+  validate(uuid, questionId);
+  const sbRead = createClient();
+  const slug = await getQuizFormationSlug(sbRead, quizId);
+  const { supabase } = await requireStaffOrFormationTrainer(slug || "");
+
+  // Si pas d'ordre fourni, place en dernier (max + 10)
+  let order = displayOrder;
+  if (order == null) {
+    const { data: maxRow } = await supabase
+      .from("quiz_question_bank")
+      .select("display_order")
+      .eq("quiz_id", quizId)
+      .order("display_order", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    order = ((maxRow?.display_order as number | undefined) ?? 0) + 10;
+  }
+
+  const { error } = await supabase
+    .from("quiz_question_bank")
+    .insert({ quiz_id: quizId, question_id: questionId, display_order: order });
+  if (error) {
+    // Ignore les doublons silencieusement (idempotent)
+    if (!error.message.toLowerCase().includes("duplicate")) {
+      throw new Error(error.message);
+    }
+  }
+  await auditLog("attach_bank_question", "quiz", quizId, { questionId });
+  revalidatePath(`/admin/quizzes/${quizId}`);
+  return { ok: true };
+}
+
+export async function detachBankQuestion(quizId: string, questionId: string) {
+  validate(uuid, quizId);
+  validate(uuid, questionId);
+  const sbRead = createClient();
+  const slug = await getQuizFormationSlug(sbRead, quizId);
+  const { supabase } = await requireStaffOrFormationTrainer(slug || "");
+
+  const { error } = await supabase
+    .from("quiz_question_bank")
+    .delete()
+    .eq("quiz_id", quizId)
+    .eq("question_id", questionId);
+  if (error) throw new Error(error.message);
+  await auditLog("detach_bank_question", "quiz", quizId, { questionId });
+  revalidatePath(`/admin/quizzes/${quizId}`);
+  return { ok: true };
+}
+
+/**
+ * Bulk : attache N questions d'un coup avec leur ordre.
+ * Utilisé par le bouton "Tout cocher" du picker.
+ */
+export async function setBankQuestionsForQuiz(
+  quizId: string,
+  questionIds: string[],
+) {
+  validate(uuid, quizId);
+  const sbRead = createClient();
+  const slug = await getQuizFormationSlug(sbRead, quizId);
+  const { supabase } = await requireStaffOrFormationTrainer(slug || "");
+
+  // 1. Purge les liens existants → 2. Re-insère dans l'ordre fourni
+  const { error: delErr } = await supabase
+    .from("quiz_question_bank")
+    .delete()
+    .eq("quiz_id", quizId);
+  if (delErr) throw new Error(delErr.message);
+
+  if (questionIds.length > 0) {
+    const rows = questionIds.map((qid, i) => ({
+      quiz_id: quizId,
+      question_id: qid,
+      display_order: (i + 1) * 10,
+    }));
+    const { error } = await supabase.from("quiz_question_bank").insert(rows);
+    if (error) throw new Error(error.message);
+  }
+  await auditLog("set_bank_questions", "quiz", quizId, {
+    count: questionIds.length,
+  });
+  revalidatePath(`/admin/quizzes/${quizId}`);
+  return { ok: true, count: questionIds.length };
+}
