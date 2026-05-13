@@ -14,8 +14,15 @@ import {
   PowerOff,
   Pencil,
   X,
+  Trash2,
 } from "lucide-react";
-import { updateQrMetadata, activateQr, deactivateQr } from "./actions";
+import {
+  updateQrMetadata,
+  activateQr,
+  deactivateQr,
+  deleteQuestion,
+} from "./actions";
+import { ConfirmAction } from "@/components/ui/confirm-action";
 
 interface QrData {
   id: string;
@@ -294,27 +301,40 @@ export function QrEditor({
         )}
 
         <div className="mt-4 flex justify-between items-center flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={onToggleActive}
-            disabled={pending}
-            className={
-              "inline-flex items-center gap-1.5 text-xs font-medium " +
-              (question.active
-                ? "text-rose-600 hover:text-rose-800"
-                : "text-emerald-600 hover:text-emerald-800")
-            }
-          >
-            {question.active ? (
-              <>
-                <PowerOff className="h-3.5 w-3.5" /> Désactiver
-              </>
-            ) : (
-              <>
-                <Power className="h-3.5 w-3.5" /> Activer
-              </>
-            )}
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={onToggleActive}
+              disabled={pending}
+              className={
+                "inline-flex items-center gap-1.5 text-xs font-medium " +
+                (question.active
+                  ? "text-rose-600 hover:text-rose-800"
+                  : "text-emerald-600 hover:text-emerald-800")
+              }
+            >
+              {question.active ? (
+                <>
+                  <PowerOff className="h-3.5 w-3.5" /> Désactiver
+                </>
+              ) : (
+                <>
+                  <Power className="h-3.5 w-3.5" /> Activer
+                </>
+              )}
+            </button>
+            <ConfirmAction
+              action={deleteQuestion.bind(null, question.id)}
+              title="Supprimer cette question ?"
+              description={`L'énoncé "${question.statement.slice(0, 100)}${question.statement.length > 100 ? "…" : ""}" sera supprimé définitivement, ainsi que son rattachement à tous les quiz. Cette action est irréversible.`}
+              confirmLabel="Supprimer définitivement"
+              successMsg="Question supprimée"
+              icon={<Trash2 className="h-3.5 w-3.5" />}
+              iconLabel="Supprimer la question"
+              tone="rose"
+              variant="soft"
+            />
+          </div>
           <Button
             onClick={onSave}
             disabled={pending}

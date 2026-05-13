@@ -5,7 +5,9 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { CheckCircle2, AlertCircle, Loader2, Trash2 } from "lucide-react";
+import { ConfirmAction } from "@/components/ui/confirm-action";
+import { deleteQuestion } from "../../validation-qr/actions";
 
 interface QuestionData {
   id: string;
@@ -181,7 +183,21 @@ export function EditQuestionForm({ question }: { question: QuestionData }) {
         </div>
       )}
 
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between border-t border-navy-50 pt-4">
+        <ConfirmAction
+          action={async () => {
+            await deleteQuestion(question.id);
+            router.push("/admin/banque-questions/liste");
+          }}
+          title="Supprimer cette question ?"
+          description={`L'énoncé "${question.statement.slice(0, 100)}${question.statement.length > 100 ? "…" : ""}" sera supprimé définitivement, ainsi que son rattachement à tous les quiz. Cette action est irréversible.`}
+          confirmLabel="Supprimer définitivement"
+          successMsg="Question supprimée"
+          icon={<Trash2 className="h-3.5 w-3.5" />}
+          iconLabel="Supprimer cette question"
+          tone="rose"
+          variant="solid"
+        />
         <Button onClick={onSave} disabled={pending} variant="gold">
           {pending ? (
             <>

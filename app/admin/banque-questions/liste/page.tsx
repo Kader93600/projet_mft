@@ -11,9 +11,12 @@ import {
   Edit3,
   ChevronLeft,
   ChevronRight,
+  Trash2,
 } from "lucide-react";
 import { findFormation, FORMATIONS } from "@/lib/formations-config";
 import { ToggleActiveButton } from "./toggle-active-button";
+import { ConfirmAction } from "@/components/ui/confirm-action";
+import { deleteQuestion } from "../validation-qr/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -312,6 +315,17 @@ export default async function BanqueQuestionsListPage({
                         >
                           <Edit3 className="h-3.5 w-3.5" />
                         </Link>
+                        <ConfirmAction
+                          action={deleteQuestion.bind(null, q.id)}
+                          title="Supprimer cette question ?"
+                          description={`L'énoncé "${(q.statement ?? "").slice(0, 100)}${(q.statement ?? "").length > 100 ? "…" : ""}" sera supprimé définitivement, ainsi que son rattachement à tous les quiz. Cette action est irréversible.`}
+                          confirmLabel="Supprimer définitivement"
+                          successMsg="Question supprimée"
+                          icon={<Trash2 className="h-3.5 w-3.5" />}
+                          iconLabel="Supprimer la question"
+                          tone="rose"
+                          variant="soft"
+                        />
                       </div>
                     </div>
                   </li>

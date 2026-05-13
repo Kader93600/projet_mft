@@ -99,3 +99,24 @@ export async function deactivateQr(questionId: string) {
   if (error) throw new Error(error.message);
   revalidatePath("/admin/banque-questions/validation-qr");
 }
+
+/**
+ * Supprime définitivement une question (QCM ou QR) de la banque.
+ *
+ * - CASCADE supprime aussi les liens dans `quiz_question_bank`
+ * - Audit léger via la trace `reformulated_by` (gardée juste avant delete
+ *   au cas où on voudrait restaurer plus tard)
+ * - Irréversible : utiliser ConfirmAction côté UI pour éviter les accidents
+ */
+export async function deleteQuestion(questionId: string) {
+  const { supabase } = await ensureStaff();
+  const { error } = await supabase
+    .from("question_bank")
+    .delete()
+    .eq("id", questionId);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/banque-questions");
+  revalidatePath("/admin/banque-questions/validation");
+  revalidatePath("/admin/banque-questions/validation-qr");
+  revalidatePath("/admin/banque-questions/liste");
+}
