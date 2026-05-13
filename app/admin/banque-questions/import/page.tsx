@@ -28,7 +28,7 @@ export default async function ImportPage() {
 
   const [
     { data: formations },
-    { data: modules },
+    { data: formationModules },
     { data: lessons },
     { data: recentImports },
   ] = await Promise.all([
@@ -36,9 +36,13 @@ export default async function ImportPage() {
       .from("formations")
       .select("id, slug, code, title")
       .order("code"),
+    // Jointure N-N : formations ↔ modules via formation_modules.
+    // On embarque le module pour avoir id/slug/title en une requête.
     supabase
-      .from("modules")
-      .select("id, slug, title, formation_id")
+      .from("formation_modules")
+      .select(
+        "formation_id, display_order, module:modules(id, slug, title)",
+      )
       .order("display_order"),
     supabase
       .from("lessons")
@@ -65,10 +69,15 @@ export default async function ImportPage() {
     string,
     { id: string; slug: string; title: string }[]
   > = {};
-  for (const m of modules ?? []) {
-    if (!m.formation_id) continue;
-    if (!modulesByFormation[m.formation_id]) modulesByFormation[m.formation_id] = [];
-    modulesByFormation[m.formation_id].push({
+  for (const fm of formationModules ?? []) {
+    const formationId = (fm as any).formation_id;
+    const moduleRel = (fm as any).module;
+    if (!formationId || !moduleRel) continue;
+    // Supabase peut renvoyer la relation sous forme d'objet OU d'array
+    const m = Array.isArray(moduleRel) ? moduleRel[0] : moduleRel;
+    if (!m) continue;
+    if (!modulesByFormation[formationId]) modulesByFormation[formationId] = [];
+    modulesByFormation[formationId].push({
       id: m.id,
       slug: m.slug,
       title: m.title,
