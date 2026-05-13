@@ -24,6 +24,10 @@ import {
 } from "./actions";
 import { ConfirmAction } from "@/components/ui/confirm-action";
 import { getQuestionFilterConfig } from "@/lib/question-filters";
+import {
+  AttachmentManager,
+  type QuestionAttachment,
+} from "./attachment-manager";
 
 interface QrData {
   id: string;
@@ -42,11 +46,13 @@ export function QrEditor({
   index,
   total,
   formationSlug,
+  initialAttachments,
 }: {
   question: QrData;
   index: number;
   total: number;
   formationSlug: string;
+  initialAttachments: QuestionAttachment[];
 }) {
   const filterConfig = getQuestionFilterConfig(formationSlug);
   // Tag de groupe courant (chapitre-N ou module-X)
@@ -312,6 +318,14 @@ export function QrEditor({
             </div>
           </div>
         )}
+
+        {/* Annexes attachées à la question (image / PDF / doc) */}
+        <div className="mb-4">
+          <AttachmentManager
+            questionId={question.id}
+            initial={initialAttachments}
+          />
+        </div>
 
         {/* Édition réponse-modèle, barème, note max, difficulté */}
         <div className="space-y-3">

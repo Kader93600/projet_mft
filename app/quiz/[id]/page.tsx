@@ -13,6 +13,15 @@ interface QuestionAnnex {
   signedUrl: string;
 }
 
+interface QuestionAttachment {
+  id: string;
+  kind: "image" | "pdf" | "document" | "other";
+  fileName: string;
+  mimeType: string;
+  label: string | null;
+  signedUrl: string;
+}
+
 interface UnifiedQuestion {
   /** id de la question (table source : "questions" ou "question_bank") */
   id: string;
@@ -33,6 +42,8 @@ interface UnifiedQuestion {
   max_score?: number;
   /** Annexes PDF à afficher à côté de l'énoncé pendant la réponse. */
   annexes?: QuestionAnnex[];
+  /** Annexes attachées directement à la question (images, PDF, doc). */
+  attachments?: QuestionAttachment[];
 }
 
 export default async function QuizPage({ params }: { params: { id: string } }) {
@@ -243,6 +254,40 @@ export default async function QuizPage({ params }: { params: { id: string } }) {
     delete q.annex_pages_raw;
     delete q.annex_labels_raw;
     delete q.import_id_raw;
+  }
+
+  // ── Attachments libres (image/PDF/doc uploadés à la main) ─────────
+  // Fetch les attachments des questions de la banque uniquement (les
+  // questions legacy n'en ont pas).
+  const bankQuestionIds = (list as any[])
+    .filter((q) => q.source === "bank")
+    .map((q) => q.id);
+  if (bankQuestionIds.length > 0) {
+    const { data: attRows } = await supabase
+      .from("question_attachments")
+      .select(
+        "id, question_id, storage_path, file_name, mime_type, kind, label, display_order",
+      )
+      .in("question_id", bankQuestionIds)
+      .order("display_order");
+
+    for (const a of attRows ?? []) {
+      const { data: signed } = await supabase.storage
+        .from("question-attachments")
+        .createSignedUrl(a.storage_path, 60 * 60);
+      if (!signed?.signedUrl) continue;
+      const q = (list as any[]).find((x) => x.id === a.question_id);
+      if (!q) continue;
+      if (!q.attachments) q.attachments = [];
+      q.attachments.push({
+        id: a.id,
+        kind: a.kind,
+        fileName: a.file_name,
+        mimeType: a.mime_type,
+        label: a.label,
+        signedUrl: signed.signedUrl,
+      });
+    }
   }
 
   const { data: attemptState } = await supabase.rpc("quiz_attempt_state", {

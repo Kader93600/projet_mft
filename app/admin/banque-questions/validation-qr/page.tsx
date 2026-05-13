@@ -49,6 +49,51 @@ export default async function ValidationQrPage({
   const list = (questions ?? []) as any[];
   const inactiveCount = list.filter((q) => !q.active).length;
 
+  // Fetch les annexes attachées (image, PDF…) à chaque question affichée
+  // + génère une signed URL valide 1h pour chacune. Regroupé par question
+  // pour passage simple à <QrEditor />.
+  const attachmentsByQuestion: Record<
+    string,
+    Array<{
+      id: string;
+      file_name: string;
+      mime_type: string;
+      kind: string;
+      label: string | null;
+      size_bytes: number | null;
+      signedUrl: string | null;
+    }>
+  > = {};
+  if (list.length > 0) {
+    const { data: attRows } = await supabase
+      .from("question_attachments")
+      .select(
+        "id, question_id, storage_path, file_name, mime_type, size_bytes, kind, label, display_order",
+      )
+      .in(
+        "question_id",
+        list.map((q) => q.id),
+      )
+      .order("display_order");
+
+    for (const a of attRows ?? []) {
+      const { data: signed } = await supabase.storage
+        .from("question-attachments")
+        .createSignedUrl(a.storage_path, 60 * 60);
+      const arr = attachmentsByQuestion[a.question_id] ?? [];
+      arr.push({
+        id: a.id,
+        file_name: a.file_name,
+        mime_type: a.mime_type,
+        kind: a.kind,
+        label: a.label,
+        size_bytes: a.size_bytes,
+        signedUrl: signed?.signedUrl ?? null,
+      });
+      attachmentsByQuestion[a.question_id] = arr;
+    }
+  }
+
   // Stats par groupe (Chapitre / Module selon la formation)
   // On agrège côté JS en une seule passe pour éviter N requêtes parallèles.
   // Fetch dédié léger : juste tags + active de toutes les QR de la formation.
@@ -181,6 +226,7 @@ export default async function ValidationQrPage({
               index={i + 1}
               total={list.length}
               formationSlug={slug}
+              initialAttachments={attachmentsByQuestion[q.id] ?? []}
             />
           ))}
         </div>

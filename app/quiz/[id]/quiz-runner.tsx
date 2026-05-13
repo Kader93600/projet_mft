@@ -10,7 +10,7 @@ import { ProgressBar, RadialProgress } from "@/components/ui/progress";
 import {
   Check, X, Clock, Target, Lightbulb, ArrowRight, ArrowLeft,
   AlertTriangle, Maximize, ShieldAlert, Lock, Flag, Grid3X3,
-  CheckCircle2, Paperclip, ExternalLink,
+  CheckCircle2, Paperclip, ExternalLink, FileText,
 } from "lucide-react";
 import { cn, scoreColor } from "@/lib/utils";
 import { FormationBadge } from "@/components/formation/formation-badge";
@@ -22,6 +22,14 @@ interface QuestionAnnex {
   label: string;
   signedUrl: string;
 }
+interface QuestionAttachment {
+  id: string;
+  kind: "image" | "pdf" | "document" | "other";
+  fileName: string;
+  mimeType: string;
+  label: string | null;
+  signedUrl: string;
+}
 interface Question {
   id: string;
   statement: string;
@@ -31,6 +39,7 @@ interface Question {
   source?: "legacy" | "bank";
   max_score?: number;
   annexes?: QuestionAnnex[];
+  attachments?: QuestionAttachment[];
 }
 interface Quiz {
   id: string;
@@ -928,6 +937,9 @@ export function QuizRunner({
           {q.annexes && q.annexes.length > 0 && (
             <AnnexPanel annexes={q.annexes} />
           )}
+          {q.attachments && q.attachments.length > 0 && (
+            <AttachmentsPanel attachments={q.attachments} />
+          )}
           {q.type === "qr" ? (
             <div>
               <textarea
@@ -1111,6 +1123,121 @@ function AnnexPanel({ annexes }: { annexes: QuestionAnnex[] }) {
           expanded ? "h-[800px]" : "h-[440px]"
         )}
       />
+    </div>
+  );
+}
+
+/**
+ * Panneau d'annexes attachées directement à la question (images, PDF, doc).
+ * Affichage adapté au kind :
+ *   - image : preview inline cliquable (ouvre l'original en nouvel onglet)
+ *   - pdf   : iframe (réutilise le viewer natif du navigateur)
+ *   - autre : carte avec bouton "Ouvrir"
+ */
+function AttachmentsPanel({ attachments }: { attachments: QuestionAttachment[] }) {
+  const images = attachments.filter((a) => a.kind === "image");
+  const pdfs = attachments.filter((a) => a.kind === "pdf");
+  const others = attachments.filter(
+    (a) => a.kind !== "image" && a.kind !== "pdf",
+  );
+
+  return (
+    <div className="mt-3 rounded-2xl border border-brand-200 bg-brand-50/30 p-3">
+      <div className="flex items-center gap-2 mb-2">
+        <Paperclip className="h-3.5 w-3.5 text-brand-700" />
+        <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-brand-800">
+          Documents joints ({attachments.length})
+        </span>
+      </div>
+
+      {/* Images : grille de previews cliquables */}
+      {images.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-2">
+          {images.map((img) => (
+            <a
+              key={img.id}
+              href={img.signedUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block rounded-lg overflow-hidden bg-white border border-brand-100 hover:border-brand-300 transition group"
+              title={img.label || img.fileName}
+            >
+              <img
+                src={img.signedUrl}
+                alt={img.label || img.fileName}
+                className="block w-full max-h-[180px] object-contain bg-navy-50 group-hover:scale-[1.01] transition-transform"
+                loading="lazy"
+              />
+              {img.label && (
+                <div className="px-2 py-1 text-[11px] text-slate-700 truncate">
+                  {img.label}
+                </div>
+              )}
+            </a>
+          ))}
+        </div>
+      )}
+
+      {/* PDF : iframe natif */}
+      {pdfs.map((pdf) => (
+        <div
+          key={pdf.id}
+          className="rounded-lg overflow-hidden bg-white border border-brand-100 mb-2"
+        >
+          <div className="px-2.5 py-1.5 flex items-center gap-2 bg-brand-50/70 border-b border-brand-100 text-[12px] text-brand-900">
+            <FileText className="h-3.5 w-3.5" />
+            <strong className="flex-1 truncate">
+              {pdf.label || pdf.fileName}
+            </strong>
+            <a
+              href={pdf.signedUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded hover:bg-brand-100 text-[11px] font-semibold"
+              title="Ouvrir dans un nouvel onglet"
+            >
+              <ExternalLink className="h-3 w-3" />
+              Ouvrir
+            </a>
+          </div>
+          <iframe
+            src={`${pdf.signedUrl}#toolbar=0&navpanes=0`}
+            title={pdf.label || pdf.fileName}
+            className="w-full h-[400px] bg-white"
+          />
+        </div>
+      ))}
+
+      {/* Autres documents : carte + bouton */}
+      {others.length > 0 && (
+        <ul className="space-y-1">
+          {others.map((doc) => (
+            <li
+              key={doc.id}
+              className="flex items-center gap-2 rounded-lg bg-white border border-brand-100 px-2.5 py-1.5"
+            >
+              <FileText className="h-3.5 w-3.5 text-slate-600 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="text-[13px] font-semibold text-navy-900 truncate">
+                  {doc.label || doc.fileName}
+                </div>
+                <div className="text-[10.5px] text-slate-500 truncate">
+                  {doc.mimeType}
+                </div>
+              </div>
+              <a
+                href={doc.signedUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold bg-brand-600 text-white hover:bg-brand-700"
+              >
+                <ExternalLink className="h-3 w-3" />
+                Ouvrir
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
