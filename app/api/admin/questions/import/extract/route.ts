@@ -15,7 +15,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin-guard";
 import { extractPdfText, normalizePdfText } from "@/lib/pdf-extract";
-import { parseQuestions } from "@/lib/question-parser";
+import { parseQuestions, findSourcePage } from "@/lib/question-parser";
 import {
   detectAnnexPages,
   resolveAnnexesForQuestion,
@@ -124,13 +124,53 @@ export async function POST(req: NextRequest) {
     // Parse questions + résout les références d'annexes
     const parsed = parseQuestions(rawText);
     for (const q of parsed.questions) {
+      // Annexes explicitement référencées dans l'énoncé
       const { pages, labels } = resolveAnnexesForQuestion(
         q.statement,
         annexes,
       );
-      q.annexPages = pages;
-      q.annexLabels = labels;
-      if (pages.length > 0) {
+
+      // Page source de l'exercice : on cherche la référence dans pageTexts.
+      // Le tag interne `__ref__exercice-X.Y` permet de retrouver l'énoncé
+      // exact dans le PDF, ce qui préserve les tableaux et la mise en page
+      // d'origine pour le stagiaire (même quand le parser linéaire les a
+      // écrasés dans le statement).
+      let sourcePage: number | null = null;
+      const refTag = q.tags.find((t) => t.startsWith("__ref__"));
+      if (refTag && pageTexts.length > 1) {
+        const refLabel = refTag.replace("__ref__", "").replace("-", " ");
+        sourcePage = findSourcePage(pageTexts, refLabel);
+        if (sourcePage == null) {
+          // Fallback : cherche les 60 premiers caractères de l'énoncé
+          const head = q.statement.slice(0, 60).replace(/\s+/g, " ").trim();
+          if (head) sourcePage = findSourcePage(pageTexts, head);
+        }
+      }
+      // Nettoie le tag interne (ne doit pas être persisté en DB)
+      q.tags = q.tags.filter((t) => !t.startsWith("__ref__"));
+      if (sourcePage != null) {
+        q.sourcePage = sourcePage;
+      }
+
+      // Construit la liste finale d'annexes : page source (si trouvée) +
+      // annexes explicitement référencées. La page source vient en premier
+      // (c'est le contexte principal).
+      const finalPages: number[] = [];
+      const finalLabels: string[] = [];
+      if (sourcePage != null) {
+        finalPages.push(sourcePage);
+        finalLabels.push(`Énoncé original (page ${sourcePage})`);
+      }
+      for (let i = 0; i < pages.length; i++) {
+        if (!finalPages.includes(pages[i])) {
+          finalPages.push(pages[i]);
+          finalLabels.push(labels[i]);
+        }
+      }
+      q.annexPages = finalPages;
+      q.annexLabels = finalLabels;
+
+      if (finalPages.length > 0) {
         q.warnings = q.warnings.filter((w) => !w.includes("Annexe"));
       }
     }

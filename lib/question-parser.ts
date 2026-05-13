@@ -42,6 +42,8 @@ export interface DraftQuestion {
   annexPages?: number[];
   /** Libellés humains des annexes liées (même ordre que annexPages). */
   annexLabels?: string[];
+  /** Page d'origine de l'énoncé dans le PDF (pour préserver tableaux/listes). */
+  sourcePage?: number;
 }
 
 export interface ParseResult {
@@ -158,6 +160,28 @@ function detectFormat(lines: string[]): ParseResult["summary"]["detectedFormat"]
 // Parser principal
 // ---------------------------------------------------------------------
 
+/**
+ * Cherche dans quelle page d'un tableau de textes-par-page apparaît un
+ * identifiant donné ("Exercice 1.2", "Question 5", etc.). Renvoie le
+ * numéro de page (1-based) ou null si non trouvé.
+ *
+ * Tolérant : ignore les espaces multiples, la casse, et les apostrophes
+ * typographiques vs droites.
+ */
+export function findSourcePage(
+  pageTexts: string[],
+  needle: string,
+): number | null {
+  const norm = (s: string) =>
+    s.toLowerCase().replace(/[''`]/g, "'").replace(/\s+/g, " ").trim();
+  const target = norm(needle);
+  if (!target || target.length < 4) return null;
+  for (let i = 0; i < pageTexts.length; i++) {
+    if (norm(pageTexts[i]).includes(target)) return i + 1;
+  }
+  return null;
+}
+
 export function parseQuestions(rawText: string): ParseResult {
   const lines = cleanLines(rawText);
   const format = detectFormat(lines);
@@ -253,6 +277,10 @@ function exerciseToDraft(blk: ExerciseBlock, index: number): DraftQuestion {
   const chapter = blk.ref.split(".")[0];
   if (chapter) tags.push(`chapitre-${chapter}`);
   tags.push(`exercice-${blk.ref.replace(".", "-")}`);
+
+  // Stocke la ref originale dans les tags pour qu'on puisse retrouver
+  // la page source dans l'API extract via findSourcePage("Exercice 1.2", …)
+  tags.push(`__ref__exercice-${blk.ref}`);
 
   // Sépare les sections : CONTEXTE / TRAVAIL / ANNEXE / etc.
   const text = blk.bodyLines

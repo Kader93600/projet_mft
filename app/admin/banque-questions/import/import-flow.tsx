@@ -14,6 +14,7 @@ import {
   Plus,
   RotateCcw,
   Paperclip,
+  X,
 } from "lucide-react";
 
 interface FormationOpt {
@@ -751,6 +752,25 @@ function ReviewStep(props: {
     updateQ(qi, { choices: q.choices.filter((_, idx) => idx !== ci) });
   };
 
+  // ── Annexes : ajouter / retirer par question ───────────────────────
+  const addAnnex = (qi: number, pageNumber: number, label: string) => {
+    if (!Number.isFinite(pageNumber) || pageNumber < 1) return;
+    const q = props.questions[qi];
+    const pages = [...(q.annexPages ?? [])];
+    const labels = [...(q.annexLabels ?? [])];
+    if (pages.includes(pageNumber)) return; // déjà liée
+    pages.push(pageNumber);
+    labels.push(label.trim() || `Page ${pageNumber}`);
+    updateQ(qi, { annexPages: pages, annexLabels: labels });
+  };
+
+  const removeAnnex = (qi: number, ai: number) => {
+    const q = props.questions[qi];
+    const pages = (q.annexPages ?? []).filter((_, idx) => idx !== ai);
+    const labels = (q.annexLabels ?? []).filter((_, idx) => idx !== ai);
+    updateQ(qi, { annexPages: pages, annexLabels: labels });
+  };
+
   const visible = props.questions.filter((q) => !q._drop);
 
   return (
@@ -873,6 +893,8 @@ function ReviewStep(props: {
               }
               onAddChoice={() => addChoice(qi)}
               onRemoveChoice={(ci) => removeChoice(qi, ci)}
+              onAddAnnex={(p, label) => addAnnex(qi, p, label)}
+              onRemoveAnnex={(ai) => removeAnnex(qi, ai)}
               onDrop={() => updateQ(qi, { _drop: true })}
             />
           );
@@ -939,6 +961,8 @@ function QuestionCard({
   onUpdateChoiceLabel,
   onAddChoice,
   onRemoveChoice,
+  onAddAnnex,
+  onRemoveAnnex,
   onDrop,
 }: {
   question: DraftQuestion;
@@ -947,8 +971,11 @@ function QuestionCard({
   onUpdateChoiceLabel: (ci: number, label: string) => void;
   onAddChoice: () => void;
   onRemoveChoice: (ci: number) => void;
+  onAddAnnex: (pageNumber: number, label: string) => void;
+  onRemoveAnnex: (ai: number) => void;
   onDrop: () => void;
 }) {
+  const [annexInput, setAnnexInput] = useState({ page: "", label: "" });
   const typeColor = q.type === "qcm" ? "signal" : "brand";
   return (
     <div className="rounded-2xl border border-navy-100 bg-white p-4 md:p-5">
@@ -1021,26 +1048,77 @@ function QuestionCard({
             </div>
           )}
 
-          {/* Annexes liées */}
-          {q.annexPages && q.annexPages.length > 0 && (
-            <div className="mb-2 flex items-center gap-1.5 flex-wrap">
+          {/* Annexes liées — éditables */}
+          <div className="mb-2 rounded-lg border border-amber-200 bg-amber-50/40 px-2.5 py-1.5">
+            <div className="flex items-center gap-1.5 flex-wrap">
               <Paperclip className="h-3 w-3 text-amber-700" />
-              {q.annexPages.map((p, i) => (
+              <span className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-amber-900">
+                Pages PDF affichées au stagiaire
+              </span>
+              {(q.annexPages ?? []).length === 0 && (
+                <span className="text-[11px] text-slate-500 italic">
+                  aucune
+                </span>
+              )}
+              {(q.annexPages ?? []).map((p, i) => (
                 <span
                   key={i}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-amber-100 text-amber-900 border border-amber-200"
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10.5px] font-semibold bg-amber-100 text-amber-900 border border-amber-200"
                   title={q.annexLabels?.[i] ?? `Page ${p}`}
                 >
                   <span className="font-mono">p.{p}</span>
                   {q.annexLabels?.[i] && (
-                    <span className="font-normal max-w-[200px] truncate">
-                      {q.annexLabels[i]}
+                    <span className="font-normal max-w-[180px] truncate">
+                      — {q.annexLabels[i]}
                     </span>
                   )}
+                  <button
+                    type="button"
+                    onClick={() => onRemoveAnnex(i)}
+                    className="ml-0.5 hover:text-rose-700"
+                    title="Retirer cette annexe"
+                  >
+                    <X className="h-2.5 w-2.5" />
+                  </button>
                 </span>
               ))}
             </div>
-          )}
+            <div className="mt-1.5 flex items-center gap-1.5">
+              <input
+                type="number"
+                min="1"
+                placeholder="N° page"
+                value={annexInput.page}
+                onChange={(e) =>
+                  setAnnexInput((s) => ({ ...s, page: e.target.value }))
+                }
+                className="w-20 px-2 py-0.5 rounded border border-amber-200 bg-white text-[11.5px] text-navy-900 tabular-nums"
+              />
+              <input
+                type="text"
+                placeholder="Libellé (optionnel)"
+                value={annexInput.label}
+                onChange={(e) =>
+                  setAnnexInput((s) => ({ ...s, label: e.target.value }))
+                }
+                className="flex-1 px-2 py-0.5 rounded border border-amber-200 bg-white text-[11.5px] text-navy-900"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const n = parseInt(annexInput.page, 10);
+                  if (Number.isFinite(n) && n >= 1) {
+                    onAddAnnex(n, annexInput.label);
+                    setAnnexInput({ page: "", label: "" });
+                  }
+                }}
+                className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-500 text-night-900 hover:bg-amber-400"
+              >
+                <Plus className="h-2.5 w-2.5" />
+                Ajouter
+              </button>
+            </div>
+          </div>
 
           {/* Énoncé */}
           <textarea
