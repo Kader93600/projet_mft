@@ -52,9 +52,29 @@ export default async function EditQuizPage({
   ]);
   if (!quiz) notFound();
 
-  const initialFormationSlug =
+  // 1. D'abord via formation_quizzes (lien direct quiz ↔ formation)
+  let initialFormationSlug: string | null =
     (currentLink?.formation as any)?.slug ?? null;
-  const formationId = (currentLink?.formation as any)?.id ?? null;
+  let formationId: string | null =
+    (currentLink?.formation as any)?.id ?? null;
+
+  // 2. Fallback via le module rattaché : si le quiz n'a pas de lien
+  //    direct, on remonte module → formation_modules → formation.
+  //    Permet aux quizzes historiques du seed (qui n'ont qu'un module_id)
+  //    d'hériter automatiquement de la formation du module.
+  if (!formationId && quiz.module_id) {
+    const { data: fmRow } = await supabase
+      .from("formation_modules")
+      .select("formation:formations(id, slug)")
+      .eq("module_id", quiz.module_id)
+      .limit(1)
+      .maybeSingle();
+    const f = (fmRow?.formation as any) ?? null;
+    if (f) {
+      initialFormationSlug = f.slug;
+      formationId = f.id;
+    }
+  }
 
   // Fetch les questions de la banque rattachées à la même formation
   // (et idéalement au même module si le quiz en a un) pour permettre
