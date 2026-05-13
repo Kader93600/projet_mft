@@ -80,7 +80,14 @@ const securityHeaders = [
 
 const nextConfig = {
   reactStrictMode: true,
-  experimental: { typedRoutes: false },
+  experimental: {
+    typedRoutes: false,
+    // pdf-parse charge ses modules en require dynamique. Si webpack tente
+    // de le bundler, certaines deps (pdfjs-dist) ou son test-fixture
+    // (./test/data/05-versions-space.pdf) cassent en serverless. On le
+    // garde "externe" → resolved au runtime depuis node_modules.
+    serverComponentsExternalPackages: ["pdf-parse"],
+  },
   async headers() {
     return [
       {

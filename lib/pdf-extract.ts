@@ -28,14 +28,19 @@ export interface PdfExtractResult {
  * Extrait le texte d'un buffer PDF.
  * Throw si le PDF est invalide ou chiffré.
  *
- * Important : `require` dynamique pour éviter que webpack importe
- * pdf-parse dans le bundle client.
+ * IMPORTANT : on importe `pdf-parse/lib/pdf-parse.js` directement (pas
+ * `pdf-parse` tout court) pour contourner le bug bien connu du `index.js`
+ * qui tente de lire `./test/data/05-versions-space.pdf` au démarrage quand
+ * `module.parent` est null (cas Webpack / Next.js / serverless Vercel).
+ * Cf. https://gitlab.com/autokent/pdf-parse/-/issues/24
  */
 export async function extractPdfText(
   buffer: Buffer,
 ): Promise<PdfExtractResult> {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const pdfParse = require("pdf-parse") as (b: Buffer) => Promise<{
+  const pdfParse = require("pdf-parse/lib/pdf-parse.js") as (
+    b: Buffer,
+  ) => Promise<{
     text: string;
     numpages: number;
     info?: Record<string, unknown>;
