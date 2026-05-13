@@ -136,9 +136,16 @@ export default async function EditQuizPage({
                 filterConfig={{
                   tagPrefix: filterConfig.tagPrefix,
                   label: filterConfig.label,
-                  keys: filterConfig.keys,
-                  formatPill: filterConfig.formatPill,
-                  formatLong: filterConfig.formatLong,
+                  // Pré-calcul des labels côté server — les fonctions
+                  // formatPill/formatLong ne peuvent pas traverser la
+                  // boundary RSC (sérialisation impossible).
+                  entries: filterConfig.keys.map((k) => ({
+                    key: k,
+                    pill: filterConfig.formatPill(k),
+                    long: filterConfig.formatLong
+                      ? filterConfig.formatLong(k)
+                      : filterConfig.formatPill(k),
+                  })),
                 }}
                 hasFormation={!!formationId}
                 hasModule={!!quiz.module_id}

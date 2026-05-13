@@ -30,12 +30,17 @@ interface BankQuestion {
   active: boolean;
 }
 
-interface QuestionFilterConfig {
+/**
+ * Version sérialisable de QuestionFilterConfig — passée du server au
+ * client. On ne peut PAS transmettre les fonctions formatPill/formatLong
+ * à travers la boundary RSC, donc on les pré-calcule côté serveur
+ * (entry = label affiché).
+ */
+export interface SerializableFilterConfig {
   tagPrefix: string;
   label: string;
-  keys: readonly string[];
-  formatPill: (k: string) => string;
-  formatLong?: (k: string) => string;
+  /** [{ key, pill, long }] précalculé côté server */
+  entries: Array<{ key: string; pill: string; long: string }>;
 }
 
 /**
@@ -58,10 +63,23 @@ export function BankQuestionsPicker({
   quizId: string;
   questions: BankQuestion[];
   initialLinkedIds: string[];
-  filterConfig: QuestionFilterConfig;
+  filterConfig: SerializableFilterConfig;
   hasFormation: boolean;
   hasModule: boolean;
 }) {
+  // Lookups O(1) pour formater une clé en pill ou label long
+  const pillByKey = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const e of filterConfig.entries) m.set(e.key, e.pill);
+    return m;
+  }, [filterConfig.entries]);
+  const longByKey = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const e of filterConfig.entries) m.set(e.key, e.long);
+    return m;
+  }, [filterConfig.entries]);
+  const formatPill = (k: string) => pillByKey.get(k) ?? k;
+  const formatLong = (k: string) => longByKey.get(k) ?? k;
   const router = useRouter();
   const { toast } = useToast();
   const [pending, startTransition] = useTransition();
@@ -78,7 +96,7 @@ export function BankQuestionsPicker({
   // Compte par groupe (chapitre/module)
   const groupCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    for (const k of filterConfig.keys) counts[k] = 0;
+    for (const e of filterConfig.entries) counts[e.key] = 0;
     for (const q of questions) {
       for (const t of q.tags ?? []) {
         if (!t.startsWith(filterConfig.tagPrefix)) continue;
@@ -248,13 +266,13 @@ export function BankQuestionsPicker({
             active={!groupFilter}
             onClick={() => setGroupFilter("")}
           />
-          {filterConfig.keys.map((k) => (
+          {filterConfig.entries.map((e) => (
             <FilterPill
-              key={k}
-              label={`${filterConfig.formatPill(k)} (${groupCounts[k] ?? 0})`}
-              active={groupFilter === k}
-              dim={(groupCounts[k] ?? 0) === 0}
-              onClick={() => setGroupFilter(k)}
+              key={e.key}
+              label={`${e.pill} (${groupCounts[e.key] ?? 0})`}
+              active={groupFilter === e.key}
+              dim={(groupCounts[e.key] ?? 0) === 0}
+              onClick={() => setGroupFilter(e.key)}
             />
           ))}
         </div>
@@ -356,7 +374,7 @@ export function BankQuestionsPicker({
                     </span>
                     {groupKey && (
                       <span className="text-[9px] font-semibold text-slate-500 uppercase tracking-wider">
-                        {filterConfig.formatPill(groupKey)}
+                        {formatPill(groupKey)}
                       </span>
                     )}
                     <span className="text-[9px] text-slate-400">
