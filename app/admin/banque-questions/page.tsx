@@ -32,7 +32,15 @@ export default async function BanqueQuestionsPage({
         .eq("slug", f.slug)
         .single();
       if (!formation) {
-        return { ...f, total: 0, qcm: 0, qr: 0, active: 0, pending: 0 };
+        return {
+          ...f,
+          total: 0,
+          qcm: 0,
+          qr: 0,
+          active: 0,
+          pending: 0,
+          pendingQr: 0,
+        };
       }
       const [
         { count: total },
@@ -40,6 +48,7 @@ export default async function BanqueQuestionsPage({
         { count: qr },
         { count: active },
         { count: pending },
+        { count: pendingQr },
       ] = await Promise.all([
         supabase
           .from("question_bank")
@@ -66,6 +75,12 @@ export default async function BanqueQuestionsPage({
           .eq("formation_id", formation.id)
           .eq("active", false)
           .eq("type", "qcm"),
+        supabase
+          .from("question_bank")
+          .select("*", { count: "exact", head: true })
+          .eq("formation_id", formation.id)
+          .eq("active", false)
+          .eq("type", "qr"),
       ]);
       return {
         ...f,
@@ -74,6 +89,7 @@ export default async function BanqueQuestionsPage({
         qr: qr ?? 0,
         active: active ?? 0,
         pending: pending ?? 0,
+        pendingQr: pendingQr ?? 0,
       };
     })
   );
@@ -81,6 +97,7 @@ export default async function BanqueQuestionsPage({
   const totalQuestions = stats.reduce((s, f) => s + f.total, 0);
   const totalActive = stats.reduce((s, f) => s + f.active, 0);
   const totalPending = stats.reduce((s, f) => s + f.pending, 0);
+  const totalPendingQr = stats.reduce((s, f) => s + f.pendingQr, 0);
   const focused = filter ? stats.find((f) => f.slug === filter) : null;
 
   return (
@@ -107,7 +124,7 @@ export default async function BanqueQuestionsPage({
       </header>
 
       {/* KPIs globaux */}
-      <section className="grid sm:grid-cols-3 gap-4">
+      <section className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Kpi
           icon={Database}
           label="Total questions"
@@ -125,6 +142,12 @@ export default async function BanqueQuestionsPage({
           label="QCM à valider"
           value={totalPending}
           tone={totalPending > 0 ? "rose" : "brand"}
+        />
+        <Kpi
+          icon={AlertTriangle}
+          label="QR à valider"
+          value={totalPendingQr}
+          tone={totalPendingQr > 0 ? "rose" : "brand"}
         />
       </section>
 
@@ -352,23 +375,45 @@ export default async function BanqueQuestionsPage({
                         )}
                       </td>
                       <td className="px-3 py-3 text-right">
-                        {s.pending > 0 ? (
-                          <Badge tone="rose" size="sm">
-                            {s.pending}
-                          </Badge>
+                        {s.pending + s.pendingQr > 0 ? (
+                          <div className="inline-flex items-center gap-1">
+                            <Badge tone="rose" size="sm">
+                              {s.pending + s.pendingQr}
+                            </Badge>
+                            {(s.pending > 0 || s.pendingQr > 0) && (
+                              <span className="text-[10px] text-slate-500">
+                                {s.pending > 0 && `${s.pending} QCM`}
+                                {s.pending > 0 && s.pendingQr > 0 && " · "}
+                                {s.pendingQr > 0 && `${s.pendingQr} QR`}
+                              </span>
+                            )}
+                          </div>
                         ) : (
                           <span className="text-slate-400">0</span>
                         )}
                       </td>
                       <td className="px-6 py-3 text-right">
-                        {s.pending > 0 ? (
-                          <Link
-                            href={`/admin/banque-questions/validation?f=${s.slug}`}
-                            className="inline-flex items-center gap-1.5 text-rose-700 hover:text-rose-900 text-xs font-semibold"
-                          >
-                            Valider
-                            <ArrowRight className="h-3 w-3" />
-                          </Link>
+                        {s.pending > 0 || s.pendingQr > 0 ? (
+                          <div className="inline-flex items-center gap-2 flex-wrap justify-end">
+                            {s.pending > 0 && (
+                              <Link
+                                href={`/admin/banque-questions/validation?f=${s.slug}`}
+                                className="inline-flex items-center gap-1 text-rose-700 hover:text-rose-900 text-xs font-semibold"
+                              >
+                                Valider QCM
+                                <ArrowRight className="h-3 w-3" />
+                              </Link>
+                            )}
+                            {s.pendingQr > 0 && (
+                              <Link
+                                href={`/admin/banque-questions/validation-qr?f=${s.slug}`}
+                                className="inline-flex items-center gap-1 text-rose-700 hover:text-rose-900 text-xs font-semibold"
+                              >
+                                Valider QR
+                                <ArrowRight className="h-3 w-3" />
+                              </Link>
+                            )}
+                          </div>
                         ) : s.total > 0 ? (
                           <Link
                             href={`/admin/banque-questions?f=${s.slug}`}
