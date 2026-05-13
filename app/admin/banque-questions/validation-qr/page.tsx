@@ -180,6 +180,7 @@ export default async function ValidationQrPage({
               question={q}
               index={i + 1}
               total={list.length}
+              formationSlug={slug}
             />
           ))}
         </div>

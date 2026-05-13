@@ -23,6 +23,7 @@ import {
   deleteQuestion,
 } from "./actions";
 import { ConfirmAction } from "@/components/ui/confirm-action";
+import { getQuestionFilterConfig } from "@/lib/question-filters";
 
 interface QrData {
   id: string;
@@ -40,11 +41,22 @@ export function QrEditor({
   question,
   index,
   total,
+  formationSlug,
 }: {
   question: QrData;
   index: number;
   total: number;
+  formationSlug: string;
 }) {
+  const filterConfig = getQuestionFilterConfig(formationSlug);
+  // Tag de groupe courant (chapitre-N ou module-X)
+  const currentGroupTag = question.tags.find((t) =>
+    t.startsWith(filterConfig.tagPrefix),
+  );
+  const currentGroupKey = currentGroupTag
+    ? currentGroupTag.slice(filterConfig.tagPrefix.length)
+    : "";
+  const [groupKey, setGroupKey] = useState(currentGroupKey);
   // États édition contenu pédagogique
   const [statement, setStatement] = useState(question.statement);
   const [tagsInput, setTagsInput] = useState(question.tags.join(", "));
@@ -59,8 +71,28 @@ export function QrEditor({
   const [feedback, setFeedback] = useState<"idle" | "ok" | "err">("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const moduleTag = question.tags.find((t) => t.startsWith("module-"));
-  const moduleLetter = moduleTag ? moduleTag.split("-")[1].toUpperCase() : "?";
+  // Affectation rapide à un chapitre / module — met à jour le tag DB
+  // (retire l'ancien tag de groupe, ajoute le nouveau) en une transition.
+  function onChangeGroup(newKey: string) {
+    setGroupKey(newKey);
+    startTransition(async () => {
+      try {
+        const baseTags = question.tags.filter(
+          (t) => !t.startsWith(filterConfig.tagPrefix),
+        );
+        const nextTags = newKey
+          ? [...baseTags, `${filterConfig.tagPrefix}${newKey}`]
+          : baseTags;
+        await updateQrMetadata(question.id, { tags: nextTags });
+        setTagsInput(nextTags.join(", "));
+        setFeedback("ok");
+        setTimeout(() => setFeedback("idle"), 1500);
+      } catch (e: any) {
+        setFeedback("err");
+        setErrorMsg(e.message);
+      }
+    });
+  }
 
   const statementChanged = statement.trim() !== question.statement.trim();
   const tagsChanged = tagsInput.trim() !== question.tags.join(", ").trim();
@@ -135,9 +167,49 @@ export function QrEditor({
             <span className="h-7 w-7 rounded-md bg-brand-50 text-brand-700 flex items-center justify-center font-semibold text-xs">
               {index}
             </span>
-            <Badge tone="navy" size="sm">
-              Module {moduleLetter}
-            </Badge>
+            {/* Affectation rapide chapitre / module */}
+            <div className="inline-flex items-center gap-1.5">
+              <label
+                htmlFor={`group-${question.id}`}
+                className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold"
+              >
+                {filterConfig.label}
+              </label>
+              <select
+                id={`group-${question.id}`}
+                value={groupKey}
+                onChange={(e) => onChangeGroup(e.target.value)}
+                disabled={pending}
+                className={
+                  "h-7 px-2 rounded-md text-[12px] font-semibold border " +
+                  (groupKey
+                    ? "bg-navy-900 text-white border-navy-900"
+                    : "bg-amber-50 text-amber-800 border-amber-300 hover:border-amber-400")
+                }
+                title={
+                  groupKey
+                    ? `Affectée à : ${filterConfig.formatLong ? filterConfig.formatLong(groupKey) : filterConfig.formatPill(groupKey)}`
+                    : `Question non affectée — choisir un ${filterConfig.label.toLowerCase()}`
+                }
+              >
+                <option value="">— non affectée —</option>
+                {filterConfig.keys.map((k) => (
+                  <option key={k} value={k}>
+                    {filterConfig.formatLong
+                      ? filterConfig.formatLong(k)
+                      : filterConfig.formatPill(k)}
+                  </option>
+                ))}
+                {/* Si le tag actuel n'est pas dans la config (ex. Ch. 13
+                    futur), on l'ajoute comme option pour ne pas le perdre */}
+                {currentGroupKey &&
+                  !filterConfig.keys.includes(currentGroupKey as any) && (
+                    <option value={currentGroupKey}>
+                      {filterConfig.formatPill(currentGroupKey)} (extra)
+                    </option>
+                  )}
+              </select>
+            </div>
             {question.active ? (
               <Badge tone="success" size="sm">
                 <CheckCircle2 className="h-3 w-3" /> Active
