@@ -11,6 +11,9 @@ import {
   deletePayment,
   deleteEnrollment,
 } from "../actions";
+import { listActivePackPrices } from "@/lib/pricing-server";
+import { type PackSlug } from "@/lib/packs";
+import { PackFormationFields } from "./pack-formation-fields";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +25,13 @@ export default async function EnrollmentEditorPage({
   const isNew = params.id === "new";
   const supabase = createClient();
 
-  const [{ data: enrollment }, { data: users }, { data: funders }] = await Promise.all([
+  const [
+    { data: enrollment },
+    { data: users },
+    { data: funders },
+    { data: formations },
+    activePrices,
+  ] = await Promise.all([
     isNew
       ? Promise.resolve({ data: null })
       : supabase
@@ -36,10 +45,29 @@ export default async function EnrollmentEditorPage({
       .eq("role", "student")
       .order("full_name"),
     supabase.from("funders").select("id, name, kind").order("name"),
+    supabase
+      .from("formations")
+      .select("id, slug, code, title")
+      .order("code"),
+    listActivePackPrices(),
   ]);
 
   if (!isNew && !enrollment) notFound();
   const e: any = enrollment ?? {};
+  const defaultPack: PackSlug = (e.pack as PackSlug) ?? "initial";
+
+  const formationsOpts = (formations ?? []).map((f: any) => ({
+    id: f.id,
+    slug: f.slug,
+    code: f.code,
+    title: f.title,
+  }));
+
+  const pricesForClient = activePrices.map((p) => ({
+    formationSlug: p.formationSlug,
+    pack: p.pack,
+    priceCents: p.priceCents,
+  }));
 
   return (
     <div className="space-y-8">
@@ -135,6 +163,16 @@ export default async function EnrollmentEditorPage({
                 defaultValue={((e.total_amount_cents ?? 0) / 100).toFixed(2)}
               />
             </div>
+
+            {/* Phase 4 : sélecteur Formation + Pack avec helper de prix DB */}
+            <PackFormationFields
+              formations={formationsOpts}
+              prices={pricesForClient}
+              defaultPack={defaultPack}
+              defaultFormationId={e.formation_id ?? null}
+              currentAmountCents={e.total_amount_cents ?? 0}
+              totalAmountInputId="total_amount_euros"
+            />
             <div>
               <Label htmlFor="start_date">Début</Label>
               <Input id="start_date" name="start_date" type="date" defaultValue={e.start_date ?? ""} />

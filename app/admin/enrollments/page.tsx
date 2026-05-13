@@ -209,8 +209,11 @@ export default async function AdminEnrollmentsPage() {
                 {(enrollments ?? []).map((e: any) => (
                   <tr key={e.id} className="border-t border-navy-50">
                     <td className="px-4 py-3">
-                      <div className="font-medium text-navy-900">
-                        {e.user?.full_name ?? e.user?.email}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-navy-900">
+                          {e.user?.full_name ?? e.user?.email}
+                        </span>
+                        <PackChip pack={e.pack ?? "initial"} />
                       </div>
                       <div className="text-xs text-slate-500">{e.user?.email}</div>
                     </td>
@@ -540,5 +543,38 @@ function Kpi({
         {value}
       </div>
     </div>
+  );
+}
+
+/**
+ * Petit badge "pack" affiché à côté du nom du stagiaire — repérage visuel
+ * rapide depuis la liste admin.
+ */
+function PackChip({ pack }: { pack: "initial" | "medium" | "premium" }) {
+  const styles: Record<typeof pack, { bg: string; fg: string; label: string }> = {
+    initial: {
+      bg: "bg-signal-100/60 border-signal-300",
+      fg: "text-signal-800",
+      label: "Initial",
+    },
+    medium: {
+      bg: "bg-brand-50 border-brand-200",
+      fg: "text-brand-700",
+      label: "Medium",
+    },
+    premium: {
+      bg: "bg-amber-50 border-amber-200",
+      fg: "text-amber-700",
+      label: "Premium",
+    },
+  };
+  const s = styles[pack];
+  return (
+    <span
+      className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-[0.10em] border ${s.bg} ${s.fg}`}
+      title={`Pack ${s.label}`}
+    >
+      {s.label}
+    </span>
   );
 }

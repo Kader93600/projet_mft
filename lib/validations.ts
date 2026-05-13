@@ -375,6 +375,11 @@ export const enrollmentSchema = z.object({
   contract_url: z.string().url().max(2000).optional().nullable().or(z.literal("")),
   convention_url: z.string().url().max(2000).optional().nullable().or(z.literal("")),
   cpf_dossier_ref: z.string().trim().max(100).optional().nullable(),
+  // Phase 4 : pack & formation_id administrables.
+  // pack a un DEFAULT 'initial' côté DB → optionnel ici ;
+  // formation_id pointe vers public.formations.id (nullable côté legacy).
+  pack: packSlugEnum.optional(),
+  formation_id: uuid.nullable().optional(),
 });
 
 export const paymentSchema = z.object({

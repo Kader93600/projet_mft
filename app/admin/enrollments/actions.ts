@@ -62,7 +62,11 @@ export async function deleteFunder(id: string) {
 export async function upsertEnrollment(formData: FormData) {
   const { supabase } = await requireAdmin();
   const id = (formData.get("id") as string) || null;
-  const data = validate(enrollmentSchema, {
+  // Pack + formation : optionnels (le DEFAULT côté DB est 'initial').
+  // Si le formulaire ne les envoie pas, on les omet du payload (laisse DB).
+  const rawPack = (formData.get("pack") as string) || "";
+  const rawFormationId = (formData.get("formation_id") as string) || "";
+  const payload: any = {
     user_id: formData.get("user_id"),
     funder_id: (formData.get("funder_id") as string) || null,
     funding_kind: formData.get("funding_kind"),
@@ -76,28 +80,74 @@ export async function upsertEnrollment(formData: FormData) {
     contract_url: (formData.get("contract_url") as string) || null,
     convention_url: (formData.get("convention_url") as string) || null,
     cpf_dossier_ref: (formData.get("cpf_dossier_ref") as string) || null,
-  });
+  };
+  if (rawPack === "initial" || rawPack === "medium" || rawPack === "premium") {
+    payload.pack = rawPack;
+  }
+  if (rawFormationId) {
+    payload.formation_id = rawFormationId;
+  }
+  const data = validate(enrollmentSchema, payload);
   const clean: any = { ...data };
   if (clean.contract_url === "") clean.contract_url = null;
   if (clean.convention_url === "") clean.convention_url = null;
   if (clean.start_date === "") clean.start_date = null;
   if (clean.end_date === "") clean.end_date = null;
 
+  // Récupère l'ancien pack avant update pour l'audit + détection de changement
+  let previousPack: string | null = null;
+  if (id) {
+    const { data: prev } = await supabase
+      .from("enrollments")
+      .select("pack")
+      .eq("id", id)
+      .single();
+    previousPack = prev?.pack ?? null;
+  }
+
   if (id) {
     const { error } = await supabase.from("enrollments").update(clean).eq("id", id);
-    if (error) throw new Error(error.message);
-    await auditLog("enrollment_update", "enrollment", id);
+    if (error) {
+      // Erreur trigger : Capacité ≤ 3,5 t avec pack ≠ initial
+      if (
+        error.message.includes("Capacité") ||
+        error.message.includes("capacite")
+      ) {
+        throw new Error(
+          "Pack non disponible pour la formation Capacité ≤ 3,5 t (seul Initial est autorisé).",
+        );
+      }
+      throw new Error(error.message);
+    }
+    await auditLog("enrollment_update", "enrollment", id, {
+      pack_changed: previousPack !== (clean.pack ?? previousPack),
+      previous_pack: previousPack,
+      new_pack: clean.pack ?? previousPack,
+    });
   } else {
     const { data: row, error } = await supabase
       .from("enrollments")
       .insert(clean)
       .select("id")
       .single();
-    if (error) throw new Error(error.message);
-    await auditLog("enrollment_create", "enrollment", row.id);
+    if (error) {
+      if (
+        error.message.includes("Capacité") ||
+        error.message.includes("capacite")
+      ) {
+        throw new Error(
+          "Pack non disponible pour la formation Capacité ≤ 3,5 t (seul Initial est autorisé).",
+        );
+      }
+      throw new Error(error.message);
+    }
+    await auditLog("enrollment_create", "enrollment", row.id, {
+      pack: clean.pack,
+    });
   }
   revalidatePath("/admin/enrollments");
   revalidatePath("/inscription");
+  revalidatePath("/dashboard");
 }
 
 export async function deleteEnrollment(id: string) {
