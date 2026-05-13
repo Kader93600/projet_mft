@@ -1,17 +1,10 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Card } from "@/components/ui/card";
-import { FormationBadge } from "@/components/formation/formation-badge";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Plus,
-  ChevronRight,
-  HelpCircle,
-  Clock,
-  GraduationCap,
-} from "lucide-react";
+import { Plus, GraduationCap } from "lucide-react";
 import { getAuthorizedFormationSlugs } from "@/lib/admin-guard";
+import { QuizTable } from "./quiz-table";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +18,8 @@ export default async function AdminQuizzes() {
     { data: questionBank },
     { data: formationQuizzes },
     { data: formationModules },
+    { data: allFormations },
+    { data: allModules },
   ] = await Promise.all([
     supabase
       .from("quizzes")
@@ -38,6 +33,12 @@ export default async function AdminQuizzes() {
     supabase
       .from("formation_modules")
       .select("module_id, formation:formations(slug, code)"),
+    supabase.from("formations").select("slug, code").eq("active", true).order("code"),
+    supabase
+      .from("modules")
+      .select("id, title")
+      .order("bloc_id")
+      .order("order"),
   ]);
 
   // Compteur de questions : on additionne `questions` + `quiz_question_bank`
@@ -122,94 +123,35 @@ export default async function AdminQuizzes() {
       )}
 
       <Card>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-navy-50/60 text-[11px] uppercase tracking-wider text-slate-600">
-                <th className="text-left px-5 py-3 font-semibold">Exercice</th>
-                <th className="text-left px-5 py-3 font-semibold">Formation</th>
-                <th className="text-left px-5 py-3 font-semibold">Type</th>
-                <th className="text-left px-5 py-3 font-semibold">Cours</th>
-                <th className="text-left px-5 py-3 font-semibold">Questions</th>
-                <th className="text-left px-5 py-3 font-semibold">Chrono</th>
-                <th className="text-left px-5 py-3 font-semibold">Seuil</th>
-                <th className="px-5 py-3" />
-              </tr>
-            </thead>
-            <tbody>
-              {visibleQuizzes.map((q: any) => (
-                <tr
-                  key={q.id}
-                  className="border-t border-navy-50 hover:bg-navy-50/30 group"
-                >
-                  <td className="px-5 py-3.5">
-                    <Link
-                      href={`/admin/quizzes/${q.id}`}
-                      className="font-medium text-navy-900 group-hover:text-gold-700"
-                    >
-                      {q.title}
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    {formationByQuiz.has(q.id) ? (
-                      <FormationBadge
-                        slug={formationByQuiz.get(q.id)}
-                        size="sm"
-                        icon
-                      />
-                    ) : (
-                      <span className="text-xs text-slate-400">— Aucune —</span>
-                    )}
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <Badge tone={q.type === "examen" ? "gold" : "navy"}>
-                      {q.type}
-                    </Badge>
-                  </td>
-                  <td className="px-5 py-3.5 text-slate-600 text-xs">
-                    {q.modules?.title ?? <span className="text-slate-400">—</span>}
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <span className="inline-flex items-center gap-1 text-slate-600 text-xs">
-                      <HelpCircle className="h-3.5 w-3.5" />
-                      {counts.get(q.id) ?? 0}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3.5 text-xs">
-                    {q.timer_enabled && q.time_limit_s ? (
-                      <span className="inline-flex items-center gap-1 text-slate-600">
-                        <Clock className="h-3.5 w-3.5" />
-                        {Math.round(q.time_limit_s / 60)} min
-                      </span>
-                    ) : (
-                      <span className="text-slate-400">—</span>
-                    )}
-                  </td>
-                  <td className="px-5 py-3.5 text-slate-600 text-xs">
-                    {q.pass_threshold}%
-                  </td>
-                  <td className="px-5 py-3.5 text-right">
-                    <Link
-                      href={`/admin/quizzes/${q.id}`}
-                      className="inline-flex items-center gap-1 text-xs text-navy-700 group-hover:text-gold-700"
-                    >
-                      Éditer <ChevronRight className="h-3.5 w-3.5" />
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-              {visibleQuizzes.length === 0 && (
-                <tr>
-                  <td colSpan={7} className="px-5 py-16 text-center text-slate-400">
-                    {isTrainerOnly
-                      ? "Aucun quiz sur vos formations habilitées."
-                      : "Aucun quiz. Créez-en un pour démarrer."}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        <QuizTable
+          rows={visibleQuizzes.map((q: any) => ({
+            id: q.id,
+            title: q.title,
+            type: q.type,
+            pass_threshold: q.pass_threshold,
+            time_limit_s: q.time_limit_s,
+            timer_enabled: q.timer_enabled,
+            modules: q.modules
+              ? { id: q.modules.id, title: q.modules.title }
+              : null,
+            module_id: q.module_id ?? q.modules?.id ?? null,
+          }))}
+          counts={Object.fromEntries(counts)}
+          formationByQuiz={Object.fromEntries(formationByQuiz)}
+          formations={(allFormations ?? []).map((f: any) => ({
+            slug: f.slug,
+            code: f.code,
+          }))}
+          modules={(allModules ?? []).map((m: any) => ({
+            id: m.id,
+            title: m.title,
+          }))}
+          emptyMessage={
+            isTrainerOnly
+              ? "Aucun quiz sur vos formations habilitées."
+              : "Aucun quiz. Créez-en un pour démarrer."
+          }
+        />
       </Card>
     </div>
   );
