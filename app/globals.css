@@ -1001,4 +1001,46 @@
   .animate-typing-bounce {
     animation: typing-bounce 1100ms ease-in-out infinite;
   }
+
+  /* ───────────────────────────────────────────────────────────
+     Page /tarifs — animations premium des cards
+     - shimmer-x      : filet doré qui glisse horizontalement
+                        sur le top de la Premium card
+     - premium-glow   : pulse subtil de la glow inset dorée
+     - badge-float    : flottement vertical du badge "Recommandé"
+     - tarif-fade-in  : entrée crossfade quand on change de formation
+     ─────────────────────────────────────────────────────────── */
+  @keyframes shimmer-x {
+    0%   { background-position: -100% 0; opacity: 0.55; }
+    50%  { background-position:  100% 0; opacity: 1;    }
+    100% { background-position:  300% 0; opacity: 0.55; }
+  }
+  @keyframes premium-glow {
+    0%, 100% { opacity: 0.45; }
+    50%      { opacity: 0.8;  }
+  }
+  @keyframes badge-float {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-3px); }
+  }
+  @keyframes tarif-fade-in {
+    0%   { opacity: 0; transform: translateY(6px); }
+    100% { opacity: 1; transform: translateY(0);   }
+  }
+  .animate-tarif-fade-in {
+    animation: tarif-fade-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* Halo de mouvement lent pour la section hero/pricing — orbe nébuleuse */
+  @keyframes halo-drift {
+    0%, 100% { transform: translate(0, 0) scale(1);       opacity: 0.55; }
+    33%      { transform: translate(20px, -16px) scale(1.04); opacity: 0.7; }
+    66%      { transform: translate(-14px, 12px) scale(0.97); opacity: 0.5; }
+  }
+  .animate-halo-drift {
+    animation: halo-drift 14s ease-in-out infinite;
+  }
+
+  /* Respect prefers-reduced-motion : tout est déjà neutralisé par
+     la règle globale en haut du fichier (animation-duration: 0.01ms). */
 }
