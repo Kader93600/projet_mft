@@ -29,6 +29,10 @@ export interface QuestionFilterConfig {
   formatLong?: (key: string) => string;
 }
 
+// GOTRM (RNCP 40990) : 17 chapitres au total dans le livret de formation
+// (CCP1 + CCP2 + CCP3). La liste est étendue à 20 en sécurité pour absorber
+// d'éventuels ajouts futurs sans modifier le code — les chapitres au-delà
+// apparaissent automatiquement comme "extra" via auto-discovery des tags.
 const GOTRM_CHAPTERS = [
   "1",
   "2",
@@ -42,6 +46,11 @@ const GOTRM_CHAPTERS = [
   "10",
   "11",
   "12",
+  "13",
+  "14",
+  "15",
+  "16",
+  "17",
 ] as const;
 const CAPA_MODULES = ["a", "b", "c", "d", "e", "f"] as const;
 
