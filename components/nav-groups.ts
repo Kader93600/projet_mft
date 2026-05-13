@@ -23,6 +23,7 @@ import {
   HeartHandshake as HH2,
   Wallet,
   Shield,
+  Tags,
 } from "lucide-react";
 
 export type NavItem = {
@@ -119,6 +120,7 @@ export const ADMIN_GROUPS: NavGroup[] = [
     label: "Administration",
     items: [
       { href: "/admin/enrollments", label: "Inscriptions & paiements", icon: Wallet },
+      { href: "/admin/pricing", label: "Tarification des packs", icon: Tags },
       { href: "/admin/settings", label: "Paramètres (index)", icon: Settings, exact: true },
       { href: "/admin/settings/formation", label: "Paramètres formation", icon: Settings },
       { href: "/admin/settings/documents", label: "Documents d'accueil", icon: FileSignature },
