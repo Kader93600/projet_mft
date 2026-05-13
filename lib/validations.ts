@@ -338,12 +338,17 @@ export const fundingKindEnum = z.enum([
   "opco","cpf","employeur","pole_emploi","auto","autre",
 ]);
 
+export const packSlugEnum = z.enum(["initial", "medium", "premium"]);
+
 export const enrollmentRequestSchema = z.object({
   full_name: nonEmptyText(120),
   email: emailSchema,
   phone: z.string().trim().max(30).optional().nullable(),
   funding_kind: fundingKindEnum,
   message: z.string().trim().max(2000).optional().nullable(),
+  // Phase 3 : choix de pack stocké sur le lead (optionnel — pré-rempli
+  // depuis /tarifs, modifiable inline dans /inscription).
+  pack_slug: packSlugEnum.nullable().optional(),
 });
 
 export const funderSchema = z.object({

@@ -14,7 +14,9 @@ import {
 } from "lucide-react";
 import { submitEnrollmentRequest } from "./actions";
 import { findFormation } from "@/lib/formations-config";
-import { Sparkles } from "lucide-react";
+import { listActivePackPrices } from "@/lib/pricing-server";
+import { isPackSlug, type PackSlug } from "@/lib/packs";
+import { PackPicker } from "./pack-picker";
 
 export const dynamic = "force-dynamic";
 
@@ -59,7 +61,7 @@ function fmtEuros(cents: number) {
 export default async function InscriptionPage({
   searchParams,
 }: {
-  searchParams?: { formation?: string; financeur?: string };
+  searchParams?: { formation?: string; financeur?: string; pack?: string };
 }) {
   const supabase = createClient();
   const {
@@ -70,11 +72,20 @@ export default async function InscriptionPage({
   // Pré-remplissage depuis ?formation=... (lien depuis le catalogue / home)
   const presetFormationSlug = (searchParams?.formation ?? "").trim();
   const presetFunding = (searchParams?.financeur ?? "").trim();
+  const rawPack = (searchParams?.pack ?? "").trim();
+  const presetPackSlug: PackSlug | undefined = isPackSlug(rawPack)
+    ? rawPack
+    : undefined;
   const presetFormation = presetFormationSlug
     ? findFormation(presetFormationSlug)
     : undefined;
 
-  const [{ data: profile }, { data: enrollments }, { data: req }] = await Promise.all([
+  const [
+    { data: profile },
+    { data: enrollments },
+    { data: req },
+    activePrices,
+  ] = await Promise.all([
     supabase.from("profiles").select("full_name, email").eq("id", user.id).single(),
     supabase
       .from("enrollments")
@@ -89,7 +100,16 @@ export default async function InscriptionPage({
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(1),
+    listActivePackPrices(),
   ]);
+
+  // Convertit en payload simple pour le client component
+  const pricesForClient = activePrices.map((p) => ({
+    formationSlug: p.formationSlug,
+    pack: p.pack,
+    priceCents: p.priceCents,
+    compareAtCents: p.compareAtCents,
+  }));
 
   const current = (enrollments ?? [])[0];
   const lastReq = (req ?? [])[0];
@@ -257,100 +277,105 @@ export default async function InscriptionPage({
           )}
         </section>
       ) : (
-        /* Pas de dossier : formulaire de demande */
+        /* Pas de dossier : formulaire de demande + sélecteur de pack */
         <section>
           <Card>
             <CardBody>
               <CardTitle>Démarrer votre inscription</CardTitle>
               <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">
-                Remplissez ce formulaire en 2 minutes. Un conseiller vous
-                rappelle sous <strong className="text-navy-900">48 h
-                ouvrées</strong> pour étudier votre projet et constituer le
-                dossier de financement adapté.
+                Choisissez votre pack, remplissez vos coordonnées en 2 minutes.
+                Un conseiller vous rappelle sous{" "}
+                <strong className="text-navy-900">48 h ouvrées</strong> pour
+                constituer le dossier de financement adapté.
               </p>
 
-              {presetFormation && (
-                <div className="mt-4 rounded-xl border border-gold-300 bg-gold-50 px-4 py-3 text-sm text-navy-900 flex items-start gap-2.5">
-                  <Sparkles className="h-4 w-4 text-gold-700 mt-0.5 shrink-0" />
-                  <div>
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-gold-700">
-                      Formation pré-sélectionnée
-                    </div>
-                    <div className="font-medium mt-0.5">
-                      {presetFormation.code} — {presetFormation.title}
-                    </div>
-                  </div>
-                </div>
-              )}
               {lastReq && lastReq.status !== "refuse" && (
                 <div className="mt-4 rounded-xl border border-gold-200 bg-gold-50 px-4 py-3 text-sm text-gold-900">
                   Votre demande du{" "}
-                  {new Date(lastReq.created_at).toLocaleDateString("fr-FR")} est au
-                  statut <strong>{lastReq.status}</strong>.
+                  {new Date(lastReq.created_at).toLocaleDateString("fr-FR")}{" "}
+                  est au statut <strong>{lastReq.status}</strong>.
                 </div>
               )}
-              <form action={submitEnrollmentRequest} className="mt-5 grid md:grid-cols-2 gap-4">
-                {/* Champ caché : transmet le slug à l'action */}
-                {presetFormation && (
-                  <input
-                    type="hidden"
-                    name="formation_slug"
-                    value={presetFormation.slug}
-                  />
-                )}
+
+              <form
+                action={submitEnrollmentRequest}
+                className="mt-7 space-y-8"
+              >
+                {/* ── 1. Pack picker ──────────────────────────────────── */}
                 <div>
-                  <Label htmlFor="full_name">Nom complet</Label>
-                  <Input
-                    id="full_name"
-                    name="full_name"
-                    defaultValue={profile?.full_name ?? ""}
-                    required
+                  <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500 mb-3">
+                    1. Votre pack
+                  </div>
+                  <PackPicker
+                    prices={pricesForClient}
+                    defaultFormationSlug={presetFormation?.slug}
+                    defaultPackSlug={presetPackSlug}
                   />
                 </div>
+
+                {/* ── 2. Coordonnées ──────────────────────────────────── */}
                 <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    defaultValue={profile?.email ?? user.email ?? ""}
-                    required
-                  />
+                  <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500 mb-3">
+                    2. Vos coordonnées
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="full_name">Nom complet</Label>
+                      <Input
+                        id="full_name"
+                        name="full_name"
+                        defaultValue={profile?.full_name ?? ""}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        defaultValue={profile?.email ?? user.email ?? ""}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="phone">Téléphone</Label>
+                      <Input id="phone" name="phone" type="tel" />
+                    </div>
+                    <div>
+                      <Label htmlFor="funding_kind">
+                        Financement souhaité
+                      </Label>
+                      <select
+                        id="funding_kind"
+                        name="funding_kind"
+                        defaultValue={presetFunding || "auto"}
+                        className="w-full h-11 rounded-xl border border-navy-200 bg-white px-3.5 text-[15px] text-navy-900"
+                      >
+                        {Object.entries(FUNDING_LABEL).map(([v, l]) => (
+                          <option key={v} value={v}>
+                            {l}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label htmlFor="message">
+                        Votre projet en quelques lignes (optionnel)
+                      </Label>
+                      <Textarea
+                        id="message"
+                        name="message"
+                        rows={4}
+                        placeholder="Métier visé, calendrier souhaité, employeur actuel… Tout ce qui nous aidera à mieux vous accompagner."
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="phone">Téléphone</Label>
-                  <Input id="phone" name="phone" type="tel" />
-                </div>
-                <div>
-                  <Label htmlFor="funding_kind">
-                    Comment souhaitez-vous financer la formation&nbsp;?
-                  </Label>
-                  <select
-                    id="funding_kind"
-                    name="funding_kind"
-                    defaultValue={presetFunding || "auto"}
-                    className="w-full h-11 rounded-xl border border-navy-200 bg-white px-3.5 text-[15px] text-navy-900"
-                  >
-                    {Object.entries(FUNDING_LABEL).map(([v, l]) => (
-                      <option key={v} value={v}>
-                        {l}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="md:col-span-2">
-                  <Label htmlFor="message">
-                    Votre projet en quelques lignes (optionnel)
-                  </Label>
-                  <Textarea
-                    id="message"
-                    name="message"
-                    rows={4}
-                    placeholder="Métier visé, calendrier souhaité, employeur actuel… Tout ce qui nous aidera à mieux vous accompagner."
-                  />
-                </div>
-                <div className="md:col-span-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-1">
-                  <p className="text-xs text-slate-500 leading-relaxed">
+
+                {/* ── 3. Soumettre ────────────────────────────────────── */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2 border-t border-navy-50">
+                  <p className="text-xs text-slate-500 leading-relaxed max-w-md">
                     Vos données sont utilisées pour traiter votre demande
                     uniquement. Aucun engagement à ce stade.
                   </p>
