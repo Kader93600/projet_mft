@@ -26,6 +26,8 @@ import {
   Tags,
   Dumbbell,
   GraduationCap,
+  Video,
+  CalendarDays,
 } from "lucide-react";
 
 export type NavItem = {
@@ -63,6 +65,7 @@ export const STUDENT_GROUPS: NavGroup[] = [
     items: [
       { href: "/messages", label: "Messages", icon: MessageCircle, short: "Chat" },
       { href: "/accompagnement", label: "Accompagnement", icon: HeartHandshake, short: "Suivi" },
+      { href: "/sessions", label: "Sessions en direct", icon: Video, short: "Live" },
       { href: "/emargement", label: "Émargement", icon: ScrollText, short: "Émarg." },
       { href: "/satisfaction", label: "Évaluations", icon: Award, short: "Avis" },
     ],
@@ -107,6 +110,7 @@ export const ADMIN_GROUPS: NavGroup[] = [
       { href: "/admin/banque-questions", label: "Banque de questions", icon: ClipboardList },
       { href: "/admin/modules", label: "Cours & leçons", icon: BookOpen },
       { href: "/admin/quizzes", label: "Exercices & examens", icon: ClipboardList },
+      { href: "/admin/sessions", label: "Sessions en direct", icon: Video },
       { href: "/admin/placement", label: "Positionnement", icon: Target },
       { href: "/admin/glossary", label: "Glossaire", icon: Library },
       { href: "/admin/badges", label: "Badges & certificats", icon: Award },

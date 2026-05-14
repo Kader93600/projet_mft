@@ -43,6 +43,25 @@ export default async function FormateurDashboard({
     .from("pending_qr_corrections")
     .select("*", { count: "exact", head: true });
 
+  // Sessions à venir (7 jours) sur les formations habilitées
+  const habFormationIds = (habilitations ?? []).map((h: any) => h.formation_id);
+  const sevenDaysFromNow = new Date(
+    Date.now() + 7 * 24 * 3600_000
+  ).toISOString();
+  const { data: upcomingSessions } = habFormationIds.length
+    ? await supabase
+        .from("live_sessions")
+        .select(
+          "id, title, kind, start_at, end_at, location, meeting_provider, formation_id, formations!inner(title)"
+        )
+        .in("formation_id", habFormationIds)
+        .gte("end_at", new Date().toISOString())
+        .lte("start_at", sevenDaysFromNow)
+        .neq("status", "cancelled")
+        .order("start_at", { ascending: true })
+        .limit(5)
+    : { data: [] as any[] };
+
   // Onglet actif (slug ou "all")
   const activeSlug = searchParams?.f ?? "all";
   const activeHab =
@@ -94,6 +113,86 @@ export default async function FormateurDashboard({
           formation pour vous concentrer sur une cohorte.
         </p>
       </header>
+
+      {/* Bandeau : sessions à venir (7 jours) */}
+      {upcomingSessions && upcomingSessions.length > 0 && (
+        <section className="rounded-2xl border border-navy-100 bg-white overflow-hidden">
+          <header className="px-5 py-3.5 border-b border-navy-100 bg-ivory flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg bg-signal-500/15 inline-flex items-center justify-center">
+                <Calendar className="h-4 w-4 text-signal-700" />
+              </div>
+              <div>
+                <h2 className="font-display text-[15px] font-semibold text-navy-950">
+                  Sessions à venir cette semaine
+                </h2>
+                <p className="text-[11.5px] text-slate-500">
+                  {upcomingSessions.length} session
+                  {upcomingSessions.length > 1 ? "s" : ""} dans les 7 prochains
+                  jours
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/formateur/sessions"
+              className="text-[12px] font-semibold text-brand-700 hover:text-brand-900 inline-flex items-center gap-1"
+            >
+              Toutes les sessions
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          </header>
+          <ul className="divide-y divide-navy-100">
+            {upcomingSessions.map((s: any) => {
+              const start = new Date(s.start_at);
+              const dayLabel = start.toLocaleDateString("fr-FR", {
+                weekday: "short",
+                day: "2-digit",
+                month: "short",
+              });
+              const timeLabel = start.toLocaleTimeString("fr-FR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+              return (
+                <li key={s.id}>
+                  <Link
+                    href={`/formateur/sessions/${s.id}`}
+                    className="flex items-center gap-4 px-5 py-3 hover:bg-ivory/60 transition group"
+                  >
+                    <div className="shrink-0 text-center w-20">
+                      <div className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">
+                        {dayLabel}
+                      </div>
+                      <div className="text-[13px] text-navy-900 font-semibold mt-0.5">
+                        {timeLabel}
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-navy-950 text-sm truncate">
+                        {s.title}
+                      </div>
+                      <div className="text-[11.5px] text-slate-500 truncate flex items-center gap-2">
+                        <span>{(s.formations as any)?.title}</span>
+                        <span>·</span>
+                        <span className="capitalize">{s.kind}</span>
+                        {s.meeting_provider && (
+                          <>
+                            <span>·</span>
+                            <span className="capitalize">
+                              {s.meeting_provider}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-navy-700 group-hover:translate-x-1 transition" />
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
 
       {/* Bandeau alerte : copies à corriger */}
       {pendingCorrections && pendingCorrections > 0 ? (

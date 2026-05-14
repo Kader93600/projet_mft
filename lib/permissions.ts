@@ -47,6 +47,7 @@ export const TRAINER_ALLOWED_ADMIN_PREFIXES = [
   "/admin/quizzes",
   "/admin/banque-questions",
   "/admin/placement",
+  "/admin/sessions",
 ] as const;
 
 /** True si la route /admin/* est accessible à un formateur. */
