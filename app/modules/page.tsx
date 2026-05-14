@@ -467,6 +467,7 @@ export default async function ModulesPage() {
                 modules={courses}
                 sectionIdx={sectionIdx}
                 showHeader={examFinalCount > 0}
+                formationSlug={formation.slug}
               />
             )}
 
@@ -537,11 +538,27 @@ function SubsectionCourses({
   modules,
   sectionIdx,
   showHeader,
+  formationSlug,
 }: {
   modules: (ModuleCardData & { __progress: ModuleProgress })[];
   sectionIdx: number;
   showHeader: boolean;
+  formationSlug?: string;
 }) {
+  // Whitelist : formations dont les modules sont à plat (1 module par
+  // matière, pas de regroupement en CCP). Évite que la Capa (qui a un
+  // bloc BC1 partagé avec GOTRM en BDD historique) n'affiche le bandeau
+  // "CCP 1 — Concevoir, organiser et piloter…" qui ne lui appartient pas.
+  const FLAT_FORMATIONS = new Set([
+    "capacite-3-5t",
+    "capacite-plus-3-5t",
+    "fimo-fco",
+    "taxi-vtc",
+  ]);
+  const forceFlat = formationSlug
+    ? FLAT_FORMATIONS.has(formationSlug)
+    : false;
+
   // Sous-groupement par bloc (CCP) si la formation a des modules dans
   // plusieurs blocs. Pour GOTRM : BC1=CCP1, BC2=CCP2, BC3=CCP3.
   // Si tous les modules sont dans un même bloc OU sans bloc, on
@@ -572,7 +589,9 @@ function SubsectionCourses({
   const blocs = Array.from(blocsMap.values()).sort(
     (a, b) => a.order - b.order,
   );
-  const useBlocGroups = blocs.length > 1;
+  // Pour les formations "à plat" (Capa, FIMO, Taxi/VTC), on ne regroupe
+  // jamais — même si la BDD a plusieurs bloc_id rattachés.
+  const useBlocGroups = !forceFlat && blocs.length > 1;
 
   // Mapping code BC → label CCP (pour GOTRM seulement, sans toucher
   // les autres formations qui n'ont pas cette nomenclature)
