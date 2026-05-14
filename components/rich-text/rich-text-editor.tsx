@@ -354,14 +354,27 @@ function Toolbar({ editor }: { editor: Editor }) {
         <ImageIcon className="h-3.5 w-3.5" />
       </Btn>
       <Btn
-        onClick={() =>
+        onClick={() => {
+          // Demande la taille à l'admin avec un default 15×15 (le plus
+          // demandé pour les exercices type livret) tout en gardant la
+          // flexibilité d'en choisir une autre.
+          const sizeStr = window.prompt(
+            "Taille du tableau (format : lignes×colonnes)",
+            "15×15",
+          );
+          if (!sizeStr) return;
+          const m = sizeStr
+            .replace(/[xX]/g, "×")
+            .match(/(\d{1,3})\s*×\s*(\d{1,3})/);
+          const rows = m ? Math.max(1, Math.min(50, parseInt(m[1], 10))) : 15;
+          const cols = m ? Math.max(1, Math.min(20, parseInt(m[2], 10))) : 15;
           editor
             .chain()
             .focus()
-            .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
-            .run()
-        }
-        label="Insérer un tableau (3×3)"
+            .insertTable({ rows, cols, withHeaderRow: true })
+            .run();
+        }}
+        label="Insérer un tableau (défaut 15×15)"
       >
         <TableIcon className="h-3.5 w-3.5" />
       </Btn>

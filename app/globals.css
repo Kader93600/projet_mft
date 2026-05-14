@@ -1016,8 +1016,18 @@
   .tiptap-editor :where(a) { @apply text-brand-700 underline decoration-brand-300 hover:decoration-brand-600 cursor-pointer; }
   .tiptap-editor :where(img) { @apply rounded-lg my-2 max-w-full h-auto; }
   .tiptap-editor :where(table) {
-    @apply w-full my-3 border-collapse;
+    @apply my-3 border-collapse;
     table-layout: fixed;
+    /* Largeur min : permet aux grands tableaux (15×15) de scroller
+       horizontalement sans écraser les cellules. */
+    min-width: 100%;
+  }
+  .tiptap-editor :where(th),
+  .tiptap-editor :where(td) {
+    /* Cellules à largeur minimale lisible — au-delà de 8 colonnes,
+       le tableau scrolle dans l'éditeur. */
+    min-width: 80px;
+    word-break: break-word;
   }
   .tiptap-editor :where(th) {
     @apply bg-navy-50 text-left font-semibold text-navy-900 px-3 py-1.5 border border-navy-100;
@@ -1026,6 +1036,9 @@
     @apply px-3 py-1.5 border border-navy-100 align-top;
   }
   .tiptap-editor :where(table) :where(p) { @apply my-0; }
+  /* L'éditeur lui-même autorise le scroll horizontal pour les grands
+     tableaux (15×15 dépasse forcément). */
+  .tiptap-editor { overflow-x: auto; }
 
   /* Placeholder de TipTap (utilisé par extension-placeholder) */
   .tiptap-editor :where(p.is-editor-empty:first-child::before) {
@@ -1051,9 +1064,16 @@
   .rich-text-prose :where(li) { @apply leading-relaxed; }
   .rich-text-prose :where(a) { @apply text-brand-700 underline decoration-brand-300 hover:decoration-brand-600; }
   .rich-text-prose :where(img) { @apply rounded-lg my-2 max-w-full h-auto; }
+  /* Côté stagiaire : wrap automatique scroll-x autour des grands tableaux. */
   .rich-text-prose :where(table) {
-    @apply w-full my-3 border-collapse;
+    @apply my-3 border-collapse;
     table-layout: fixed;
+    min-width: 100%;
+  }
+  .rich-text-prose :where(th),
+  .rich-text-prose :where(td) {
+    min-width: 80px;
+    word-break: break-word;
   }
   .rich-text-prose :where(th) {
     @apply bg-navy-50 text-left font-semibold text-navy-900 px-3 py-1.5 border border-navy-100;
@@ -1062,6 +1082,8 @@
     @apply px-3 py-1.5 border border-navy-100 align-top;
   }
   .rich-text-prose :where(table) :where(p) { @apply my-0; }
+  /* Permet le scroll horizontal des grands tableaux dans le rendu prose */
+  .rich-text-prose { overflow-x: auto; }
 
   /* Typing dots — bounce sinusoïdal subtil pour "X écrit…" */
   @keyframes typing-bounce {
