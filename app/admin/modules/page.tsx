@@ -88,40 +88,77 @@ export default async function AdminModules({
   const blocsById = new Map<number, any>();
   for (const b of blocs ?? []) blocsById.set((b as any).id, b);
 
-  // Liste des blocs (= CCP) présents pour la formation sélectionnée
-  // (utilisée pour générer les chips du sous-filtre)
-  const blocsAvailable: Array<{
-    code: string;
-    title: string;
+  // Détermine le mode de sous-filtre pour la formation sélectionnée :
+  //   - "blocs" : la formation a plusieurs blocs (GOTRM avec CCP1/2/3)
+  //     → on filtre par code de bloc
+  //   - "modules" : la formation a tous ses modules dans le même bloc
+  //     (Capacité ≤ 3,5 t avec modules A/B/C/D/E/F) → on filtre par
+  //     slug de module individuel
+  type SubFilterEntry = {
+    /** Code de bloc OU slug de module selon le mode. */
+    key: string;
+    /** Label court ("CCP 2" ou "Module A"). */
+    label: string;
+    /** Sous-titre ("Piloter…" ou "Droit civil et commercial"). */
+    subtitle: string;
+    /** Ordre d'affichage. */
     order: number;
+    /** Nombre de modules dans ce groupe. */
     count: number;
-  }> = [];
+  };
+  let subFilterMode: "blocs" | "modules" | "none" = "none";
+  let subFilterEntries: SubFilterEntry[] = [];
+
   if (filterSlug) {
-    const counts = new Map<number, number>();
-    for (const m of scopedModules) {
-      if (formationByModule.get(m.id) !== filterSlug) continue;
+    const modulesOfFormation = scopedModules.filter(
+      (m: any) => formationByModule.get(m.id) === filterSlug,
+    );
+    const blocCounts = new Map<number, number>();
+    for (const m of modulesOfFormation) {
       if (!m.bloc_id) continue;
-      counts.set(m.bloc_id, (counts.get(m.bloc_id) ?? 0) + 1);
+      blocCounts.set(m.bloc_id, (blocCounts.get(m.bloc_id) ?? 0) + 1);
     }
-    for (const [bid, count] of counts) {
-      const b = blocsById.get(bid);
-      if (!b) continue;
-      blocsAvailable.push({
-        code: b.code,
-        title: b.title,
-        order: b.order ?? 999,
-        count,
-      });
+
+    if (blocCounts.size > 1) {
+      // Mode "blocs" — chaque CCP devient un chip
+      subFilterMode = "blocs";
+      for (const [bid, count] of blocCounts) {
+        const b = blocsById.get(bid);
+        if (!b) continue;
+        subFilterEntries.push({
+          key: b.code,
+          label: CCP_LABEL_BY_CODE[b.code] ?? b.code,
+          subtitle: b.title ?? "",
+          order: b.order ?? 999,
+          count,
+        });
+      }
+    } else if (modulesOfFormation.length > 1) {
+      // Mode "modules" — chaque module devient un chip individuel
+      subFilterMode = "modules";
+      subFilterEntries = modulesOfFormation.map((m: any) => ({
+        key: m.slug,
+        // Tente d'extraire "Module X" depuis le titre (ex. "Module A —
+        // Droit civil…" → "Module A"). Sinon fallback sur le slug.
+        label: shortModuleLabel(m.title, m.slug),
+        subtitle: stripModulePrefix(m.title),
+        order: m.order ?? 999,
+        count: 1,
+      }));
     }
-    blocsAvailable.sort((a, b) => a.order - b.order);
+    subFilterEntries.sort((a, b) => a.order - b.order);
   }
 
-  // Filtre formation user-driven + sous-filtre bloc/CCP
+  // Filtre formation user-driven + sous-filtre bloc/CCP/module
   const visibleModules = scopedModules.filter((m: any) => {
     if (filterSlug && formationByModule.get(m.id) !== filterSlug) return false;
-    if (filterBlocCode) {
+    if (filterBlocCode && subFilterMode === "blocs") {
       const bloc = blocsById.get(m.bloc_id);
       if (bloc?.code !== filterBlocCode) return false;
+    }
+    if (filterBlocCode && subFilterMode === "modules") {
+      // En mode modules, la valeur de ?b= contient un slug de module
+      if (m.slug !== filterBlocCode) return false;
     }
     return true;
   });
@@ -226,14 +263,15 @@ export default async function AdminModules({
         />
       )}
 
-      {/* Sous-filtre par CCP / bloc — visible uniquement si une formation
-          est sélectionnée et qu'elle a au moins 2 blocs distincts.
-          Pour GOTRM : CCP 1 / CCP 2 / CCP 3 ; pour les autres : code brut. */}
-      {filterSlug && blocsAvailable.length > 1 && (
+      {/* Sous-filtre par CCP / module — adaptatif selon la formation :
+          - GOTRM (plusieurs blocs) → CCP 1 / CCP 2 / CCP 3
+          - Capacité (1 bloc, modules à plat) → Module A / B / C / … */}
+      {filterSlug && subFilterEntries.length > 1 && (
         <BlocFilter
           formationSlug={filterSlug}
-          available={blocsAvailable}
+          available={subFilterEntries}
           activeCode={filterBlocCode}
+          mode={subFilterMode}
         />
       )}
 
@@ -535,18 +573,28 @@ function BlocFilter({
   formationSlug,
   available,
   activeCode,
+  mode,
 }: {
   formationSlug: string;
-  available: Array<{ code: string; title: string; order: number; count: number }>;
+  available: Array<{
+    key: string;
+    label: string;
+    subtitle: string;
+    order: number;
+    count: number;
+  }>;
   activeCode: string | null;
+  mode: "blocs" | "modules" | "none";
 }) {
   const all = activeCode === null;
+  const filterTitle =
+    mode === "modules" ? "Filtrer par module" : "Filtrer par CCP";
   return (
     <div className="rounded-2xl border border-navy-100 bg-white p-3 shadow-soft">
       <div className="flex items-center gap-2 px-1.5 mb-2">
         <Filter className="h-3.5 w-3.5 text-slate-400" />
         <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-          Filtrer par CCP / module
+          {filterTitle}
         </span>
       </div>
       <div className="flex flex-wrap gap-1.5">
@@ -561,43 +609,73 @@ function BlocFilter({
         >
           Tous
         </Link>
-        {available.map((b) => {
-          const active = activeCode === b.code;
-          const label = CCP_LABEL_BY_CODE[b.code] ?? b.code;
+        {available.map((entry) => {
+          const active = activeCode === entry.key;
           return (
             <Link
-              key={b.code}
-              href={`/admin/modules?f=${formationSlug}&b=${b.code}`}
+              key={entry.key}
+              href={`/admin/modules?f=${formationSlug}&b=${entry.key}`}
               className={
                 "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium transition-colors border " +
                 (active
                   ? "bg-signal-500 text-night-900 border-signal-500"
                   : "bg-white text-navy-800 border-navy-100 hover:border-navy-300 hover:bg-navy-50")
               }
-              title={b.title}
+              title={entry.subtitle}
             >
-              <span className="font-semibold">{label}</span>
-              <span
-                className={
-                  "text-[10.5px] " + (active ? "text-night-900/70" : "text-slate-500")
-                }
-              >
-                · {b.title || b.code}
-              </span>
-              <span
-                className={
-                  "ml-0.5 text-[10.5px] font-semibold tabular-nums " +
-                  (active
-                    ? "text-night-900/70"
-                    : "text-slate-400")
-                }
-              >
-                ({b.count})
-              </span>
+              <span className="font-semibold">{entry.label}</span>
+              {entry.subtitle && (
+                <span
+                  className={
+                    "text-[10.5px] " +
+                    (active ? "text-night-900/70" : "text-slate-500")
+                  }
+                >
+                  · {entry.subtitle}
+                </span>
+              )}
+              {entry.count > 1 && (
+                <span
+                  className={
+                    "ml-0.5 text-[10.5px] font-semibold tabular-nums " +
+                    (active ? "text-night-900/70" : "text-slate-400")
+                  }
+                >
+                  ({entry.count})
+                </span>
+              )}
             </Link>
           );
         })}
       </div>
     </div>
   );
+}
+
+/**
+ * Extrait le label court d'un module : "Module A — Droit civil…" → "Module A".
+ * Fallback sur le slug si pas de pattern reconnu.
+ */
+function shortModuleLabel(title: string, slug: string): string {
+  if (!title) return slug;
+  // Capa : "Module A — Droit…" / "Module A : …"
+  const m = title.match(/^(Module\s+[A-Z\d]+(?:\.\d+)?)/i);
+  if (m) return m[1];
+  // Chapitre : "Chapitre 1 — …"
+  const c = title.match(/^(Chapitre\s+\d+(?:\.\d+)?)/i);
+  if (c) return c[1];
+  // Fallback : 25 premiers chars
+  return title.length > 25 ? title.slice(0, 25) + "…" : title;
+}
+
+/**
+ * Retire le préfixe "Module X —" / "Chapitre N —" pour ne garder
+ * que le sous-titre descriptif.
+ */
+function stripModulePrefix(title: string): string {
+  if (!title) return "";
+  return title
+    .replace(/^(Module\s+[A-Z\d]+(?:\.\d+)?)\s*[—\-–:]\s*/i, "")
+    .replace(/^(Chapitre\s+\d+(?:\.\d+)?)\s*[—\-–:]\s*/i, "")
+    .trim();
 }
