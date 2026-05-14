@@ -25,7 +25,7 @@ interface AppShellProps {
 const FLAT = flattenGroups(STUDENT_GROUPS);
 // 4 raccourcis principaux pour la barre mobile (5e = "Plus")
 const MOBILE_PRIMARY = FLAT.filter((i) =>
-  ["/dashboard", "/modules", "/quiz", "/stats"].includes(i.href)
+  ["/dashboard", "/modules", "/exercices", "/examens-blancs"].includes(i.href)
 );
 
 export function AppShell({ children, profile }: AppShellProps) {

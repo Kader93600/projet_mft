@@ -24,6 +24,8 @@ import {
   Wallet,
   Shield,
   Tags,
+  Dumbbell,
+  GraduationCap,
 } from "lucide-react";
 
 export type NavItem = {
@@ -42,7 +44,8 @@ export const STUDENT_GROUPS: NavGroup[] = [
     items: [
       { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard, short: "Accueil" },
       { href: "/modules", label: "Cours", icon: BookOpen, short: "Cours" },
-      { href: "/quiz", label: "Exercices & Examens", icon: ClipboardCheck, short: "Exos" },
+      { href: "/exercices", label: "Exercices", icon: Dumbbell, short: "Exos" },
+      { href: "/examens-blancs", label: "Examens blancs", icon: GraduationCap, short: "Examens" },
       { href: "/glossaire", label: "Glossaire", icon: Library, short: "Gloss." },
     ],
   },

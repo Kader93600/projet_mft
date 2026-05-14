@@ -42,6 +42,8 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/modules") ||
     pathname.startsWith("/quiz") ||
+    pathname.startsWith("/exercices") ||
+    pathname.startsWith("/examens-blancs") ||
     pathname.startsWith("/stats") ||
     pathname.startsWith("/evaluation") ||
     pathname.startsWith("/mes-documents") ||
