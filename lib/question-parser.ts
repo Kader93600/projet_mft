@@ -282,11 +282,19 @@ function exerciseToDraft(blk: ExerciseBlock, index: number): DraftQuestion {
   // la page source dans l'API extract via findSourcePage("Exercice 1.2", …)
   tags.push(`__ref__exercice-${blk.ref}`);
 
-  // Sépare les sections : CONTEXTE / TRAVAIL / ANNEXE / etc.
-  const text = blk.bodyLines
-    .join("\n")
-    .replace(/\n{2,}/g, "\n\n")
-    .trim();
+  // Reconstruit le texte en préservant la mise en forme verticale.
+  let text = blk.bodyLines.join("\n");
+
+  // Préserve les puces • / -  / ● → markdown-friendly
+  // (pdf-parse retourne déjà ces caractères, on les laisse tels quels)
+  // Compresse les sauts triples mais garde les doubles (séparateurs
+  // de paragraphes CONTEXTE / TRAVAIL).
+  text = text.replace(/\n{3,}/g, "\n\n").trim();
+
+  // Détection de structure tabulaire probable : si on a une ligne
+  // de "header" type "X Y", "X Y Z", "Acteur Rôle", suivie de lignes
+  // courtes (mots-clés isolés), on insère une note explicite.
+  const hasLikelyTable = detectLikelyTable(blk.bodyLines);
 
   // Détecte les sous-questions (1./2./3.) dans la zone TRAVAIL
   const subQuestionMatches = text.match(/^\s*\d+\.\s+.+/gm) ?? [];
@@ -296,8 +304,13 @@ function exerciseToDraft(blk: ExerciseBlock, index: number): DraftQuestion {
   const maxScore = subCount > 0 ? subCount * 2 : 4;
 
   // Énoncé final : Titre + texte
-  const statement =
-    (blk.title ? `${blk.title}\n\n` : "") + text;
+  // Si un tableau est probable, on ajoute une mention visible pour
+  // que le stagiaire sache qu'il doit consulter la page d'origine.
+  let statement = (blk.title ? `${blk.title}\n\n` : "") + text;
+  if (hasLikelyTable) {
+    statement +=
+      "\n\n📋 *Un tableau à compléter est présent sur la page d'origine du PDF — consultez l'annexe ci-contre.*";
+  }
 
   if (statement.length < 30) {
     warnings.push("Énoncé court — vérifier le découpage.");
@@ -307,6 +320,11 @@ function exerciseToDraft(blk: ExerciseBlock, index: number): DraftQuestion {
   }
   if (statement.length > 3500) {
     warnings.push(`Énoncé très long (${statement.length} car) — penser à découper.`);
+  }
+  if (hasLikelyTable) {
+    warnings.push(
+      "Tableau probable détecté — non reproductible en texte. Le stagiaire verra la page PDF d'origine.",
+    );
   }
 
   return {
@@ -499,4 +517,51 @@ function slugify(s: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 40);
+}
+
+/**
+ * Détection heuristique d'une structure tabulaire dans un bloc.
+ *
+ * Les tableaux PDF sont aplatis par pdf-parse en lignes consécutives
+ * sans séparateur de colonne, ex. :
+ *   Acteur Rôle
+ *   MD France
+ *   RENAULT
+ *   TRANSGO
+ *   ZALTO
+ *
+ * On considère qu'il y a un tableau probable si on trouve un trio :
+ *   - une ligne courte de 2-4 mots (header probable, ex "Acteur Rôle")
+ *   - suivie d'au moins 2 lignes très courtes (≤ 3 mots) qui sont des
+ *     entrées d'une colonne (les cellules de la 2e colonne sont vides)
+ *
+ * Cette détection sert juste à AJOUTER UN AVERTISSEMENT à l'admin /
+ * stagiaire. La reconstruction du tableau lui-même est impossible
+ * depuis le texte brut → l'admin verra la page PDF d'origine.
+ */
+function detectLikelyTable(lines: string[]): boolean {
+  for (let i = 0; i < lines.length - 2; i++) {
+    const head = lines[i]?.trim();
+    if (!head) continue;
+    const headWords = head.split(/\s+/);
+    if (headWords.length < 2 || headWords.length > 6) continue;
+    if (head.length > 80) continue;
+    // Toutes les "headers" probables commencent par une majuscule
+    if (!/^[A-ZÀ-Ý]/.test(head)) continue;
+
+    // Compte les 4 lignes suivantes qui ressemblent à des cellules
+    let cellLines = 0;
+    for (let j = i + 1; j < Math.min(i + 8, lines.length); j++) {
+      const cell = lines[j]?.trim();
+      if (!cell) break;
+      if (cell.length > 60) break;
+      const cellWords = cell.split(/\s+/);
+      if (cellWords.length > 6) break;
+      // Skip si c'est un autre header probable (TRAVAIL, CONTEXTE…)
+      if (/^[A-ZÀ-Ý ]{5,}$/.test(cell)) break;
+      cellLines++;
+    }
+    if (cellLines >= 2) return true;
+  }
+  return false;
 }

@@ -15,6 +15,9 @@ import {
   Pencil,
   X,
   Trash2,
+  FileText,
+  Maximize,
+  ExternalLink,
 } from "lucide-react";
 import {
   updateQrMetadata,
@@ -47,12 +50,18 @@ export function QrEditor({
   total,
   formationSlug,
   initialAttachments,
+  pdfSourceUrl,
+  pdfSourcePage,
 }: {
   question: QrData;
   index: number;
   total: number;
   formationSlug: string;
   initialAttachments: QuestionAttachment[];
+  /** URL signée du PDF source (import) — pour preview de la page d'origine */
+  pdfSourceUrl: string | null;
+  /** Numéro de page d'origine de l'exercice dans le PDF source */
+  pdfSourcePage: number | null;
 }) {
   const filterConfig = getQuestionFilterConfig(formationSlug);
   // Tag de groupe courant (chapitre-N ou module-X)
@@ -319,6 +328,16 @@ export function QrEditor({
           </div>
         )}
 
+        {/* Preview de la page d'origine du PDF source — pour les
+            tableaux et la mise en page qui ne survivent pas à
+            l'extraction texte. Visible directement dans l'éditeur. */}
+        {pdfSourceUrl && pdfSourcePage && (
+          <PdfSourcePreview
+            url={pdfSourceUrl}
+            page={pdfSourcePage}
+          />
+        )}
+
         {/* Annexes attachées à la question (image / PDF / doc) */}
         <div className="mb-4">
           <AttachmentManager
@@ -444,5 +463,75 @@ export function QrEditor({
         </div>
       </CardBody>
     </Card>
+  );
+}
+
+/**
+ * Aperçu de la page d'origine du PDF source pour cet exercice.
+ * Permet à l'admin de voir les tableaux / listes / schémas qui ne
+ * survivent pas à l'extraction texte de pdf-parse (texte linéaire
+ * sans structure).
+ *
+ * - Fermé par défaut (économie de bande passante)
+ * - Bouton "Agrandir" pour passer de 480 → 800px
+ * - Bouton "Nouvel onglet" pour ouvrir le PDF complet
+ */
+function PdfSourcePreview({ url, page }: { url: string; page: number }) {
+  const [open, setOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const viewerUrl = `${url}#page=${page}&toolbar=0&navpanes=0`;
+  return (
+    <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50/40 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center gap-2 px-3.5 py-2 text-left hover:bg-amber-50/70 transition"
+      >
+        <FileText className="h-3.5 w-3.5 text-amber-700 shrink-0" />
+        <span className="text-[12px] font-bold uppercase tracking-[0.12em] text-amber-900">
+          Page d'origine du PDF
+        </span>
+        <span className="text-[11px] text-amber-800">· p.{page}</span>
+        <span className="ml-auto text-[11px] font-semibold text-amber-900">
+          {open ? "Masquer" : "Voir le tableau d'origine ▾"}
+        </span>
+      </button>
+      {open && (
+        <>
+          <div className="px-3.5 py-1 flex items-center justify-end gap-2 border-y border-amber-200 bg-amber-50/40">
+            <button
+              type="button"
+              onClick={() => setExpanded(!expanded)}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold text-amber-900 hover:bg-amber-100"
+            >
+              <Maximize className="h-3 w-3" />
+              {expanded ? "Réduire" : "Agrandir"}
+            </button>
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold text-amber-900 hover:bg-amber-100"
+            >
+              <ExternalLink className="h-3 w-3" />
+              Nouvel onglet
+            </a>
+          </div>
+          <iframe
+            src={viewerUrl}
+            title={`Page ${page} du PDF source`}
+            className={
+              "w-full bg-white transition-all " +
+              (expanded ? "h-[800px]" : "h-[480px]")
+            }
+          />
+          <div className="px-3.5 py-1.5 text-[11px] text-amber-900/80 bg-amber-50/40 border-t border-amber-200">
+            Tableaux et mise en page d'origine — non reproductibles
+            dans l'énoncé texte. Le stagiaire voit aussi cette page à
+            côté de l'énoncé pendant le quiz.
+          </div>
+        </>
+      )}
+    </div>
   );
 }

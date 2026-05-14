@@ -35,7 +35,7 @@ export default async function ValidationQrPage({
   let query = supabase
     .from("question_bank")
     .select(
-      "id, statement, expected_answer, scoring_grid, max_score, difficulty, tags, source_ref, active"
+      "id, statement, expected_answer, scoring_grid, max_score, difficulty, tags, source_ref, active, annex_pages, annex_labels, import_id"
     )
     .eq("formation_id", dbF.id)
     .eq("type", "qr")
@@ -121,6 +121,31 @@ export default async function ValidationQrPage({
       }
       groupCounts[k].total += 1;
       if (!(row as any).active) groupCounts[k].inactive += 1;
+    }
+  }
+
+  // PDF sources : pour chaque question liée à un import avec PDF, on
+  // génère une signed URL valide 1h. Cela permet d'afficher la page
+  // d'origine directement dans l'éditeur admin (preview iframe), pour
+  // les tableaux qui ne survivent pas à l'extraction texte.
+  const importIds = new Set<string>();
+  for (const q of list) {
+    if (q.import_id) importIds.add(q.import_id);
+  }
+  const pdfUrlByImport = new Map<string, string>();
+  if (importIds.size > 0) {
+    const { data: importRows } = await supabase
+      .from("question_imports")
+      .select("id, pdf_storage_path")
+      .in("id", [...importIds]);
+    for (const ir of importRows ?? []) {
+      if (!ir.pdf_storage_path) continue;
+      const { data: signed } = await supabase.storage
+        .from("question-imports")
+        .createSignedUrl(ir.pdf_storage_path, 60 * 60);
+      if (signed?.signedUrl) {
+        pdfUrlByImport.set(ir.id, signed.signedUrl);
+      }
     }
   }
 
@@ -219,16 +244,25 @@ export default async function ValidationQrPage({
         </Card>
       ) : (
         <div className="space-y-4">
-          {list.map((q: any, i: number) => (
-            <QrEditor
-              key={q.id}
-              question={q}
-              index={i + 1}
-              total={list.length}
-              formationSlug={slug}
-              initialAttachments={attachmentsByQuestion[q.id] ?? []}
-            />
-          ))}
+          {list.map((q: any, i: number) => {
+            // Calcule l'URL de la page d'origine du PDF (preview admin)
+            const pdfUrl = q.import_id
+              ? pdfUrlByImport.get(q.import_id) ?? null
+              : null;
+            const sourcePage = q.annex_pages?.[0] ?? null;
+            return (
+              <QrEditor
+                key={q.id}
+                question={q}
+                index={i + 1}
+                total={list.length}
+                formationSlug={slug}
+                initialAttachments={attachmentsByQuestion[q.id] ?? []}
+                pdfSourceUrl={pdfUrl}
+                pdfSourcePage={sourcePage}
+              />
+            );
+          })}
         </div>
       )}
     </div>
