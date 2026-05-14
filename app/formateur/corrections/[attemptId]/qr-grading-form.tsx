@@ -14,6 +14,7 @@ import {
   Target,
 } from "lucide-react";
 import { gradeQrResponse } from "./actions";
+import { RichTextDisplay } from "@/components/rich-text/rich-text-display";
 
 interface ResponseProps {
   id: string;
@@ -110,9 +111,10 @@ export function QrGradingForm({
             <Target className="h-3 w-3" />
             Énoncé
           </div>
-          <p className="text-sm text-navy-900 whitespace-pre-wrap leading-relaxed">
-            {response.statement}
-          </p>
+          <RichTextDisplay
+            content={response.statement}
+            className="text-sm text-navy-900 leading-relaxed"
+          />
         </div>
 
         {/* Réponse modèle (toggle) */}
@@ -142,18 +144,20 @@ export function QrGradingForm({
                   </div>
                 </div>
                 {response.expected_answer && (
-                  <p className="text-sm text-navy-900 whitespace-pre-wrap mb-2">
-                    {response.expected_answer}
-                  </p>
+                  <RichTextDisplay
+                    content={response.expected_answer}
+                    className="text-sm text-navy-900 mb-2"
+                  />
                 )}
                 {response.scoring_grid && (
                   <div className="mt-3 pt-3 border-t border-gold-200">
                     <div className="text-[10px] font-semibold uppercase tracking-wider text-gold-800 mb-1">
                       Barème
                     </div>
-                    <p className="text-xs text-navy-900 whitespace-pre-wrap">
-                      {response.scoring_grid}
-                    </p>
+                    <RichTextDisplay
+                      content={response.scoring_grid}
+                      className="text-xs text-navy-900"
+                    />
                   </div>
                 )}
               </div>

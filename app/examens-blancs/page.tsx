@@ -21,6 +21,7 @@ import {
   Filter,
 } from "lucide-react";
 import { ExamensTabs } from "./examens-tabs";
+import { AttemptsHistory } from "./attempts-history";
 
 export const dynamic = "force-dynamic";
 
@@ -156,17 +157,30 @@ export default async function ExamensBlancsPage({
   for (const row of inlineQs ?? [])
     questionCount.set(row.quiz_id, (questionCount.get(row.quiz_id) ?? 0) + 1);
 
-  // Stats user
+  // Stats user agrégées + historique complet (10 dernières tentatives)
   let userAttempts = new Map<
     string,
     { bestPercent: number; lastAt: string; count: number; passed: boolean }
   >();
+  type AttemptHistoryRow = {
+    id: string;
+    quiz_id: string;
+    quiz_title: string;
+    percentage: number;
+    passed: boolean;
+    finished_at: string;
+    duration_s: number | null;
+  };
+  let attemptHistory: AttemptHistoryRow[] = [];
   if (user && allQuizIds.length > 0) {
     const { data: attempts } = await supabase
       .from("quiz_attempts")
-      .select("quiz_id, percentage, completed_at, passed")
+      .select(
+        "id, quiz_id, percentage, completed_at, finished_at, passed, duration_s, quizzes(title)",
+      )
       .eq("user_id", user.id)
-      .in("quiz_id", allQuizIds);
+      .in("quiz_id", allQuizIds)
+      .order("finished_at", { ascending: false });
     for (const a of attempts ?? []) {
       const prev = userAttempts.get(a.quiz_id);
       const p = a.percentage ?? 0;
@@ -180,6 +194,18 @@ export default async function ExamensBlancsPage({
         passed: prev?.passed || !!a.passed,
       });
     }
+    attemptHistory = (attempts ?? [])
+      .filter((a: any) => a.finished_at)
+      .slice(0, 10)
+      .map((a: any) => ({
+        id: a.id,
+        quiz_id: a.quiz_id,
+        quiz_title: a.quizzes?.title ?? "Examen",
+        percentage: a.percentage ?? 0,
+        passed: !!a.passed,
+        finished_at: a.finished_at,
+        duration_s: a.duration_s ?? null,
+      }));
   }
 
   const enrichExam = (q: any, scope: "module" | "global") => {
@@ -302,6 +328,11 @@ export default async function ExamensBlancsPage({
             ))}
           </div>
         </section>
+      )}
+
+      {/* ----- Historique des tentatives ----- */}
+      {attemptHistory.length > 0 && (
+        <AttemptsHistory attempts={attemptHistory} />
       )}
 
       {/* ----- Tabs : par module / globaux ----- */}

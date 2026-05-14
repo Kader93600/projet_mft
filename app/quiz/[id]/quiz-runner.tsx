@@ -102,11 +102,114 @@ export function QuizRunner({
   const [showFocusWarning, setShowFocusWarning] = useState(false);
   const focusRef = useRef(0);
   const [flagged, setFlagged] = useState<Set<string>>(new Set());
+
+  // ───── Sauvegarde auto + reprise après crash ────────────────────
+  // On stocke les réponses + position courante dans localStorage toutes
+  // les 3s pendant qu'une tentative est en cours. Si l'utilisateur ferme
+  // l'onglet ou crashe, on lui propose de reprendre au prochain mount.
+  const lsKey = `quiz-progress:${quiz.id}`;
+  const [resumeAvailable, setResumeAvailable] = useState(false);
+
+  // Détection au mount d'une sauvegarde existante
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.localStorage.getItem(lsKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        // Sauvegarde fraîche ? (< 24h pour éviter les vieux restes)
+        const ageMs = Date.now() - (parsed.savedAt ?? 0);
+        if (ageMs < 24 * 60 * 60 * 1000 && (parsed.answers || parsed.qrAnswers)) {
+          setResumeAvailable(true);
+        } else {
+          window.localStorage.removeItem(lsKey);
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [lsKey]);
+
+  // Sauvegarde auto pendant l'épreuve
+  useEffect(() => {
+    if (!started || finished) return;
+    const i = setInterval(() => {
+      try {
+        window.localStorage.setItem(
+          lsKey,
+          JSON.stringify({
+            answers,
+            qrAnswers,
+            current,
+            flagged: [...flagged],
+            startedAt: startedAt?.toISOString(),
+            savedAt: Date.now(),
+          }),
+        );
+      } catch {
+        /* localStorage plein → on ignore */
+      }
+    }, 3000);
+    return () => clearInterval(i);
+  }, [
+    started,
+    finished,
+    answers,
+    qrAnswers,
+    current,
+    flagged,
+    startedAt,
+    lsKey,
+  ]);
+
+  // Nettoyage au submit final
+  useEffect(() => {
+    if (finished) {
+      try {
+        window.localStorage.removeItem(lsKey);
+      } catch {
+        /* ignore */
+      }
+    }
+  }, [finished, lsKey]);
+
+  // Bouton "Reprendre" : restaure depuis localStorage
+  const resumeFromSave = () => {
+    try {
+      const raw = window.localStorage.getItem(lsKey);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed.answers) setAnswers(parsed.answers);
+      if (parsed.qrAnswers) setQrAnswers(parsed.qrAnswers);
+      if (typeof parsed.current === "number") setCurrent(parsed.current);
+      if (Array.isArray(parsed.flagged))
+        setFlagged(new Set(parsed.flagged));
+      if (parsed.startedAt) setStartedAt(new Date(parsed.startedAt));
+      setResumeAvailable(false);
+      setStarted(true);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const discardSave = () => {
+    try {
+      window.localStorage.removeItem(lsKey);
+    } catch {
+      /* ignore */
+    }
+    setResumeAvailable(false);
+  };
   const [showPalette, setShowPalette] = useState(false);
   const [showReview, setShowReview] = useState(false);
   const [showFsPrompt, setShowFsPrompt] = useState(false);
 
-  const isMock = !!quiz.is_mock_exam;
+  // Mode examen unifié : on considère TOUS les quiz de type "examen" OU
+  // marqués is_mock_exam comme du mode strict (fullscreen, anti-triche,
+  // correction différée). Les exercices d'entraînement gardent le mode
+  // libre (correction immédiate à la fin, pas de fullscreen forcé).
+  const isExamMode = quiz.type === "examen" || !!quiz.is_mock_exam;
+  const isMock = isExamMode;
 
   // Ordre questions/choix : shuffle si activé (une fois au démarrage)
   const orderedQuestions = useMemo(() => {
@@ -154,9 +257,13 @@ export function QuizRunner({
     };
   }, [started, finished, isMock]);
 
+  // Tous les examens forcent le fullscreen (qu'il soit explicitement
+  // marqué require_fullscreen ou non — c'est un standard du mode examen).
+  const requireFs = isExamMode;
+
   // Détection de sortie de plein écran en examen blanc → re-prompt
   useEffect(() => {
-    if (!started || finished || !isMock || !quiz.require_fullscreen) return;
+    if (!started || finished || !requireFs) return;
     function onFsChange() {
       if (!document.fullscreenElement) {
         setShowFsPrompt(true);
@@ -166,7 +273,7 @@ export function QuizRunner({
     }
     document.addEventListener("fullscreenchange", onFsChange);
     return () => document.removeEventListener("fullscreenchange", onFsChange);
-  }, [started, finished, isMock, quiz.require_fullscreen]);
+  }, [started, finished, requireFs]);
 
   // Bloque copie/clic droit en mode examen blanc
   useEffect(() => {
@@ -387,25 +494,92 @@ export function QuizRunner({
               <Stat label="Seuil" value={`${quiz.pass_threshold}%`} />
             </div>
 
-            {isMock && (
-              <div className="mx-auto max-w-md text-left rounded-xl bg-gold-50 border border-gold-200 p-4 text-sm text-navy-900 space-y-2">
+            {isExamMode ? (
+              <div className="mx-auto max-w-md text-left rounded-xl bg-amber-50 border border-amber-200 p-4 text-sm text-navy-900 space-y-2">
                 <div className="font-semibold flex items-center gap-2">
-                  <Lock className="h-4 w-4 text-gold-700" /> Conditions officielles
+                  <ShieldAlert className="h-4 w-4 text-amber-700" />
+                  Mode examen — conditions officielles
                 </div>
                 <ul className="text-xs text-slate-700 space-y-1 list-disc list-inside">
-                  {quiz.shuffle_questions && <li>Questions tirées aléatoirement</li>}
+                  <li>
+                    <strong>Plein écran obligatoire</strong> pendant toute la
+                    durée
+                  </li>
+                  <li>Correction non visible avant la fin du test</li>
+                  <li>Sortie d'onglet / fenêtre détectée et consignée</li>
+                  <li>Copier-coller bloqué</li>
+                  {quiz.time_limit_s && (
+                    <li>
+                      <strong>
+                        Chronomètre :{" "}
+                        {Math.round(quiz.time_limit_s / 60)} min
+                      </strong>{" "}
+                      — soumission automatique à la fin
+                    </li>
+                  )}
+                  {quiz.shuffle_questions && (
+                    <li>Questions tirées aléatoirement</li>
+                  )}
                   {quiz.shuffle_choices && <li>Réponses mélangées</li>}
-                  {quiz.require_fullscreen && <li>Plein écran obligatoire</li>}
-                  <li>Changement d'onglet détecté et consigné</li>
                   {quiz.retake_delay_hours ? (
-                    <li>Délai de {quiz.retake_delay_hours} h entre deux tentatives</li>
+                    <li>
+                      Délai de {quiz.retake_delay_hours} h entre deux
+                      tentatives
+                    </li>
                   ) : null}
                   {quiz.max_attempts ? (
                     <li>
-                      {quiz.max_attempts} tentative{quiz.max_attempts > 1 ? "s" : ""} maximum
+                      {quiz.max_attempts} tentative
+                      {quiz.max_attempts > 1 ? "s" : ""} maximum
                     </li>
                   ) : null}
                 </ul>
+              </div>
+            ) : (
+              <div className="mx-auto max-w-md text-left rounded-xl bg-signal-50 border border-signal-200 p-4 text-sm text-navy-900 space-y-2">
+                <div className="font-semibold flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-signal-700" />
+                  Mode entraînement libre
+                </div>
+                <ul className="text-xs text-slate-700 space-y-1 list-disc list-inside">
+                  <li>Correction et explications visibles après chaque envoi</li>
+                  <li>Pas de fullscreen forcé, vous pouvez consulter le cours en parallèle</li>
+                  <li>Retentez autant de fois que nécessaire</li>
+                  <li>Aucune note officielle, juste de la pratique</li>
+                </ul>
+              </div>
+            )}
+
+            {/* Bannière "Reprendre" si une sauvegarde locale existe */}
+            {resumeAvailable && !blocked && (
+              <div className="rounded-xl bg-signal-50 border border-signal-300 px-4 py-3 text-left space-y-2">
+                <div className="flex items-center gap-2 text-signal-900">
+                  <CheckCircle2 className="h-4 w-4 text-signal-700" />
+                  <strong className="text-[13.5px]">
+                    Tentative en cours détectée
+                  </strong>
+                </div>
+                <p className="text-[12.5px] text-slate-700">
+                  Vous avez quitté le quiz avant la fin. Souhaitez-vous
+                  reprendre où vous en étiez ?
+                </p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Button
+                    size="sm"
+                    onClick={resumeFromSave}
+                    className="bg-signal-500 hover:bg-signal-400 text-night-900"
+                  >
+                    <ArrowRight className="h-3.5 w-3.5" />
+                    Reprendre
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={discardSave}
+                    className="text-[12px] text-slate-600 hover:text-rose-700 underline"
+                  >
+                    Recommencer à zéro
+                  </button>
+                </div>
               </div>
             )}
 
