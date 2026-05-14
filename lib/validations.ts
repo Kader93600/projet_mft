@@ -68,11 +68,31 @@ export const lessonCreateSchema = z.object({
   module_id: uuid,
   title: nonEmptyText(200),
   slug: slugSchema,
-  content_md: z.string().max(100_000).optional(),
-  summary_md: z.string().max(20_000).optional(),
+  // .nullable() pour accepter les `null` envoyés depuis le form quand
+  // le champ est vide (sinon Zod throw et casse le Server Component
+  // au prochain render). 100k chars suffit largement pour un cours
+  // riche en HTML (les leçons CCP2 font ~1-5k chacune).
+  content_md: z.string().max(200_000).nullable().optional(),
+  summary_md: z.string().max(50_000).nullable().optional(),
   order: z.number().int().min(0).max(9999).default(0),
-  cover_url: z.string().url().max(500).nullable().optional(),
-  video_url: z.string().url().max(2000).nullable().optional(),
+  cover_url: z
+    .string()
+    .max(500)
+    .nullable()
+    .optional()
+    .refine(
+      (v) => !v || /^https?:\/\//.test(v),
+      "URL invalide (doit commencer par http:// ou https://)",
+    ),
+  video_url: z
+    .string()
+    .max(2000)
+    .nullable()
+    .optional()
+    .refine(
+      (v) => !v || /^https?:\/\//.test(v),
+      "URL invalide (doit commencer par http:// ou https://)",
+    ),
 });
 
 export const lessonUpdateSchema = lessonCreateSchema.partial().omit({ module_id: true });
