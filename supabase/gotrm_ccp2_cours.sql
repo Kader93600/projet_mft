@@ -1,6 +1,3 @@
-📄 PDF chargé : 1116 Ko
-📑 46 pages, 73895 caractères
-📚 12 chapitres, 74 leçons
 -- =====================================================================
 -- COURS GOTRM CCP2 — Piloter les trafics réguliers sous contrat de
 -- sous-traitance
