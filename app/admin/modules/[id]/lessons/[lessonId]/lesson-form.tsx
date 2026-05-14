@@ -6,6 +6,8 @@ import { useToast } from "@/components/ui/toast";
 import { Save, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { MarkdownEditor } from "@/components/markdown-editor";
+import { RichTextEditor } from "@/components/rich-text/rich-text-editor";
+import { isRichTextHtml } from "@/lib/rich-text";
 import { ImageUploader } from "@/components/admin/image-uploader";
 import {
   createLesson,
@@ -29,6 +31,16 @@ export function LessonForm({
   const [order, setOrder] = useState<number>(lesson?.order ?? 0);
   const [content, setContent] = useState(lesson?.content_md ?? "");
   const [summary, setSummary] = useState(lesson?.summary_md ?? "");
+  // Choix d'éditeur fixé au mount pour ne pas switch quand l'utilisateur
+  // efface tout : si la leçon EST en HTML rich (ou nouvelle), on utilise
+  // RichTextEditor partout ; si c'est markdown legacy, on garde
+  // MarkdownEditor (rétrocompat avec lib/markdown.ts côté stagiaire).
+  const [useRichEditor] = useState<boolean>(
+    () => !lesson?.content_md || isRichTextHtml(lesson.content_md),
+  );
+  const [useRichSummary] = useState<boolean>(
+    () => !lesson?.summary_md || isRichTextHtml(lesson.summary_md),
+  );
   const [coverUrl, setCoverUrl] = useState(lesson?.cover_url ?? "");
   const [videoUrl, setVideoUrl] = useState(lesson?.video_url ?? "");
 
@@ -135,27 +147,51 @@ export function LessonForm({
       </label>
 
       <div>
-        <div className="text-xs font-medium text-slate-600 mb-1.5">
-          Contenu détaillé
+        <div className="text-xs font-medium text-slate-600 mb-1.5 flex items-center justify-between gap-2 flex-wrap">
+          <span>Contenu détaillé</span>
+          <span className="text-[11px] text-slate-400 font-normal">
+            Éditeur riche WYSIWYG · le contenu HTML est rendu directement
+          </span>
         </div>
-        <MarkdownEditor
-          value={content}
-          onChange={setContent}
-          rows={22}
-          placeholder="# Titre&#10;&#10;Rédigez le cours en markdown…"
-        />
+        {useRichEditor ? (
+          <RichTextEditor
+            value={content}
+            onChange={setContent}
+            placeholder="Rédigez le cours — titres, listes, tableaux, images, encadrés…"
+            minHeight={400}
+          />
+        ) : (
+          // Contenu legacy en markdown pur (cours du seed initial) :
+          // on garde l'éditeur markdown existant pour ne pas casser
+          // le rendu côté stagiaire qui utilise lib/markdown.ts.
+          <MarkdownEditor
+            value={content}
+            onChange={setContent}
+            rows={22}
+            placeholder="# Titre&#10;&#10;Rédigez le cours en markdown…"
+          />
+        )}
       </div>
 
       <div>
         <div className="text-xs font-medium text-slate-600 mb-1.5">
           Fiche de synthèse <span className="text-slate-400">(optionnel)</span>
         </div>
-        <MarkdownEditor
-          value={summary}
-          onChange={setSummary}
-          rows={10}
-          placeholder="Résumé, points clés, à retenir…"
-        />
+        {useRichSummary ? (
+          <RichTextEditor
+            value={summary}
+            onChange={setSummary}
+            placeholder="Résumé, points clés, à retenir…"
+            minHeight={180}
+          />
+        ) : (
+          <MarkdownEditor
+            value={summary}
+            onChange={setSummary}
+            rows={10}
+            placeholder="Résumé, points clés, à retenir…"
+          />
+        )}
       </div>
 
       <div className="pt-2 flex items-center justify-between">
