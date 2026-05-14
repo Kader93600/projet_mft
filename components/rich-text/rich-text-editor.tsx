@@ -39,7 +39,14 @@ import {
   Undo,
   Redo,
   Type,
+  TableProperties,
 } from "lucide-react";
+import { TextToTableDialog } from "./text-to-table-dialog";
+import {
+  parseTextAsTable,
+  tableToHtml,
+  type Separator,
+} from "@/lib/text-to-table";
 
 const FONT_FAMILIES = [
   { label: "Sans-serif", value: "Inter, system-ui, sans-serif" },
@@ -174,6 +181,69 @@ export function RichTextEditor({
 // Toolbar — style Notion / Google Docs
 // =====================================================================
 function Toolbar({ editor }: { editor: Editor }) {
+  // ── Dialog "Convertir texte en tableau" ──────────────────────────
+  const [t2tOpen, setT2tOpen] = useState(false);
+  const [t2tText, setT2tText] = useState("");
+  const [t2tRange, setT2tRange] = useState<{ from: number; to: number } | null>(
+    null,
+  );
+
+  const openTextToTable = () => {
+    const { from, to, empty } = editor.state.selection;
+    if (empty) {
+      window.alert(
+        "Sélectionnez d'abord les lignes de texte à convertir en tableau.",
+      );
+      return;
+    }
+    // Récupère le texte sélectionné en gardant les sauts de ligne
+    const selected = editor.state.doc.textBetween(from, to, "\n", "\n");
+    if (!selected.trim()) {
+      window.alert("La sélection est vide.");
+      return;
+    }
+    setT2tText(selected);
+    setT2tRange({ from, to });
+    setT2tOpen(true);
+  };
+
+  const insertTableFromText = (sep: Separator, firstRowIsHeader: boolean) => {
+    const parsed = parseTextAsTable(t2tText, sep);
+    if (parsed.cols === 0) {
+      setT2tOpen(false);
+      return;
+    }
+    // Si "1ère ligne = header" décoché → on génère un tableau dont le
+    // header est vide et toutes les lignes (y compris ce qui était
+    // détecté comme header) passent en body.
+    const finalTable = firstRowIsHeader
+      ? parsed
+      : {
+          ...parsed,
+          header: new Array(parsed.cols).fill(""),
+          body: [parsed.header, ...parsed.body],
+          rows: parsed.body.length + 1,
+        };
+    const html = tableToHtml(finalTable);
+
+    if (t2tRange) {
+      // Remplace la sélection par le tableau (+ un paragraphe vide pour
+      // pouvoir continuer à écrire après).
+      editor
+        .chain()
+        .focus()
+        .deleteRange(t2tRange)
+        .insertContent(html + "<p></p>")
+        .run();
+    } else {
+      editor.chain().focus().insertContent(html + "<p></p>").run();
+    }
+
+    setT2tOpen(false);
+    setT2tText("");
+    setT2tRange(null);
+  };
+
   return (
     <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-navy-100 bg-ivory flex-wrap">
       {/* Style block */}
@@ -379,6 +449,12 @@ function Toolbar({ editor }: { editor: Editor }) {
         <TableIcon className="h-3.5 w-3.5" />
       </Btn>
       <Btn
+        onClick={openTextToTable}
+        label="Convertir le texte sélectionné en tableau"
+      >
+        <TableProperties className="h-3.5 w-3.5" />
+      </Btn>
+      <Btn
         onClick={() => editor.chain().focus().setHorizontalRule().run()}
         label="Séparateur horizontal"
       >
@@ -449,6 +525,19 @@ function Toolbar({ editor }: { editor: Editor }) {
           </button>
         </>
       )}
+
+      {/* Dialog de conversion texte → tableau (lazy : ne rend rien
+          tant qu'elle n'est pas ouverte) */}
+      <TextToTableDialog
+        open={t2tOpen}
+        initialText={t2tText}
+        onCancel={() => {
+          setT2tOpen(false);
+          setT2tText("");
+          setT2tRange(null);
+        }}
+        onConfirm={insertTableFromText}
+      />
     </div>
   );
 }
