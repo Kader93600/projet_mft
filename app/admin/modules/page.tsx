@@ -32,18 +32,21 @@ export const dynamic = "force-dynamic";
 export default async function AdminModules({
   searchParams,
 }: {
-  searchParams?: { f?: string };
+  searchParams?: { f?: string; b?: string };
 }) {
   const supabase = createClient();
 
   const { slugs, isTrainerOnly } = await getAuthorizedFormationSlugs();
   const filterSlug = searchParams?.f && searchParams.f !== "all" ? searchParams.f : null;
+  const filterBlocCode =
+    searchParams?.b && searchParams.b !== "all" ? searchParams.b : null;
 
   const [
     { data: modules },
     { data: lessonRows },
     { data: quizRows },
     { data: formationModules },
+    { data: blocs },
   ] = await Promise.all([
     supabase.from("modules").select("*").order("order"),
     supabase.from("lessons").select("module_id"),
@@ -51,6 +54,10 @@ export default async function AdminModules({
     supabase
       .from("formation_modules")
       .select("module_id, formation:formations(slug, code)"),
+    supabase
+      .from("blocs")
+      .select('id, code, title, "order"')
+      .order("order"),
   ]);
 
   const lessonCount = new Map<string, number>();
@@ -77,10 +84,47 @@ export default async function AdminModules({
     return slug ? allowed.has(slug) : false;
   });
 
-  // Filtre formation user-driven
-  const visibleModules = filterSlug
-    ? scopedModules.filter((m: any) => formationByModule.get(m.id) === filterSlug)
-    : scopedModules;
+  // Index des blocs par id pour lookup rapide
+  const blocsById = new Map<number, any>();
+  for (const b of blocs ?? []) blocsById.set((b as any).id, b);
+
+  // Liste des blocs (= CCP) présents pour la formation sélectionnée
+  // (utilisée pour générer les chips du sous-filtre)
+  const blocsAvailable: Array<{
+    code: string;
+    title: string;
+    order: number;
+    count: number;
+  }> = [];
+  if (filterSlug) {
+    const counts = new Map<number, number>();
+    for (const m of scopedModules) {
+      if (formationByModule.get(m.id) !== filterSlug) continue;
+      if (!m.bloc_id) continue;
+      counts.set(m.bloc_id, (counts.get(m.bloc_id) ?? 0) + 1);
+    }
+    for (const [bid, count] of counts) {
+      const b = blocsById.get(bid);
+      if (!b) continue;
+      blocsAvailable.push({
+        code: b.code,
+        title: b.title,
+        order: b.order ?? 999,
+        count,
+      });
+    }
+    blocsAvailable.sort((a, b) => a.order - b.order);
+  }
+
+  // Filtre formation user-driven + sous-filtre bloc/CCP
+  const visibleModules = scopedModules.filter((m: any) => {
+    if (filterSlug && formationByModule.get(m.id) !== filterSlug) return false;
+    if (filterBlocCode) {
+      const bloc = blocsById.get(m.bloc_id);
+      if (bloc?.code !== filterBlocCode) return false;
+    }
+    return true;
+  });
 
   // Modules orphelins (admins seulement, et seulement si pas de filtre formation)
   const orphans =
@@ -179,6 +223,17 @@ export default async function AdminModules({
         <FormationFilter
           available={availableFormations}
           activeSlug={filterSlug}
+        />
+      )}
+
+      {/* Sous-filtre par CCP / bloc — visible uniquement si une formation
+          est sélectionnée et qu'elle a au moins 2 blocs distincts.
+          Pour GOTRM : CCP 1 / CCP 2 / CCP 3 ; pour les autres : code brut. */}
+      {filterSlug && blocsAvailable.length > 1 && (
+        <BlocFilter
+          formationSlug={filterSlug}
+          available={blocsAvailable}
+          activeCode={filterBlocCode}
         />
       )}
 
@@ -461,5 +516,88 @@ function ModuleRow({
         </span>
       </Link>
     </li>
+  );
+}
+
+/* ─── Sous-filtre par bloc/CCP ──────────────────────────────────────── */
+
+/**
+ * Mapping code bloc → label CCP pour GOTRM. Les autres formations
+ * (Capacité, FIMO…) tombent sur le code brut comme label.
+ */
+const CCP_LABEL_BY_CODE: Record<string, string> = {
+  BC1: "CCP 1",
+  BC2: "CCP 2",
+  BC3: "CCP 3",
+};
+
+function BlocFilter({
+  formationSlug,
+  available,
+  activeCode,
+}: {
+  formationSlug: string;
+  available: Array<{ code: string; title: string; order: number; count: number }>;
+  activeCode: string | null;
+}) {
+  const all = activeCode === null;
+  return (
+    <div className="rounded-2xl border border-navy-100 bg-white p-3 shadow-soft">
+      <div className="flex items-center gap-2 px-1.5 mb-2">
+        <Filter className="h-3.5 w-3.5 text-slate-400" />
+        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+          Filtrer par CCP / module
+        </span>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        <Link
+          href={`/admin/modules?f=${formationSlug}`}
+          className={
+            "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium transition-colors " +
+            (all
+              ? "bg-navy-900 text-white"
+              : "bg-navy-50 text-navy-800 hover:bg-navy-100")
+          }
+        >
+          Tous
+        </Link>
+        {available.map((b) => {
+          const active = activeCode === b.code;
+          const label = CCP_LABEL_BY_CODE[b.code] ?? b.code;
+          return (
+            <Link
+              key={b.code}
+              href={`/admin/modules?f=${formationSlug}&b=${b.code}`}
+              className={
+                "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium transition-colors border " +
+                (active
+                  ? "bg-signal-500 text-night-900 border-signal-500"
+                  : "bg-white text-navy-800 border-navy-100 hover:border-navy-300 hover:bg-navy-50")
+              }
+              title={b.title}
+            >
+              <span className="font-semibold">{label}</span>
+              <span
+                className={
+                  "text-[10.5px] " + (active ? "text-night-900/70" : "text-slate-500")
+                }
+              >
+                · {b.title || b.code}
+              </span>
+              <span
+                className={
+                  "ml-0.5 text-[10.5px] font-semibold tabular-nums " +
+                  (active
+                    ? "text-night-900/70"
+                    : "text-slate-400")
+                }
+              >
+                ({b.count})
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
   );
 }
