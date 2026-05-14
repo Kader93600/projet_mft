@@ -30,6 +30,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin-guard";
 import { formatZodError } from "@/lib/validations";
+import { isRichTextHtml, sanitizeRichTextServer } from "@/lib/rich-text";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -126,12 +127,21 @@ export async function POST(req: NextRequest) {
     // toute collision même en cas de réimport du même fichier.
     const importStamp = Date.now().toString(36);
     const sourceRefBase = `import:${import_id}#${importRow.file_name}`;
+    // Helper local : sanitize si HTML, sinon laisse tel quel
+    const cleanRich = (v: string | null | undefined): string | null => {
+      if (!v) return null;
+      return isRichTextHtml(v) ? sanitizeRichTextServer(v) : v;
+    };
+
     const rows = questions.map((q, i) => ({
       formation_id: formation_id ?? importRow.formation_id ?? null,
       module_id: module_id ?? null,
       lesson_id: lesson_id ?? null,
       type: q.type,
-      statement: q.statement,
+      // Sanitize côté server tout contenu rich-text (statement/réponse/
+      // barème/explication). Defense in depth — l'éditeur côté client
+      // sanitize aussi mais on ne fait pas confiance aveuglément.
+      statement: cleanRich(q.statement) ?? q.statement,
       choices:
         q.type === "qcm" && q.choices
           ? q.choices.map((c) => ({
@@ -140,12 +150,12 @@ export async function POST(req: NextRequest) {
               is_correct: c.is_correct,
             }))
           : null,
-      expected_answer: q.expected_answer ?? null,
-      scoring_grid: q.scoring_grid ?? null,
+      expected_answer: cleanRich(q.expected_answer),
+      scoring_grid: cleanRich(q.scoring_grid),
       max_score: q.max_score,
       difficulty: q.difficulty,
       tags: q.tags,
-      explanation: q.explanation ?? null,
+      explanation: cleanRich(q.explanation),
       // Suffixe unique pour respecter la contrainte UNIQUE(source_ref)
       source_ref: `${sourceRefBase}:${importStamp}:q${i + 1}`,
       import_id,

@@ -15,7 +15,11 @@ import {
   RotateCcw,
   Paperclip,
   X,
+  Pencil,
+  Eye,
 } from "lucide-react";
+import { RichTextEditor } from "@/components/rich-text/rich-text-editor";
+import { RichTextDisplay } from "@/components/rich-text/rich-text-display";
 
 interface FormationOpt {
   id: string;
@@ -1266,12 +1270,15 @@ function QuestionCard({
             </div>
           </div>
 
-          {/* Énoncé */}
-          <textarea
+          {/* Énoncé — toggle Aperçu / Édition pour la perf
+              (60+ éditeurs TipTap montés simultanément = trop lourd) */}
+          <RichField
             value={q.statement}
-            onChange={(e) => onUpdate({ statement: e.target.value })}
-            className="w-full rounded-lg border border-navy-200 bg-white px-3 py-2 text-[14px] text-navy-900 leading-relaxed font-medium min-h-[60px]"
+            onChange={(v) => onUpdate({ statement: v })}
+            label="Énoncé"
             placeholder="Énoncé de la question"
+            initialEdit={false}
+            minHeight={120}
           />
 
           {/* QCM : choix */}
@@ -1323,50 +1330,138 @@ function QuestionCard({
             </div>
           )}
 
-          {/* QR : réponse attendue + barème */}
+          {/* QR : réponse attendue + barème (rich text en toggle) */}
           {q.type === "qr" && (
-            <div className="mt-3 grid md:grid-cols-2 gap-2">
-              <div>
-                <label className="text-[11px] font-semibold text-slate-600 mb-1 block">
-                  Réponse attendue / éléments
-                </label>
-                <textarea
-                  value={q.expectedAnswer ?? ""}
-                  onChange={(e) =>
-                    onUpdate({ expectedAnswer: e.target.value })
-                  }
-                  className="w-full min-h-[80px] rounded-lg border border-navy-200 bg-white px-2.5 py-1.5 text-[13px] text-navy-900"
-                  placeholder="Ce que le stagiaire doit produire (visible formateur)"
-                />
-              </div>
-              <div>
-                <label className="text-[11px] font-semibold text-slate-600 mb-1 block">
-                  Barème détaillé
-                </label>
-                <textarea
-                  value={q.scoringGrid ?? ""}
-                  onChange={(e) => onUpdate({ scoringGrid: e.target.value })}
-                  className="w-full min-h-[80px] rounded-lg border border-navy-200 bg-white px-2.5 py-1.5 text-[13px] text-navy-900"
-                  placeholder="Ex. Définition 2 pts + Exemple 1 pt + Conditions 2 pts"
-                />
-              </div>
+            <div className="mt-3 grid md:grid-cols-2 gap-3">
+              <RichField
+                value={q.expectedAnswer ?? ""}
+                onChange={(v) => onUpdate({ expectedAnswer: v })}
+                label="Réponse attendue / éléments"
+                placeholder="Ce que le stagiaire doit produire (visible formateur)"
+                initialEdit={false}
+                minHeight={100}
+              />
+              <RichField
+                value={q.scoringGrid ?? ""}
+                onChange={(v) => onUpdate({ scoringGrid: v })}
+                label="Barème détaillé"
+                placeholder="Ex. Définition 2 pts + Exemple 1 pt + Conditions 2 pts"
+                initialEdit={false}
+                minHeight={100}
+              />
             </div>
           )}
 
-          {/* Explication */}
+          {/* Explication (collapsible pour les imports en lot) */}
           <details className="mt-2">
             <summary className="text-[11px] font-semibold text-slate-500 cursor-pointer hover:text-navy-900">
               Explication / corrigé (optionnel)
             </summary>
-            <textarea
-              value={q.explanation ?? ""}
-              onChange={(e) => onUpdate({ explanation: e.target.value })}
-              className="mt-1 w-full min-h-[60px] rounded-lg border border-navy-100 bg-white px-2.5 py-1.5 text-[13px] text-slate-700"
-              placeholder="Justification, source, point pédagogique"
-            />
+            <div className="mt-2">
+              <RichField
+                value={q.explanation ?? ""}
+                onChange={(v) => onUpdate({ explanation: v })}
+                label=""
+                placeholder="Justification, source, point pédagogique"
+                initialEdit={false}
+                minHeight={80}
+              />
+            </div>
           </details>
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Champ rich-text avec toggle Aperçu / Édition. Idéal pour la review
+ * d'imports en lot où l'on a 60+ questions : le RichTextEditor n'est
+ * monté QUE quand l'admin clique sur "Éditer" → grosse économie de
+ * mémoire et de temps d'initialisation.
+ *
+ * Détection auto HTML vs texte brut :
+ *   - Aperçu : <RichTextDisplay /> qui rend correctement les 2 formats
+ *   - Édition : <RichTextEditor /> qui convertit auto le texte brut
+ *     en HTML simple à l'init (préservation des sauts de ligne)
+ */
+function RichField({
+  value,
+  onChange,
+  label,
+  placeholder,
+  initialEdit,
+  minHeight = 100,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  label: string;
+  placeholder?: string;
+  initialEdit?: boolean;
+  minHeight?: number;
+}) {
+  const [editing, setEditing] = useState(!!initialEdit);
+
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-2 mb-1">
+        {label && (
+          <label className="text-[11px] font-semibold text-slate-600">
+            {label}
+          </label>
+        )}
+        <button
+          type="button"
+          onClick={() => setEditing(!editing)}
+          className={
+            "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10.5px] font-semibold border transition ml-auto " +
+            (editing
+              ? "bg-navy-900 text-white border-navy-900"
+              : "bg-white text-navy-700 border-navy-100 hover:bg-navy-50 hover:border-navy-200")
+          }
+          title={editing ? "Voir l'aperçu (lecture seule)" : "Activer l'édition riche"}
+        >
+          {editing ? (
+            <>
+              <Eye className="h-3 w-3" />
+              Aperçu
+            </>
+          ) : (
+            <>
+              <Pencil className="h-3 w-3" />
+              Éditer
+            </>
+          )}
+        </button>
+      </div>
+
+      {editing ? (
+        <RichTextEditor
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          minHeight={minHeight}
+        />
+      ) : (
+        <div
+          className="rounded-lg border border-navy-100 bg-ivory px-3 py-2.5 text-[13.5px] text-navy-900 leading-relaxed cursor-text hover:border-navy-200 transition"
+          style={{ minHeight: minHeight - 30 }}
+          onClick={() => setEditing(true)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") setEditing(true);
+          }}
+        >
+          {value ? (
+            <RichTextDisplay content={value} />
+          ) : (
+            <span className="text-slate-400 italic">
+              {placeholder ?? "(Vide — cliquer pour éditer)"}
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 }
