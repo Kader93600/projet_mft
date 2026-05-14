@@ -109,17 +109,29 @@ export default async function AdminModules({
   let subFilterMode: "blocs" | "modules" | "none" = "none";
   let subFilterEntries: SubFilterEntry[] = [];
 
+  // Whitelist : formations dont les modules sont à plat (1 module par
+  // matière, pas de groupement en CCP). On force le mode "modules" même
+  // si plusieurs blocs sont rattachés (cas Capacité avec BC1 partagé
+  // + bloc CAPA-3-5T dédié).
+  const FORCE_MODULE_MODE = new Set([
+    "capacite-3-5t",
+    "capacite-plus-3-5t",
+    "fimo-fco",
+    "taxi-vtc",
+  ]);
+
   if (filterSlug) {
     const modulesOfFormation = scopedModules.filter(
       (m: any) => formationByModule.get(m.id) === filterSlug,
     );
+    const forceModuleMode = FORCE_MODULE_MODE.has(filterSlug);
     const blocCounts = new Map<number, number>();
     for (const m of modulesOfFormation) {
       if (!m.bloc_id) continue;
       blocCounts.set(m.bloc_id, (blocCounts.get(m.bloc_id) ?? 0) + 1);
     }
 
-    if (blocCounts.size > 1) {
+    if (!forceModuleMode && blocCounts.size > 1) {
       // Mode "blocs" — chaque CCP devient un chip
       subFilterMode = "blocs";
       for (const [bid, count] of blocCounts) {
