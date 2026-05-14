@@ -144,11 +144,21 @@ export default async function AdminModules({
             </span>
           </div>
         </div>
-        <Link href="/admin/modules/new">
-          <Button variant="gold">
-            <Plus className="h-4 w-4" /> Nouveau module
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Link
+            href="/admin/modules/import"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-navy-200 bg-white text-navy-900 hover:bg-navy-50 hover:border-navy-300 font-semibold text-sm transition"
+            title="Importer un livret de cours PDF (CHAPITRE N → Modules)"
+          >
+            <Plus className="h-4 w-4" />
+            Importer un livret PDF
+          </Link>
+          <Link href="/admin/modules/new">
+            <Button variant="gold">
+              <Plus className="h-4 w-4" /> Nouveau module
+            </Button>
+          </Link>
+        </div>
       </header>
 
       {/* Bandeau formateur : rappel du scope */}

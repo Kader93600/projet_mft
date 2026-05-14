@@ -24,6 +24,8 @@ import { Callout } from "@/components/lesson/callout";
 import { LawArticle } from "@/components/lesson/law-article";
 import { KeyFigures } from "@/components/lesson/key-figure";
 import { ScrollReveal } from "@/components/lesson/scroll-reveal";
+import { RichTextDisplay } from "@/components/rich-text/rich-text-display";
+import { isRichTextHtml } from "@/lib/rich-text";
 import {
   Memo,
   Piege,
@@ -101,6 +103,18 @@ function parseFigures(body: string) {
 }
 
 export function LessonContent({ source }: { source: string }) {
+  // Détection : si le contenu est du HTML rich text (produit par
+  // l'éditeur TipTap via /admin/modules/import), on bypass le parser
+  // markdown et on rend via RichTextDisplay (sanitize côté client).
+  // Sinon : comportement historique (markdown + blocs riches custom).
+  if (isRichTextHtml(source)) {
+    return (
+      <div className="prose-lesson">
+        <RichTextDisplay content={source} />
+      </div>
+    );
+  }
+
   const segments = tokenize(source);
 
   // Sub-segmentation des segments md : on découpe par double saut de ligne
