@@ -130,6 +130,20 @@ export default async function ModulesPage() {
           .in("module_id", allowedModuleIds),
       ]);
 
+  // Blocs (CCP) : on les charge tous pour pouvoir grouper les modules.
+  // Pour GOTRM : BC1 = CCP1, BC2 = CCP2, BC3 = CCP3.
+  const { data: blocsRaw } = await supabase
+    .from("blocs")
+    .select('id, code, title, "order"')
+    .order("order");
+  const blocsById = new Map<
+    number,
+    { id: number; code: string; title: string; order: number }
+  >();
+  for (const b of blocsRaw ?? []) {
+    blocsById.set((b as any).id, b as any);
+  }
+
   // Données de progression utilisateur
   // ⚠️ 2 sources pour le statut "leçon terminée" :
   //   - lesson_progress : marqué explicitement via le bouton "Marquer terminé"
@@ -308,6 +322,9 @@ export default async function ModulesPage() {
       kind,
       percent,
       __progress: progress,
+      // Info bloc (CCP) — utilisée pour grouper les modules GOTRM
+      // par CCP1/CCP2/CCP3 sur la page stagiaire.
+      __bloc: m.bloc_id ? blocsById.get(m.bloc_id) ?? null : null,
     };
   });
 
@@ -524,32 +541,139 @@ function SubsectionCourses({
   sectionIdx: number;
   showHeader: boolean;
 }) {
+  // Sous-groupement par bloc (CCP) si la formation a des modules dans
+  // plusieurs blocs. Pour GOTRM : BC1=CCP1, BC2=CCP2, BC3=CCP3.
+  // Si tous les modules sont dans un même bloc OU sans bloc, on
+  // retombe sur le rendu simple (1 grille).
+  const blocsMap = new Map<
+    string,
+    {
+      code: string;
+      title: string;
+      order: number;
+      modules: typeof modules;
+    }
+  >();
+  for (const m of modules) {
+    const blocCode = (m as any).__bloc?.code ?? "_other";
+    const blocTitle = (m as any).__bloc?.title ?? "";
+    const blocOrder = (m as any).__bloc?.order ?? 999;
+    if (!blocsMap.has(blocCode)) {
+      blocsMap.set(blocCode, {
+        code: blocCode,
+        title: blocTitle,
+        order: blocOrder,
+        modules: [],
+      });
+    }
+    blocsMap.get(blocCode)!.modules.push(m);
+  }
+  const blocs = Array.from(blocsMap.values()).sort(
+    (a, b) => a.order - b.order,
+  );
+  const useBlocGroups = blocs.length > 1;
+
+  // Mapping code BC → label CCP (pour GOTRM seulement, sans toucher
+  // les autres formations qui n'ont pas cette nomenclature)
+  const ccpLabelByCode: Record<string, string> = {
+    BC1: "CCP 1",
+    BC2: "CCP 2",
+    BC3: "CCP 3",
+  };
+
+  if (!useBlocGroups) {
+    return (
+      <div className="space-y-4">
+        {showHeader && (
+          <div className="flex items-baseline gap-2">
+            <h3 className="font-display text-[15px] font-semibold text-navy-900 tracking-tight">
+              Modules de cours
+            </h3>
+            <span className="text-[12px] text-slate-500">
+              {modules.length} module{modules.length > 1 ? "s" : ""}
+            </span>
+          </div>
+        )}
+        <ModulesGrid modules={modules} sectionIdx={sectionIdx} />
+      </div>
+    );
+  }
+
+  // Sous-groupement visuel par CCP — chaque bloc devient une "carte"
+  // avec son header (CCP X — Titre) et sa propre grille de modules.
   return (
-    <div className="space-y-4">
-      {showHeader && (
-        <div className="flex items-baseline gap-2">
-          <h3 className="font-display text-[15px] font-semibold text-navy-900 tracking-tight">
-            Modules de cours
-          </h3>
-          <span className="text-[12px] text-slate-500">
-            {modules.length} module{modules.length > 1 ? "s" : ""}
-          </span>
-        </div>
-      )}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-5">
-        {modules.map((m, i) => (
-          <div
-            key={m.id}
+    <div className="space-y-6">
+      {blocs.map((b, bi) => {
+        const doneInBloc = b.modules.filter(
+          (m) => m.state === "done",
+        ).length;
+        const inProgress = b.modules.filter(
+          (m) => m.state === "in-progress",
+        ).length;
+        const ccpLabel = ccpLabelByCode[b.code] ?? b.code;
+        return (
+          <section
+            key={b.code}
+            className="rounded-3xl border border-navy-100 bg-white px-4 py-4 md:px-6 md:py-5"
             style={{
-              animation: `fade-up 0.45s ease-out ${
-                sectionIdx * 80 + i * 40
+              animation: `fade-up 0.5s ease-out ${
+                sectionIdx * 80 + bi * 100
               }ms both`,
             }}
           >
-            <ModuleCard module={m} />
-          </div>
-        ))}
-      </div>
+            <header className="flex flex-wrap items-baseline justify-between gap-3 mb-4">
+              <div className="min-w-0">
+                <div className="text-[10.5px] font-bold uppercase tracking-[0.18em] text-signal-700">
+                  {ccpLabel}
+                </div>
+                <h4 className="mt-0.5 font-display text-[16px] font-semibold text-navy-950 tracking-tight">
+                  {b.title || "Modules"}
+                </h4>
+              </div>
+              <div className="text-[12px] text-slate-500 inline-flex items-center gap-2 flex-wrap">
+                <span>
+                  <strong className="text-navy-900">{b.modules.length}</strong>{" "}
+                  module{b.modules.length > 1 ? "s" : ""}
+                </span>
+                {doneInBloc > 0 && (
+                  <span className="text-emerald-700">
+                    · {doneInBloc} terminé{doneInBloc > 1 ? "s" : ""}
+                  </span>
+                )}
+                {inProgress > 0 && (
+                  <span className="text-signal-700">
+                    · {inProgress} en cours
+                  </span>
+                )}
+              </div>
+            </header>
+            <ModulesGrid modules={b.modules} sectionIdx={sectionIdx + bi} />
+          </section>
+        );
+      })}
+    </div>
+  );
+}
+
+function ModulesGrid({
+  modules,
+  sectionIdx,
+}: {
+  modules: (ModuleCardData & { __progress: ModuleProgress })[];
+  sectionIdx: number;
+}) {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-5">
+      {modules.map((m, i) => (
+        <div
+          key={m.id}
+          style={{
+            animation: `fade-up 0.45s ease-out ${sectionIdx * 80 + i * 40}ms both`,
+          }}
+        >
+          <ModuleCard module={m} />
+        </div>
+      ))}
     </div>
   );
 }
