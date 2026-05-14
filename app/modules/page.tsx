@@ -3,6 +3,7 @@ import { ModuleCard, type ModuleCardData } from "@/components/modules/module-car
 import { ContinueCard } from "@/components/modules/continue-card";
 import { FormationProgress } from "@/components/modules/formation-progress";
 import { FormationBadge } from "@/components/formation/formation-badge";
+import { CcpAccordion } from "@/components/modules/ccp-accordion";
 import { findFormation, FORMATIONS } from "@/lib/formations-config";
 import {
   applyLinearLocking,
@@ -599,59 +600,19 @@ function SubsectionCourses({
     );
   }
 
-  // Sous-groupement visuel par CCP — chaque bloc devient une "carte"
-  // avec son header (CCP X — Titre) et sa propre grille de modules.
+  // Sous-groupement par CCP avec accordion (composant client pour
+  // l'animation pliage/dépliage fluide via grid-template-rows).
   return (
-    <div className="space-y-6">
-      {blocs.map((b, bi) => {
-        const doneInBloc = b.modules.filter(
-          (m) => m.state === "done",
-        ).length;
-        const inProgress = b.modules.filter(
-          (m) => m.state === "in-progress",
-        ).length;
-        const ccpLabel = ccpLabelByCode[b.code] ?? b.code;
-        return (
-          <section
-            key={b.code}
-            className="rounded-3xl border border-navy-100 bg-white px-4 py-4 md:px-6 md:py-5"
-            style={{
-              animation: `fade-up 0.5s ease-out ${
-                sectionIdx * 80 + bi * 100
-              }ms both`,
-            }}
-          >
-            <header className="flex flex-wrap items-baseline justify-between gap-3 mb-4">
-              <div className="min-w-0">
-                <div className="text-[10.5px] font-bold uppercase tracking-[0.18em] text-signal-700">
-                  {ccpLabel}
-                </div>
-                <h4 className="mt-0.5 font-display text-[16px] font-semibold text-navy-950 tracking-tight">
-                  {b.title || "Modules"}
-                </h4>
-              </div>
-              <div className="text-[12px] text-slate-500 inline-flex items-center gap-2 flex-wrap">
-                <span>
-                  <strong className="text-navy-900">{b.modules.length}</strong>{" "}
-                  module{b.modules.length > 1 ? "s" : ""}
-                </span>
-                {doneInBloc > 0 && (
-                  <span className="text-emerald-700">
-                    · {doneInBloc} terminé{doneInBloc > 1 ? "s" : ""}
-                  </span>
-                )}
-                {inProgress > 0 && (
-                  <span className="text-signal-700">
-                    · {inProgress} en cours
-                  </span>
-                )}
-              </div>
-            </header>
-            <ModulesGrid modules={b.modules} sectionIdx={sectionIdx + bi} />
-          </section>
-        );
-      })}
-    </div>
+    <CcpAccordion
+      blocs={blocs.map((b) => ({
+        code: b.code,
+        title: b.title,
+        ccpLabel: ccpLabelByCode[b.code] ?? b.code,
+        modules: b.modules,
+      }))}
+      sectionIdx={sectionIdx}
+      storageKey={`ccp-accordion-${sectionIdx}`}
+    />
   );
 }
 

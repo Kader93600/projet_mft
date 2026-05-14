@@ -993,6 +993,36 @@
   .animate-notif-pop      { animation: notif-pop 200ms cubic-bezier(0.22, 1, 0.36, 1) both; }
   .animate-notif-backdrop { animation: notif-backdrop 200ms ease-out both; }
 
+  /* ============ Accordion CCP — animation grid-rows premium ============
+     Technique moderne : grid-template-rows 0fr ↔ 1fr avec transition
+     cubic-bezier(0.22, 1, 0.36, 1). Animate-la-hauteur-exacte sans JS,
+     GPU-friendly, sans saut de calcul.
+     Compatible Chrome 117+/Safari 17+/Firefox 122+ (fallback : tout
+     reste affiché, pas de régression fonctionnelle).
+     ================================================================ */
+  .ccp-collapsible {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition:
+      grid-template-rows 380ms cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .ccp-collapsible[data-open="true"] {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+  .ccp-collapsible-inner {
+    overflow: hidden;
+    min-height: 0;
+  }
+  /* Respecte prefers-reduced-motion : pas d'animation */
+  @media (prefers-reduced-motion: reduce) {
+    .ccp-collapsible {
+      transition: none;
+    }
+  }
+
   /* ============ Rich text (TipTap) — édition et rendu ============
      Styles partagés entre l'éditeur admin (.tiptap-editor) et le
      rendu côté stagiaire (.rich-text-prose). Tient compte du
