@@ -120,9 +120,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Prépare les rows pour le bulk insert
-    const sourceRef = `import:${import_id}#${importRow.file_name}`;
-    const rows = questions.map((q) => ({
+    // Prépare les rows pour le bulk insert.
+    // Le source_ref doit être UNIQUE par question (contrainte DB) :
+    // on suffixe avec un index 1..N + timestamp d'import pour éviter
+    // toute collision même en cas de réimport du même fichier.
+    const importStamp = Date.now().toString(36);
+    const sourceRefBase = `import:${import_id}#${importRow.file_name}`;
+    const rows = questions.map((q, i) => ({
       formation_id: formation_id ?? importRow.formation_id ?? null,
       module_id: module_id ?? null,
       lesson_id: lesson_id ?? null,
@@ -142,7 +146,8 @@ export async function POST(req: NextRequest) {
       difficulty: q.difficulty,
       tags: q.tags,
       explanation: q.explanation ?? null,
-      source_ref: sourceRef,
+      // Suffixe unique pour respecter la contrainte UNIQUE(source_ref)
+      source_ref: `${sourceRefBase}:${importStamp}:q${i + 1}`,
       import_id,
       created_by: admin.id,
       active: activate_immediately === true,
