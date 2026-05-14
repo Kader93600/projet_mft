@@ -448,12 +448,18 @@ function Toolbar({ editor }: { editor: Editor }) {
       >
         <TableIcon className="h-3.5 w-3.5" />
       </Btn>
-      <Btn
+      {/* Bouton dédié et bien visible : convertir une sélection texte
+          en tableau HTML. Différencié par un label + un fond signal. */}
+      <button
+        type="button"
         onClick={openTextToTable}
-        label="Convertir le texte sélectionné en tableau"
+        title="Sélectionner du texte aligné puis cliquer pour le convertir en tableau"
+        aria-label="Convertir le texte sélectionné en tableau"
+        className="inline-flex items-center gap-1 px-2 h-7 rounded-md border border-signal-300 bg-signal-50 text-signal-900 hover:bg-signal-100 hover:border-signal-400 transition text-[11px] font-semibold whitespace-nowrap"
       >
         <TableProperties className="h-3.5 w-3.5" />
-      </Btn>
+        Texte → tableau
+      </button>
       <Btn
         onClick={() => editor.chain().focus().setHorizontalRule().run()}
         label="Séparateur horizontal"
