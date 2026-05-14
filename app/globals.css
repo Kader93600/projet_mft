@@ -993,6 +993,76 @@
   .animate-notif-pop      { animation: notif-pop 200ms cubic-bezier(0.22, 1, 0.36, 1) both; }
   .animate-notif-backdrop { animation: notif-backdrop 200ms ease-out both; }
 
+  /* ============ Rich text (TipTap) — édition et rendu ============
+     Styles partagés entre l'éditeur admin (.tiptap-editor) et le
+     rendu côté stagiaire (.rich-text-prose). Tient compte du
+     thème clair (admin) et du thème sombre éventuel (futur).
+     ================================================================ */
+  .tiptap-editor :where(p) { @apply my-2 leading-relaxed; }
+  .tiptap-editor :where(h1) { @apply font-display text-2xl font-semibold text-navy-950 mt-4 mb-2 tracking-tight; }
+  .tiptap-editor :where(h2) { @apply font-display text-xl font-semibold text-navy-950 mt-4 mb-2; }
+  .tiptap-editor :where(h3) { @apply font-display text-lg font-semibold text-navy-900 mt-3 mb-1.5; }
+  .tiptap-editor :where(h4) { @apply font-display text-base font-semibold text-navy-900 mt-3 mb-1.5; }
+  .tiptap-editor :where(strong) { @apply font-semibold text-navy-950; }
+  .tiptap-editor :where(em) { @apply italic; }
+  .tiptap-editor :where(u) { @apply underline; }
+  .tiptap-editor :where(s) { @apply line-through text-slate-500; }
+  .tiptap-editor :where(code) { @apply font-mono text-[0.9em] px-1 py-0.5 rounded bg-navy-50 text-navy-800; }
+  .tiptap-editor :where(blockquote) { @apply border-l-4 border-signal-500 bg-signal-50/40 px-4 py-2 my-3 italic text-slate-700; }
+  .tiptap-editor :where(hr) { @apply my-4 border-t border-navy-100; }
+  .tiptap-editor :where(ul) { @apply list-disc pl-6 my-2 space-y-1; }
+  .tiptap-editor :where(ol) { @apply list-decimal pl-6 my-2 space-y-1; }
+  .tiptap-editor :where(li) { @apply leading-relaxed; }
+  .tiptap-editor :where(a) { @apply text-brand-700 underline decoration-brand-300 hover:decoration-brand-600 cursor-pointer; }
+  .tiptap-editor :where(img) { @apply rounded-lg my-2 max-w-full h-auto; }
+  .tiptap-editor :where(table) {
+    @apply w-full my-3 border-collapse;
+    table-layout: fixed;
+  }
+  .tiptap-editor :where(th) {
+    @apply bg-navy-50 text-left font-semibold text-navy-900 px-3 py-1.5 border border-navy-100;
+  }
+  .tiptap-editor :where(td) {
+    @apply px-3 py-1.5 border border-navy-100 align-top;
+  }
+  .tiptap-editor :where(table) :where(p) { @apply my-0; }
+
+  /* Placeholder de TipTap (utilisé par extension-placeholder) */
+  .tiptap-editor :where(p.is-editor-empty:first-child::before) {
+    content: attr(data-placeholder);
+    @apply text-slate-400 pointer-events-none float-left h-0;
+  }
+
+  /* Rendu côté stagiaire — mêmes règles, autre classe pour isolation */
+  .rich-text-prose :where(p) { @apply my-2 leading-relaxed; }
+  .rich-text-prose :where(h1) { @apply font-display text-2xl font-semibold text-navy-950 mt-4 mb-2 tracking-tight; }
+  .rich-text-prose :where(h2) { @apply font-display text-xl font-semibold text-navy-950 mt-4 mb-2; }
+  .rich-text-prose :where(h3) { @apply font-display text-lg font-semibold text-navy-900 mt-3 mb-1.5; }
+  .rich-text-prose :where(h4) { @apply font-display text-base font-semibold text-navy-900 mt-3 mb-1.5; }
+  .rich-text-prose :where(strong) { @apply font-semibold text-navy-950; }
+  .rich-text-prose :where(em) { @apply italic; }
+  .rich-text-prose :where(u) { @apply underline; }
+  .rich-text-prose :where(s) { @apply line-through text-slate-500; }
+  .rich-text-prose :where(code) { @apply font-mono text-[0.9em] px-1 py-0.5 rounded bg-navy-50 text-navy-800; }
+  .rich-text-prose :where(blockquote) { @apply border-l-4 border-signal-500 bg-signal-50/40 px-4 py-2 my-3 italic text-slate-700; }
+  .rich-text-prose :where(hr) { @apply my-4 border-t border-navy-100; }
+  .rich-text-prose :where(ul) { @apply list-disc pl-6 my-2 space-y-1; }
+  .rich-text-prose :where(ol) { @apply list-decimal pl-6 my-2 space-y-1; }
+  .rich-text-prose :where(li) { @apply leading-relaxed; }
+  .rich-text-prose :where(a) { @apply text-brand-700 underline decoration-brand-300 hover:decoration-brand-600; }
+  .rich-text-prose :where(img) { @apply rounded-lg my-2 max-w-full h-auto; }
+  .rich-text-prose :where(table) {
+    @apply w-full my-3 border-collapse;
+    table-layout: fixed;
+  }
+  .rich-text-prose :where(th) {
+    @apply bg-navy-50 text-left font-semibold text-navy-900 px-3 py-1.5 border border-navy-100;
+  }
+  .rich-text-prose :where(td) {
+    @apply px-3 py-1.5 border border-navy-100 align-top;
+  }
+  .rich-text-prose :where(table) :where(p) { @apply my-0; }
+
   /* Typing dots — bounce sinusoïdal subtil pour "X écrit…" */
   @keyframes typing-bounce {
     0%, 80%, 100% { transform: translateY(0);    opacity: 0.4; }

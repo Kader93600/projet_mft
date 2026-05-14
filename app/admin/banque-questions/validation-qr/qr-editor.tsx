@@ -31,6 +31,8 @@ import {
   AttachmentManager,
   type QuestionAttachment,
 } from "./attachment-manager";
+import { RichTextEditor } from "@/components/rich-text/rich-text-editor";
+import { RichTextDisplay } from "@/components/rich-text/rich-text-display";
 
 interface QrData {
   id: string;
@@ -282,9 +284,10 @@ export function QrEditor({
                 </Badge>
               )}
             </div>
-            <p className="text-sm text-navy-900 whitespace-pre-wrap leading-relaxed">
-              {statement}
-            </p>
+            <RichTextDisplay
+              content={statement}
+              className="text-sm text-navy-900 leading-relaxed"
+            />
             {question.tags.length > 0 && (
               <div className="mt-3 pt-3 border-t border-navy-100/60 flex flex-wrap gap-1">
                 {question.tags.map((tag) => (
@@ -303,11 +306,11 @@ export function QrEditor({
             <div className="text-[10px] uppercase tracking-wider text-brand-700 font-semibold">
               Édition de l'énoncé (visible stagiaire)
             </div>
-            <Textarea
+            <RichTextEditor
               value={statement}
-              onChange={(e) => setStatement(e.target.value)}
-              rows={6}
-              placeholder="Texte de la question rédigée…"
+              onChange={(html) => setStatement(html)}
+              placeholder="Saisir l'énoncé de la question — texte mis en forme, tableaux, listes, images…"
+              minHeight={200}
               className="bg-white"
             />
             <div>

@@ -2,6 +2,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { isStaff } from "@/lib/permissions";
+import { sanitizeRichTextServer, isRichTextHtml } from "@/lib/rich-text";
 
 async function ensureStaff() {
   const supabase = createClient();
@@ -41,10 +42,24 @@ export async function updateQrMetadata(
     throw new Error("L'énoncé ne peut pas être vide.");
   }
 
+  // Defense in depth : sanitize le HTML produit par TipTap côté client.
+  // Si c'est du texte brut, on le laisse passer (rétro-compat avec les
+  // questions historiques).
+  const cleanPayload: typeof payload = { ...payload };
+  if (cleanPayload.statement && isRichTextHtml(cleanPayload.statement)) {
+    cleanPayload.statement = sanitizeRichTextServer(cleanPayload.statement);
+  }
+  if (cleanPayload.expected_answer && isRichTextHtml(cleanPayload.expected_answer)) {
+    cleanPayload.expected_answer = sanitizeRichTextServer(cleanPayload.expected_answer);
+  }
+  if (cleanPayload.scoring_grid && isRichTextHtml(cleanPayload.scoring_grid)) {
+    cleanPayload.scoring_grid = sanitizeRichTextServer(cleanPayload.scoring_grid);
+  }
+
   const { error } = await supabase
     .from("question_bank")
     .update({
-      ...payload,
+      ...cleanPayload,
       reformulated_at: new Date().toISOString(),
       reformulated_by: userId,
     })

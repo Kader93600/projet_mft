@@ -15,6 +15,7 @@ import {
 import { cn, scoreColor } from "@/lib/utils";
 import { FormationBadge } from "@/components/formation/formation-badge";
 import { FormationStripe } from "@/components/formation/formation-stripe";
+import { RichTextDisplay } from "@/components/rich-text/rich-text-display";
 
 interface Choice { id: string; label: string; is_correct: boolean; order: number; }
 interface QuestionAnnex {
@@ -931,9 +932,10 @@ export function QuizRunner({
               </span>
             )}
           </div>
-          <h2 className="font-display text-xl font-semibold text-navy-900 leading-snug whitespace-pre-wrap">
-            {q.statement}
-          </h2>
+          <RichTextDisplay
+            content={q.statement}
+            className="font-display text-xl font-semibold text-navy-900 leading-snug"
+          />
           {q.annexes && q.annexes.length > 0 && (
             <AnnexPanel annexes={q.annexes} />
           )}
