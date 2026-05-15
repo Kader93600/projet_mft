@@ -235,8 +235,8 @@ export default async function QuizResultsPage({
               </CardBody>
             </Card>
 
-            {/* Aperçu QCM (si quiz mixte, la partie QCM est déjà calculée) */}
-            {attempt.qcm_score !== null && (
+            {/* Aperçu QCM (uniquement si le quiz CONTIENT vraiment des QCM) */}
+            {attempt.qcm_score !== null && qcmQuestions.length > 0 && (
               <Card>
                 <CardBody>
                   <CardTitle>Score QCM (auto-corrigé)</CardTitle>
@@ -323,29 +323,42 @@ export default async function QuizResultsPage({
                       </div>
                     </div>
                   )}
-                  {attempt.qcm_score !== null && attempt.qr_score !== null && (
-                    <>
-                      <div className="rounded-xl border border-navy-100 bg-ivory p-3">
-                        <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">
-                          Score QCM
-                        </div>
-                        <div className="font-display text-xl font-semibold text-navy-900 mt-1">
-                          {Math.round(attempt.qcm_score ?? 0)}%
-                        </div>
+                  {/* Carte Score QCM : uniquement si vrais QCM dans le quiz */}
+                  {attempt.qcm_score !== null && qcmQuestions.length > 0 && (
+                    <div className="rounded-xl border border-navy-100 bg-ivory p-3">
+                      <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">
+                        Score QCM
                       </div>
-                      <div className="rounded-xl border border-navy-100 bg-ivory p-3">
-                        <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">
-                          Rédigées
-                        </div>
-                        <div className="font-display text-xl font-semibold text-navy-900 mt-1">
-                          {attempt.qr_score}/
-                          {(qrResponses ?? []).reduce(
-                            (s: number, r: any) => s + (r.max_score ?? 0),
-                            0
-                          )}
-                        </div>
+                      <div className="font-display text-xl font-semibold text-navy-900 mt-1">
+                        {Math.round(attempt.qcm_score ?? 0)}%
                       </div>
-                    </>
+                    </div>
+                  )}
+                  {/* Carte Rédigées : uniquement si vraies QR + affiche % ET fraction */}
+                  {attempt.qr_score !== null && (qrResponses ?? []).length > 0 && (
+                    (() => {
+                      const qrMax = (qrResponses ?? []).reduce(
+                        (s: number, r: any) => s + (r.max_score ?? 0),
+                        0
+                      );
+                      const qrPct =
+                        qrMax > 0
+                          ? Math.round((attempt.qr_score / qrMax) * 100)
+                          : 0;
+                      return (
+                        <div className="rounded-xl border border-navy-100 bg-ivory p-3">
+                          <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">
+                            Rédigées
+                          </div>
+                          <div className="font-display text-xl font-semibold text-navy-900 mt-1">
+                            {qrPct}%
+                            <span className="text-xs font-normal text-slate-500 ml-1.5">
+                              · {attempt.qr_score}/{qrMax}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })()
                   )}
                   {durationMin !== null && (
                     <div className="rounded-xl border border-navy-100 bg-ivory p-3">

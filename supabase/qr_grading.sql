@@ -155,12 +155,13 @@ BEGIN
   WHERE id = p_attempt;
 
   -- Notifier les formateurs habilités sur la formation correspondante
-  -- (best-effort, ne bloque pas le submit en cas d'échec)
+  -- (best-effort, ne bloque pas le submit en cas d'échec).
+  -- type='system' = valeur autorisée par la CHECK constraint de notifications.
   BEGIN
     INSERT INTO public.notifications (user_id, type, title, body, link_url)
     SELECT
       tf.trainer_id,
-      'info',
+      'system',
       'Copie à corriger',
       'Une nouvelle copie est en attente de correction.',
       '/formateur/corrections/' || p_attempt::text
@@ -264,9 +265,13 @@ BEGIN
   INTO v_qr_total, v_qr_max
   FROM public.qr_responses WHERE attempt_id = p_attempt;
 
-  -- Score total : QCM auto + QR manuel
-  -- 70% QCM + 30% QR par défaut si présence de QR, sinon 100% QCM.
-  IF v_qr_max > 0 THEN
+  -- Pondération adaptative selon la composition réelle du quiz :
+  --   QR-only   (qcm_score IS NULL)  → 100 % QR
+  --   Mixte     (QCM + QR)            → 70 % QCM + 30 % QR
+  --   QCM-only  (pas de QR)           → 100 % QCM
+  IF v_qcm IS NULL AND v_qr_max > 0 THEN
+    v_pct := v_qr_total / v_qr_max * 100;
+  ELSIF v_qr_max > 0 THEN
     v_pct := 0.7 * coalesce(v_qcm, 0) + 0.3 * (v_qr_total / v_qr_max * 100);
   ELSE
     v_pct := coalesce(v_qcm, 0);

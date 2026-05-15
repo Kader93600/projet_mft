@@ -343,7 +343,12 @@ export function QuizRunner({
       if (sel && q.choices.find((c) => c.is_correct)?.id === sel) score++;
     });
     const totalQcm = qcmList.length;
-    const qcmPercentage = totalQcm ? Math.round((score / totalQcm) * 100) : 0;
+    // qcmPercentage doit être NULL quand le quiz ne contient AUCUN QCM,
+    // sinon la page de résultats affiche "Score QCM 0%" qui n'a aucun
+    // sens et la pondération finale (70 % QCM + 30 % QR) divise le score
+    // du stagiaire par 3 sans raison. Cf. fix 2026-05-16.
+    const qcmPercentage: number | null =
+      totalQcm > 0 ? Math.round((score / totalQcm) * 100) : null;
     const total = orderedQuestions.length;
 
     const hasQr = qrList.length > 0;
@@ -359,7 +364,9 @@ export function QuizRunner({
       score,
       total: totalQcm,
       percentage: qcmPercentage,
-      passed: hasQr ? null : qcmPercentage >= quiz.pass_threshold,
+      passed: hasQr
+        ? null
+        : qcmPercentage !== null && qcmPercentage >= quiz.pass_threshold,
       duration_s: startedAt
         ? Math.round((finishedAt.getTime() - startedAt.getTime()) / 1000)
         : null,
