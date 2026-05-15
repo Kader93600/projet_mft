@@ -225,18 +225,19 @@ CREATE OR REPLACE FUNCTION public.finalize_quiz_grading(
 ) RETURNS void
 LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
-  uid uuid := auth.uid();
-  qcm numeric;
-  qr_total numeric;
-  qr_max numeric;
-  total numeric;
-  total_max numeric;
-  pct numeric;
-  pass_threshold numeric;
-  passed boolean;
-  attempt_owner uuid;
+  -- Toutes les variables locales sont préfixées en v_* pour éviter tout
+  -- conflit de nommage avec les colonnes de quiz_attempts (notamment
+  -- "passed" qui sinon casse l'UPDATE avec "column reference ambiguous").
+  v_uid uuid := auth.uid();
+  v_qcm numeric;
+  v_qr_total numeric;
+  v_qr_max numeric;
+  v_pct numeric;
+  v_pass_threshold numeric;
+  v_passed boolean;
+  v_attempt_owner uuid;
 BEGIN
-  IF uid IS NULL THEN RAISE EXCEPTION 'unauthenticated'; END IF;
+  IF v_uid IS NULL THEN RAISE EXCEPTION 'unauthenticated'; END IF;
   IF NOT (public.is_trainer() OR public.is_admin()) THEN
     RAISE EXCEPTION 'must_be_trainer_or_admin';
   END IF;
@@ -250,53 +251,48 @@ BEGIN
   END IF;
 
   SELECT a.qcm_score, a.user_id, q.pass_threshold
-  INTO qcm, attempt_owner, pass_threshold
+  INTO v_qcm, v_attempt_owner, v_pass_threshold
   FROM public.quiz_attempts a
   JOIN public.quizzes q ON q.id = a.quiz_id
   WHERE a.id = p_attempt;
-  IF attempt_owner IS NULL THEN RAISE EXCEPTION 'attempt_not_found'; END IF;
+  IF v_attempt_owner IS NULL THEN RAISE EXCEPTION 'attempt_not_found'; END IF;
 
   -- Cumul QR
   SELECT
     coalesce(sum(trainer_score), 0),
     coalesce(sum(max_score), 0)
-  INTO qr_total, qr_max
+  INTO v_qr_total, v_qr_max
   FROM public.qr_responses WHERE attempt_id = p_attempt;
 
   -- Score total : QCM auto + QR manuel
-  -- qcm_score est déjà en pourcentage (0-100) ; on le convertit en pondération
-  -- en assumant que la pondération QCM représente (1 - qr_max/total_max)
-  -- Plus simple : on utilise qcm_score comme % et on calcule un score final pondéré
-  -- en supposant que QR vaut 30% si qr_max > 0 et 0% sinon. C'est un MVP — l'admin
-  -- pourra définir un poids personnalisé plus tard.
-  IF qr_max > 0 THEN
-    -- 70% QCM + 30% QR (par défaut)
-    pct := 0.7 * coalesce(qcm, 0) + 0.3 * (qr_total / qr_max * 100);
+  -- 70% QCM + 30% QR par défaut si présence de QR, sinon 100% QCM.
+  IF v_qr_max > 0 THEN
+    v_pct := 0.7 * coalesce(v_qcm, 0) + 0.3 * (v_qr_total / v_qr_max * 100);
   ELSE
-    pct := coalesce(qcm, 0);
+    v_pct := coalesce(v_qcm, 0);
   END IF;
 
-  pct := round(pct::numeric, 1);
-  passed := pct >= coalesce(pass_threshold, 70);
+  v_pct := round(v_pct::numeric, 1);
+  v_passed := v_pct >= coalesce(v_pass_threshold, 70);
 
   UPDATE public.quiz_attempts
   SET status = 'graded',
-      qr_score = qr_total,
-      final_percentage = pct,
-      final_passed = passed,
-      percentage = pct,         -- compat affichages existants
-      passed = passed,           -- compat affichages existants
+      qr_score = v_qr_total,
+      final_percentage = v_pct,
+      final_passed = v_passed,
+      percentage = v_pct,         -- compat affichages existants
+      passed = v_passed,          -- compat affichages existants
       graded_at = now(),
-      graded_by = uid,
+      graded_by = v_uid,
       trainer_global_comment = COALESCE(p_global_comment, trainer_global_comment)
   WHERE id = p_attempt;
 
-  -- Notifier le stagiaire
+  -- Notifier le stagiaire (type 'quiz_result' = valeur autorisée par CHECK)
   BEGIN
     INSERT INTO public.notifications (user_id, type, title, body, link_url)
     VALUES (
-      attempt_owner,
-      'success',
+      v_attempt_owner,
+      'quiz_result',
       'Votre copie a été corrigée',
       'Découvrez votre note et les commentaires du formateur.',
       '/quiz/results/' || p_attempt::text
