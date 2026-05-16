@@ -2,13 +2,56 @@
 @tailwind components;
 @tailwind utilities;
 
+/* =====================================================================
+ * Variables CSS adaptatives — mode clair (par défaut) et sombre.
+ *
+ * Permettent d'écrire `bg-[hsl(var(--surface))]` ou simplement
+ * `bg-surface` (via tailwind plugin) dans les composants. La bascule
+ * dark/light est automatique sans dupliquer les classes Tailwind.
+ *
+ * Conventions :
+ *   --bg          : arrière-plan général (body)
+ *   --surface     : cartes, panneaux
+ *   --surface-2   : variantes (ivory en clair, navy-900 en sombre)
+ *   --text        : texte principal
+ *   --text-muted  : texte secondaire (slate-500)
+ *   --border      : bordures fines (navy-100 en clair)
+ * ===================================================================== */
+:root {
+  --bg: 36 60% 97%;          /* ivory #FAF8F4 */
+  --surface: 0 0% 100%;       /* white */
+  --surface-2: 36 60% 95%;    /* ivory plus saturé */
+  --text: 233 65% 13%;        /* navy-950 #0E1240 */
+  --text-muted: 215 16% 47%;  /* slate-500 */
+  --border: 232 35% 92%;      /* navy-100 */
+  --accent: 233 65% 13%;      /* navy primary */
+  --signal: 78 75% 51%;       /* signal-500 #9FE220 */
+  --gold: 36 92% 33%;         /* gold-700 */
+}
+
+.dark {
+  --bg: 233 50% 8%;           /* navy-deep proche du noir */
+  --surface: 232 45% 12%;     /* navy-900 légèrement clair */
+  --surface-2: 232 40% 16%;   /* navy-800 */
+  --text: 36 60% 95%;         /* ivory légèrement teinté */
+  --text-muted: 215 15% 70%;  /* slate-300/400 */
+  --border: 232 30% 22%;      /* navy-700 */
+  --accent: 78 75% 51%;       /* signal-500 (lime devient l'accent fort en dark) */
+  --signal: 78 75% 51%;
+  --gold: 36 75% 60%;         /* gold plus lumineux en dark */
+}
+
 @layer base {
   html {
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    /* Couleur de la barre nav navigateur (Safari, mobile) */
+    background-color: hsl(var(--bg));
   }
   body {
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    background-color: hsl(var(--bg));
+    color: hsl(var(--text));
   }
   h1, h2, h3, h4 {
     font-family: var(--font-fraunces), Georgia, serif;
@@ -17,6 +60,32 @@
   ::selection {
     background: #FDF2CD;
     color: #0F2A4A;
+  }
+  .dark ::selection {
+    background: hsl(78 75% 51% / 0.4);
+    color: #fff;
+  }
+  /* Focus visible amélioré pour l'accessibilité WCAG AA */
+  *:focus-visible {
+    outline: 2px solid hsl(var(--signal));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  /* Skip link visible au focus */
+  .skip-link {
+    position: absolute;
+    top: -100px;
+    left: 8px;
+    z-index: 1000;
+    padding: 12px 20px;
+    background: hsl(var(--accent));
+    color: hsl(var(--surface));
+    border-radius: 8px;
+    font-weight: 600;
+    transition: top 0.15s ease-out;
+  }
+  .skip-link:focus {
+    top: 8px;
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {

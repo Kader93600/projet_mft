@@ -67,9 +67,13 @@ export function AdminShell({ children, profile }: Props) {
   return (
     <ToastProvider>
       <SessionTracker />
-      <div className="min-h-screen flex bg-ivory text-ink">
+      <div className="min-h-screen flex bg-ivory text-ink dark:bg-[hsl(var(--bg))] dark:text-[hsl(var(--text))]">
+        {/* Skip link a11y */}
+        <a href="#admin-content" className="skip-link">
+          Aller au contenu principal
+        </a>
         {/* Sidebar admin */}
-        <aside className="hidden md:flex w-72 flex-col border-r border-navy-100 bg-navy-950 text-white">
+        <aside className="hidden md:flex w-72 flex-col border-r border-navy-100 bg-navy-950 text-white dark:bg-[hsl(var(--surface-2))] dark:border-[hsl(var(--border))]">
           <div className="h-16 flex items-center px-5 border-b border-white/10">
             <Link href="/admin" className="flex items-center gap-2.5 min-w-0">
               <LogoMark className="h-9 w-9 shrink-0" variant="light" />
@@ -101,7 +105,7 @@ export function AdminShell({ children, profile }: Props) {
 
         {/* Main */}
         <main className="flex-1 pt-14 md:pt-0 pb-20 md:pb-0">
-          <div className="hidden md:flex h-16 items-center justify-between px-8 border-b border-navy-100 bg-white sticky top-0 z-10">
+          <div className="hidden md:flex h-16 items-center justify-between px-8 border-b border-navy-100 bg-white sticky top-0 z-10 dark:bg-[hsl(var(--surface))] dark:border-[hsl(var(--border))]">
             <nav className="flex items-center gap-1.5 text-sm">
               {crumbs.map((c, i) => (
                 <span key={c.href} className="flex items-center gap-1.5">
@@ -152,7 +156,7 @@ export function AdminShell({ children, profile }: Props) {
             {children}
           </div>
 
-          <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-navy-100 flex justify-around py-2 z-20">
+          <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-navy-100 flex justify-around py-2 z-20 dark:bg-[hsl(var(--surface))]/95 dark:border-[hsl(var(--border))]" aria-label="Navigation admin mobile">
             {MOBILE_PRIMARY.map((item) => {
               const active = item.exact
                 ? pathname === item.href

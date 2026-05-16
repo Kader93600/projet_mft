@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ThemeInit } from "@/components/theme-toggle";
 import { CookieBanner } from "@/components/cookie-banner";
 import { JsonLd, organizationSchema } from "@/components/seo/json-ld";
+import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { LEGAL } from "@/lib/legal-config";
 
 const inter = Inter({
@@ -131,6 +132,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     >
       <head>
         <ThemeInit />
+        <ServiceWorkerRegister />
         <JsonLd schema={organizationSchema()} />
       </head>
       <body className="min-h-screen bg-ivory font-sans antialiased text-ink selection:bg-gold-200 selection:text-navy-900">

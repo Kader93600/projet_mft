@@ -14,14 +14,14 @@ export function Badge({
   size?: "sm" | "md";
 }) {
   const tones: Record<Tone, string> = {
-    navy: "bg-navy-50 text-navy-700 border-navy-100",
-    gold: "bg-gold-50 text-gold-800 border-gold-200",
-    success: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    slate: "bg-slate-100 text-slate-700 border-slate-200",
-    rose: "bg-rose-50 text-rose-700 border-rose-200",
-    bc1: "bg-navy-50 text-navy-800 border-navy-200",
-    bc2: "bg-emerald-50 text-emerald-800 border-emerald-200",
-    bc3: "bg-gold-50 text-gold-800 border-gold-300",
+    navy: "bg-navy-50 text-navy-700 border-navy-100 dark:bg-navy-900/50 dark:text-navy-200 dark:border-navy-700/60",
+    gold: "bg-gold-50 text-gold-800 border-gold-200 dark:bg-gold-900/40 dark:text-gold-300 dark:border-gold-700/50",
+    success: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-700/40",
+    slate: "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800/60 dark:text-slate-300 dark:border-slate-700",
+    rose: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-300 dark:border-rose-700/40",
+    bc1: "bg-navy-50 text-navy-800 border-navy-200 dark:bg-signal-500/15 dark:text-signal-300 dark:border-signal-500/30",
+    bc2: "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-700/40",
+    bc3: "bg-gold-50 text-gold-800 border-gold-300 dark:bg-gold-900/40 dark:text-gold-300 dark:border-gold-700/50",
   };
   const sizes = {
     sm: "text-[10px] px-1.5 py-0.5",

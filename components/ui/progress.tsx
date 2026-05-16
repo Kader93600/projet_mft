@@ -57,7 +57,7 @@ export function ProgressBar({
     <div
       ref={ref}
       className={cn(
-        "w-full h-1.5 rounded-full bg-navy-100 overflow-hidden",
+        "w-full h-1.5 rounded-full bg-navy-100 dark:bg-[hsl(var(--border))] overflow-hidden",
         className
       )}
       role="progressbar"

@@ -37,10 +37,14 @@ export function AppShell({ children, profile }: AppShellProps) {
     (pathname.startsWith("/admin") ? "Administration" : "MA FORMATION TRANSPORT");
 
   return (
-    <div className="min-h-screen flex bg-ivory text-ink">
+    <div className="min-h-screen flex bg-ivory text-ink dark:bg-[hsl(var(--bg))] dark:text-[hsl(var(--text))]">
+      {/* Skip link a11y — visible au focus uniquement */}
+      <a href="#main-content" className="skip-link">
+        Aller au contenu principal
+      </a>
       {/* Sidebar desktop */}
-      <aside className="hidden md:flex w-72 flex-col border-r border-navy-100 bg-white">
-        <div className="h-16 flex items-center px-5 border-b border-navy-100">
+      <aside className="hidden md:flex w-72 flex-col border-r border-navy-100 bg-white dark:bg-[hsl(var(--surface))] dark:border-[hsl(var(--border))]">
+        <div className="h-16 flex items-center px-5 border-b border-navy-100 dark:border-[hsl(var(--border))]">
           <Link href="/dashboard">
             <Logo />
           </Link>
@@ -82,7 +86,7 @@ export function AppShell({ children, profile }: AppShellProps) {
       </aside>
 
       {/* Mobile top bar */}
-      <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-white border-b border-navy-100 z-20 flex items-center justify-between px-4">
+      <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-white border-b border-navy-100 z-20 flex items-center justify-between px-4 dark:bg-[hsl(var(--surface))] dark:border-[hsl(var(--border))]">
         <Link href="/dashboard">
           <Logo withText={false} />
         </Link>
@@ -95,13 +99,13 @@ export function AppShell({ children, profile }: AppShellProps) {
       {/* Main */}
       <main className="flex-1 pt-14 md:pt-0 pb-20 md:pb-0">
         {/* Topbar desktop */}
-        <div className="hidden md:flex h-16 items-center justify-between px-8 border-b border-navy-100 bg-white/80 backdrop-blur sticky top-0 z-10">
+        <div className="hidden md:flex h-16 items-center justify-between px-8 border-b border-navy-100 bg-white/80 backdrop-blur sticky top-0 z-10 dark:bg-[hsl(var(--surface))]/80 dark:border-[hsl(var(--border))]">
           <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 rounded-md bg-signal-500/15 border border-signal-500/30 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-signal-700">
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-signal-500/15 border border-signal-500/30 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-signal-700 dark:text-signal-300">
               <span className="h-1.5 w-1.5 rounded-full bg-signal-500 animate-glow-pulse" />
               Stagiaire
             </span>
-            <h1 className="font-display text-xl font-semibold text-navy-900 tracking-tight">
+            <h1 className="font-display text-xl font-semibold text-navy-900 dark:text-[hsl(var(--text))] tracking-tight">
               {pageTitle}
             </h1>
           </div>
@@ -126,7 +130,7 @@ export function AppShell({ children, profile }: AppShellProps) {
         </div>
 
         {/* Mobile bottom nav : 4 raccourcis + sheet "Plus" */}
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-navy-100 flex justify-around py-2 z-20">
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-navy-100 flex justify-around py-2 z-20 dark:bg-[hsl(var(--surface))]/95 dark:border-[hsl(var(--border))]" aria-label="Navigation principale mobile">
           {MOBILE_PRIMARY.map((item) => {
             const active =
               pathname === item.href || pathname.startsWith(item.href + "/");
