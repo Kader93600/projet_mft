@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ import { StudentSessionsList } from "./sessions-list";
 export const dynamic = "force-dynamic";
 
 export default async function StudentSessionsPage() {
+  const t = await getTranslations("sessions");
   const supabase = createClient();
   const {
     data: { user },
@@ -76,7 +78,7 @@ export default async function StudentSessionsPage() {
 
   // Si pas Premium du tout, on montre l'écran d'upsell
   if (!hasPremium) {
-    return <NoPremiumUpsell />;
+    return <NoPremiumUpsell t={t} />;
   }
 
   const enriched = (sessions ?? []).map((s: any) => ({
@@ -105,14 +107,13 @@ export default async function StudentSessionsPage() {
         <div className="relative">
           <Badge tone="bc1" size="sm">
             <Crown className="h-3 w-3" />
-            Premium
+            {t("premiumBadge")}
           </Badge>
           <h1 className="mt-3 font-display text-3xl md:text-4xl font-semibold tracking-tight">
-            Mes sessions en direct
+            {t("premiumTitle")}
           </h1>
           <p className="mt-2 text-white/70 max-w-2xl">
-            Webinaires, ateliers et examens blancs supervisés — en visio ou en
-            présentiel. Émargement horodaté pour la conformité Qualiopi.
+            {t("premiumDescription")}
           </p>
         </div>
       </header>
@@ -126,13 +127,23 @@ export default async function StudentSessionsPage() {
   );
 }
 
-function NoPremiumUpsell() {
+type SessionsT = Awaited<ReturnType<typeof getTranslations<"sessions">>>;
+
+function NoPremiumUpsell({ t }: { t: SessionsT }) {
+  const features = [
+    t("upsellFeature1"),
+    t("upsellFeature2"),
+    t("upsellFeature3"),
+    t("upsellFeature4"),
+    t("upsellFeature5"),
+  ];
+
   return (
     <div className="space-y-8">
       <header>
-        <span className="eyebrow text-signal-700">Sessions en direct</span>
+        <span className="eyebrow text-signal-700">{t("upsellEyebrow")}</span>
         <h1 className="mt-2 font-display text-3xl md:text-4xl font-semibold text-navy-950 tracking-tight">
-          Une fonctionnalité réservée au pack Premium
+          {t("upsellTitle")}
         </h1>
       </header>
 
@@ -144,26 +155,17 @@ function NoPremiumUpsell() {
         <div className="relative max-w-2xl">
           <Badge tone="gold" size="sm">
             <Crown className="h-3 w-3" />
-            Pack Premium
+            {t("upsellPackBadge")}
           </Badge>
           <h2 className="mt-3 font-display text-2xl md:text-3xl font-semibold text-navy-950">
-            Webinaires en direct, classes virtuelles et présentiel
+            {t("upsellHeadline")}
           </h2>
           <p className="mt-3 text-slate-600">
-            Le pack Premium débloque l'accès aux sessions encadrées par nos
-            formateurs : webinaires Zoom / Teams, ateliers en visio et
-            séances présentielles dans nos centres partenaires. Émargement
-            horodaté pour la conformité Qualiopi.
+            {t("upsellBody")}
           </p>
 
           <ul className="mt-6 space-y-3">
-            {[
-              "Webinaires hebdomadaires animés par un formateur expert",
-              "Examens blancs supervisés en conditions réelles",
-              "Ateliers pratiques (étude de cas, jeux de rôle, simulations)",
-              "Émargement horodaté + certificat d'assiduité Qualiopi",
-              "Replays disponibles 7 jours après la session",
-            ].map((f) => (
+            {features.map((f) => (
               <li
                 key={f}
                 className="flex items-start gap-2 text-sm text-navy-900"
@@ -178,11 +180,11 @@ function NoPremiumUpsell() {
             <Link href="/tarifs">
               <Button variant="gold">
                 <Sparkles className="h-4 w-4" />
-                Voir les tarifs Premium
+                {t("ctaSeePricing")}
               </Button>
             </Link>
             <Link href="/accompagnement">
-              <Button variant="secondary">Parler à un conseiller</Button>
+              <Button variant="secondary">{t("ctaTalkToAdvisor")}</Button>
             </Link>
           </div>
         </div>

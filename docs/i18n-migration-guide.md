@@ -273,12 +273,29 @@ npm run dev
 | Catégorie | Statut |
 |---|---|
 | Foundation (next-intl, request, layout, toggle) | ✅ Livré 16 mai |
-| Dictionnaires (~ 100 clés FR + EN) | ✅ Livré 16 mai |
-| Pages auth | 🟡 Login OK, reste signup + forgot |
-| Cookie banner | ⏳ À migrer |
-| Navigation (nav-groups, sidebar) | ⏳ À migrer |
-| Dashboard stagiaire | ⏳ À migrer |
-| Quiz runner | ⏳ À migrer |
-| Admin | ⏳ Plus tard (low priority) |
+| Dictionnaires (~ 400 clés FR + EN, 16 namespaces) | ✅ |
+| Pages auth (login, signup, forgot, reset) | ✅ |
+| Cookie banner | ✅ |
+| Navigation (nav-groups, sidebar, topbar, mobile, admin shell) | ✅ |
+| Dashboard stagiaire | ✅ |
+| Modules / Exercices / Examens blancs / Quiz index | ✅ |
+| Accompagnement / Sessions (Premium upsell) | ✅ |
+| Page Tarifs publique | ✅ |
+| Quiz runner (`app/quiz/[id]/quiz-runner.tsx`) | ⏳ 1458 lignes, logique critique — à migrer dans un commit dédié |
+| Page intro quiz (`app/quiz/[id]/page.tsx`) | ⏳ À migrer |
+| Page résultats quiz (`app/quiz/results/[attemptId]/page.tsx`) | ⏳ À migrer |
+| Home publique `app/page.tsx` | ⏳ 737 lignes marketing — à migrer par sections |
+| Sessions list (`app/sessions/sessions-list.tsx`) | ⏳ 457 lignes client component |
+| Messaging shell + components | ⏳ Composants client riches |
+| Pages /messages /accompagnement détail | 🟡 Pages serveur migrées, sous-composants client en FR |
+| Admin (`app/admin/*`) | ⏳ Plus tard (low priority, interface interne) |
+| Formateur (`app/formateur/*`) | ⏳ Plus tard (low priority) |
 
 La migration peut se faire **page par page** sans bloquer le reste — chaque page non-migrée garde simplement son contenu FR en dur, ce qui reste fonctionnel.
+
+## 🧩 Namespaces disponibles (état des lieux)
+
+`common`, `nav`, `navGroups`, `navShort`, `shell`, `auth`, `signup`,
+`forgotPassword`, `resetPassword`, `cookies`, `dashboard`, `modules`,
+`exercices`, `examensBlancs`, `quiz`, `coaching`, `sessions`, `tarifs`,
+`footer`, `offline`, `theme`, `language`, `a11y`.

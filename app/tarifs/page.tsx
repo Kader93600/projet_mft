@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { SiteShell } from "@/components/site/site-shell";
 import { listActivePackPrices } from "@/lib/pricing-server";
 import { TESTIMONIALS } from "@/lib/testimonials-config";
@@ -27,6 +28,7 @@ interface PageProps {
 }
 
 export default async function TarifsPage({ searchParams }: PageProps) {
+  const t = await getTranslations("tarifs");
   const prices = await listActivePackPrices();
   const defaultFormationSlug = searchParams?.formation;
 
@@ -58,7 +60,7 @@ export default async function TarifsPage({ searchParams }: PageProps) {
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.06] border border-white/10 mb-7">
               <Sparkles className="h-3.5 w-3.5 text-signal-400" />
               <span className="text-[12px] font-semibold tracking-wide text-white/85">
-                Qualiopi · {LEGAL.rncpCode} · CPF/OPCO/France Travail
+                {t("qualiopiBadge", { rncp: LEGAL.rncpCode })}
               </span>
             </div>
 
@@ -66,19 +68,17 @@ export default async function TarifsPage({ searchParams }: PageProps) {
               className="font-display text-5xl md:text-6xl lg:text-7xl font-semibold text-white tracking-tight leading-[1.02]"
               style={{ letterSpacing: "-0.03em" }}
             >
-              Investissez dans votre métier,
+              {t("heroTitle1")}
               <br />
               <span className="italic font-normal text-signal-400">
-                pas dans une formation jetable.
+                {t("heroTitle2")}
               </span>
             </h1>
 
             <p className="mt-7 text-lg md:text-xl text-white/70 leading-relaxed max-w-2xl">
-              Trois packs pensés pour s'adapter à votre situation, votre
-              rythme et votre budget.{" "}
-              <strong className="text-white">Aucun engagement</strong>,
-              aucun abonnement caché. Vous achetez une fois, vous accédez
-              18 mois.
+              {t("heroSubtitle")}{" "}
+              <strong className="text-white">{t("heroSubtitleStrong")}</strong>
+              {t("heroSubtitleAfter")}
             </p>
 
             <div className="mt-10 flex flex-wrap items-center gap-3">
@@ -86,14 +86,14 @@ export default async function TarifsPage({ searchParams }: PageProps) {
                 href="#pricing-heading"
                 className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold bg-signal-500 text-night-900 hover:bg-signal-400 transition-colors"
               >
-                Voir les packs
+                {t("ctaSeePacks")}
                 <ArrowRight className="h-4 w-4" />
               </a>
               <Link
                 href="/financements"
                 className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold bg-white/[0.06] text-white border border-white/10 hover:bg-white/[0.10] hover:border-white/20 transition-colors"
               >
-                Comprendre les financements
+                {t("ctaFinancing")}
               </Link>
             </div>
           </div>
@@ -110,13 +110,13 @@ export default async function TarifsPage({ searchParams }: PageProps) {
       <section className="relative px-6 py-20 bg-white/[0.02] border-y border-white/5">
         <div className="max-w-6xl mx-auto">
           <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-signal-400 mb-3">
-            Pourquoi nous choisir
+            {t("whyEyebrow")}
           </div>
           <h2
             className="font-display text-3xl md:text-4xl font-semibold text-white tracking-tight max-w-2xl"
             style={{ letterSpacing: "-0.02em" }}
           >
-            Le sérieux d'un OF certifié, l'agilité d'une plateforme moderne.
+            {t("whyTitle")}
           </h2>
 
           <div className="mt-12 grid lg:grid-cols-3 gap-5 md:gap-6">
@@ -127,19 +127,17 @@ export default async function TarifsPage({ searchParams }: PageProps) {
                   <ShieldCheck className="h-5 w-5" />
                 </div>
                 <div className="text-[10px] uppercase tracking-[0.18em] font-bold text-white/45">
-                  Certification
+                  {t("guarantee1Eyebrow")}
                 </div>
               </div>
               <div className="font-display text-xl text-white font-semibold mb-1">
-                Qualiopi
+                {t("guarantee1Title")}
               </div>
               <div className="text-[13px] text-white/55 font-mono">
                 {LEGAL.qualiopiNumber}
               </div>
               <p className="mt-4 text-[14.5px] text-white/70 leading-relaxed">
-                Toutes nos formations sont éligibles au financement par les
-                organismes publics et privés. Vous ne payez pas (ou peu) de
-                votre poche.
+                {t("guarantee1Body")}
               </p>
             </article>
 
@@ -150,21 +148,20 @@ export default async function TarifsPage({ searchParams }: PageProps) {
                   <Wallet className="h-5 w-5" />
                 </div>
                 <div className="text-[10px] uppercase tracking-[0.18em] font-bold text-white/45">
-                  Financement
+                  {t("guarantee2Eyebrow")}
                 </div>
               </div>
               <div className="font-display text-xl text-white font-semibold mb-3">
-                CPF, OPCO, France Travail
+                {t("guarantee2Title")}
               </div>
               <p className="text-[14.5px] text-white/70 leading-relaxed mb-3">
-                Tous les principaux dispositifs acceptés. Notre équipe vous
-                accompagne dans le montage de dossier.
+                {t("guarantee2Body")}
               </p>
               <Link
                 href="/financements"
                 className="inline-flex items-center gap-1 text-[13px] font-semibold text-signal-400 hover:text-signal-300 transition"
               >
-                Voir tous les financements
+                {t("guarantee2Cta")}
                 <ArrowRight className="h-3 w-3" />
               </Link>
             </article>
@@ -193,19 +190,17 @@ export default async function TarifsPage({ searchParams }: PageProps) {
                   className="text-[10px] uppercase tracking-[0.18em] font-bold"
                   style={{ color: "rgba(252, 211, 77, 0.7)" }}
                 >
-                  Garantie
+                  {t("guarantee3Eyebrow")}
                 </div>
               </div>
               <div
                 className="font-display text-xl font-semibold mb-1"
                 style={{ color: "#FCD34D" }}
               >
-                Réussite ou re-formation offerte
+                {t("guarantee3Title")}
               </div>
               <p className="mt-4 text-[14.5px] text-white/75 leading-relaxed">
-                Si vous échouez à l'examen final malgré une assiduité ≥ 90 %,
-                nous vous offrons une nouvelle session sans frais. Nos
-                stagiaires Premium ont 92 % de réussite en 1ʳᵉ tentative.
+                {t("guarantee3Body")}
               </p>
             </article>
           </div>
@@ -213,7 +208,7 @@ export default async function TarifsPage({ searchParams }: PageProps) {
       </section>
 
       {/* Témoignages */}
-      <TestimonialsSection testimonials={top} />
+      <TestimonialsSection testimonials={top} t={t} />
 
       {/* CTA final */}
       <section className="relative px-6 py-24 md:py-32 text-center overflow-hidden">
@@ -230,26 +225,24 @@ export default async function TarifsPage({ searchParams }: PageProps) {
             className="font-display text-4xl md:text-5xl font-semibold text-white tracking-tight"
             style={{ letterSpacing: "-0.025em", lineHeight: 1.1 }}
           >
-            Prêt·e à passer à l'action ?
+            {t("finalCtaTitle")}
           </h2>
           <p className="mt-5 text-lg text-white/65 leading-relaxed">
-            Quelques clics pour commencer. Une équipe disponible, un parcours
-            balisé, des résultats mesurés. Choisissez votre formation et
-            votre pack — on s'occupe du reste.
+            {t("finalCtaBody")}
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/formations"
               className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold bg-signal-500 text-night-900 hover:bg-signal-400 transition-colors"
             >
-              Choisir ma formation
+              {t("finalCtaChoose")}
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               href="/contact"
               className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold bg-white/[0.06] text-white border border-white/10 hover:bg-white/[0.10] hover:border-white/20 transition-colors"
             >
-              Parler à un conseiller
+              {t("finalCtaAdvisor")}
             </Link>
           </div>
         </div>
@@ -261,25 +254,29 @@ export default async function TarifsPage({ searchParams }: PageProps) {
 // =====================================================================
 // Section Témoignages
 // =====================================================================
+type TarifsT = Awaited<ReturnType<typeof getTranslations<"tarifs">>>;
+
 function TestimonialsSection({
   testimonials,
+  t,
 }: {
   testimonials: typeof TESTIMONIALS;
+  t: TarifsT;
 }) {
   if (testimonials.length === 0) return null;
   return (
     <section className="relative px-6 py-20 md:py-28">
       <div className="max-w-6xl mx-auto">
         <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-signal-400 mb-3">
-          Témoignages
+          {t("testimonialsEyebrow")}
         </div>
         <h2
           className="font-display text-3xl md:text-4xl font-semibold text-white tracking-tight max-w-2xl"
           style={{ letterSpacing: "-0.02em" }}
         >
-          Ils ont passé leur titre.{" "}
+          {t("testimonialsTitle1")}{" "}
           <span className="italic font-normal text-white/55">
-            Voilà ce qu'ils en disent.
+            {t("testimonialsTitle2")}
           </span>
         </h2>
 
@@ -347,7 +344,7 @@ function TestimonialsSection({
             href="/temoignages"
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-white/70 hover:text-white transition group"
           >
-            Voir tous les témoignages
+            {t("seeAllTestimonials")}
             <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition" />
           </Link>
         </div>

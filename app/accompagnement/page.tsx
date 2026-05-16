@@ -1,3 +1,4 @@
+import { getTranslations, getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +17,9 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function AccompagnementPage() {
+  const t = await getTranslations("coaching");
+  const locale = await getLocale();
+  const dateLocale = locale === "en" ? "en-GB" : "fr-FR";
   const supabase = createClient();
   const {
     data: { user },
@@ -65,13 +69,12 @@ export default async function AccompagnementPage() {
   return (
     <div className="space-y-10">
       <header>
-        <span className="eyebrow text-gold-700">Votre référent</span>
+        <span className="eyebrow text-gold-700">{t("eyebrow")}</span>
         <h1 className="mt-2 font-display text-3xl md:text-4xl font-semibold text-navy-950 tracking-tight">
-          Accompagnement pédagogique
+          {t("title")}
         </h1>
         <p className="mt-2 text-slate-600 max-w-2xl">
-          Votre référent formateur vous suit tout au long du parcours. Retrouvez
-          ici ses rendez-vous, ses messages et ses recommandations.
+          {t("description")}
         </p>
       </header>
 
@@ -85,7 +88,7 @@ export default async function AccompagnementPage() {
               </div>
               <div className="flex-1">
                 <div className="text-xs uppercase tracking-wider text-gold-700">
-                  Votre référent formateur
+                  {t("yourTrainer")}
                 </div>
                 <div className="font-display text-xl font-semibold text-navy-900 mt-0.5">
                   {referent.full_name || referent.email}
@@ -104,8 +107,7 @@ export default async function AccompagnementPage() {
             <CardBody className="py-8 text-center space-y-2">
               <UserCheck className="h-8 w-8 text-slate-400 mx-auto" />
               <p className="text-sm text-slate-600 max-w-md mx-auto">
-                Aucun référent ne vous est encore attribué. L'équipe
-                pédagogique vous affectera prochainement un formateur.
+                {t("noTrainerYet")}
               </p>
             </CardBody>
           </Card>
@@ -117,19 +119,19 @@ export default async function AccompagnementPage() {
         <div className="flex items-center gap-2 mb-4">
           <CalendarDays className="h-4 w-4 text-navy-700" />
           <h2 className="font-display text-xl font-semibold text-navy-900">
-            Prochains rendez-vous
+            {t("upcomingSessions")}
           </h2>
         </div>
         {upcoming.length === 0 ? (
           <Card>
             <CardBody className="py-8 text-center text-sm text-slate-500">
-              Aucun rendez-vous programmé pour l'instant.
+              {t("noUpcoming")}
             </CardBody>
           </Card>
         ) : (
           <div className="grid md:grid-cols-2 gap-3">
             {upcoming.map((s: any) => (
-              <SessionCard key={s.id} session={s} upcoming />
+              <SessionCard key={s.id} session={s} upcoming t={t} dateLocale={dateLocale} />
             ))}
           </div>
         )}
@@ -141,35 +143,40 @@ export default async function AccompagnementPage() {
           <div className="flex items-center gap-2 mb-4">
             <MessageCircle className="h-4 w-4 text-gold-600" />
             <h2 className="font-display text-xl font-semibold text-navy-900">
-              Retours de votre référent
+              {t("trainerFeedback")}
             </h2>
           </div>
           <div className="space-y-3">
-            {notes.map((n: any) => (
-              <Card
-                key={n.id}
-                variant={n.pinned ? "gold" : "default"}
-              >
-                <CardBody>
-                  {n.pinned && (
-                    <div className="flex items-center gap-1 text-[11px] uppercase tracking-wider text-gold-700 mb-2">
-                      <Pin className="h-3 w-3" /> Épinglé
+            {notes.map((n: any) => {
+              const dateStr = new Date(n.created_at).toLocaleDateString(
+                dateLocale,
+                {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                }
+              );
+              return (
+                <Card
+                  key={n.id}
+                  variant={n.pinned ? "gold" : "default"}
+                >
+                  <CardBody>
+                    {n.pinned && (
+                      <div className="flex items-center gap-1 text-[11px] uppercase tracking-wider text-gold-700 mb-2">
+                        <Pin className="h-3 w-3" /> {t("pinned")}
+                      </div>
+                    )}
+                    <div className="whitespace-pre-wrap text-navy-900 text-sm">
+                      {n.body_md}
                     </div>
-                  )}
-                  <div className="whitespace-pre-wrap text-navy-900 text-sm">
-                    {n.body_md}
-                  </div>
-                  <div className="mt-2 text-[11px] text-slate-500">
-                    Le{" "}
-                    {new Date(n.created_at).toLocaleDateString("fr-FR", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </div>
-                </CardBody>
-              </Card>
-            ))}
+                    <div className="mt-2 text-[11px] text-slate-500">
+                      {t("dateOn", { date: dateStr })}
+                    </div>
+                  </CardBody>
+                </Card>
+              );
+            })}
           </div>
         </section>
       )}
@@ -178,11 +185,11 @@ export default async function AccompagnementPage() {
       {past.length > 0 && (
         <section>
           <h2 className="font-display text-xl font-semibold text-navy-900 mb-4">
-            Historique des sessions
+            {t("history")}
           </h2>
           <div className="grid md:grid-cols-2 gap-3">
             {past.map((s: any) => (
-              <SessionCard key={s.id} session={s} />
+              <SessionCard key={s.id} session={s} t={t} dateLocale={dateLocale} />
             ))}
           </div>
         </section>
@@ -191,12 +198,18 @@ export default async function AccompagnementPage() {
   );
 }
 
+type CoachingT = Awaited<ReturnType<typeof getTranslations<"coaching">>>;
+
 function SessionCard({
   session,
   upcoming,
+  t,
+  dateLocale,
 }: {
   session: any;
   upcoming?: boolean;
+  t: CoachingT;
+  dateLocale: string;
 }) {
   const statusTone = {
     prevue: "navy",
@@ -209,32 +222,58 @@ function SessionCard({
     session.mode === "visio" ? Video : session.mode === "tel" ? Phone : MapPin;
   const ModeIcon = modeIcon;
 
+  function statusLabel(status: string, t: CoachingT): string {
+    switch (status) {
+      case "prevue":
+        return t("statusPrevue");
+      case "tenue":
+        return t("statusTenue");
+      case "annulee":
+        return t("statusAnnulee");
+      case "no_show":
+        return t("statusNoShow");
+      default:
+        return status;
+    }
+  }
+
+  function modeLabel(mode: string, t: CoachingT): string {
+    switch (mode) {
+      case "visio":
+        return t("modeVisio");
+      case "tel":
+        return t("modeTel");
+      default:
+        return t("modePresentiel");
+    }
+  }
+
   return (
     <Card variant={upcoming ? "gold" : "default"}>
       <CardBody className="space-y-2">
         <div className="flex items-center justify-between gap-2">
           <div className="text-xs text-slate-500 uppercase tracking-wider">
-            {new Date(session.scheduled_at).toLocaleDateString("fr-FR", {
+            {new Date(session.scheduled_at).toLocaleDateString(dateLocale, {
               weekday: "short",
               day: "2-digit",
               month: "short",
               year: "numeric",
             })}{" "}
             ·{" "}
-            {new Date(session.scheduled_at).toLocaleTimeString("fr-FR", {
+            {new Date(session.scheduled_at).toLocaleTimeString(dateLocale, {
               hour: "2-digit",
               minute: "2-digit",
             })}
           </div>
           <Badge tone={statusTone} size="sm">
-            {session.status}
+            {statusLabel(session.status, t)}
           </Badge>
         </div>
         <div className="flex items-center gap-2 text-sm text-navy-900">
           <ModeIcon className="h-4 w-4 text-gold-700" />
-          <span className="capitalize">{session.mode}</span>
+          <span>{modeLabel(session.mode, t)}</span>
           <span className="text-slate-400">·</span>
-          <span>{session.duration_min} min</span>
+          <span>{t("minutes", { min: session.duration_min })}</span>
         </div>
         {session.agenda && (
           <div className="text-sm text-slate-700">{session.agenda}</div>
@@ -246,13 +285,13 @@ function SessionCard({
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-sm font-medium text-navy-900 hover:text-gold-700"
           >
-            <Video className="h-4 w-4" /> Rejoindre la visio
+            <Video className="h-4 w-4" /> {t("joinVideo")}
           </a>
         )}
         {session.summary && !upcoming && (
           <details className="text-sm">
             <summary className="cursor-pointer text-xs font-medium text-navy-700 hover:text-gold-700">
-              Compte-rendu
+              {t("summary")}
             </summary>
             <div className="mt-2 whitespace-pre-wrap text-slate-700">
               {session.summary}
