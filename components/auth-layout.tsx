@@ -3,6 +3,7 @@ import { AppShell } from "@/components/app-shell";
 import { createClient } from "@/lib/supabase/server";
 import { SessionTracker } from "@/components/session-tracker";
 import { isStaff } from "@/lib/permissions";
+import { PostHogProvider } from "@/components/posthog-provider";
 
 export async function AuthLayout({
   children,
@@ -25,9 +26,19 @@ export async function AuthLayout({
   // requireAdmin autorise admin ET super_admin (cohérent avec requireAdmin() côté actions).
   if (requireAdmin && !isStaff(profile.role)) redirect("/dashboard");
   return (
-    <AppShell profile={profile}>
-      <SessionTracker />
-      {children}
-    </AppShell>
+    <PostHogProvider
+      profile={{
+        id: profile.id,
+        email: profile.email,
+        role: profile.role,
+        full_name: profile.full_name,
+        active_formation_slug: profile.current_formation_slug ?? null,
+      }}
+    >
+      <AppShell profile={profile}>
+        <SessionTracker />
+        {children}
+      </AppShell>
+    </PostHogProvider>
   );
 }

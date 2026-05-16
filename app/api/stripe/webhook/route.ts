@@ -4,6 +4,7 @@ import { verifyStripeSignature } from "@/lib/stripe";
 import { captureException } from "@/lib/observability";
 import { sendEmail, paymentReceivedEmail } from "@/lib/email";
 import { LEGAL } from "@/lib/legal-config";
+import { trackServerEvent } from "@/lib/analytics";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -109,6 +110,27 @@ async function handlePaid(session: any) {
       paid_amount_cents: amountCents,
       status: "en_cours",
       pack: packSlug ?? "initial",
+    });
+
+    // Analytics : payment + enrollment
+    await trackServerEvent({
+      userId,
+      event: "payment_success",
+      props: {
+        formation_slug: formationSlug ?? undefined,
+        pack: (packSlug ?? "initial") as "initial" | "medium" | "premium",
+        amount_cents: amountCents,
+        currency: session.currency ?? "eur",
+      },
+    });
+    await trackServerEvent({
+      userId,
+      event: "enrollment_created",
+      props: {
+        formation_slug: formationSlug ?? undefined,
+        pack: (packSlug ?? "initial") as "initial" | "medium" | "premium",
+        funding_kind: "auto",
+      },
     });
   }
 

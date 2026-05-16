@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
+import { trackServerEvent } from "@/lib/analytics";
 
 // ---------------------------------------------------------------------
 // Helpers
@@ -196,6 +197,17 @@ export async function signAttendance(
       .update({ status: "in_progress" })
       .eq("id", sessionId);
   }
+
+  // 7) Analytics : émargement
+  await trackServerEvent({
+    userId,
+    event: "session_signed",
+    props: {
+      session_id: sessionId,
+      session_kind: session.kind,
+      method,
+    },
+  });
 
   revalidatePath("/sessions");
   revalidatePath(`/sessions/${sessionId}`);

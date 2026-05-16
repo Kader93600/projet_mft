@@ -23,6 +23,8 @@ const cspDirectives = {
     process.env.NODE_ENV === "development" ? "'unsafe-eval'" : "",
     "https://*.sentry.io",
     "https://js.stripe.com",
+    "https://eu.i.posthog.com",
+    "https://eu-assets.i.posthog.com",
   ].filter(Boolean),
   "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
   "img-src": [
@@ -41,6 +43,8 @@ const cspDirectives = {
     "https://*.ingest.sentry.io",
     "https://api.resend.com",
     "https://api.stripe.com",
+    "https://eu.i.posthog.com",
+    "https://eu-assets.i.posthog.com",
   ],
   "frame-src": [
     "'self'",

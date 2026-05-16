@@ -16,6 +16,7 @@ import { cn, scoreColor } from "@/lib/utils";
 import { FormationBadge } from "@/components/formation/formation-badge";
 import { FormationStripe } from "@/components/formation/formation-stripe";
 import { RichTextDisplay } from "@/components/rich-text/rich-text-display";
+import { trackEvent } from "@/lib/analytics";
 
 interface Choice { id: string; label: string; is_correct: boolean; order: number; }
 interface QuestionAnnex {
@@ -312,6 +313,15 @@ export function QuizRunner({
     }
     setStarted(true);
     setStartedAt(new Date());
+    // Analytics : début de tentative
+    trackEvent("quiz_started", {
+      quiz_id: quiz.id,
+      quiz_title: quiz.title,
+      formation_slug: formationSlug ?? undefined,
+      mode: isMock ? "blanc" : quiz.type === "examen" ? "examen" : "entrainement",
+      is_mock_exam: !!quiz.is_mock_exam,
+      total_questions: orderedQuestions.length,
+    });
   }
 
   async function submit() {
@@ -425,6 +435,28 @@ export function QuizRunner({
     // ✅ INSERT réussi — on bascule en état "fini" (le faux écran de
     // succès local ne peut plus apparaître sans tentative en BD).
     setFinished(true);
+
+    // Analytics : fin de tentative (qu'elle soit gradée ou en attente QR).
+    // Si hasQr, le score final viendra après correction formateur — on
+    // capture ici le score QCM partiel et le mode pour mesurer l'engagement.
+    trackEvent(
+      isMock || quiz.type === "examen" ? "exam_finished" : "quiz_finished",
+      {
+        quiz_id: quiz.id,
+        quiz_title: quiz.title,
+        attempt_id: attemptId,
+        formation_slug: formationSlug ?? undefined,
+        mode,
+        is_mock_exam: !!quiz.is_mock_exam,
+        has_qr: hasQr,
+        qcm_score: qcmPercentage ?? undefined,
+        passed: hasQr ? undefined : (qcmPercentage ?? 0) >= quiz.pass_threshold,
+        duration_s: startedAt
+          ? Math.round((finishedAt.getTime() - startedAt.getTime()) / 1000)
+          : undefined,
+        total_questions: orderedQuestions.length,
+      }
+    );
 
     // Soumettre chaque réponse rédigée via la RPC sécurisée
     if (hasQr) {

@@ -12,6 +12,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import Link from "next/link";
+import { AnalyticsOptOutToggle } from "@/components/analytics-opt-out-toggle";
 import {
   requestDeletion,
   cancelDeletion,
@@ -85,6 +86,8 @@ export default async function MesDonneesPage() {
           portabilité de vos données.
         </p>
       </header>
+
+      <AnalyticsOptOutToggle />
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Export */}
