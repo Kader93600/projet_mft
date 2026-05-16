@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody } from "@/components/ui/card";
@@ -89,6 +90,9 @@ export function QuizRunner({
   formationSlug?: string | null;
   formationId?: string | null;
 }) {
+  const t = useTranslations("quizRunner");
+  const locale = useLocale();
+  const dateLocale = locale === "en" ? "en-GB" : "fr-FR";
   const router = useRouter();
   const [started, setStarted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -410,23 +414,21 @@ export function QuizRunner({
       });
 
       const code = (insertErr as any)?.code as string | undefined;
-      const msg = insertErr?.message ?? "Erreur inconnue";
-      let friendly = `Impossible d'enregistrer votre tentative : ${msg}`;
+      const msg = insertErr?.message ?? t("unknownError");
+      let friendly = t("unableToSave", { msg });
       // Mappings courants pour parler humain
       if (code === "42703") {
         // colonne inexistante
-        friendly =
-          "La base de données n'est pas à jour (migration manquante). Contactez votre administrateur.";
+        friendly = t("errDbOutdated");
       } else if (code === "42501" || /row.level security|policy/i.test(msg)) {
-        friendly =
-          "Vos droits ne permettent pas d'enregistrer cette tentative. Vérifiez que votre formation est bien active dans votre profil.";
+        friendly = t("errRls");
       } else if (code === "23502") {
         // not null violation
-        friendly = `Champ obligatoire manquant : ${
-          (insertErr as any)?.details ?? msg
-        }`;
+        friendly = t("errMissingField", {
+          details: (insertErr as any)?.details ?? msg,
+        });
       } else if (code === "23505") {
-        friendly = "Cette tentative a déjà été enregistrée.";
+        friendly = t("errDuplicate");
       }
       setSubmitError(friendly);
       return;
@@ -510,12 +512,12 @@ export function QuizRunner({
               )}
               {isMock ? (
                 <Badge tone="gold" size="md">
-                  <ShieldAlert className="h-3 w-3" /> Examen blanc officiel
+                  <ShieldAlert className="h-3 w-3" /> {t("mockExamBadge")}
                 </Badge>
               ) : quiz.type === "examen" ? (
-                <Badge tone="gold" size="sm">Mode examen</Badge>
+                <Badge tone="gold" size="sm">{t("examMode")}</Badge>
               ) : (
-                <Badge tone="navy" size="sm">Entraînement</Badge>
+                <Badge tone="navy" size="sm">{t("training")}</Badge>
               )}
             </div>
             <h1 className="font-display text-3xl font-semibold text-navy-950 tracking-tight">
@@ -526,51 +528,41 @@ export function QuizRunner({
             )}
 
             <div className="mt-6 grid grid-cols-3 gap-3 max-w-md mx-auto">
-              <Stat label="Questions" value={String(orderedQuestions.length)} />
+              <Stat label={t("questions")} value={String(orderedQuestions.length)} />
               {quiz.time_limit_s && (
-                <Stat label="Durée" value={`${Math.round(quiz.time_limit_s / 60)} min`} />
+                <Stat
+                  label={t("duration")}
+                  value={t("minutes", { min: Math.round(quiz.time_limit_s / 60) })}
+                />
               )}
-              <Stat label="Seuil" value={`${quiz.pass_threshold}%`} />
+              <Stat label={t("threshold")} value={`${quiz.pass_threshold}%`} />
             </div>
 
             {isExamMode ? (
               <div className="mx-auto max-w-md text-left rounded-xl bg-amber-50 border border-amber-200 p-4 text-sm text-navy-900 space-y-2">
                 <div className="font-semibold flex items-center gap-2">
                   <ShieldAlert className="h-4 w-4 text-amber-700" />
-                  Mode examen — conditions officielles
+                  {t("examModeTitle")}
                 </div>
                 <ul className="text-xs text-slate-700 space-y-1 list-disc list-inside">
-                  <li>
-                    <strong>Plein écran obligatoire</strong> pendant toute la
-                    durée
-                  </li>
-                  <li>Correction non visible avant la fin du test</li>
-                  <li>Sortie d'onglet / fenêtre détectée et consignée</li>
-                  <li>Copier-coller bloqué</li>
+                  <li>{t("examFullscreen")}</li>
+                  <li>{t("examNoCorrection")}</li>
+                  <li>{t("examFocusLossLogged")}</li>
+                  <li>{t("examCopyBlocked")}</li>
                   {quiz.time_limit_s && (
                     <li>
-                      <strong>
-                        Chronomètre :{" "}
-                        {Math.round(quiz.time_limit_s / 60)} min
-                      </strong>{" "}
-                      — soumission automatique à la fin
+                      {t("examTimerWithMinutes", {
+                        min: Math.round(quiz.time_limit_s / 60),
+                      })}
                     </li>
                   )}
-                  {quiz.shuffle_questions && (
-                    <li>Questions tirées aléatoirement</li>
-                  )}
-                  {quiz.shuffle_choices && <li>Réponses mélangées</li>}
+                  {quiz.shuffle_questions && <li>{t("examShuffleQuestions")}</li>}
+                  {quiz.shuffle_choices && <li>{t("examShuffleChoices")}</li>}
                   {quiz.retake_delay_hours ? (
-                    <li>
-                      Délai de {quiz.retake_delay_hours} h entre deux
-                      tentatives
-                    </li>
+                    <li>{t("examRetakeDelay", { hours: quiz.retake_delay_hours })}</li>
                   ) : null}
                   {quiz.max_attempts ? (
-                    <li>
-                      {quiz.max_attempts} tentative
-                      {quiz.max_attempts > 1 ? "s" : ""} maximum
-                    </li>
+                    <li>{t("examMaxAttempts", { count: quiz.max_attempts })}</li>
                   ) : null}
                 </ul>
               </div>
@@ -578,13 +570,13 @@ export function QuizRunner({
               <div className="mx-auto max-w-md text-left rounded-xl bg-signal-50 border border-signal-200 p-4 text-sm text-navy-900 space-y-2">
                 <div className="font-semibold flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-signal-700" />
-                  Mode entraînement libre
+                  {t("trainingModeTitle")}
                 </div>
                 <ul className="text-xs text-slate-700 space-y-1 list-disc list-inside">
-                  <li>Correction et explications visibles après chaque envoi</li>
-                  <li>Pas de fullscreen forcé, vous pouvez consulter le cours en parallèle</li>
-                  <li>Retentez autant de fois que nécessaire</li>
-                  <li>Aucune note officielle, juste de la pratique</li>
+                  <li>{t("trainingCorrectionVisible")}</li>
+                  <li>{t("trainingNoFullscreen")}</li>
+                  <li>{t("trainingUnlimited")}</li>
+                  <li>{t("trainingNoGrade")}</li>
                 </ul>
               </div>
             )}
@@ -595,12 +587,11 @@ export function QuizRunner({
                 <div className="flex items-center gap-2 text-signal-900">
                   <CheckCircle2 className="h-4 w-4 text-signal-700" />
                   <strong className="text-[13.5px]">
-                    Tentative en cours détectée
+                    {t("resumeDetectedTitle")}
                   </strong>
                 </div>
                 <p className="text-[12.5px] text-slate-700">
-                  Vous avez quitté le quiz avant la fin. Souhaitez-vous
-                  reprendre où vous en étiez ?
+                  {t("resumeDetectedBody")}
                 </p>
                 <div className="flex items-center gap-2 flex-wrap">
                   <Button
@@ -609,14 +600,14 @@ export function QuizRunner({
                     className="bg-signal-500 hover:bg-signal-400 text-night-900"
                   >
                     <ArrowRight className="h-3.5 w-3.5" />
-                    Reprendre
+                    {t("resumeCta")}
                   </Button>
                   <button
                     type="button"
                     onClick={discardSave}
                     className="text-[12px] text-slate-600 hover:text-rose-700 underline"
                   >
-                    Recommencer à zéro
+                    {t("restartFromScratch")}
                   </button>
                 </div>
               </div>
@@ -625,13 +616,13 @@ export function QuizRunner({
             {attemptState && (
               <div className="text-xs text-slate-600">
                 {attemptState.attempts_used > 0 && (
-                  <>Déjà {attemptState.attempts_used} tentative{attemptState.attempts_used > 1 ? "s" : ""}</>
+                  <>{t("attemptsUsed", { count: attemptState.attempts_used })}</>
                 )}
                 {attemptsLeft !== null && (
                   <>
                     {" · "}
                     <span className="font-semibold">
-                      {attemptsLeft} restante{attemptsLeft > 1 ? "s" : ""}
+                      {t("attemptsLeft", { count: attemptsLeft })}
                     </span>
                   </>
                 )}
@@ -641,13 +632,13 @@ export function QuizRunner({
             {blocked ? (
               <div className="rounded-xl bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-800 text-left">
                 {attemptState?.reason === "max_attempts" && (
-                  <>Vous avez atteint le nombre maximum de tentatives.</>
+                  <>{t("blockedMaxAttempts")}</>
                 )}
                 {attemptState?.reason === "retake_delay" && attemptState.next_available_at && (
                   <>
-                    Prochaine tentative disponible le{" "}
+                    {t("blockedRetakeDelayPrefix")}{" "}
                     <span className="font-semibold">
-                      {new Date(attemptState.next_available_at).toLocaleString("fr-FR", {
+                      {new Date(attemptState.next_available_at).toLocaleString(dateLocale, {
                         day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
                       })}
                     </span>
@@ -661,7 +652,7 @@ export function QuizRunner({
                   {isMock && quiz.require_fullscreen && (
                     <Maximize className="h-4 w-4" />
                   )}
-                  Démarrer
+                  {t("start")}
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </Button>
               </div>
@@ -695,24 +686,24 @@ export function QuizRunner({
               />
             </div>
             <div className="mt-5 font-display text-2xl font-semibold text-navy-900">
-              {result.passed ? "Félicitations !" : "Continuez la préparation"}
+              {result.passed ? t("resultPassed") : t("resultKeepGoing")}
             </div>
             <p className="text-slate-600 mt-1">
-              {result.score} / {result.total} bonnes réponses
+              {t("resultScore", { score: result.score, total: result.total })}
             </p>
             <div className="mt-4 flex justify-center gap-2 flex-wrap">
               {result.passed ? (
                 <Badge tone="success" size="md">
-                  <Check className="h-3 w-3" /> Seuil atteint
+                  <Check className="h-3 w-3" /> {t("thresholdReached")}
                 </Badge>
               ) : (
                 <Badge tone="slate" size="md">
-                  <Target className="h-3 w-3" /> Seuil : {quiz.pass_threshold}%
+                  <Target className="h-3 w-3" /> {t("thresholdPct", { pct: quiz.pass_threshold })}
                 </Badge>
               )}
               {isMock && focusLoss > 0 && (
                 <Badge tone="slate" size="md">
-                  <AlertTriangle className="h-3 w-3" /> {focusLoss} sortie{focusLoss > 1 ? "s" : ""} d'onglet
+                  <AlertTriangle className="h-3 w-3" /> {t("focusLossCount", { count: focusLoss })}
                 </Badge>
               )}
             </div>
@@ -722,7 +713,7 @@ export function QuizRunner({
         {canShow ? (
           <div className="space-y-3">
             <h2 className="font-display text-xl font-semibold text-navy-900">
-              Correction détaillée
+              {t("detailedCorrection")}
             </h2>
             {orderedQuestions.map((q, i) => {
               const sel = answers[q.id];
@@ -743,18 +734,18 @@ export function QuizRunner({
                       </div>
                       <div className="flex-1">
                         <div className="font-medium text-navy-900">
-                          Q{i + 1}. {q.statement}
+                          {t("questionPrefix", { n: i + 1 })} {q.statement}
                         </div>
                         <div className="text-sm mt-3 space-y-1.5">
                           <div className="text-slate-700">
-                            Votre réponse :{" "}
+                            {t("yourAnswerLabel")}{" "}
                             <span className={isOk ? "text-emerald-700 font-medium" : "text-rose-700 font-medium"}>
                               {selectedChoice?.label || "—"}
                             </span>
                           </div>
                           {!isOk && (
                             <div className="text-slate-700">
-                              Bonne réponse :{" "}
+                              {t("goodAnswerLabel")}{" "}
                               <span className="text-emerald-700 font-medium">
                                 {correct?.label}
                               </span>
@@ -778,18 +769,18 @@ export function QuizRunner({
           <Card>
             <CardBody className="py-8 text-center text-sm text-slate-600">
               {mode === "never"
-                ? "La correction détaillée n'est pas consultable pour cet examen."
-                : "Atteignez le seuil de réussite pour débloquer la correction détaillée."}
+                ? t("correctionUnavailable")
+                : t("correctionLockedUntilPass")}
             </CardBody>
           </Card>
         )}
 
         <div className="flex gap-3 justify-center pt-4">
           <Link href="/quiz">
-            <Button variant="secondary">Retour aux quiz</Button>
+            <Button variant="secondary">{t("backToQuiz")}</Button>
           </Link>
           <Link href="/stats">
-            <Button>Voir mes résultats</Button>
+            <Button>{t("viewMyResults")}</Button>
           </Link>
         </div>
       </div>
@@ -820,7 +811,7 @@ export function QuizRunner({
             <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
               <div className="text-sm font-semibold text-rose-900">
-                Soumission échouée — votre quiz n'est PAS enregistré
+                {t("submitFailedBigTitle")}
               </div>
               <div className="mt-1 text-sm text-rose-800 leading-relaxed">
                 {submitError}
@@ -831,14 +822,14 @@ export function QuizRunner({
                   onClick={submit}
                   className="inline-flex items-center gap-1 h-8 px-3 rounded-lg bg-rose-600 text-white text-xs font-semibold hover:bg-rose-700 transition"
                 >
-                  Réessayer la soumission
+                  {t("retrySubmit")}
                 </button>
                 <button
                   type="button"
                   onClick={() => setSubmitError(null)}
                   className="text-rose-700 hover:text-rose-900 text-xs font-medium px-2 h-8 rounded hover:bg-rose-100 transition"
                 >
-                  Masquer
+                  {t("hide")}
                 </button>
               </div>
             </div>
@@ -848,20 +839,21 @@ export function QuizRunner({
           <CardBody className="space-y-4">
             <div className="text-center">
               <Badge tone="gold" size="md" className="mx-auto">
-                <Grid3X3 className="h-3 w-3" /> Relecture avant validation
+                <Grid3X3 className="h-3 w-3" /> {t("reviewBadge")}
               </Badge>
               <h2 className="font-display text-2xl font-semibold text-navy-900 mt-3">
-                Vérifiez vos réponses
+                {t("reviewTitle")}
               </h2>
               <p className="text-sm text-slate-600 mt-1">
-                {answers && Object.keys(answers).length} / {orderedQuestions.length}{" "}
-                question{orderedQuestions.length > 1 ? "s" : ""} répondue
-                {Object.keys(answers).length > 1 ? "s" : ""}
+                {t("reviewAnsweredCount", {
+                  answered: Object.keys(answers).length,
+                  total: orderedQuestions.length,
+                })}
                 {unanswered.length > 0 && (
                   <>
                     {" · "}
                     <span className="text-rose-700 font-semibold">
-                      {unanswered.length} sans réponse
+                      {t("reviewUnanswered", { count: unanswered.length })}
                     </span>
                   </>
                 )}
@@ -869,8 +861,7 @@ export function QuizRunner({
                   <>
                     {" · "}
                     <span className="text-gold-700 font-semibold">
-                      {flaggedList.length} marquée
-                      {flaggedList.length > 1 ? "s" : ""} à revoir
+                      {t("reviewFlagged", { count: flaggedList.length })}
                     </span>
                   </>
                 )}
@@ -907,15 +898,14 @@ export function QuizRunner({
 
             <div className="flex flex-wrap gap-3 justify-center pt-2 text-xs text-slate-600">
               <span className="flex items-center gap-1">
-                <span className="h-3 w-3 rounded bg-navy-900" /> Répondu
+                <span className="h-3 w-3 rounded bg-navy-900" /> {t("legendAnswered")}
               </span>
               <span className="flex items-center gap-1">
                 <span className="h-3 w-3 rounded border border-rose-300 bg-white" />{" "}
-                Sans réponse
+                {t("legendUnanswered")}
               </span>
               <span className="flex items-center gap-1">
-                <span className="h-2.5 w-2.5 rounded-full bg-gold-500" /> Marqué à
-                revoir
+                <span className="h-2.5 w-2.5 rounded-full bg-gold-500" /> {t("legendFlagged")}
               </span>
             </div>
 
@@ -924,10 +914,10 @@ export function QuizRunner({
                 variant="secondary"
                 onClick={() => setShowReview(false)}
               >
-                <ArrowLeft className="h-4 w-4" /> Continuer
+                <ArrowLeft className="h-4 w-4" /> {t("continueQuiz")}
               </Button>
               <Button variant="gold" onClick={submit}>
-                <CheckCircle2 className="h-4 w-4" /> Valider définitivement
+                <CheckCircle2 className="h-4 w-4" /> {t("validateFinal")}
               </Button>
             </div>
           </CardBody>
@@ -970,7 +960,7 @@ export function QuizRunner({
           <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
             <div className="text-sm font-semibold text-rose-900">
-              Soumission échouée
+              {t("submitFailedShort")}
             </div>
             <div className="mt-1 text-sm text-rose-800 leading-relaxed">
               {submitError}
@@ -980,7 +970,7 @@ export function QuizRunner({
             type="button"
             onClick={() => setSubmitError(null)}
             className="text-rose-700 hover:text-rose-900 text-xs font-medium px-2 py-1 rounded hover:bg-rose-100 transition"
-            aria-label="Fermer"
+            aria-label={t("close")}
           >
             ✕
           </button>
@@ -996,14 +986,13 @@ export function QuizRunner({
                 <AlertTriangle className="h-6 w-6" />
               </div>
               <div className="font-display text-xl font-semibold text-navy-900">
-                Plein écran requis
+                {t("fullscreenRequired")}
               </div>
               <p className="text-sm text-slate-600">
-                Cet examen blanc doit être passé en plein écran. La sortie a été
-                consignée.
+                {t("fullscreenRequiredBody")}
               </p>
               <Button onClick={reEnterFullscreen} className="mx-auto">
-                <Maximize className="h-4 w-4" /> Reprendre l'examen
+                <Maximize className="h-4 w-4" /> {t("resumeExam")}
               </Button>
             </CardBody>
           </Card>
@@ -1021,17 +1010,17 @@ export function QuizRunner({
           <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
           <div className="flex-1">
             <div className="font-semibold">
-              Sortie de l'examen détectée ({focusLoss})
+              {t("focusLossDetected", { count: focusLoss })}
             </div>
             <div className="text-xs">
-              Les pertes de focus sont consignées dans votre copie.
+              {t("focusLossLogged")}
             </div>
           </div>
           <button
             onClick={() => setShowFocusWarning(false)}
             className="text-rose-700 hover:text-rose-900 text-xs font-semibold"
           >
-            OK
+            {t("ok")}
           </button>
         </div>
       )}
@@ -1042,7 +1031,7 @@ export function QuizRunner({
             type="button"
             onClick={() => setShowPalette((v) => !v)}
             className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium text-slate-600 hover:bg-navy-50 border border-navy-100"
-            aria-label="Palette des questions"
+            aria-label={t("paletteAria")}
           >
             <Grid3X3 className="h-3.5 w-3.5" />
             <span>{current + 1} / {orderedQuestions.length}</span>
@@ -1059,13 +1048,13 @@ export function QuizRunner({
             aria-pressed={isFlagged}
           >
             <Flag className="h-3.5 w-3.5" />
-            {isFlagged ? "Marquée" : "À revoir"}
+            {isFlagged ? t("flagged") : t("toFlag")}
           </button>
         </div>
         <div className="flex items-center gap-2">
           {isMock && (
             <Badge tone="gold" size="sm">
-              <ShieldAlert className="h-3 w-3" /> Examen blanc
+              <ShieldAlert className="h-3 w-3" /> {t("mockExamShort")}
             </Badge>
           )}
           {quiz.time_limit_s && (
@@ -1090,7 +1079,7 @@ export function QuizRunner({
         <Card>
           <CardBody className="space-y-3">
             <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Toutes les questions
+              {t("allQuestions")}
             </div>
             <div className="grid grid-cols-8 sm:grid-cols-10 gap-1.5">
               {orderedQuestions.map((qq, idx) => {
@@ -1132,16 +1121,16 @@ export function QuizRunner({
           <div className="flex items-center gap-2 mb-1">
             {q.type === "qr" ? (
               <Badge tone="gold" size="sm">
-                Question rédigée
+                {t("qrBadge")}
               </Badge>
             ) : (
               <Badge tone="navy" size="sm">
-                QCM
+                {t("qcmBadge")}
               </Badge>
             )}
             {q.type === "qr" && q.max_score && (
               <span className="text-xs text-slate-500">
-                Barème : {q.max_score} pt{q.max_score > 1 ? "s" : ""}
+                {t("qrScale", { count: q.max_score })}
               </span>
             )}
           </div>
@@ -1162,16 +1151,16 @@ export function QuizRunner({
                 onChange={(e) =>
                   setQrAnswers({ ...qrAnswers, [q.id]: e.target.value })
                 }
-                placeholder="Rédigez votre réponse ici…"
+                placeholder={t("qrPlaceholder")}
                 rows={10}
                 className="w-full rounded-xl border border-navy-200 bg-white p-4 text-[15px] text-navy-900 placeholder:text-slate-400 focus:border-navy-500 focus:outline-none focus:ring-2 focus:ring-navy-500/20 resize-y min-h-[180px]"
               />
               <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
                 <span>
-                  {(qrAnswers[q.id] ?? "").length} caractères
+                  {t("charsCount", { count: (qrAnswers[q.id] ?? "").length })}
                 </span>
                 <span className="italic">
-                  Cette réponse sera corrigée manuellement par votre formateur.
+                  {t("qrManualGrading")}
                 </span>
               </div>
             </div>
@@ -1218,7 +1207,7 @@ export function QuizRunner({
           onClick={() => setCurrent(Math.max(0, current - 1))}
           disabled={current === 0}
         >
-          <ArrowLeft className="h-4 w-4" /> Précédent
+          <ArrowLeft className="h-4 w-4" /> {t("previous")}
         </Button>
         {current < orderedQuestions.length - 1 ? (
           <Button
@@ -1230,12 +1219,12 @@ export function QuizRunner({
             }
             className="group"
           >
-            Suivant
+            {t("next")}
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Button>
         ) : (
           <Button variant="gold" onClick={() => setShowReview(true)}>
-            <CheckCircle2 className="h-4 w-4" /> Relecture & validation
+            <CheckCircle2 className="h-4 w-4" /> {t("reviewAndValidate")}
           </Button>
         )}
       </div>
@@ -1265,6 +1254,7 @@ function Stat({ label, value }: { label: string; value: string }) {
  * Compatible Chrome / Safari / Firefox (via pdf.js viewer natif).
  */
 function AnnexPanel({ annexes }: { annexes: QuestionAnnex[] }) {
+  const t = useTranslations("quizRunner");
   const [activeIdx, setActiveIdx] = useState(0);
   const [expanded, setExpanded] = useState(false);
   const active = annexes[activeIdx];
@@ -1279,8 +1269,8 @@ function AnnexPanel({ annexes }: { annexes: QuestionAnnex[] }) {
         <Paperclip className="h-3.5 w-3.5 text-amber-700 shrink-0" />
         <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-amber-900">
           {annexes.length === 1
-            ? "Annexe à consulter"
-            : `${annexes.length} annexes à consulter`}
+            ? t("annexToConsult")
+            : t("annexesToConsult", { count: annexes.length })}
         </span>
         {annexes.length > 1 && (
           <div className="ml-1 inline-flex rounded-md border border-amber-300 bg-white p-0.5">
@@ -1297,7 +1287,7 @@ function AnnexPanel({ annexes }: { annexes: QuestionAnnex[] }) {
                 )}
               >
                 {a.label.length > 24
-                  ? `p.${a.pageNumber}`
+                  ? t("shortPage", { n: a.pageNumber })
                   : a.label}
               </button>
             ))}
@@ -1308,26 +1298,26 @@ function AnnexPanel({ annexes }: { annexes: QuestionAnnex[] }) {
             type="button"
             onClick={() => setExpanded(!expanded)}
             className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold text-amber-900 hover:bg-amber-100"
-            title={expanded ? "Réduire" : "Agrandir"}
+            title={expanded ? t("reduce") : t("expand")}
           >
             <Maximize className="h-3 w-3" />
-            {expanded ? "Réduire" : "Agrandir"}
+            {expanded ? t("reduce") : t("expand")}
           </button>
           <a
             href={active.signedUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold text-amber-900 hover:bg-amber-100"
-            title="Ouvrir dans un nouvel onglet"
+            title={t("openInNewTab")}
           >
             <ExternalLink className="h-3 w-3" />
-            Nouvel onglet
+            {t("newTab")}
           </a>
         </div>
       </div>
       <div className="px-3.5 py-1.5 text-[12px] text-amber-900/90">
         <strong>{active.label}</strong>
-        <span className="text-amber-800/70"> — page {active.pageNumber}</span>
+        <span className="text-amber-800/70"> {t("pagePrefix", { n: active.pageNumber })}</span>
       </div>
       <iframe
         key={active.signedUrl + active.pageNumber}
@@ -1350,6 +1340,7 @@ function AnnexPanel({ annexes }: { annexes: QuestionAnnex[] }) {
  *   - autre : carte avec bouton "Ouvrir"
  */
 function AttachmentsPanel({ attachments }: { attachments: QuestionAttachment[] }) {
+  const t = useTranslations("quizRunner");
   const images = attachments.filter((a) => a.kind === "image");
   const pdfs = attachments.filter((a) => a.kind === "pdf");
   const others = attachments.filter(
@@ -1361,7 +1352,7 @@ function AttachmentsPanel({ attachments }: { attachments: QuestionAttachment[] }
       <div className="flex items-center gap-2 mb-2">
         <Paperclip className="h-3.5 w-3.5 text-brand-700" />
         <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-brand-800">
-          Documents joints ({attachments.length})
+          {t("documentsJoint", { count: attachments.length })}
         </span>
       </div>
 
@@ -1409,10 +1400,10 @@ function AttachmentsPanel({ attachments }: { attachments: QuestionAttachment[] }
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded hover:bg-brand-100 text-[11px] font-semibold"
-              title="Ouvrir dans un nouvel onglet"
+              title={t("openInNewTab")}
             >
               <ExternalLink className="h-3 w-3" />
-              Ouvrir
+              {t("open")}
             </a>
           </div>
           <iframe
@@ -1447,7 +1438,7 @@ function AttachmentsPanel({ attachments }: { attachments: QuestionAttachment[] }
                 className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold bg-brand-600 text-white hover:bg-brand-700"
               >
                 <ExternalLink className="h-3 w-3" />
-                Ouvrir
+                {t("open")}
               </a>
             </li>
           ))}

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
+import { getTranslations, getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -27,12 +28,22 @@ import { resolveFormationFromQuiz } from "@/lib/formation-resolver";
 
 export const dynamic = "force-dynamic";
 
-const STATUS_LABELS: Record<string, string> = {
-  in_progress: "En cours",
-  completed: "Terminé",
-  awaiting_review: "En attente de correction",
-  graded: "Corrigé",
-};
+type QuizResultsT = Awaited<ReturnType<typeof getTranslations<"quizResults">>>;
+
+function statusLabel(status: string, t: QuizResultsT): string {
+  switch (status) {
+    case "in_progress":
+      return t("statusInProgress");
+    case "completed":
+      return t("statusCompleted");
+    case "awaiting_review":
+      return t("statusAwaitingReview");
+    case "graded":
+      return t("statusGraded");
+    default:
+      return status;
+  }
+}
 
 interface BankChoice {
   id?: string;
@@ -58,6 +69,9 @@ export default async function QuizResultsPage({
 }: {
   params: { attemptId: string };
 }) {
+  const t = await getTranslations("quizResults");
+  const locale = await getLocale();
+  const dateLocale = locale === "en" ? "en-GB" : "fr-FR";
   const supabase = createClient();
   const {
     data: { user },
@@ -172,7 +186,7 @@ export default async function QuizResultsPage({
           href="/quiz"
           className="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-navy-900 transition-colors"
         >
-          <ArrowLeft className="h-4 w-4" /> Retour aux exercices
+          <ArrowLeft className="h-4 w-4" /> {t("backToQuiz")}
         </Link>
 
         <header>
@@ -183,28 +197,29 @@ export default async function QuizResultsPage({
             {quiz?.is_mock_exam && (
               <Badge tone="gold" size="sm">
                 <Award className="h-3 w-3" />
-                Examen blanc
+                {t("examBadge")}
               </Badge>
             )}
             <Badge
               tone={isAwaiting ? "gold" : finalPassed ? "success" : "rose"}
               size="sm"
             >
-              {STATUS_LABELS[status]}
+              {statusLabel(status, t)}
             </Badge>
           </div>
           <h1 className="font-display text-2xl md:text-3xl font-semibold text-navy-950 tracking-tight">
-            {quiz?.title ?? "Résultats"}
+            {quiz?.title ?? t("fallbackTitle")}
           </h1>
           {attempt.finished_at && (
             <p className="mt-1 text-sm text-slate-500">
-              Soumis le{" "}
-              {new Date(attempt.finished_at).toLocaleDateString("fr-FR", {
-                day: "2-digit",
-                month: "long",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
+              {t("submittedOn", {
+                date: new Date(attempt.finished_at).toLocaleDateString(dateLocale, {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
               })}
             </p>
           )}
@@ -220,17 +235,15 @@ export default async function QuizResultsPage({
                 </div>
                 <div>
                   <h2 className="font-display text-2xl font-semibold text-navy-950">
-                    Votre copie est en cours de correction
+                    {t("awaitingTitle")}
                   </h2>
                   <p className="mt-2 text-slate-600 max-w-md mx-auto">
-                    Cet examen contient des questions rédigées qui doivent être
-                    corrigées par un formateur. Vous recevrez une notification
-                    dès que votre note finale sera disponible.
+                    {t("awaitingDescription")}
                   </p>
                 </div>
                 <div className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gold-50 border border-gold-200 text-gold-900 text-sm">
                   <Clock className="h-4 w-4" />
-                  Délai habituel : <strong>48 à 72 h ouvrées</strong>
+                  {t("awaitingDelayLabel")} <strong>{t("awaitingDelayValue")}</strong>
                 </div>
               </CardBody>
             </Card>
@@ -239,10 +252,9 @@ export default async function QuizResultsPage({
             {attempt.qcm_score !== null && qcmQuestions.length > 0 && (
               <Card>
                 <CardBody>
-                  <CardTitle>Score QCM (auto-corrigé)</CardTitle>
+                  <CardTitle>{t("qcmScoreAutoTitle")}</CardTitle>
                   <p className="text-sm text-slate-600 mt-1 mb-4">
-                    Ce score sera combiné avec la note manuelle des questions
-                    rédigées pour produire la note finale.
+                    {t("qcmScoreAutoDesc")}
                   </p>
                   <div className="flex items-center justify-between gap-4">
                     <ProgressBar value={attempt.qcm_score ?? 0} />
@@ -294,19 +306,19 @@ export default async function QuizResultsPage({
                 <div className="mt-6 font-display text-2xl font-semibold text-navy-950">
                   {finalPassed
                     ? quiz?.is_mock_exam
-                      ? "Félicitations, examen réussi !"
-                      : "Bravo, exercice réussi !"
-                    : "Continuez la préparation"}
+                      ? t("passedMockExam")
+                      : t("passedExercise")
+                    : t("keepGoing")}
                 </div>
                 <div className="mt-3">
                   {finalPassed ? (
                     <Badge tone="success" size="md" className="mx-auto">
-                      <CheckCircle2 className="h-3 w-3" /> Seuil atteint
+                      <CheckCircle2 className="h-3 w-3" /> {t("thresholdReached")}
                     </Badge>
                   ) : (
                     <Badge tone="rose" size="md" className="mx-auto">
-                      <AlertTriangle className="h-3 w-3" /> Seuil :{" "}
-                      {passThreshold}%
+                      <AlertTriangle className="h-3 w-3" />{" "}
+                      {t("threshold", { pct: passThreshold })}
                     </Badge>
                   )}
                 </div>
@@ -316,7 +328,7 @@ export default async function QuizResultsPage({
                   {qcmQuestions.length > 0 && (
                     <div className="rounded-xl border border-navy-100 bg-ivory p-3">
                       <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">
-                        QCM corrects
+                        {t("qcmCorrect")}
                       </div>
                       <div className="font-display text-xl font-semibold text-navy-900 mt-1">
                         {qcmCorrect} / {qcmQuestions.length}
@@ -327,7 +339,7 @@ export default async function QuizResultsPage({
                   {attempt.qcm_score !== null && qcmQuestions.length > 0 && (
                     <div className="rounded-xl border border-navy-100 bg-ivory p-3">
                       <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">
-                        Score QCM
+                        {t("qcmScore")}
                       </div>
                       <div className="font-display text-xl font-semibold text-navy-900 mt-1">
                         {Math.round(attempt.qcm_score ?? 0)}%
@@ -348,7 +360,7 @@ export default async function QuizResultsPage({
                       return (
                         <div className="rounded-xl border border-navy-100 bg-ivory p-3">
                           <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">
-                            Rédigées
+                            {t("qrScore")}
                           </div>
                           <div className="font-display text-xl font-semibold text-navy-900 mt-1">
                             {qrPct}%
@@ -363,7 +375,7 @@ export default async function QuizResultsPage({
                   {durationMin !== null && (
                     <div className="rounded-xl border border-navy-100 bg-ivory p-3">
                       <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">
-                        Durée
+                        {t("duration")}
                       </div>
                       <div className="font-display text-xl font-semibold text-navy-900 mt-1">
                         {durationMin} min
@@ -374,11 +386,12 @@ export default async function QuizResultsPage({
 
                 {attempt.graded_at && (
                   <div className="mt-5 text-xs text-slate-500">
-                    Corrigé le{" "}
-                    {new Date(attempt.graded_at).toLocaleDateString("fr-FR", {
-                      day: "2-digit",
-                      month: "long",
-                      year: "numeric",
+                    {t("gradedOn", {
+                      date: new Date(attempt.graded_at).toLocaleDateString(dateLocale, {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                      }),
                     })}
                   </div>
                 )}
@@ -392,7 +405,7 @@ export default async function QuizResultsPage({
                   <div className="flex items-center gap-2 mb-3">
                     <MessageSquare className="h-4 w-4 text-gold-700" />
                     <span className="eyebrow text-gold-800">
-                      Commentaire du formateur
+                      {t("trainerComment")}
                     </span>
                   </div>
                   <p className="text-navy-900 leading-relaxed whitespace-pre-wrap">
@@ -407,10 +420,9 @@ export default async function QuizResultsPage({
               <section>
                 <h2 className="font-display text-xl font-semibold text-navy-900 mb-4 flex items-center gap-2">
                   <HelpCircle className="h-5 w-5 text-brand-700" />
-                  Correction détaillée
+                  {t("detailedCorrection")}
                   <span className="ml-2 text-sm font-normal text-slate-500">
-                    {qcmQuestions.length} question
-                    {qcmQuestions.length > 1 ? "s" : ""}
+                    {t("questionCount", { count: qcmQuestions.length })}
                   </span>
                 </h2>
                 <div className="space-y-3">
@@ -452,11 +464,11 @@ export default async function QuizResultsPage({
                             </div>
                             {isCorrect ? (
                               <Badge tone="success" size="sm">
-                                <CheckCircle2 className="h-3 w-3" /> Correct
+                                <CheckCircle2 className="h-3 w-3" /> {t("correct")}
                               </Badge>
                             ) : (
                               <Badge tone="rose" size="sm">
-                                <XCircle className="h-3 w-3" /> Incorrect
+                                <XCircle className="h-3 w-3" /> {t("incorrect")}
                               </Badge>
                             )}
                           </div>
@@ -513,7 +525,7 @@ export default async function QuizResultsPage({
                                       {isRight && (
                                         <span className="inline-flex items-center gap-1 text-emerald-700">
                                           <CheckCircle2 className="h-3 w-3" />
-                                          Bonne réponse
+                                          {t("goodAnswer")}
                                         </span>
                                       )}
                                       {isUserPick && (
@@ -530,7 +542,7 @@ export default async function QuizResultsPage({
                                           ) : (
                                             <XCircle className="h-3 w-3" />
                                           )}
-                                          Votre choix
+                                          {t("yourChoice")}
                                         </span>
                                       )}
                                     </div>
@@ -540,7 +552,7 @@ export default async function QuizResultsPage({
                             })}
                             {!userPick && (
                               <li className="text-xs text-slate-500 italic px-4">
-                                Vous n'avez pas répondu à cette question.
+                                {t("noAnswerGiven")}
                               </li>
                             )}
                           </ul>
@@ -551,7 +563,7 @@ export default async function QuizResultsPage({
                               <div className="flex items-center gap-1.5 mb-1.5">
                                 <Info className="h-3.5 w-3.5 text-brand-700" />
                                 <div className="text-[10px] uppercase tracking-wider text-brand-800 font-semibold">
-                                  Explication
+                                  {t("explanation")}
                                 </div>
                               </div>
                               <p className="text-sm text-navy-900 leading-relaxed whitespace-pre-wrap">
@@ -572,7 +584,7 @@ export default async function QuizResultsPage({
               <section>
                 <h2 className="font-display text-xl font-semibold text-navy-900 mb-4 flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-brand-700" />
-                  Vos questions rédigées corrigées
+                  {t("qrCorrectionsTitle")}
                 </h2>
                 <div className="space-y-3">
                   {qrResponses!.map((r: any, i: number) => {
@@ -590,7 +602,7 @@ export default async function QuizResultsPage({
                         <CardBody>
                           <div className="flex items-start justify-between gap-3 mb-3">
                             <div className="text-sm font-medium text-navy-900">
-                              Question {i + 1}
+                              {t("questionNumber", { n: i + 1 })}
                             </div>
                             <Badge tone={tone as any} size="sm">
                               {r.trainer_score ?? 0} / {r.max_score}
@@ -599,7 +611,7 @@ export default async function QuizResultsPage({
                           {r.student_answer && (
                             <div className="rounded-xl border border-navy-100 bg-ivory p-4">
                               <div className="text-[10px] uppercase tracking-wider text-slate-500 mb-1">
-                                Votre réponse
+                                {t("yourAnswer")}
                               </div>
                               <p className="text-sm text-navy-900 whitespace-pre-wrap">
                                 {r.student_answer}
@@ -611,7 +623,7 @@ export default async function QuizResultsPage({
                               <div className="flex items-center gap-1.5 mb-1">
                                 <MessageSquare className="h-3.5 w-3.5 text-gold-700" />
                                 <div className="text-[10px] uppercase tracking-wider text-gold-800 font-semibold">
-                                  Commentaire formateur
+                                  {t("trainerCommentBadge")}
                                 </div>
                               </div>
                               <p className="text-sm text-navy-900 whitespace-pre-wrap">
@@ -637,7 +649,7 @@ export default async function QuizResultsPage({
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-navy-200 bg-white px-5 py-3 text-sm font-medium text-navy-900 hover:bg-navy-50 transition-colors"
             >
               <RotateCcw className="h-4 w-4" />
-              Recommencer
+              {t("ctaRestart")}
             </Link>
           )}
           <Link
@@ -645,14 +657,14 @@ export default async function QuizResultsPage({
             className="inline-flex items-center justify-center gap-2 rounded-xl border border-navy-200 bg-white px-5 py-3 text-sm font-medium text-navy-900 hover:bg-navy-50 transition-colors"
           >
             <BarChart3 className="h-4 w-4" />
-            Voir mes résultats
+            {t("ctaMyResults")}
           </Link>
           <Link
             href="/dashboard"
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-navy-900 text-white px-5 py-3 text-sm font-medium hover:bg-navy-800 transition-colors"
           >
             <LayoutDashboard className="h-4 w-4" />
-            Tableau de bord
+            {t("ctaDashboard")}
           </Link>
         </div>
       </div>

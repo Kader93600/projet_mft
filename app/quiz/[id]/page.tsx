@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { QuizRunner } from "./quiz-runner";
 import {
@@ -47,6 +48,7 @@ interface UnifiedQuestion {
 }
 
 export default async function QuizPage({ params }: { params: { id: string } }) {
+  const t = await getTranslations("quiz");
   const supabase = createClient();
   const { data: quiz } = await supabase
     .from("quizzes")
@@ -247,7 +249,7 @@ export default async function QuizPage({ params }: { params: { id: string } }) {
     q.annexes = (q.annex_pages_raw as number[]).map(
       (pageNumber: number, i: number) => ({
         pageNumber,
-        label: q.annex_labels_raw?.[i] ?? `Annexe page ${pageNumber}`,
+        label: q.annex_labels_raw?.[i] ?? t("annexPage", { page: pageNumber }),
         signedUrl,
       }),
     );
