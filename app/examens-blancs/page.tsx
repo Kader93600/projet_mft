@@ -10,6 +10,7 @@
 // historique des tentatives.
 // =====================================================================
 
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { FormationBadge } from "@/components/formation/formation-badge";
 import { FORMATIONS } from "@/lib/formations-config";
@@ -30,6 +31,7 @@ export default async function ExamensBlancsPage({
 }: {
   searchParams?: { f?: string; tab?: string };
 }) {
+  const t = await getTranslations("examensBlancs");
   const supabase = createClient();
   const filterFormation = searchParams?.f ?? null;
   const tab = (searchParams?.tab === "global" ? "global" : "module") as
@@ -270,32 +272,27 @@ export default async function ExamensBlancsPage({
       <header className="space-y-3">
         <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-900 text-[11px] font-bold uppercase tracking-[0.16em]">
           <GraduationCap className="h-3 w-3" />
-          Examen blanc
+          {t("badge")}
         </div>
         <h1 className="font-display text-3xl md:text-4xl font-semibold text-navy-950 tracking-tight">
-          {firstName ? `${firstName}, p` : "P"}rêt(e) à passer un examen blanc&nbsp;?
+          {firstName ? t("titleWithName", { name: firstName }) : t("titleAnonymous")}
         </h1>
         <p className="text-slate-600 max-w-2xl leading-relaxed">
-          Conditions réelles : chronomètre, notation officielle, scoring
-          global. Idéal pour vous évaluer comme le jour J.{" "}
+          {t("description")}{" "}
           <strong className="text-navy-900">
-            Les QR sont corrigés par votre formateur.
+            {t("descriptionStrong")}
           </strong>
         </p>
         {totalExams > 0 && (
           <div className="flex items-center gap-4 text-[13px] text-slate-600 flex-wrap pt-2">
             <span className="inline-flex items-center gap-1.5">
               <ShieldCheck className="h-3.5 w-3.5 text-amber-700" />
-              <strong className="text-navy-900">{totalExams}</strong>{" "}
-              examen{totalExams > 1 ? "s" : ""} blanc
-              {totalExams > 1 ? "s" : ""} disponible
-              {totalExams > 1 ? "s" : ""}
+              {t("countAvailable", { count: totalExams })}
             </span>
             {passedExams > 0 && (
               <span className="inline-flex items-center gap-1.5 text-emerald-700">
                 <Trophy className="h-3.5 w-3.5" />
-                <strong>{passedExams}</strong> validé
-                {passedExams > 1 ? "s" : ""}
+                {t("countPassed", { count: passedExams })}
               </span>
             )}
           </div>
@@ -308,13 +305,13 @@ export default async function ExamensBlancsPage({
           <div className="flex items-center gap-2 px-1.5 mb-2">
             <Filter className="h-3.5 w-3.5 text-slate-400" />
             <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-              Filtrer par formation
+              {t("filterEyebrow")}
             </span>
           </div>
           <div className="flex flex-wrap gap-1.5">
             <FormationChip
               href={`/examens-blancs${tab === "global" ? "?tab=global" : ""}`}
-              label="Toutes"
+              label={t("filterAll")}
               active={!filterFormation}
             />
             {availableFormations.map((f) => (
@@ -348,11 +345,10 @@ export default async function ExamensBlancsPage({
         <div className="rounded-2xl border-2 border-dashed border-navy-100 bg-ivory p-10 text-center">
           <GraduationCap className="h-10 w-10 mx-auto text-slate-400" />
           <h3 className="mt-3 font-display text-lg font-semibold text-navy-900">
-            Aucun examen blanc disponible
+            {t("emptyTitle")}
           </h3>
           <p className="mt-2 text-sm text-slate-600 max-w-md mx-auto">
-            Les examens blancs seront publiés à mesure de votre avancée
-            dans la formation.
+            {t("emptyHint")}
           </p>
         </div>
       )}

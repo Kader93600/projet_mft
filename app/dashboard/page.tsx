@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,7 @@ import {
 } from "@/lib/module-progress";
 
 export default async function DashboardPage() {
+  const t = await getTranslations("dashboard");
   const supabase = createClient();
   const {
     data: { user },
@@ -242,7 +244,8 @@ export default async function DashboardPage() {
       ? Math.round(attempts.reduce((s, a) => s + a.percentage, 0) / attempts.length)
       : 0;
 
-  const firstName = profile?.full_name?.split(" ")[0] || "stagiaire";
+  const firstName =
+    profile?.full_name?.split(" ")[0] || t("studentFallback");
 
   return (
     <div className="space-y-10">
@@ -266,13 +269,13 @@ export default async function DashboardPage() {
           <CardBody className="relative p-6 sm:p-8">
             <div className="flex items-center gap-2 mb-3">
               <Sparkles className="h-4 w-4 text-gold-400" />
-              <span className="eyebrow text-gold-300">Session en cours</span>
+              <span className="eyebrow text-gold-300">{t("sessionInProgress")}</span>
             </div>
             <h1 className="font-display text-[26px] sm:text-3xl md:text-4xl font-semibold tracking-tight leading-tight">
-              Bonjour, {firstName}.
+              {t("helloName", { name: firstName })}
             </h1>
             <p className="mt-3 text-white/70 text-[15px] max-w-lg leading-relaxed">
-              Vous êtes à{" "}
+              {t("heroIntroBefore")}{" "}
               <span className="relative inline-flex items-baseline">
                 <span className="font-display text-2xl font-semibold bg-gradient-to-r from-signal-300 to-signal-500 bg-clip-text text-transparent tabular-nums">
                   {progressPct}%
@@ -282,8 +285,7 @@ export default async function DashboardPage() {
                   className="absolute -inset-x-1 -bottom-0.5 h-px bg-gradient-to-r from-signal-400/0 via-signal-400/60 to-signal-400/0"
                 />
               </span>{" "}
-              de votre préparation. Reprenez là où vous vous êtes arrêté et
-              maintenez votre élan.
+              {t("heroIntroAfter")}
             </p>
             <div className="mt-6 flex flex-col sm:flex-row gap-2.5 sm:gap-3">
               <Link href="/modules" className="contents">
@@ -292,7 +294,7 @@ export default async function DashboardPage() {
                   size="lg"
                   className="group w-full sm:w-auto justify-center"
                 >
-                  Reprendre la formation
+                  {t("ctaResume")}
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0" />
                 </Button>
               </Link>
@@ -301,7 +303,7 @@ export default async function DashboardPage() {
                   size="lg"
                   className="w-full sm:w-auto justify-center bg-white/10 hover:bg-white/15 text-white border border-white/15 shadow-none"
                 >
-                  Lancer un quiz
+                  {t("ctaQuiz")}
                 </Button>
               </Link>
             </div>
@@ -318,14 +320,14 @@ export default async function DashboardPage() {
               />
             </div>
             <div className="min-w-0">
-              <div className="eyebrow text-gold-700">Progression globale</div>
+              <div className="eyebrow text-gold-700">{t("overallProgress")}</div>
               <div className="mt-1 font-display text-xl sm:text-2xl font-semibold text-navy-900 tabular-nums">
                 {completedLessons} / {totalLessons ?? 0}
               </div>
-              <p className="text-sm text-slate-600 mt-0.5">leçons terminées</p>
+              <p className="text-sm text-slate-600 mt-0.5">{t("lessonsTerminated")}</p>
               <div className="mt-3 inline-flex items-center gap-1.5 text-xs text-emerald-700 font-medium">
                 <TrendingUp className="h-3.5 w-3.5" />
-                Bonne dynamique
+                {t("goodDynamic")}
               </div>
             </div>
           </CardBody>
@@ -348,30 +350,30 @@ export default async function DashboardPage() {
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           icon={BookOpen}
-          label="Leçons terminées"
+          label={t("statLessonsLabel")}
           value={`${completedLessons}`}
-          hint={`sur ${totalLessons ?? 0}`}
+          hint={t("statLessonsHint", { total: totalLessons ?? 0 })}
           color="brand"
         />
         <StatCard
           icon={Flame}
-          label="Progression"
+          label={t("statProgressLabel")}
           value={`${progressPct}%`}
-          hint="préparation globale"
+          hint={t("statProgressHint")}
           color="amber"
         />
         <StatCard
           icon={Trophy}
-          label="Score moyen"
+          label={t("statScoreLabel")}
           value={`${avgScore}%`}
-          hint="sur vos quiz"
+          hint={t("statScoreHint")}
           color="signal"
         />
         <StatCard
           icon={ClipboardCheck}
-          label="Exercices passés"
+          label={t("statQuizLabel")}
           value={String(attempts?.length ?? 0)}
-          hint="entraînements + examens"
+          hint={t("statQuizHint")}
           color="emerald"
         />
       </section>
@@ -380,16 +382,16 @@ export default async function DashboardPage() {
       <section>
         <div className="flex items-end justify-between mb-5">
           <div>
-            <span className="eyebrow text-gold-700">Parcours</span>
+            <span className="eyebrow text-gold-700">{t("pathEyebrow")}</span>
             <h2 className="mt-1 font-display text-2xl font-semibold text-navy-900 tracking-tight">
-              Continuer la formation
+              {t("continueFormation")}
             </h2>
           </div>
           <Link
             href="/modules"
             className="text-sm font-medium text-navy-900 hover:text-gold-700 inline-flex items-center gap-1"
           >
-            Voir tout
+            {t("seeAll")}
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
@@ -402,12 +404,12 @@ export default async function DashboardPage() {
             const isInProgress = state === "in-progress";
 
             const ctaLabel = isLocked
-              ? "Verrouillé"
+              ? t("ctaLocked")
               : isDone
-              ? "Revoir"
+              ? t("ctaReview")
               : isInProgress
-              ? "Reprendre"
-              : "Commencer";
+              ? t("ctaResumeShort")
+              : t("ctaStart");
 
             const cardClasses = isLocked
               ? "h-full transition-all bg-slate-50 border-slate-200 opacity-70"
@@ -422,8 +424,8 @@ export default async function DashboardPage() {
             const moduleFormationSlug = formationSlugByModule.get(m.id);
             const lockedHelp =
               getUnlockMode(moduleFormationSlug) === "flexible"
-                ? "Terminez les leçons et tentez les exercices du module précédent pour débloquer celui-ci."
-                : "Terminez le cours précédent pour débloquer celui-ci.";
+                ? t("lockedHelpFlexible")
+                : t("lockedHelpStrict");
 
             const Wrapper = isLocked
               ? ({ children }: { children: React.ReactNode }) => (
@@ -452,17 +454,17 @@ export default async function DashboardPage() {
                         </Badge>
                         {isDone && (
                           <Badge tone="success" size="sm">
-                            <CheckCircle2 className="h-3 w-3" /> Terminé
+                            <CheckCircle2 className="h-3 w-3" /> {t("badgeDone")}
                           </Badge>
                         )}
                         {isLocked && (
                           <Badge tone="slate" size="sm">
-                            <Lock className="h-3 w-3" /> Verrouillé
+                            <Lock className="h-3 w-3" /> {t("badgeLocked")}
                           </Badge>
                         )}
                       </div>
                       <span className="inline-flex items-center gap-1 text-xs text-slate-500">
-                        <Clock className="h-3 w-3" /> {m.duration_min} min
+                        <Clock className="h-3 w-3" /> {t("minutes", { min: m.duration_min })}
                       </span>
                     </div>
                     <h3
@@ -503,16 +505,16 @@ export default async function DashboardPage() {
         <div>
           <div className="flex items-end justify-between mb-5">
             <div>
-              <span className="eyebrow text-gold-700">Activité</span>
+              <span className="eyebrow text-gold-700">{t("activityEyebrow")}</span>
               <h2 className="mt-1 font-display text-2xl font-semibold text-navy-900 tracking-tight">
-                Derniers résultats
+                {t("recentResults")}
               </h2>
             </div>
             <Link
               href="/stats"
               className="text-sm font-medium text-navy-900 hover:text-gold-700 inline-flex items-center gap-1"
             >
-              Statistiques
+              {t("statisticsLink")}
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
@@ -538,9 +540,9 @@ export default async function DashboardPage() {
                         {/* Badge inline mobile (gain de place) */}
                         <span className="sm:hidden">
                           {a.passed ? (
-                            <Badge tone="success" size="sm">Réussi</Badge>
+                            <Badge tone="success" size="sm">{t("passed")}</Badge>
                           ) : (
-                            <Badge tone="slate" size="sm">À retravailler</Badge>
+                            <Badge tone="slate" size="sm">{t("toReview")}</Badge>
                           )}
                         </span>
                       </div>
@@ -549,9 +551,9 @@ export default async function DashboardPage() {
                       {/* Badge desktop (caché en mobile) */}
                       <span className="hidden sm:inline">
                         {a.passed ? (
-                          <Badge tone="success" size="sm">Réussi</Badge>
+                          <Badge tone="success" size="sm">{t("passed")}</Badge>
                         ) : (
-                          <Badge tone="slate" size="sm">À retravailler</Badge>
+                          <Badge tone="slate" size="sm">{t("toReview")}</Badge>
                         )}
                       </span>
                       <div
@@ -572,12 +574,12 @@ export default async function DashboardPage() {
                 <div className="mx-auto h-12 w-12 rounded-xl bg-navy-50 text-navy-700 flex items-center justify-center">
                   <ClipboardCheck className="h-5 w-5" />
                 </div>
-                <p className="mt-4 font-medium text-navy-900">Aucun quiz pour le moment.</p>
+                <p className="mt-4 font-medium text-navy-900">{t("noQuizYet")}</p>
                 <p className="text-sm text-slate-600 mt-1">
-                  Lancez votre premier entraînement pour mesurer votre niveau.
+                  {t("noQuizHelper")}
                 </p>
                 <Link href="/quiz" className="inline-block mt-5">
-                  <Button size="md">Commencer un quiz</Button>
+                  <Button size="md">{t("ctaStartQuiz")}</Button>
                 </Link>
               </CardBody>
             </Card>
@@ -588,19 +590,19 @@ export default async function DashboardPage() {
           <CardBody>
             <div className="flex items-center gap-2">
               <Target className="h-4 w-4 text-gold-700" />
-              <span className="eyebrow text-gold-800">Objectif hebdo</span>
+              <span className="eyebrow text-gold-800">{t("weeklyGoalEyebrow")}</span>
             </div>
             <h3 className="mt-3 font-display text-xl font-semibold text-navy-900">
-              Terminer 5 leçons cette semaine
+              {t("weeklyGoalTitle")}
             </h3>
             <p className="text-sm text-slate-600 mt-2">
-              Maintenez un rythme régulier pour ancrer les connaissances clés du référentiel.
+              {t("weeklyGoalDesc")}
             </p>
             <div className="mt-5">
               <ProgressBar value={Math.min(100, (completedLessons % 5) * 20)} variant="gradient" />
               <div className="mt-2 flex justify-between text-xs text-slate-600">
-                <span>{completedLessons % 5} / 5 leçons</span>
-                <span>Semaine en cours</span>
+                <span>{t("weeklyProgress", { done: completedLessons % 5 })}</span>
+                <span>{t("currentWeek")}</span>
               </div>
             </div>
           </CardBody>

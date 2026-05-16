@@ -13,6 +13,7 @@
 //   - Click → /quiz/[id] (runner existant)
 // =====================================================================
 
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { FormationBadge } from "@/components/formation/formation-badge";
 import { findFormation, FORMATIONS } from "@/lib/formations-config";
@@ -26,6 +27,7 @@ export default async function ExercicesPage({
 }: {
   searchParams?: { f?: string };
 }) {
+  const t = await getTranslations("exercices");
   const supabase = createClient();
   const filterFormation = searchParams?.f ?? null;
 
@@ -189,30 +191,26 @@ export default async function ExercicesPage({
       <header className="space-y-3">
         <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-signal-50 border border-signal-200 text-signal-800 text-[11px] font-bold uppercase tracking-[0.16em]">
           <Dumbbell className="h-3 w-3" />
-          Entraînement
+          {t("badge")}
         </div>
         <h1 className="font-display text-3xl md:text-4xl font-semibold text-navy-950 tracking-tight">
-          {firstName ? `${firstName}, e` : "E"}ntraînez-vous à votre rythme.
+          {firstName ? t("titleWithName", { name: firstName }) : t("titleAnonymous")}
         </h1>
         <p className="text-slate-600 max-w-2xl leading-relaxed">
-          Quiz d'entraînement, exercices d'application et QCM rapides pour
-          renforcer vos acquis chapitre par chapitre.{" "}
+          {t("description")}{" "}
           <strong className="text-navy-900">
-            Aucune note finale, correction immédiate.
+            {t("descriptionStrong")}
           </strong>
         </p>
         {totalQuizzes > 0 && (
           <div className="flex items-center gap-4 text-[13px] text-slate-600 flex-wrap pt-2">
             <span className="inline-flex items-center gap-1.5">
               <Sparkles className="h-3.5 w-3.5 text-signal-700" />
-              <strong className="text-navy-900">{totalQuizzes}</strong>{" "}
-              exercice{totalQuizzes > 1 ? "s" : ""} disponible
-              {totalQuizzes > 1 ? "s" : ""}
+              {t("countAvailable", { count: totalQuizzes })}
             </span>
             {passedQuizzes > 0 && (
               <span className="inline-flex items-center gap-1.5 text-emerald-700">
-                · <strong>{passedQuizzes}</strong> réussi
-                {passedQuizzes > 1 ? "s" : ""}
+                · {t("countPassed", { count: passedQuizzes })}
               </span>
             )}
           </div>
@@ -225,13 +223,13 @@ export default async function ExercicesPage({
           <div className="flex items-center gap-2 px-1.5 mb-2">
             <Filter className="h-3.5 w-3.5 text-slate-400" />
             <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-              Filtrer par formation
+              {t("filterEyebrow")}
             </span>
           </div>
           <div className="flex flex-wrap gap-1.5">
             <FormationChip
               href="/exercices"
-              label="Toutes"
+              label={t("filterAll")}
               active={!filterFormation}
             />
             {availableFormations.map((f) => (
@@ -262,11 +260,10 @@ export default async function ExercicesPage({
         <div className="rounded-2xl border-2 border-dashed border-navy-100 bg-ivory p-10 text-center">
           <BookOpen className="h-10 w-10 mx-auto text-slate-400" />
           <h3 className="mt-3 font-display text-lg font-semibold text-navy-900">
-            Aucun exercice disponible
+            {t("emptyTitle")}
           </h3>
           <p className="mt-2 text-sm text-slate-600 max-w-md mx-auto">
-            Les exercices d'entraînement seront publiés progressivement par
-            votre équipe pédagogique.
+            {t("emptyHint")}
           </p>
         </div>
       )}

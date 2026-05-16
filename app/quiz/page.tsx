@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { FormationBadge } from "@/components/formation/formation-badge";
 import { FormationProgress } from "@/components/modules/formation-progress";
@@ -47,6 +48,7 @@ export const dynamic = "force-dynamic";
  *    blocked-attempts / blocked-delay / locked
  */
 export default async function QuizListPage() {
+  const t = await getTranslations("quiz");
   const supabase = createClient();
 
   const {
@@ -436,17 +438,16 @@ export default async function QuizListPage() {
       {/* ----- Hero personnalisé ----- */}
       <header>
         <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-signal-700">
-          Évaluation
+          {t("evaluationEyebrow")}
         </span>
         <h1 className="mt-2 font-display text-[28px] md:text-4xl font-semibold text-navy-950 tracking-tight leading-tight">
-          {firstName ? `Bonjour ${firstName},` : "Bonjour,"}{" "}
+          {firstName ? t("helloName", { name: firstName }) : t("helloAnonymous")}{" "}
           <span className="text-slate-600 font-normal">
-            vos exercices et examens.
+            {t("helloSuffix")}
           </span>
         </h1>
         <p className="mt-2 max-w-2xl text-[14px] text-slate-600 leading-relaxed">
-          Mesurez votre maîtrise avec des entraînements ciblés ou confrontez-vous
-          aux examens blancs au format de l&rsquo;épreuve réelle.
+          {t("heroDescription")}
         </p>
       </header>
 
@@ -477,6 +478,7 @@ export default async function QuizListPage() {
           passedQuizzes={g.passedQuizzes}
           isFirst={gi === 0}
           sectionIdx={gi}
+          t={t}
         />
       ))}
 
@@ -487,10 +489,9 @@ export default async function QuizListPage() {
             <AlertCircle className="h-4 w-4 mt-0.5 text-amber-700 shrink-0" />
             <div className="text-[13px] text-amber-900">
               <strong>
-                {orphans.length} quiz non rattaché{orphans.length > 1 ? "s" : ""}{" "}
-                à une formation
+                {t("orphansStrong", { count: orphans.length })}
               </strong>
-              . Visible uniquement par le staff.
+              . {t("orphansStaffOnly")}
             </div>
           </div>
           <div className="space-y-2">
@@ -511,10 +512,10 @@ export default async function QuizListPage() {
         <div className="rounded-3xl border border-navy-100 bg-white px-8 py-16 text-center shadow-soft">
           <Sparkles className="mx-auto h-8 w-8 text-slate-300" />
           <h2 className="mt-4 font-display text-xl font-semibold text-navy-900">
-            Aucun exercice disponible
+            {t("emptyTitle")}
           </h2>
           <p className="mt-2 text-sm text-slate-600 max-w-md mx-auto">
-            Les exercices seront publiés progressivement par votre équipe pédagogique.
+            {t("emptyHint")}
           </p>
         </div>
       )}
@@ -526,6 +527,8 @@ export default async function QuizListPage() {
 // Section formation — examens finaux + entraînements par module
 // ---------------------------------------------------------------------
 
+type QuizT = Awaited<ReturnType<typeof getTranslations<"quiz">>>;
+
 function FormationQuizSection({
   formationSlug,
   examFinal,
@@ -534,6 +537,7 @@ function FormationQuizSection({
   passedQuizzes,
   isFirst,
   sectionIdx,
+  t,
 }: {
   formationSlug: string;
   examFinal: { quiz: any; progress: QuizProgress }[];
@@ -547,6 +551,7 @@ function FormationQuizSection({
   passedQuizzes: number;
   isFirst: boolean;
   sectionIdx: number;
+  t: QuizT;
 }) {
   const f = findFormation(formationSlug);
   if (!f) return null;
@@ -578,7 +583,7 @@ function FormationQuizSection({
             modulesDone={passedQuizzes}
           />
           <span className="mt-1.5 inline-block text-[11px] text-slate-500">
-            {passedQuizzes} quiz réussis sur {totalQuizzes}
+            {t("passedOver", { passed: passedQuizzes, total: totalQuizzes })}
           </span>
         </div>
       </div>
@@ -589,12 +594,12 @@ function FormationQuizSection({
           <div className="flex flex-wrap items-baseline justify-between gap-3">
             <h3 className="font-display text-[15px] font-semibold text-navy-900 tracking-tight inline-flex items-center gap-1.5">
               <GraduationCap className="h-4 w-4 text-amber-700" />
-              Préparer l&rsquo;examen final
+              {t("prepFinalExam")}
             </h3>
             {allFinalLocked && (
               <span className="inline-flex items-center gap-1.5 text-[12px] text-slate-500">
                 <Lock className="h-3 w-3" />
-                Disponibles après les modules de cours
+                {t("lockedAfterCourses")}
               </span>
             )}
           </div>
@@ -617,11 +622,10 @@ function FormationQuizSection({
           <div className="flex items-baseline gap-2">
             <h3 className="font-display text-[15px] font-semibold text-navy-900 tracking-tight inline-flex items-center gap-1.5">
               <Dumbbell className="h-4 w-4 text-navy-700" />
-              Entraînement par module
+              {t("trainingByModule")}
             </h3>
             <span className="text-[12px] text-slate-500">
-              {trainingModules.length} module
-              {trainingModules.length > 1 ? "s" : ""}
+              {t("moduleCount", { count: trainingModules.length })}
             </span>
           </div>
           <div className="space-y-2.5">

@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { ModuleCard, type ModuleCardData } from "@/components/modules/module-card";
 import { ContinueCard } from "@/components/modules/continue-card";
@@ -44,6 +45,7 @@ export const dynamic = "force-dynamic";
  *  - quiz_attempts : passed = true → quiz validé
  */
 export default async function ModulesPage() {
+  const t = await getTranslations("modules");
   const supabase = createClient();
 
   const {
@@ -391,11 +393,11 @@ export default async function ModulesPage() {
       {/* ----- Hero personnalisé ----- */}
       <header>
         <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-signal-700">
-          Tableau de bord
+          {t("eyebrow")}
         </span>
         <h1 className="mt-2 font-display text-[28px] md:text-4xl font-semibold text-navy-950 tracking-tight leading-tight">
-          {firstName ? `Bonjour ${firstName},` : "Bonjour,"}{" "}
-          <span className="text-slate-600 font-normal">voici votre formation.</span>
+          {firstName ? t("helloName", { name: firstName }) : t("helloAnonymous")}{" "}
+          <span className="text-slate-600 font-normal">{t("helloSuffix")}</span>
         </h1>
       </header>
 
@@ -468,6 +470,7 @@ export default async function ModulesPage() {
                 sectionIdx={sectionIdx}
                 showHeader={examFinalCount > 0}
                 formationSlug={formation.slug}
+                t={t}
               />
             )}
 
@@ -477,6 +480,7 @@ export default async function ModulesPage() {
                 exams={exams}
                 finals={finals}
                 sectionIdx={sectionIdx}
+                t={t}
               />
             )}
           </section>
@@ -490,10 +494,9 @@ export default async function ModulesPage() {
             <AlertCircle className="h-4 w-4 mt-0.5 text-amber-700 shrink-0" />
             <div className="text-[13px] text-amber-900">
               <strong>
-                {orphans.length} module{orphans.length > 1 ? "s" : ""} non rattaché
-                {orphans.length > 1 ? "s" : ""} à une formation
+                {t("orphansBadgeStrong", { count: orphans.length })}
               </strong>
-              . Visible uniquement par le staff.
+              . {t("orphansStaffOnly")}
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-5">
@@ -509,10 +512,10 @@ export default async function ModulesPage() {
         <div className="rounded-3xl border border-navy-100 bg-white px-8 py-16 text-center shadow-soft">
           <BookOpen className="mx-auto h-8 w-8 text-slate-300" />
           <h2 className="mt-4 font-display text-xl font-semibold text-navy-900">
-            Aucun module disponible
+            {t("emptyTitle")}
           </h2>
           <p className="mt-2 text-sm text-slate-600 max-w-md mx-auto">
-            Le contenu sera publié progressivement par votre équipe pédagogique.
+            {t("emptyHint")}
           </p>
         </div>
       )}
@@ -522,7 +525,7 @@ export default async function ModulesPage() {
         <footer className="pt-2 text-[11.5px] text-slate-400">
           <span className="inline-flex items-center gap-1.5">
             <Layers className="h-3 w-3" />
-            {totalModules} module{totalModules > 1 ? "s" : ""} au catalogue
+            {t("catalogCount", { count: totalModules })}
           </span>
         </footer>
       )}
@@ -534,16 +537,20 @@ export default async function ModulesPage() {
 // Sous-sections
 // ---------------------------------------------------------------------
 
+type ModulesT = Awaited<ReturnType<typeof getTranslations<"modules">>>;
+
 function SubsectionCourses({
   modules,
   sectionIdx,
   showHeader,
   formationSlug,
+  t,
 }: {
   modules: (ModuleCardData & { __progress: ModuleProgress })[];
   sectionIdx: number;
   showHeader: boolean;
   formationSlug?: string;
+  t: ModulesT;
 }) {
   // Whitelist : formations dont les modules sont à plat (1 module par
   // matière, pas de regroupement en CCP). Évite que la Capa (qui a un
@@ -607,10 +614,10 @@ function SubsectionCourses({
         {showHeader && (
           <div className="flex items-baseline gap-2">
             <h3 className="font-display text-[15px] font-semibold text-navy-900 tracking-tight">
-              Modules de cours
+              {t("moduleCourses")}
             </h3>
             <span className="text-[12px] text-slate-500">
-              {modules.length} module{modules.length > 1 ? "s" : ""}
+              {t("moduleCount", { count: modules.length })}
             </span>
           </div>
         )}
@@ -662,10 +669,12 @@ function SubsectionExams({
   exams,
   finals,
   sectionIdx,
+  t,
 }: {
   exams: (ModuleCardData & { __progress: ModuleProgress })[];
   finals: (ModuleCardData & { __progress: ModuleProgress })[];
   sectionIdx: number;
+  t: ModulesT;
 }) {
   const all = [...exams, ...finals];
   const allLocked = all.every((m) => m.state === "locked");
@@ -676,18 +685,17 @@ function SubsectionExams({
         <div className="flex items-baseline gap-2">
           <h3 className="font-display text-[15px] font-semibold text-navy-900 tracking-tight inline-flex items-center gap-1.5">
             <GraduationCap className="h-4 w-4 text-amber-700" />
-            Préparer l&rsquo;examen final
+            {t("prepFinalExam")}
           </h3>
           <span className="text-[12px] text-slate-500">
-            {exams.length} examen{exams.length > 1 ? "s" : ""} blanc
-            {exams.length > 1 ? "s" : ""}
-            {finals.length > 0 && ` + ${finals.length} préparation${finals.length > 1 ? "s" : ""} jury`}
+            {t("examCount", { count: exams.length })}
+            {t("finalCount", { count: finals.length })}
           </span>
         </div>
         {allLocked && (
           <span className="inline-flex items-center gap-1.5 text-[12px] text-slate-500">
             <Lock className="h-3 w-3" />
-            Disponibles après les modules de cours
+            {t("lockedAfterCourses")}
           </span>
         )}
       </div>
