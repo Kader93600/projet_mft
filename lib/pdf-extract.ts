@@ -32,7 +32,10 @@ export interface PdfExtractResult {
 export async function extractPdfText(
   buffer: Buffer,
 ): Promise<PdfExtractResult> {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  // pdf-parse n'expose pas son entrypoint principal en ESM-only ; on charge
+  // directement le fichier interne en require pour éviter l'embarquement
+  // du fixture test du package au build serverless.
+  // eslint-disable-next-line @next/next/no-assign-module-variable
   const pdfParse = require("pdf-parse/lib/pdf-parse.js") as (
     b: Buffer,
     opts?: PdfParseOptions,

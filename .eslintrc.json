@@ -1,0 +1,18 @@
+{
+  "extends": "next/core-web-vitals",
+  "ignorePatterns": [
+    "node_modules",
+    ".next",
+    "out",
+    "build",
+    "dist",
+    "supabase/*.sql",
+    "test-results",
+    "playwright-report",
+    "coverage"
+  ],
+  "rules": {
+    "@next/next/no-img-element": "warn",
+    "react/no-unescaped-entities": "off"
+  }
+}

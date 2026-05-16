@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Annule les runs en cours si un nouveau commit arrive sur la même branche.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # =====================================================================
+  # Job 1 — Quality : lint + typecheck + unit tests
+  # Rapide (< 2 min), tourne sur chaque PR + push main.
+  # =====================================================================
+  quality:
+    name: Lint · Typecheck · Tests unitaires
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Tests unitaires
+        run: npm run test:run
+
+      # Optionnel : coverage en commentaire de PR (à activer plus tard)
+      # - name: Coverage report
+      #   if: github.event_name == 'pull_request'
+      #   run: npm run test:coverage
+
+  # =====================================================================
+  # Job 2 — Build : vérifie que le build Next.js passe
+  # Se lance APRÈS quality. Plus lent (~ 3-4 min) à cause du SDK Sentry +
+  # du wrapper withSentryConfig.
+  # =====================================================================
+  build:
+    name: Build Next.js
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      # Vars d'env minimales nécessaires au build (lecture seulement).
+      # Pour les vars sensibles (Supabase, Stripe…), utiliser les secrets
+      # du repo GitHub. En attendant, on neutralise les checks.
+      NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
+      NEXT_PUBLIC_APP_URL: https://maformationtransport.fr
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build
+        run: npm run build
