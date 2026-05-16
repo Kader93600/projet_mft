@@ -8,6 +8,8 @@ import { CookieBanner } from "@/components/cookie-banner";
 import { JsonLd, organizationSchema } from "@/components/seo/json-ld";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { LEGAL } from "@/lib/legal-config";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -91,6 +93,10 @@ export const viewport = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // i18n : récupère la locale + messages côté serveur via i18n/request.ts
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   const supabase = createClient();
   const {
     data: { user },
@@ -123,7 +129,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html
-      lang="fr"
+      lang={locale}
       className={`${inter.variable} ${display.variable} ${jetbrains.variable} ${a11yClasses} ${themeClass}`}
       style={{
         fontSize: `${Math.round(fontScale * 100)}%`,
@@ -140,9 +146,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-navy-900 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-raised"
         >
-          Aller au contenu principal
+          {locale === "en" ? "Skip to main content" : "Aller au contenu principal"}
         </a>
-        {children}
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          {children}
+        </NextIntlClientProvider>
         <CookieBanner />
       </body>
     </html>

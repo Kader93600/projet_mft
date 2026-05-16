@@ -119,47 +119,82 @@ jobs:
         continue-on-error: true # ne casse pas le CI si seuils non atteints
 
   # =====================================================================
-  # Job 4 — Tests E2E Playwright (DÉSACTIVÉ par défaut)
-  # Pour activer : décommenter et ajouter les secrets dans GitHub :
+  # Job 4 — Tests E2E Playwright
+  #
+  # Requiert 5 secrets dans GitHub → Settings → Secrets → Actions :
   #   • SUPABASE_URL
   #   • SUPABASE_ANON_KEY
   #   • SUPABASE_SERVICE_ROLE_KEY
-  #   • TEST_USER_EMAIL / TEST_USER_PASSWORD
+  #   • TEST_USER_EMAIL          (compte stagiaire de test isolé)
+  #   • TEST_USER_PASSWORD
+  #
+  # Se skippe automatiquement si SUPABASE_URL est manquant → permet de
+  # garder le workflow en place sans casser les PRs venant de forks.
   # =====================================================================
-  # e2e:
-  #   name: Tests E2E Playwright
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 20
-  #   env:
-  #     NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-  #     NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-  #     SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-  #     TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
-  #     TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Setup Node.js
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: 20
-  #         cache: npm
-  #     - name: Install deps
-  #       run: npm ci
-  #     - name: Install Playwright browsers
-  #       run: npm run test:e2e:install
-  #     - name: Build Next.js
-  #       run: npm run build
-  #     - name: Start Next.js
-  #       run: npm run start &
-  #     - name: Wait for server
-  #       run: npx wait-on http://localhost:3000 -t 60000
-  #     - name: Run E2E tests
-  #       run: npm run test:e2e
-  #     - name: Upload report on failure
-  #       if: failure()
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: playwright-report
-  #         path: playwright-report/
-  #         retention-days: 7
+  e2e:
+    name: Tests E2E Playwright
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    # Skip si les secrets ne sont pas configurés (pas de panique en CI)
+    if: vars.E2E_ENABLED == 'true' || github.event_name == 'push'
+
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+      TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Skip if secrets not configured
+        id: gate
+        run: |
+          if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ]; then
+            echo "::warning::E2E skipped — SUPABASE_URL secret not set. Add it in repo Settings → Secrets to enable."
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup Node.js
+        if: steps.gate.outputs.skip != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install deps
+        if: steps.gate.outputs.skip != 'true'
+        run: npm ci
+
+      - name: Install Playwright browsers
+        if: steps.gate.outputs.skip != 'true'
+        run: npm run test:e2e:install
+
+      - name: Build Next.js
+        if: steps.gate.outputs.skip != 'true'
+        run: npm run build
+
+      - name: Start Next.js
+        if: steps.gate.outputs.skip != 'true'
+        run: npm run start &
+
+      - name: Wait for server
+        if: steps.gate.outputs.skip != 'true'
+        run: npx wait-on http://localhost:3000 -t 60000
+
+      - name: Run E2E tests
+        if: steps.gate.outputs.skip != 'true'
+        run: npm run test:e2e
+
+      - name: Upload report on failure
+        if: failure() && steps.gate.outputs.skip != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

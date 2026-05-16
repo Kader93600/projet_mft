@@ -7,6 +7,7 @@ import { Settings, Shield } from "lucide-react";
 import { NotificationsBell } from "@/components/notifications-bell";
 import { SearchPalette } from "@/components/search-palette";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LocaleToggle } from "@/components/locale-toggle";
 import { SidebarNav } from "@/components/sidebar-nav";
 import { MobileNavSheet } from "@/components/mobile-nav-sheet";
 import { UserMenu } from "@/components/user-menu";
@@ -114,6 +115,7 @@ export function AppShell({ children, profile }: AppShellProps) {
               <SearchPalette />
             </div>
             <ThemeToggle />
+            <LocaleToggle />
             <NotificationsBell />
             <div className="ml-2 flex items-center pl-3 border-l border-navy-100">
               <UserMenu profile={profile} variant="light" />

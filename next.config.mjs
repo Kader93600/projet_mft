@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 
 import { withSentryConfig } from "@sentry/nextjs";
+import createNextIntlPlugin from "next-intl/plugin";
+
+// next-intl : charge la config depuis ./i18n/request.ts
+const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
 // === Headers de sécurité ===
 // CSP autorise Supabase + Sentry + Resend tracking.
@@ -175,4 +179,5 @@ const sentryOptions = {
   tunnelRoute: "/monitoring",
 };
 
-export default withSentryConfig(nextConfig, sentryOptions);
+// Compose : next-intl + Sentry wrapping
+export default withSentryConfig(withNextIntl(nextConfig), sentryOptions);
