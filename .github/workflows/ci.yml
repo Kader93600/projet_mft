@@ -80,3 +80,86 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  # =====================================================================
+  # Job 3 — Lighthouse CI : audit perf/a11y/SEO sur les pages publiques
+  # Tourne UNIQUEMENT sur push main (pas sur chaque PR pour éviter le bruit).
+  # Audit 3 pages : /, /tarifs, /login. Seuils dans .lighthouserc.cjs.
+  # =====================================================================
+  lighthouse:
+    name: Lighthouse CI
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Pour économiser les minutes GitHub Actions : uniquement sur main
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build Next.js
+        run: npm run build
+
+      - name: Run Lighthouse CI
+        run: npm run lighthouse
+        continue-on-error: true # ne casse pas le CI si seuils non atteints
+
+  # =====================================================================
+  # Job 4 — Tests E2E Playwright (DÉSACTIVÉ par défaut)
+  # Pour activer : décommenter et ajouter les secrets dans GitHub :
+  #   • SUPABASE_URL
+  #   • SUPABASE_ANON_KEY
+  #   • SUPABASE_SERVICE_ROLE_KEY
+  #   • TEST_USER_EMAIL / TEST_USER_PASSWORD
+  # =====================================================================
+  # e2e:
+  #   name: Tests E2E Playwright
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 20
+  #   env:
+  #     NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+  #     NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+  #     SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+  #     TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+  #     TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 20
+  #         cache: npm
+  #     - name: Install deps
+  #       run: npm ci
+  #     - name: Install Playwright browsers
+  #       run: npm run test:e2e:install
+  #     - name: Build Next.js
+  #       run: npm run build
+  #     - name: Start Next.js
+  #       run: npm run start &
+  #     - name: Wait for server
+  #       run: npx wait-on http://localhost:3000 -t 60000
+  #     - name: Run E2E tests
+  #       run: npm run test:e2e
+  #     - name: Upload report on failure
+  #       if: failure()
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: playwright-report
+  #         path: playwright-report/
+  #         retention-days: 7

@@ -16,6 +16,9 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
+    "lighthouse": "lhci autorun --config=./.lighthouserc.cjs",
+    "storybook": "storybook dev -p 6006",
+    "storybook:build": "storybook build",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:install": "playwright install --with-deps chromium"
@@ -59,7 +62,11 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.59.1",
+    "@storybook/addon-essentials": "^8.6.14",
+    "@storybook/nextjs": "^8.6.18",
+    "@storybook/react": "^8.6.18",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^22.7.5",
@@ -73,6 +80,7 @@
     "jsdom": "^25.0.1",
     "pdf-lib": "^1.17.1",
     "postcss": "^8.4.47",
+    "storybook": "^8.6.18",
     "tailwindcss": "^3.4.13",
     "tsx": "^4.19.1",
     "typescript": "^5.6.3",

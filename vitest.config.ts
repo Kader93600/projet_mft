@@ -29,6 +29,8 @@ export default defineConfig({
       "**/e2e/**",
       "**/test-results/**",
       "**/playwright-report/**",
+      "**/storybook-static/**",
+      "**/*.stories.*",
     ],
     coverage: {
       provider: "v8",
