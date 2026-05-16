@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 
+import { withSentryConfig } from "@sentry/nextjs";
+
 // === Headers de sécurité ===
 // CSP autorise Supabase + Sentry + Resend tracking.
 // Si tu ajoutes un nouveau service tiers, ouvre la directive correspondante.
@@ -111,4 +113,37 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+// =====================================================================
+// Wrapping Sentry — upload des source maps + instrumentation auto.
+//
+// Source maps : permet à Sentry d'afficher le code original (TypeScript)
+// dans les stack traces au lieu du JS minifié. Requiert SENTRY_AUTH_TOKEN
+// dans Vercel (à demander à Sentry > Settings > Auth Tokens, scope :
+// project:releases).
+// =====================================================================
+const sentryOptions = {
+  // Configuration de l'organisation et du projet Sentry.
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+
+  // Silencieux côté build (sinon Sentry parle beaucoup dans les logs Vercel).
+  silent: !process.env.CI,
+
+  // Upload des source maps en prod uniquement (sinon ça ralentit le dev).
+  widenClientFileUpload: true,
+  hideSourceMaps: true,
+
+  // Désactive automatiquement les tunnels Sentry en dev pour ne pas
+  // polluer Network tab.
+  disableLogger: true,
+
+  // Tree-shake les helpers Sentry non utilisés (réduit la taille du bundle).
+  reactComponentAnnotation: { enabled: true },
+
+  // Routes /monitoring → proxy interne pour bypass des ad-blockers.
+  // Évite que les utilisateurs avec uBlock Origin ne reportent jamais d'erreur.
+  tunnelRoute: "/monitoring",
+};
+
+export default withSentryConfig(nextConfig, sentryOptions);

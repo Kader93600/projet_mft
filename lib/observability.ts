@@ -1,115 +1,151 @@
-// Wrapper minimal d'observabilité.
-// - Si Sentry est installé (@sentry/nextjs) ET NEXT_PUBLIC_SENTRY_DSN est défini,
-//   les évènements y sont envoyés.
-// - Sinon : POST direct vers l'API Sentry "store" via fetch (compatible serverless).
-// - Sinon : console fallback.
+// =====================================================================
+// Wrapper d'observabilité — interface stable au-dessus de Sentry.
+//
+// API : captureException, captureMessage, setSentryUser, addBreadcrumb.
+// Compatible client et server (le SDK @sentry/nextjs s'adapte au runtime).
+//
+// Si SENTRY_DSN n'est pas défini → fallback console.log (pas de no-op silencieux,
+// on veut voir les erreurs en dev local).
+// =====================================================================
+
+import * as Sentry from "@sentry/nextjs";
 
 type Sev = "fatal" | "error" | "warning" | "info" | "debug";
 
 interface CaptureOptions {
   level?: Sev;
-  user?: { id?: string; email?: string };
-  tags?: Record<string, string>;
+  user?: { id?: string; email?: string; role?: string };
+  tags?: Record<string, string | number | boolean>;
   extra?: Record<string, unknown>;
 }
 
-const DSN = process.env.NEXT_PUBLIC_SENTRY_DSN;
-const ENV = process.env.SENTRY_ENVIRONMENT || process.env.NODE_ENV || "development";
+const DSN =
+  process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN;
 
-function parseDsn(dsn: string) {
-  // ex : https://PUBLIC_KEY@o123.ingest.sentry.io/PROJECT_ID
-  const m = dsn.match(/^https:\/\/([^@]+)@([^/]+)\/(\d+)$/);
-  if (!m) return null;
-  return { publicKey: m[1], host: m[2], projectId: m[3] };
-}
+const HAS_SENTRY = !!DSN;
 
-async function sendToSentry(payload: any) {
-  if (!DSN) return;
-  const parsed = parseDsn(DSN);
-  if (!parsed) return;
-  const url = `https://${parsed.host}/api/${parsed.projectId}/store/`;
-  try {
-    await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Sentry-Auth":
-          `Sentry sentry_version=7, sentry_key=${parsed.publicKey}, ` +
-          `sentry_client=ma-formation-transport/1.0`,
-      },
-      body: JSON.stringify(payload),
-      cache: "no-store",
-    });
-  } catch {
-    // ne casse jamais l'app si Sentry est down
-  }
-}
-
-export async function captureException(err: unknown, opts: CaptureOptions = {}) {
-  const level: Sev = opts.level ?? "error";
+/**
+ * Capture une exception. Acceptable depuis n'importe quel runtime
+ * (client, server action, route handler, edge).
+ */
+export async function captureException(
+  err: unknown,
+  opts: CaptureOptions = {}
+) {
   const e = err instanceof Error ? err : new Error(String(err));
 
-  // Si le SDK Sentry global est dispo (client), on l'utilise
-  try {
-    // @ts-expect-error injection runtime
-    const S = typeof window !== "undefined" ? window.Sentry : undefined;
-    if (S?.captureException) {
-      S.captureException(e, { level, tags: opts.tags, extra: opts.extra });
-      return;
-    }
-  } catch {}
-
-  if (DSN) {
-    await sendToSentry({
-      event_id: crypto.randomUUID().replace(/-/g, ""),
-      timestamp: new Date().toISOString(),
-      platform: "javascript",
-      level,
-      environment: ENV,
-      user: opts.user,
-      tags: opts.tags,
-      extra: opts.extra,
-      exception: {
-        values: [
-          {
-            type: e.name,
-            value: e.message,
-            stacktrace: e.stack
-              ? {
-                  frames: e.stack
-                    .split("\n")
-                    .slice(1)
-                    .map((line) => ({ filename: line.trim() })),
-                }
-              : undefined,
-          },
-        ],
-      },
+  if (HAS_SENTRY) {
+    Sentry.withScope((scope) => {
+      if (opts.level) scope.setLevel(opts.level);
+      if (opts.user) {
+        scope.setUser({
+          id: opts.user.id,
+          email: opts.user.email,
+          // role n'est pas un champ standard Sentry, on le passe en tag.
+        });
+        if (opts.user.role) scope.setTag("user_role", opts.user.role);
+      }
+      if (opts.tags) {
+        for (const [k, v] of Object.entries(opts.tags)) {
+          scope.setTag(k, String(v));
+        }
+      }
+      if (opts.extra) {
+        for (const [k, v] of Object.entries(opts.extra)) {
+          scope.setExtra(k, v);
+        }
+      }
+      Sentry.captureException(e);
     });
     return;
   }
 
-  // Fallback dev
+  // Fallback dev / DSN absent
   // eslint-disable-next-line no-console
-  console.error(`[${level}]`, e, opts);
+  console.error(`[${opts.level ?? "error"}]`, e, opts);
 }
 
-export async function captureMessage(message: string, opts: CaptureOptions = {}) {
-  const level: Sev = opts.level ?? "info";
-  if (DSN) {
-    await sendToSentry({
-      event_id: crypto.randomUUID().replace(/-/g, ""),
-      timestamp: new Date().toISOString(),
-      platform: "javascript",
-      level,
-      environment: ENV,
-      message: { formatted: message },
-      tags: opts.tags,
-      extra: opts.extra,
-      user: opts.user,
+/**
+ * Capture un message (sans stack trace). Utile pour les warnings métier
+ * (paiement échoué, RLS bypass tenté, etc.).
+ */
+export async function captureMessage(
+  message: string,
+  opts: CaptureOptions = {}
+) {
+  if (HAS_SENTRY) {
+    Sentry.withScope((scope) => {
+      if (opts.level) scope.setLevel(opts.level);
+      if (opts.user) {
+        scope.setUser({
+          id: opts.user.id,
+          email: opts.user.email,
+        });
+        if (opts.user.role) scope.setTag("user_role", opts.user.role);
+      }
+      if (opts.tags) {
+        for (const [k, v] of Object.entries(opts.tags)) {
+          scope.setTag(k, String(v));
+        }
+      }
+      if (opts.extra) {
+        for (const [k, v] of Object.entries(opts.extra)) {
+          scope.setExtra(k, v);
+        }
+      }
+      Sentry.captureMessage(message);
     });
     return;
   }
+
   // eslint-disable-next-line no-console
-  console.log(`[${level}]`, message, opts);
+  console.log(`[${opts.level ?? "info"}]`, message, opts);
+}
+
+/**
+ * Définit l'utilisateur courant sur le scope Sentry (persiste pour les
+ * captures suivantes). À appeler dans les server actions ou les RSC qui
+ * connaissent le user authentifié.
+ */
+export function setSentryUser(user: {
+  id: string;
+  email?: string;
+  role?: string;
+} | null) {
+  if (!HAS_SENTRY) return;
+  if (user) {
+    Sentry.setUser({ id: user.id, email: user.email });
+    if (user.role) Sentry.setTag("user_role", user.role);
+  } else {
+    Sentry.setUser(null);
+  }
+}
+
+/**
+ * Ajoute un breadcrumb (point de contexte qui sera attaché à la prochaine
+ * exception capturée). Utile pour tracer "ce qui s'est passé avant" sans
+ * envoyer un event complet à chaque action.
+ */
+export function addBreadcrumb(crumb: {
+  category: string;
+  message: string;
+  level?: Sev;
+  data?: Record<string, unknown>;
+}) {
+  if (!HAS_SENTRY) return;
+  Sentry.addBreadcrumb({
+    category: crumb.category,
+    message: crumb.message,
+    level: crumb.level ?? "info",
+    data: crumb.data,
+  });
+}
+
+/**
+ * Force le flush des events Sentry — à utiliser avant un process.exit ou
+ * une fin de cron job pour s'assurer que tout est envoyé.
+ */
+export async function flushSentry(timeoutMs: number = 2000) {
+  if (!HAS_SENTRY) return;
+  await Sentry.flush(timeoutMs);
 }
