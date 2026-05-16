@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
-import { trackServerEvent } from "@/lib/analytics";
+import { trackServerEvent } from "@/lib/analytics-server";
 
 // ---------------------------------------------------------------------
 // Helpers

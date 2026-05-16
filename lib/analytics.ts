@@ -1,8 +1,13 @@
 // =====================================================================
-// Wrapper analytics — interface stable au-dessus de PostHog.
+// Wrapper analytics — partie CLIENT uniquement.
 //
-// Côté client : utilise le SDK posthog-js (auto-track pageviews, sessions).
-// Côté serveur : utilise posthog-node (Stripe webhook, server actions).
+// Pour le tracking côté serveur (server actions, webhooks, cron jobs),
+// utilisez lib/analytics-server.ts qui charge posthog-node.
+//
+// La séparation client / server est CRITIQUE : posthog-node utilise des
+// APIs Node (node:readline) qui ne peuvent pas être bundle côté navigateur.
+// Si vous importez quoi que ce soit de posthog-node depuis un fichier
+// référencé par un component "use client", le build casse.
 //
 // Conformité RGPD :
 //   • Région EU (Francfort) — pas de transfert hors UE
@@ -179,68 +184,6 @@ export function isTrackingEnabled(): boolean {
 }
 
 // ---------------------------------------------------------------------
-// Serveur (Node : routes API, server actions, cron, webhook Stripe)
+// 👉 Pour le tracking SERVEUR : voir lib/analytics-server.ts
+// (séparation nécessaire car posthog-node ne peut pas être bundle client)
 // ---------------------------------------------------------------------
-
-let _serverClient: import("posthog-node").PostHog | null = null;
-
-/**
- * Récupère (lazy) une instance posthog-node pour capture serveur.
- * Important : appeler shutdownServerAnalytics() avant la fin du process
- * pour flusher les events (notamment dans les cron jobs).
- */
-async function getServerClient() {
-  if (!HAS_POSTHOG) return null;
-  if (_serverClient) return _serverClient;
-  const { PostHog } = await import("posthog-node");
-  _serverClient = new PostHog(KEY!, {
-    host: HOST,
-    flushAt: 1, // envoie immédiat (on est en serverless, pas de batch)
-    flushInterval: 0,
-  });
-  return _serverClient;
-}
-
-/**
- * Track un event côté serveur. À utiliser dans les server actions, les
- * routes API, le webhook Stripe, les cron jobs.
- *
- * Exemple :
- *   await trackServerEvent({
- *     userId: enrollment.user_id,
- *     event: "payment_success",
- *     props: { formation_slug: "gotrm", pack: "premium", amount_cents: 99900 }
- *   });
- */
-export async function trackServerEvent(args: {
-  userId: string;
-  event: EventName;
-  props?: EventProps;
-}) {
-  const ph = await getServerClient();
-  if (!ph) return;
-  try {
-    ph.capture({
-      distinctId: args.userId,
-      event: args.event,
-      properties: args.props ?? {},
-    });
-    // En serverless on flushe immédiatement pour ne pas perdre l'event
-    // si la lambda meurt avant le batch.
-    await ph.flush();
-  } catch (e) {
-    // eslint-disable-next-line no-console
-    console.warn("[posthog-server] capture failed", args.event, e);
-  }
-}
-
-/**
- * À appeler en fin de cron job pour s'assurer que tout est envoyé.
- */
-export async function shutdownServerAnalytics() {
-  if (!_serverClient) return;
-  try {
-    await _serverClient.shutdown();
-    _serverClient = null;
-  } catch {}
-}

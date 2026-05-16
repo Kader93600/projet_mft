@@ -4,7 +4,7 @@ import { verifyStripeSignature } from "@/lib/stripe";
 import { captureException } from "@/lib/observability";
 import { sendEmail, paymentReceivedEmail } from "@/lib/email";
 import { LEGAL } from "@/lib/legal-config";
-import { trackServerEvent } from "@/lib/analytics";
+import { trackServerEvent } from "@/lib/analytics-server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
