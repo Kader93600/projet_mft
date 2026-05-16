@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
@@ -21,6 +22,7 @@ import {
  * n'atterrisse sur le formulaire de nouveau mot de passe.
  */
 export function ForgotPasswordForm() {
+  const t = useTranslations("forgotPassword");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,34 +66,35 @@ export function ForgotPasswordForm() {
           <Check className="h-7 w-7 text-emerald-700" />
         </div>
         <div>
-          <h2 className="font-display text-lg font-semibold text-navy-900">
-            Email envoyé.
+          <h2 className="font-display text-lg font-semibold text-navy-900 dark:text-[hsl(var(--text))]">
+            {t("sentTitle")}
           </h2>
-          <p className="mt-2 text-sm text-slate-600 leading-relaxed">
-            Si un compte existe avec l'adresse{" "}
-            <span className="font-medium text-navy-900">{email}</span>, vous
-            recevrez sous une minute un email avec un lien sécurisé. Le lien
-            est valable <strong>1 heure</strong>.
+          <p className="mt-2 text-sm text-slate-600 dark:text-[hsl(var(--text-muted))] leading-relaxed">
+            {t.rich("sentDescription", {
+              email: () => (
+                <span className="font-medium text-navy-900 dark:text-[hsl(var(--text))]">
+                  {email}
+                </span>
+              ),
+            })}
           </p>
         </div>
-        <div className="rounded-xl bg-navy-50 border border-navy-100 px-4 py-3 text-xs text-slate-600 text-left">
-          <div className="font-semibold text-navy-900 mb-1 inline-flex items-center gap-1.5">
+        <div className="rounded-xl bg-navy-50 border border-navy-100 px-4 py-3 text-xs text-slate-600 text-left dark:bg-[hsl(var(--surface-2))] dark:border-[hsl(var(--border))] dark:text-[hsl(var(--text-muted))]">
+          <div className="font-semibold text-navy-900 dark:text-[hsl(var(--text))] mb-1 inline-flex items-center gap-1.5">
             <Mail className="h-3.5 w-3.5" />
-            Pas reçu d'email ?
+            {t("notReceivedTitle")}
           </div>
           <ul className="space-y-1 list-disc pl-4">
-            <li>Vérifiez votre dossier spam ou indésirables</li>
+            <li>{t("notReceivedSpam")}</li>
+            <li>{t("notReceivedWait")}</li>
             <li>
-              Patientez quelques minutes (la livraison peut être différée)
-            </li>
-            <li>
-              Vérifiez la saisie de l'adresse :{" "}
+              {t("notReceivedCheckEmail")}{" "}
               <button
                 type="button"
                 onClick={() => setSent(false)}
-                className="font-medium text-brand-700 hover:underline"
+                className="font-medium text-brand-700 dark:text-signal-400 hover:underline"
               >
-                modifier
+                {t("notReceivedModify")}
               </button>
             </li>
           </ul>
@@ -100,7 +103,7 @@ export function ForgotPasswordForm() {
           href="/login"
           className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-navy-900 px-4 py-3 text-sm font-semibold text-white hover:bg-navy-800 transition-colors"
         >
-          Retour à la connexion
+          {t("backToLogin")}
           <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
@@ -118,7 +121,7 @@ export function ForgotPasswordForm() {
       }
     >
       <div style={{ animation: "fade-up 0.4s ease-out both" }}>
-        <Label htmlFor="email">Adresse email</Label>
+        <Label htmlFor="email">{t("emailLabel")}</Label>
         <div className="relative">
           <Mail className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input
@@ -128,13 +131,13 @@ export function ForgotPasswordForm() {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="vous@exemple.fr"
+            placeholder={t("emailPlaceholder")}
             className="pl-10"
             autoFocus
           />
         </div>
-        <p className="mt-2 text-[11px] text-slate-500">
-          L'email associé à votre compte stagiaire.
+        <p className="mt-2 text-[11px] text-slate-500 dark:text-[hsl(var(--text-muted))]">
+          {t("emailHelper")}
         </p>
       </div>
 
@@ -159,12 +162,12 @@ export function ForgotPasswordForm() {
         {loading ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
-            Envoi…
+            {t("sending")}
           </>
         ) : (
           <>
             <Send className="h-4 w-4" />
-            Envoyer le lien de réinitialisation
+            {t("sendCta")}
           </>
         )}
       </Button>

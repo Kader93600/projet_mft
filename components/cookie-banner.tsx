@@ -1,6 +1,7 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Cookie } from "lucide-react";
 
 const STORAGE_KEY = "gotrm.cookie.consent.v1";
@@ -14,6 +15,7 @@ type Choice = {
 };
 
 export function CookieBanner() {
+  const t = useTranslations("cookies");
   const [open, setOpen] = React.useState(false);
   const [details, setDetails] = React.useState(false);
   const [analytics, setAnalytics] = React.useState(false);
@@ -111,7 +113,7 @@ export function CookieBanner() {
       aria-describedby={descId}
       className="fixed inset-x-0 bottom-0 z-40 p-3 md:p-5"
     >
-      <div className="mx-auto max-w-3xl rounded-2xl border border-navy-100 bg-white shadow-float p-5 md:p-6">
+      <div className="mx-auto max-w-3xl rounded-2xl border border-navy-100 bg-white shadow-float p-5 md:p-6 dark:bg-[hsl(var(--surface))] dark:border-[hsl(var(--border))]">
         <div className="flex items-start gap-3">
           <div
             aria-hidden="true"
@@ -124,51 +126,50 @@ export function CookieBanner() {
               ref={titleRef}
               id={headingId}
               tabIndex={-1}
-              className="font-display text-lg font-semibold text-navy-950 outline-none"
+              className="font-display text-lg font-semibold text-navy-950 dark:text-[hsl(var(--text))] outline-none"
             >
-              Vos préférences de confidentialité
+              {t("preferencesTitle")}
             </h2>
-            <p id={descId} className="text-sm text-slate-600 mt-1">
-              Nous utilisons des cookies essentiels au fonctionnement de la
-              plateforme. Avec votre accord, nous activons aussi la mesure
-              d'audience et certaines communications.{" "}
+            <p id={descId} className="text-sm text-slate-600 dark:text-[hsl(var(--text-muted))] mt-1">
+              {t("preferencesDescription")}{" "}
               <Link
                 href="/confidentialite"
-                className="text-navy-900 underline"
+                className="text-navy-900 dark:text-signal-400 underline"
               >
-                En savoir plus
+                {t("learnMoreLink")}
               </Link>
               .
             </p>
 
             {details && (
               <fieldset className="mt-4 space-y-2 text-sm border-0 p-0">
-                <legend className="sr-only">Catégories de cookies</legend>
+                <legend className="sr-only">{t("categoriesLegend")}</legend>
                 <ConsentRow
                   id="c-essential"
-                  label="Cookies essentiels"
-                  desc="Indispensables au fonctionnement (session, sécurité)."
+                  label={t("essential")}
+                  desc={t("essentialDesc")}
+                  alwaysActiveLabel={t("alwaysActive")}
                   checked
                   disabled
                 />
                 <ConsentRow
                   id="c-analytics"
-                  label="Mesure d'audience"
-                  desc="Statistiques anonymisées d'usage."
+                  label={t("analytics")}
+                  desc={t("analyticsDesc")}
                   checked={analytics}
                   onChange={setAnalytics}
                 />
                 <ConsentRow
                   id="c-comms"
-                  label="Communications"
-                  desc="Rappels et notifications pédagogiques."
+                  label={t("communications")}
+                  desc={t("communicationsDesc")}
                   checked={communications}
                   onChange={setCommunications}
                 />
                 <ConsentRow
                   id="c-news"
-                  label="Lettre d'information"
-                  desc="Actualités et mises à jour."
+                  label={t("newsletter")}
+                  desc={t("newsletterDesc")}
                   checked={newsletter}
                   onChange={setNewsletter}
                 />
@@ -181,9 +182,9 @@ export function CookieBanner() {
                 onClick={() => setDetails((v) => !v)}
                 aria-expanded={details}
                 aria-controls="cookie-details"
-                className="text-sm text-slate-600 hover:text-navy-900 underline px-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-900 rounded"
+                className="text-sm text-slate-600 dark:text-[hsl(var(--text-muted))] hover:text-navy-900 dark:hover:text-[hsl(var(--text))] underline px-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-900 rounded"
               >
-                {details ? "Masquer le détail" : "Personnaliser"}
+                {details ? t("hideDetails") : t("customize")}
               </button>
               <button
                 type="button"
@@ -194,18 +195,18 @@ export function CookieBanner() {
                     newsletter: false,
                   })
                 }
-                className="px-4 py-2 rounded-xl border border-navy-200 text-sm font-medium text-navy-900 hover:bg-navy-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-900"
+                className="px-4 py-2 rounded-xl border border-navy-200 dark:border-[hsl(var(--border))] text-sm font-medium text-navy-900 dark:text-[hsl(var(--text))] hover:bg-navy-50 dark:hover:bg-[hsl(var(--surface-2))] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-900"
               >
-                Refuser tout
+                {t("rejectAll")}
               </button>
               <button
                 type="button"
                 onClick={() =>
                   persist({ analytics, communications, newsletter })
                 }
-                className="px-4 py-2 rounded-xl border border-navy-200 text-sm font-medium text-navy-900 hover:bg-navy-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-900"
+                className="px-4 py-2 rounded-xl border border-navy-200 dark:border-[hsl(var(--border))] text-sm font-medium text-navy-900 dark:text-[hsl(var(--text))] hover:bg-navy-50 dark:hover:bg-[hsl(var(--surface-2))] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-900"
               >
-                Enregistrer mes choix
+                {t("savePreferences")}
               </button>
               <button
                 type="button"
@@ -218,7 +219,7 @@ export function CookieBanner() {
                 }
                 className="px-4 py-2 rounded-xl bg-navy-900 text-white text-sm font-medium hover:bg-navy-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-500"
               >
-                Tout accepter
+                {t("acceptAll")}
               </button>
             </div>
           </div>
@@ -235,6 +236,7 @@ function ConsentRow({
   checked,
   onChange,
   disabled,
+  alwaysActiveLabel,
 }: {
   id: string;
   label: string;
@@ -242,11 +244,12 @@ function ConsentRow({
   checked: boolean;
   onChange?: (v: boolean) => void;
   disabled?: boolean;
+  alwaysActiveLabel?: string;
 }) {
   return (
     <label
       htmlFor={id}
-      className="flex items-start gap-3 rounded-xl border border-navy-100 bg-ivory px-4 py-3 cursor-pointer hover:border-navy-200"
+      className="flex items-start gap-3 rounded-xl border border-navy-100 dark:border-[hsl(var(--border))] bg-ivory dark:bg-[hsl(var(--surface-2))] px-4 py-3 cursor-pointer hover:border-navy-200"
     >
       <input
         id={id}
@@ -257,11 +260,11 @@ function ConsentRow({
         className="mt-0.5 h-5 w-5 rounded border-navy-300 text-navy-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-900 disabled:opacity-60"
       />
       <span className="flex-1">
-        <span className="block font-medium text-navy-900">{label}</span>
-        <span className="block text-xs text-slate-500">{desc}</span>
-        {disabled && (
+        <span className="block font-medium text-navy-900 dark:text-[hsl(var(--text))]">{label}</span>
+        <span className="block text-xs text-slate-500 dark:text-[hsl(var(--text-muted))]">{desc}</span>
+        {disabled && alwaysActiveLabel && (
           <span className="block text-[10px] uppercase tracking-wider text-slate-400 mt-1">
-            Toujours actif
+            {alwaysActiveLabel}
           </span>
         )}
       </span>

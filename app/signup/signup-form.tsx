@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
@@ -15,6 +16,7 @@ import {
 } from "lucide-react";
 
 export function SignupForm() {
+  const t = useTranslations("signup");
   const router = useRouter();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -110,21 +112,20 @@ export function SignupForm() {
             className="mt-5 font-display text-2xl font-semibold text-navy-950"
             style={{ animation: "fade-up 0.5s ease-out 0.2s both" }}
           >
-            Bienvenue, {fullName.split(" ")[0] || "futur stagiaire"} !
+            {t("welcomeName", { name: fullName.split(" ")[0] || t("welcomeFallback") })}
           </h3>
           <p
             className="mt-2 text-sm text-slate-600 leading-relaxed max-w-xs mx-auto"
             style={{ animation: "fade-up 0.5s ease-out 0.3s both" }}
           >
-            Votre compte est créé. Vérifiez vos emails pour valider votre
-            adresse. Redirection en cours…
+            {t("accountCreatedHint")}
           </p>
           <div
             className="mt-6 inline-flex items-center gap-2 text-xs text-emerald-700 font-medium"
             style={{ animation: "fade-up 0.5s ease-out 0.4s both" }}
           >
             <Loader2 className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none" />
-            Préparation de votre espace…
+            {t("preparingSpace")}
           </div>
         </div>
       </div>
@@ -140,7 +141,7 @@ export function SignupForm() {
       }
     >
       <div style={{ animation: "fade-up 0.4s ease-out both" }}>
-        <Label htmlFor="fullName">Nom complet</Label>
+        <Label htmlFor="fullName">{t("fullName")}</Label>
         <div className="relative">
           <User className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input
@@ -149,13 +150,13 @@ export function SignupForm() {
             autoComplete="name"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            placeholder="Prénom Nom"
+            placeholder={t("fullNamePlaceholder")}
             className="pl-10"
           />
         </div>
       </div>
       <div style={{ animation: "fade-up 0.4s ease-out 0.06s both" }}>
-        <Label htmlFor="email">Adresse email</Label>
+        <Label htmlFor="email">{t("emailLabel")}</Label>
         <div className="relative">
           <Mail className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input
@@ -165,13 +166,13 @@ export function SignupForm() {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="vous@exemple.fr"
+            placeholder={t("emailPlaceholder")}
             className="pl-10"
           />
         </div>
       </div>
       <div style={{ animation: "fade-up 0.4s ease-out 0.12s both" }}>
-        <Label htmlFor="password">Mot de passe</Label>
+        <Label htmlFor="password">{t("passwordLabel")}</Label>
         <div className="relative">
           <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input
@@ -182,12 +183,12 @@ export function SignupForm() {
             autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Minimum 6 caractères"
+            placeholder={t("passwordPlaceholder")}
             className="pl-10"
           />
         </div>
         <p className="mt-2 text-xs text-slate-500">
-          Au moins 6 caractères. Évitez un mot de passe déjà utilisé ailleurs.
+          {t("passwordHelper")}
         </p>
       </div>
 
@@ -212,11 +213,11 @@ export function SignupForm() {
         {loading ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
-            Création…
+            {t("creating")}
           </>
         ) : (
           <>
-            Créer mon compte
+            {t("createCta")}
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0" />
           </>
         )}
@@ -226,8 +227,7 @@ export function SignupForm() {
         className="text-center text-xs text-slate-500"
         style={{ animation: "fade-up 0.4s ease-out 0.24s both" }}
       >
-        En créant un compte, vous acceptez nos conditions d&apos;utilisation
-        et notre politique de confidentialité.
+        {t("terms")}
       </p>
     </form>
   );

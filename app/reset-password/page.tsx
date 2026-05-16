@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { ResetPasswordForm } from "./reset-form";
 import { Logo } from "@/components/ui/logo";
 import { ShieldCheck, ArrowLeft, KeyRound } from "lucide-react";
@@ -6,7 +7,10 @@ import { LEGAL } from "@/lib/legal-config";
 
 export const dynamic = "force-dynamic";
 
-export default function ResetPasswordPage() {
+export default async function ResetPasswordPage() {
+  const t = await getTranslations("resetPassword");
+  const tFooter = await getTranslations("footer");
+
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-night text-white">
       {/* Left — Visual panel */}
@@ -35,22 +39,24 @@ export default function ResetPasswordPage() {
             className="inline-flex items-center gap-2 text-sm text-white/70 hover:text-white transition"
           >
             <ArrowLeft className="h-4 w-4" />
-            Retour à la connexion
+            {t("backToLogin")}
           </Link>
         </div>
 
         <div className="relative space-y-8 max-w-md">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-signal-500/30 bg-signal-500/10 px-3 py-1 text-xs font-medium text-signal-300">
             <KeyRound className="h-3 w-3" />
-            Réinitialisation sécurisée
+            {t("badge")}
           </span>
           <h2 className="font-display text-4xl leading-[1.05] tracking-tight">
-            Reprenez la main sur{" "}
-            <span className="italic text-signal-400">votre compte</span>.
+            {t("taglinePart1")}{" "}
+            <span className="italic text-signal-400">
+              {t("taglineHighlight")}
+            </span>
+            .
           </h2>
           <p className="text-white/70 text-[15px] leading-relaxed">
-            Choisissez un nouveau mot de passe robuste. Une fois défini, votre
-            session précédente sera fermée et vous pourrez vous reconnecter.
+            {t("description")}
           </p>
 
           <ul className="space-y-3 text-sm">
@@ -58,25 +64,19 @@ export default function ResetPasswordPage() {
               <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-md bg-signal-500/15 border border-signal-500/30 text-signal-400">
                 <ShieldCheck className="h-3.5 w-3.5" />
               </span>
-              <span className="text-white/85">
-                8 caractères minimum, au moins 1 lettre et 1 chiffre
-              </span>
+              <span className="text-white/85">{t("hintMinChars")}</span>
             </li>
             <li className="flex items-start gap-3">
               <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-md bg-signal-500/15 border border-signal-500/30 text-signal-400">
                 <ShieldCheck className="h-3.5 w-3.5" />
               </span>
-              <span className="text-white/85">
-                Évitez les mots de passe déjà utilisés ailleurs
-              </span>
+              <span className="text-white/85">{t("hintUnique")}</span>
             </li>
             <li className="flex items-start gap-3">
               <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-md bg-signal-500/15 border border-signal-500/30 text-signal-400">
                 <ShieldCheck className="h-3.5 w-3.5" />
               </span>
-              <span className="text-white/85">
-                Le lien reçu par email est valable 1 heure
-              </span>
+              <span className="text-white/85">{t("hintExpiry")}</span>
             </li>
           </ul>
         </div>
@@ -87,37 +87,37 @@ export default function ResetPasswordPage() {
       </aside>
 
       {/* Right — Form */}
-      <main className="flex items-center justify-center p-6 sm:p-10 bg-ivory text-ink">
+      <main className="flex items-center justify-center p-6 sm:p-10 bg-ivory text-ink dark:bg-[hsl(var(--bg))] dark:text-[hsl(var(--text))]">
         <div className="w-full max-w-md">
           <div className="lg:hidden mb-8 flex justify-center">
             <Logo />
           </div>
 
           <div className="mb-8">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-signal-700">
-              Sécurité du compte
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-signal-700 dark:text-signal-400">
+              {t("panelEyebrow")}
             </span>
-            <h1 className="mt-2 font-display text-3xl font-semibold text-navy-950 tracking-tight">
-              Nouveau mot de passe.
+            <h1 className="mt-2 font-display text-3xl font-semibold text-navy-950 dark:text-[hsl(var(--text))] tracking-tight">
+              {t("title")}
             </h1>
-            <p className="mt-2 text-[15px] text-slate-600">
-              Définissez un mot de passe robuste pour sécuriser votre compte.
+            <p className="mt-2 text-[15px] text-slate-600 dark:text-[hsl(var(--text-muted))]">
+              {t("subtitle")}
             </p>
           </div>
 
-          <div className="rounded-2xl border border-navy-100 bg-white p-8 shadow-soft">
+          <div className="rounded-2xl border border-navy-100 bg-white p-8 shadow-soft dark:bg-[hsl(var(--surface))] dark:border-[hsl(var(--border))]">
             <ResetPasswordForm />
           </div>
 
-          <div className="mt-10 pt-6 border-t border-navy-100 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-slate-500">
-            <Link href="/mentions-legales" className="hover:text-navy-900">
-              Mentions légales
+          <div className="mt-10 pt-6 border-t border-navy-100 dark:border-[hsl(var(--border))] flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-[hsl(var(--text-muted))]">
+            <Link href="/mentions-legales" className="hover:text-navy-900 dark:hover:text-[hsl(var(--text))]">
+              {tFooter("legal")}
             </Link>
-            <Link href="/cgu" className="hover:text-navy-900">
-              CGU
+            <Link href="/cgu" className="hover:text-navy-900 dark:hover:text-[hsl(var(--text))]">
+              {tFooter("cgu")}
             </Link>
-            <Link href="/confidentialite" className="hover:text-navy-900">
-              Confidentialité
+            <Link href="/confidentialite" className="hover:text-navy-900 dark:hover:text-[hsl(var(--text))]">
+              {tFooter("privacy")}
             </Link>
           </div>
         </div>

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
@@ -28,6 +29,7 @@ import {
  *  5. signOut + redirect vers /login?reset=success
  */
 export function ResetPasswordForm() {
+  const t = useTranslations("resetPassword");
   const router = useRouter();
   const [hasSession, setHasSession] = useState<"checking" | "yes" | "no">(
     "checking"
@@ -53,20 +55,18 @@ export function ResetPasswordForm() {
     };
   }, []);
 
-  const strength = scorePassword(pwd);
+  const strength = scorePassword(pwd, t);
   const meetsRules = strength.score >= 3 && pwd.length >= 8;
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     if (pwd !== pwd2) {
-      setError("Les deux mots de passe ne correspondent pas.");
+      setError(t("passwordsDontMatch"));
       return;
     }
     if (!meetsRules) {
-      setError(
-        "Mot de passe trop faible : minimum 8 caractères avec au moins 1 lettre, 1 chiffre."
-      );
+      setError(t("rulesError"));
       return;
     }
     setLoading(true);
@@ -88,9 +88,9 @@ export function ResetPasswordForm() {
 
   if (hasSession === "checking") {
     return (
-      <div className="flex flex-col items-center gap-3 py-8 text-slate-600">
+      <div className="flex flex-col items-center gap-3 py-8 text-slate-600 dark:text-[hsl(var(--text-muted))]">
         <Loader2 className="h-6 w-6 animate-spin text-brand-600 motion-reduce:animate-none" />
-        <span className="text-sm">Vérification du lien…</span>
+        <span className="text-sm">{t("checkingLink")}</span>
       </div>
     );
   }
@@ -105,10 +105,9 @@ export function ResetPasswordForm() {
         <div className="flex items-start gap-3 rounded-xl bg-rose-50 border border-rose-200 px-4 py-4 text-sm text-rose-800">
           <AlertCircle className="h-5 w-5 mt-0.5 flex-none" />
           <div>
-            <div className="font-semibold">Lien invalide ou expiré</div>
+            <div className="font-semibold">{t("invalidLinkTitle")}</div>
             <p className="mt-1 text-rose-700/90">
-              Le lien de réinitialisation n'est plus valide. Demandez-en un
-              nouveau depuis la page de connexion.
+              {t("invalidLinkDescription")}
             </p>
           </div>
         </div>
@@ -116,7 +115,7 @@ export function ResetPasswordForm() {
           href="/login"
           className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-navy-900 px-4 py-3 text-sm font-semibold text-white hover:bg-navy-800 transition-colors"
         >
-          Retour à la connexion
+          {t("backToLogin")}
           <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
@@ -134,11 +133,11 @@ export function ResetPasswordForm() {
           <ShieldCheck className="h-7 w-7 text-emerald-700" />
         </div>
         <div>
-          <div className="font-display text-lg font-semibold text-navy-900">
-            Mot de passe mis à jour
+          <div className="font-display text-lg font-semibold text-navy-900 dark:text-[hsl(var(--text))]">
+            {t("successTitle")}
           </div>
-          <p className="mt-1 text-sm text-slate-600">
-            Redirection vers la connexion…
+          <p className="mt-1 text-sm text-slate-600 dark:text-[hsl(var(--text-muted))]">
+            {t("successRedirect")}
           </p>
         </div>
       </div>
@@ -148,7 +147,7 @@ export function ResetPasswordForm() {
   return (
     <form onSubmit={onSubmit} className="space-y-5">
       <div style={{ animation: "fade-up 0.4s ease-out both" }}>
-        <Label htmlFor="pwd">Nouveau mot de passe</Label>
+        <Label htmlFor="pwd">{t("newPasswordLabel")}</Label>
         <div className="relative">
           <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input
@@ -159,13 +158,13 @@ export function ResetPasswordForm() {
             autoComplete="new-password"
             value={pwd}
             onChange={(e) => setPwd(e.target.value)}
-            placeholder="Au moins 8 caractères"
+            placeholder={t("newPasswordPlaceholder")}
             className="pl-10 pr-11"
           />
           <button
             type="button"
             onClick={() => setShow((v) => !v)}
-            aria-label={show ? "Masquer le mot de passe" : "Afficher"}
+            aria-label={show ? t("hidePassword") : t("showPassword")}
             className="absolute right-3 top-1/2 -translate-y-1/2 h-7 w-7 rounded-md grid place-items-center text-slate-400 hover:text-navy-700 hover:bg-navy-50 transition-colors"
           >
             {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -194,15 +193,16 @@ export function ResetPasswordForm() {
                 />
               ))}
             </div>
-            <div className="text-[11px] text-slate-500">
-              Force : <span className="font-medium">{strength.label}</span>
+            <div className="text-[11px] text-slate-500 dark:text-[hsl(var(--text-muted))]">
+              {t("strengthLabel")}{" "}
+              <span className="font-medium">{strength.label}</span>
             </div>
           </div>
         )}
       </div>
 
       <div style={{ animation: "fade-up 0.4s ease-out 0.08s both" }}>
-        <Label htmlFor="pwd2">Confirmer le mot de passe</Label>
+        <Label htmlFor="pwd2">{t("confirmLabel")}</Label>
         <div className="relative">
           <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input
@@ -213,19 +213,19 @@ export function ResetPasswordForm() {
             autoComplete="new-password"
             value={pwd2}
             onChange={(e) => setPwd2(e.target.value)}
-            placeholder="Retapez votre nouveau mot de passe"
+            placeholder={t("confirmPlaceholder")}
             className="pl-10"
           />
         </div>
         {pwd2 && pwd !== pwd2 && (
           <p className="mt-1.5 text-[11px] text-rose-700">
-            Les mots de passe ne correspondent pas.
+            {t("passwordsDontMatch")}
           </p>
         )}
         {pwd2 && pwd && pwd === pwd2 && (
           <p className="mt-1.5 text-[11px] text-emerald-700 inline-flex items-center gap-1">
             <Check className="h-3 w-3" />
-            Les mots de passe correspondent.
+            {t("passwordsMatch")}
           </p>
         )}
       </div>
@@ -251,11 +251,11 @@ export function ResetPasswordForm() {
         {loading ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
-            Mise à jour…
+            {t("updating")}
           </>
         ) : (
           <>
-            Définir le nouveau mot de passe
+            {t("saveCta")}
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0" />
           </>
         )}
@@ -263,10 +263,10 @@ export function ResetPasswordForm() {
 
       <Link
         href="/login"
-        className="block w-full text-center text-xs text-slate-500 hover:text-navy-900 transition-colors"
+        className="block w-full text-center text-xs text-slate-500 dark:text-[hsl(var(--text-muted))] hover:text-navy-900 dark:hover:text-[hsl(var(--text))] transition-colors"
         style={{ animation: "fade-up 0.4s ease-out 0.2s both" }}
       >
-        ← Annuler et revenir à la connexion
+        {t("cancel")}
       </Link>
     </form>
   );
@@ -274,8 +274,13 @@ export function ResetPasswordForm() {
 
 /* ─── Helpers ─────────────────────────────────────────────────────── */
 
-function scorePassword(pwd: string): { score: number; label: string } {
-  if (!pwd) return { score: 0, label: "—" };
+type TFn = ReturnType<typeof useTranslations>;
+
+function scorePassword(
+  pwd: string,
+  t: TFn,
+): { score: number; label: string } {
+  if (!pwd) return { score: 0, label: t("strength0") };
   let score = 0;
   if (pwd.length >= 8) score++;
   if (pwd.length >= 12) score++;
@@ -284,7 +289,13 @@ function scorePassword(pwd: string): { score: number; label: string } {
   if (/[^A-Za-z0-9]/.test(pwd)) score++;
   // Plafond à 4
   score = Math.min(score, 4);
-  const labels = ["Très faible", "Faible", "Moyen", "Bon", "Excellent"];
+  const labels = [
+    t("strength1"),
+    t("strength2"),
+    t("strength3"),
+    t("strength4"),
+    t("strength5"),
+  ];
   return { score, label: labels[score] };
 }
 
