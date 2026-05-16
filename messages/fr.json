@@ -23,7 +23,9 @@
     "showLess": "Voir moins",
     "soon": "Bientôt",
     "new": "Nouveau",
-    "comingSoon": "Disponible prochainement"
+    "comingSoon": "Disponible prochainement",
+    "backToSite": "Retour au site",
+    "rights": "Tous droits réservés"
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -50,22 +52,37 @@
   },
   "auth": {
     "login": "Connexion",
-    "loginTitle": "Connectez-vous à votre espace",
+    "loginTitle": "Content de vous revoir.",
+    "loginSubtitle": "Connectez-vous pour reprendre votre formation.",
+    "personalSpace": "Espace personnel",
     "email": "Adresse email",
     "password": "Mot de passe",
     "forgotPassword": "Mot de passe oublié ?",
     "loginButton": "Se connecter",
     "noAccount": "Pas encore de compte ?",
+    "contactSchool": "Contactez l'école",
+    "accountsCreatedBy": "Les comptes stagiaires sont créés par notre équipe pédagogique après confirmation de votre inscription.",
     "signup": "Créer un compte",
     "signupTitle": "Créer mon compte stagiaire",
     "fullName": "Nom complet",
     "alreadyAccount": "Déjà inscrit ?",
     "resetPassword": "Réinitialiser le mot de passe",
     "resetSent": "Email de réinitialisation envoyé",
+    "resetSubtitle": "Recevez un lien sécurisé par email pour définir un nouveau mot de passe.",
+    "resetButton": "Recevoir le lien",
     "newPassword": "Nouveau mot de passe",
     "confirmPassword": "Confirmer le mot de passe",
     "passwordsDoNotMatch": "Les mots de passe ne correspondent pas",
-    "invalidCredentials": "Email ou mot de passe incorrect"
+    "invalidCredentials": "Email ou mot de passe incorrect",
+    "schoolTaglinePart1": "L'école des",
+    "schoolTaglineHighlight": "pros du transport",
+    "schoolDescription": "Reprenez votre préparation : modules, fiches de synthèse, examens blancs en conditions réelles, sessions live avec votre formateur.",
+    "qualiopiCertified": "Plateforme certifiée Qualiopi",
+    "officialDiplomas": "Titres pros officiels (RNCP) et attestations réglementaires",
+    "coachAvailable": "Coach pédagogique et hotline sous 24 h ouvrées",
+    "preparationFor": "Préparation à",
+    "otherFormations": "+ {count} autres",
+    "transportFormations": "{count} formations transport"
   },
   "dashboard": {
     "welcome": "Bonjour {name}, voici votre formation.",
@@ -102,7 +119,19 @@
     "cgu": "CGU",
     "cgv": "CGV",
     "privacy": "Confidentialité",
-    "rights": "Tous droits réservés"
+    "retraction": "Rétractation",
+    "internalRegulations": "Règlement intérieur",
+    "rights": "Tous droits réservés",
+    "siret": "SIRET",
+    "ofDeclared": "Organisme de formation déclaré"
+  },
+  "cookies": {
+    "title": "Cookies & données personnelles",
+    "description": "Nous utilisons des cookies pour mesurer l'audience pédagogique (PostHog) et améliorer votre expérience. Aucune donnée n'est partagée avec des tiers à but publicitaire.",
+    "accept": "Tout accepter",
+    "essentialOnly": "Essentiels uniquement",
+    "customize": "Personnaliser",
+    "learnMore": "En savoir plus"
   },
   "offline": {
     "title": "Vous êtes hors connexion",

@@ -23,7 +23,9 @@
     "showLess": "Show less",
     "soon": "Soon",
     "new": "New",
-    "comingSoon": "Coming soon"
+    "comingSoon": "Coming soon",
+    "backToSite": "Back to site",
+    "rights": "All rights reserved"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -50,22 +52,37 @@
   },
   "auth": {
     "login": "Sign in",
-    "loginTitle": "Sign in to your account",
+    "loginTitle": "Welcome back.",
+    "loginSubtitle": "Sign in to resume your training.",
+    "personalSpace": "Personal space",
     "email": "Email address",
     "password": "Password",
     "forgotPassword": "Forgot password?",
     "loginButton": "Sign in",
     "noAccount": "No account yet?",
+    "contactSchool": "Contact the school",
+    "accountsCreatedBy": "Student accounts are created by our pedagogical team after confirmation of your enrollment.",
     "signup": "Create an account",
     "signupTitle": "Create my student account",
     "fullName": "Full name",
     "alreadyAccount": "Already registered?",
     "resetPassword": "Reset password",
     "resetSent": "Reset email sent",
+    "resetSubtitle": "Receive a secure link by email to set a new password.",
+    "resetButton": "Send link",
     "newPassword": "New password",
     "confirmPassword": "Confirm password",
     "passwordsDoNotMatch": "Passwords don't match",
-    "invalidCredentials": "Invalid email or password"
+    "invalidCredentials": "Invalid email or password",
+    "schoolTaglinePart1": "The school for",
+    "schoolTaglineHighlight": "transport pros",
+    "schoolDescription": "Resume your preparation: modules, summary sheets, real-condition mock exams, live sessions with your trainer.",
+    "qualiopiCertified": "Qualiopi-certified platform",
+    "officialDiplomas": "Official titles (RNCP) and regulatory certifications",
+    "coachAvailable": "Pedagogical coach and hotline within 24h business",
+    "preparationFor": "Preparation for",
+    "otherFormations": "+ {count} more",
+    "transportFormations": "{count} transport courses"
   },
   "dashboard": {
     "welcome": "Hello {name}, here is your training program.",
@@ -102,7 +119,19 @@
     "cgu": "Terms of use",
     "cgv": "Terms of sale",
     "privacy": "Privacy",
-    "rights": "All rights reserved"
+    "retraction": "Withdrawal right",
+    "internalRegulations": "Internal regulations",
+    "rights": "All rights reserved",
+    "siret": "Business ID",
+    "ofDeclared": "Registered training organization"
+  },
+  "cookies": {
+    "title": "Cookies & personal data",
+    "description": "We use cookies to measure educational audience (PostHog) and improve your experience. No data is shared with advertising third parties.",
+    "accept": "Accept all",
+    "essentialOnly": "Essential only",
+    "customize": "Customize",
+    "learnMore": "Learn more"
   },
   "offline": {
     "title": "You're offline",
