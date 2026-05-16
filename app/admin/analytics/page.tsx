@@ -22,6 +22,13 @@ import { DeleteAttemptButton } from "./analytics-row-actions";
 import { TrendsChart } from "./trends-chart";
 import { CompletionBars } from "./completion-bars";
 import { RealtimeIndicator } from "./realtime-indicator";
+import { AtRiskSection } from "./at-risk-section";
+import {
+  TopStudentsSection,
+  QualiopiSection,
+  QuizOutliersSection,
+  RevenueMatrixSection,
+} from "./insights-sections";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -72,25 +79,42 @@ export default async function AdminAnalytics() {
     computed_at: new Date().toISOString(),
   };
 
-  // 2. Trends 30j (en parallèle des autres requêtes)
-  const [{ data: trends }, { data: completion }, { data: attempts }, { data: quizzes }] =
-    await Promise.all([
-      supabase
-        .from("vw_admin_trends_30d")
-        .select("day, signups, quiz_attempts, payments")
-        .order("day"),
-      supabase
-        .from("vw_admin_completion_by_formation")
-        .select("*")
-        .order("enrolled_count", { ascending: false })
-        .limit(10),
-      supabase
-        .from("quiz_attempts")
-        .select("*, profiles(id, full_name, email), quizzes(title)")
-        .order("finished_at", { ascending: false })
-        .limit(50),
-      supabase.from("quizzes").select("id, title").order("title"),
-    ]);
+  // 2. Toutes les autres requêtes en parallèle
+  const [
+    { data: trends },
+    { data: completion },
+    { data: attempts },
+    { data: quizzes },
+    { data: atRisk },
+    { data: topStudents },
+    { data: qualiopi },
+    { data: quizOutliers },
+    { data: revenueMatrix },
+  ] = await Promise.all([
+    supabase
+      .from("vw_admin_trends_30d")
+      .select("day, signups, quiz_attempts, payments")
+      .order("day"),
+    supabase
+      .from("vw_admin_completion_by_formation")
+      .select("*")
+      .order("enrolled_count", { ascending: false })
+      .limit(10),
+    supabase
+      .from("quiz_attempts")
+      .select("*, profiles(id, full_name, email), quizzes(title)")
+      .order("finished_at", { ascending: false })
+      .limit(50),
+    supabase.from("quizzes").select("id, title").order("title"),
+    supabase
+      .from("vw_admin_at_risk_students")
+      .select("*")
+      .limit(30),
+    supabase.from("vw_admin_top_students").select("*"),
+    supabase.from("vw_admin_qualiopi_indicators").select("*").single(),
+    supabase.from("vw_admin_quiz_outliers").select("*").limit(15),
+    supabase.from("vw_admin_revenue_by_formation_pack").select("*"),
+  ]);
 
   return (
     <div className="space-y-10">
@@ -234,6 +258,21 @@ export default async function AdminAnalytics() {
           </CardBody>
         </Card>
       </section>
+
+      {/* ─────────── Section Qualiopi / RNCP ─────────── */}
+      <QualiopiSection data={(qualiopi as any) ?? null} />
+
+      {/* ─────────── Section À risque + Top 10 (côte à côte) ─────────── */}
+      <section className="grid lg:grid-cols-2 gap-5">
+        <AtRiskSection rows={(atRisk ?? []) as any[]} />
+        <TopStudentsSection rows={(topStudents ?? []) as any[]} />
+      </section>
+
+      {/* ─────────── CA par formation × pack ─────────── */}
+      <RevenueMatrixSection rows={(revenueMatrix ?? []) as any[]} />
+
+      {/* ─────────── Quiz à difficulté anormale ─────────── */}
+      <QuizOutliersSection rows={(quizOutliers ?? []) as any[]} />
 
       {/* ─────────── Tableau dernières tentatives ─────────── */}
       <section>
