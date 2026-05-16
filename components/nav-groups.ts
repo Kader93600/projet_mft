@@ -30,53 +30,61 @@ import {
   CalendarDays,
 } from "lucide-react";
 
+/**
+ * Items et groupes de navigation.
+ *
+ * Les libellés sont stockés sous forme de clés i18n (`labelKey`, `shortKey`)
+ * que les consommateurs (sidebar, mobile-nav, app-shell, admin-shell)
+ * passent à `t()` (next-intl) au moment du rendu. La clé est complète,
+ * incluant son namespace ("nav.dashboard", "navGroups.learn", etc.).
+ */
 export type NavItem = {
   href: string;
-  label: string;
+  labelKey: string;
   icon: any;
-  short?: string;
+  shortKey?: string;
   exact?: boolean;
 };
-export type NavGroup = { label: string; items: NavItem[] };
+export type NavGroup = { labelKey: string; items: NavItem[] };
 
 // === Stagiaire ===
 export const STUDENT_GROUPS: NavGroup[] = [
   {
-    label: "Apprendre",
+    labelKey: "navGroups.learn",
     items: [
-      { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard, short: "Accueil" },
-      { href: "/modules", label: "Cours", icon: BookOpen, short: "Cours" },
-      { href: "/exercices", label: "Exercices", icon: Dumbbell, short: "Exos" },
-      { href: "/examens-blancs", label: "Examens blancs", icon: GraduationCap, short: "Examens" },
-      { href: "/glossaire", label: "Glossaire", icon: Library, short: "Gloss." },
+      { href: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard, shortKey: "navShort.home" },
+      { href: "/modules", labelKey: "nav.modules", icon: BookOpen, shortKey: "navShort.modules" },
+      { href: "/exercices", labelKey: "nav.exercises", icon: Dumbbell, shortKey: "navShort.exercises" },
+      { href: "/examens-blancs", labelKey: "nav.mockExams", icon: GraduationCap, shortKey: "navShort.mockExams" },
+      { href: "/glossaire", labelKey: "nav.glossary", icon: Library, shortKey: "navShort.glossary" },
     ],
   },
   {
-    label: "Suivi",
+    labelKey: "navGroups.track",
     items: [
-      { href: "/stats", label: "Mes résultats", icon: BarChart3, short: "Stats" },
-      { href: "/reussites", label: "Réussites", icon: Award, short: "Badges" },
-      { href: "/classement", label: "Classement", icon: Trophy, short: "Rang" },
-      { href: "/certificats", label: "Certificats", icon: ScrollText, short: "Certifs" },
+      { href: "/stats", labelKey: "nav.stats", icon: BarChart3, shortKey: "navShort.stats" },
+      { href: "/reussites", labelKey: "nav.achievements", icon: Award, shortKey: "navShort.achievements" },
+      { href: "/classement", labelKey: "nav.ranking", icon: Trophy, shortKey: "navShort.ranking" },
+      { href: "/certificats", labelKey: "nav.certificates", icon: ScrollText, shortKey: "navShort.certificates" },
     ],
   },
   {
-    label: "Échanger",
+    labelKey: "navGroups.exchange",
     items: [
-      { href: "/messages", label: "Messages", icon: MessageCircle, short: "Chat" },
-      { href: "/accompagnement", label: "Accompagnement", icon: HeartHandshake, short: "Suivi" },
-      { href: "/sessions", label: "Sessions en direct", icon: Video, short: "Live" },
-      { href: "/emargement", label: "Émargement", icon: ScrollText, short: "Émarg." },
-      { href: "/satisfaction", label: "Évaluations", icon: Award, short: "Avis" },
+      { href: "/messages", labelKey: "nav.messages", icon: MessageCircle, shortKey: "navShort.messages" },
+      { href: "/accompagnement", labelKey: "nav.coaching" /* fallback nav.* */, icon: HeartHandshake, shortKey: "navShort.coaching" },
+      { href: "/sessions", labelKey: "nav.sessions", icon: Video, shortKey: "navShort.sessions" },
+      { href: "/emargement", labelKey: "nav.attendance", icon: ScrollText, shortKey: "navShort.attendance" },
+      { href: "/satisfaction", labelKey: "nav.satisfaction", icon: Award, shortKey: "navShort.satisfaction" },
     ],
   },
   {
-    label: "Mon compte",
+    labelKey: "navGroups.account",
     items: [
-      { href: "/inscription", label: "Mon inscription", icon: Receipt, short: "Inscr." },
-      { href: "/mes-documents", label: "Mes documents", icon: FileText, short: "Docs" },
-      { href: "/accessibilite", label: "Accessibilité", icon: Accessibility, short: "A11y" },
-      { href: "/mes-donnees", label: "Mes données", icon: ShieldCheck, short: "RGPD" },
+      { href: "/inscription", labelKey: "nav.enrollment", icon: Receipt, shortKey: "navShort.enrollment" },
+      { href: "/mes-documents", labelKey: "nav.documents", icon: FileText, shortKey: "navShort.documents" },
+      { href: "/accessibilite", labelKey: "nav.accessibility", icon: Accessibility, shortKey: "navShort.accessibility" },
+      { href: "/mes-donnees", labelKey: "nav.personalData", icon: ShieldCheck, shortKey: "navShort.personalData" },
     ],
   },
 ];
@@ -84,56 +92,56 @@ export const STUDENT_GROUPS: NavGroup[] = [
 // === Admin ===
 export const ADMIN_GROUPS: NavGroup[] = [
   {
-    label: "Pilotage",
+    labelKey: "navGroups.pilotage",
     items: [
-      { href: "/admin", label: "Vue d'ensemble", icon: LayoutDashboard, exact: true },
-      { href: "/admin/analytics", label: "Analytiques", icon: BarChart3 },
-      { href: "/admin/reports", label: "Rapports Qualiopi", icon: FileText },
-      { href: "/admin/reports/bpf", label: "BPF (DGEFP)", icon: FileText },
+      { href: "/admin", labelKey: "nav.adminOverview", icon: LayoutDashboard, exact: true },
+      { href: "/admin/analytics", labelKey: "nav.adminAnalytics", icon: BarChart3 },
+      { href: "/admin/reports", labelKey: "nav.adminReports", icon: FileText },
+      { href: "/admin/reports/bpf", labelKey: "nav.adminBpf", icon: FileText },
     ],
   },
   {
-    label: "Personnes",
+    labelKey: "navGroups.people",
     items: [
-      { href: "/admin/users", label: "Utilisateurs", icon: Users },
-      { href: "/admin/affectations", label: "Affectations", icon: UsersRound },
-      { href: "/admin/groups", label: "Classes / Groupes", icon: UsersRound },
-      { href: "/admin/coaching", label: "Accompagnement", icon: HH2 },
-      { href: "/admin/alerts", label: "Alertes inactivité", icon: HH2 },
-      { href: "/admin/accessibilite", label: "Accessibilité", icon: Accessibility },
+      { href: "/admin/users", labelKey: "nav.adminUsers", icon: Users },
+      { href: "/admin/affectations", labelKey: "nav.adminAssignments", icon: UsersRound },
+      { href: "/admin/groups", labelKey: "nav.adminGroups", icon: UsersRound },
+      { href: "/admin/coaching", labelKey: "nav.adminCoaching", icon: HH2 },
+      { href: "/admin/alerts", labelKey: "nav.adminAlerts", icon: HH2 },
+      { href: "/admin/accessibilite", labelKey: "nav.adminAccessibility", icon: Accessibility },
     ],
   },
   {
-    label: "Pédagogie",
+    labelKey: "navGroups.pedagogy",
     items: [
-      { href: "/admin/formations", label: "Catalogue formations", icon: BookOpen },
-      { href: "/admin/banque-questions", label: "Banque de questions", icon: ClipboardList },
-      { href: "/admin/modules", label: "Cours & leçons", icon: BookOpen },
-      { href: "/admin/quizzes", label: "Exercices & examens", icon: ClipboardList },
-      { href: "/admin/sessions", label: "Sessions en direct", icon: Video },
-      { href: "/admin/placement", label: "Positionnement", icon: Target },
-      { href: "/admin/glossary", label: "Glossaire", icon: Library },
-      { href: "/admin/badges", label: "Badges & certificats", icon: Award },
+      { href: "/admin/formations", labelKey: "nav.adminFormations", icon: BookOpen },
+      { href: "/admin/banque-questions", labelKey: "nav.adminQuestionBank", icon: ClipboardList },
+      { href: "/admin/modules", labelKey: "nav.adminModules", icon: BookOpen },
+      { href: "/admin/quizzes", labelKey: "nav.adminQuizzes", icon: ClipboardList },
+      { href: "/admin/sessions", labelKey: "nav.adminSessions", icon: Video },
+      { href: "/admin/placement", labelKey: "nav.adminPlacement", icon: Target },
+      { href: "/admin/glossary", labelKey: "nav.adminGlossary", icon: Library },
+      { href: "/admin/badges", labelKey: "nav.adminBadges", icon: Award },
     ],
   },
   {
-    label: "Communication",
+    labelKey: "navGroups.communication",
     items: [
-      { href: "/admin/announcements", label: "Annonces", icon: Megaphone },
-      { href: "/admin/messages", label: "Messagerie", icon: MessageCircle },
+      { href: "/admin/announcements", labelKey: "nav.adminAnnouncements", icon: Megaphone },
+      { href: "/admin/messages", labelKey: "nav.adminMessages", icon: MessageCircle },
     ],
   },
   {
-    label: "Administration",
+    labelKey: "navGroups.administration",
     items: [
-      { href: "/admin/enrollments", label: "Inscriptions & paiements", icon: Wallet },
-      { href: "/admin/pricing", label: "Tarification des packs", icon: Tags },
-      { href: "/admin/settings", label: "Paramètres (index)", icon: Settings, exact: true },
-      { href: "/admin/settings/formation", label: "Paramètres formation", icon: Settings },
-      { href: "/admin/settings/documents", label: "Documents d'accueil", icon: FileSignature },
-      { href: "/admin/rgpd", label: "RGPD & confidentialité", icon: ShieldCheck },
-      { href: "/admin/security", label: "Sécurité (2FA)", icon: ShieldCheck },
-      { href: "/admin/audit", label: "Journal d'audit", icon: Shield },
+      { href: "/admin/enrollments", labelKey: "nav.adminEnrollments", icon: Wallet },
+      { href: "/admin/pricing", labelKey: "nav.adminPricing", icon: Tags },
+      { href: "/admin/settings", labelKey: "nav.adminSettingsIndex", icon: Settings, exact: true },
+      { href: "/admin/settings/formation", labelKey: "nav.adminSettingsFormation", icon: Settings },
+      { href: "/admin/settings/documents", labelKey: "nav.adminSettingsDocuments", icon: FileSignature },
+      { href: "/admin/rgpd", labelKey: "nav.adminRgpd", icon: ShieldCheck },
+      { href: "/admin/security", labelKey: "nav.adminSecurity", icon: ShieldCheck },
+      { href: "/admin/audit", labelKey: "nav.adminAudit", icon: Shield },
     ],
   },
 ];

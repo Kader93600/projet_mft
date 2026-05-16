@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/ui/logo";
 import { Settings, Shield } from "lucide-react";
@@ -31,17 +32,25 @@ const MOBILE_PRIMARY = FLAT.filter((i) =>
 
 export function AppShell({ children, profile }: AppShellProps) {
   const pathname = usePathname();
+  const t = useTranslations();
+  const tA11y = useTranslations("a11y");
+  const tShell = useTranslations("shell");
+  const tNav = useTranslations("nav");
 
-  const pageTitle =
-    FLAT.find((n) => pathname === n.href || pathname.startsWith(n.href + "/"))
-      ?.label ??
-    (pathname.startsWith("/admin") ? "Administration" : "MA FORMATION TRANSPORT");
+  const activeItem = FLAT.find(
+    (n) => pathname === n.href || pathname.startsWith(n.href + "/")
+  );
+  const pageTitle = activeItem
+    ? t(activeItem.labelKey)
+    : pathname.startsWith("/admin")
+    ? tNav("admin")
+    : tShell("appTitle");
 
   return (
     <div className="min-h-screen flex bg-ivory text-ink dark:bg-[hsl(var(--bg))] dark:text-[hsl(var(--text))]">
       {/* Skip link a11y — visible au focus uniquement */}
       <a href="#main-content" className="skip-link">
-        Aller au contenu principal
+        {tA11y("skipToContent")}
       </a>
       {/* Sidebar desktop */}
       <aside className="hidden md:flex w-72 flex-col border-r border-navy-100 bg-white dark:bg-[hsl(var(--surface))] dark:border-[hsl(var(--border))]">
@@ -65,7 +74,7 @@ export function AppShell({ children, profile }: AppShellProps) {
               )}
             >
               <Shield className="w-4 h-4" />
-              Espace admin
+              {tNav("adminSpace")}
             </Link>
             {profile.role === "super_admin" && (
               <Link
@@ -78,7 +87,7 @@ export function AppShell({ children, profile }: AppShellProps) {
                 )}
               >
                 <Shield className="w-4 h-4" />
-                Super-admin
+                {tNav("superAdmin")}
               </Link>
             )}
           </div>
@@ -104,7 +113,7 @@ export function AppShell({ children, profile }: AppShellProps) {
           <div className="flex items-center gap-3">
             <span className="inline-flex items-center gap-1.5 rounded-md bg-signal-500/15 border border-signal-500/30 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-signal-700 dark:text-signal-300">
               <span className="h-1.5 w-1.5 rounded-full bg-signal-500 animate-glow-pulse" />
-              Stagiaire
+              {tShell("studentBadge")}
             </span>
             <h1 className="font-display text-xl font-semibold text-navy-900 dark:text-[hsl(var(--text))] tracking-tight">
               {pageTitle}
@@ -132,7 +141,7 @@ export function AppShell({ children, profile }: AppShellProps) {
         </div>
 
         {/* Mobile bottom nav : 4 raccourcis + sheet "Plus" */}
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-navy-100 flex justify-around py-2 z-20 dark:bg-[hsl(var(--surface))]/95 dark:border-[hsl(var(--border))]" aria-label="Navigation principale mobile">
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-navy-100 flex justify-around py-2 z-20 dark:bg-[hsl(var(--surface))]/95 dark:border-[hsl(var(--border))]" aria-label={tA11y("openMenu")}>
           {MOBILE_PRIMARY.map((item) => {
             const active =
               pathname === item.href || pathname.startsWith(item.href + "/");
@@ -142,11 +151,11 @@ export function AppShell({ children, profile }: AppShellProps) {
                 href={item.href}
                 className={cn(
                   "flex flex-col items-center gap-1 min-w-[60px] px-2 py-1 text-[10px] font-semibold tracking-wide",
-                  active ? "text-navy-900" : "text-slate-500"
+                  active ? "text-navy-900 dark:text-[hsl(var(--text))]" : "text-slate-500 dark:text-[hsl(var(--text-muted))]"
                 )}
               >
                 <item.icon className={cn("w-5 h-5", active && "text-gold-600")} />
-                {item.short}
+                {item.shortKey ? t(item.shortKey) : t(item.labelKey)}
               </Link>
             );
           })}
@@ -156,11 +165,11 @@ export function AppShell({ children, profile }: AppShellProps) {
               href="/admin"
               className={cn(
                 "flex flex-col items-center gap-1 min-w-[60px] px-2 py-1 text-[10px] font-semibold tracking-wide",
-                pathname.startsWith("/admin") ? "text-gold-700" : "text-slate-500"
+                pathname.startsWith("/admin") ? "text-gold-700" : "text-slate-500 dark:text-[hsl(var(--text-muted))]"
               )}
             >
               <Settings className="w-5 h-5" />
-              Admin
+              {tNav("admin")}
             </Link>
           )}
         </nav>

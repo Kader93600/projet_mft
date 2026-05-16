@@ -2,6 +2,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
 import type { NavGroup } from "./nav-groups";
@@ -20,6 +21,7 @@ function isActive(pathname: string, href: string, exact?: boolean) {
 
 export function SidebarNav({ groups, variant = "light" }: Props) {
   const pathname = usePathname();
+  const t = useTranslations();
   const [collapsed, setCollapsed] = React.useState<Record<string, boolean>>({});
 
   React.useEffect(() => {
@@ -46,12 +48,13 @@ export function SidebarNav({ groups, variant = "light" }: Props) {
       {groups.map((g) => {
         // Auto-ouvrir un groupe qui contient la route active
         const hasActive = g.items.some((i) => isActive(pathname, i.href, i.exact));
-        const isOpen = !(collapsed[g.label] ?? false) || hasActive;
+        const isOpen = !(collapsed[g.labelKey] ?? false) || hasActive;
+        const groupLabel = t(g.labelKey);
         return (
-          <div key={g.label}>
+          <div key={g.labelKey}>
             <button
               type="button"
-              onClick={() => toggle(g.label)}
+              onClick={() => toggle(g.labelKey)}
               className={cn(
                 "w-full flex items-center justify-between px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] rounded-lg transition-colors",
                 dark
@@ -59,7 +62,7 @@ export function SidebarNav({ groups, variant = "light" }: Props) {
                   : "text-slate-400 hover:text-slate-600"
               )}
             >
-              <span>{g.label}</span>
+              <span>{groupLabel}</span>
               <ChevronDown
                 className={cn(
                   "h-3 w-3 transition-transform",
@@ -92,7 +95,7 @@ export function SidebarNav({ groups, variant = "light" }: Props) {
                           active && (dark ? "text-gold-400" : "text-gold-400")
                         )}
                       />
-                      <span className="truncate">{item.label}</span>
+                      <span className="truncate">{t(item.labelKey)}</span>
                       {active && (
                         <span className="absolute right-3 h-1.5 w-1.5 rounded-full bg-gold-400" />
                       )}
