@@ -13,7 +13,8 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const OUTPUT = resolve(__dirname, "output", "MFT-Roadmap-Checklist.pdf");
+const VERSION = "v4";
+const OUTPUT = resolve(__dirname, "output", `MFT-Roadmap-Checklist-${VERSION}.pdf`);
 mkdirSync(dirname(OUTPUT), { recursive: true });
 
 // ---------- Palette ----------
@@ -53,6 +54,42 @@ type Section = {
   blocks: { title: string; status?: "done" | "wip" | "todo"; steps: Step[] }[];
 };
 
+// Chantiers majeurs livrés depuis la roadmap v3 (mai 2026).
+// Affichés sur la page "Ce qui a été livré récemment".
+type Delivery = { title: string; desc: string };
+const RECENT_DELIVERIES: Delivery[] = [
+  {
+    title: "GOTRM complet — CCP3 importé (Optimiser les moyens du transport)",
+    desc:
+      "Le CCP3 du Titre Pro GOTRM est en ligne : 12 chapitres / 72 leçons (management d'équipe, CCNTR, temps de service, prépaie, formation pro, recrutement, QVCT, coûts d'exploitation, seuil de rentabilité, SIG/BFR/FRNG/CAF, budget, qualité). Avec CCP1 + CCP2 déjà livrés, le titre complet (RNCP 40990) est désormais accessible aux stagiaires.",
+  },
+  {
+    title: "i18n FR / EN — Parcours stagiaire 100 % bilingue",
+    desc:
+      "27 namespaces, ~600 clés. Login, dashboard, modules, exercices, examens blancs, expérience quiz complète (intro + runner + résultats), accompagnement, sessions Premium, home publique, tarifs. Toggle FR/EN dans la topbar + cookie NEXT_LOCALE persistant 1 an.",
+  },
+  {
+    title: "Observabilité — Sentry + PostHog + Dashboard admin",
+    desc:
+      "Sentry @sentry/nextjs avec tunnel /monitoring (anti-adblock) côté front et back. PostHog Cloud EU via /ingest. Dashboard admin temps réel : KPIs stagiaires actifs, funnel d'acquisition, heatmap d'usage, filtre par période, exports PDF, mode TV pour les bureaux.",
+  },
+  {
+    title: "Tests & CI — Vitest + GitHub Actions + Lighthouse + Storybook",
+    desc:
+      "126 tests unitaires Vitest (lib/permissions, markdown, scoring, parsers, email, admin-guard). Workflow GitHub Actions complet (lint + typecheck + tests + E2E Playwright + Lighthouse CI). Storybook 8 pour les composants UI. Tests d'intégration sur les server actions.",
+  },
+  {
+    title: "UX / A11y — Dark mode + PWA installable + WCAG 2.1 AA",
+    desc:
+      "Dark mode complet via CSS variables (--bg, --surface, --text, --border). PWA installable avec manifest + maskable icons + shortcuts + service worker offline. Skip links, focus visible, aria-labels conformes WCAG 2.1 AA.",
+  },
+  {
+    title: "P0 #1 levé — CI E2E branchée sur GitHub Actions",
+    desc:
+      "Dernière tâche P0 résolue. Le pipeline CI .github/workflows/e2e.yml exécute désormais les 9 tests E2E Playwright sur chaque PR. La plateforme est 25/25 sur les bloquants d'ouverture.",
+  },
+];
+
 const SECTIONS: Section[] = [
   {
     code: "P0",
@@ -81,97 +118,115 @@ const SECTIONS: Section[] = [
           },
           {
             title: "Brancher le pipeline CI (GitHub Actions) sur les tests E2E",
+            done: true,
+            detail: "Workflow .github/workflows/e2e.yml actif sur chaque PR.",
           },
         ],
       },
       {
         title: "P0 #2 — Variables d'environnement",
+        status: "done",
         steps: [
           {
             title: "Compte Resend + domaine vérifié (DKIM/SPF) pour les emails",
             detail:
-              "Permet : confirmation d'inscription, reset password, notifications stagiaire.",
+              "Opérationnel — confirmations, reset password, notifications.",
+            done: true,
           },
           {
             title: "Générer CRON_SECRET et l'ajouter à Vercel",
-            detail:
-              "Sécurise le cron quotidien /api/cron/inactivity (relance stagiaires inactifs).",
+            detail: "Cron quotidien /api/cron/inactivity actif.",
+            done: true,
           },
           {
             title:
               "Compte Stripe (mode Live) + clé secrète + webhook signing secret",
-            detail:
-              "Encaissement des inscriptions B2C et OPCO. Indispensable si ventes directes.",
+            detail: "Encaissements opérationnels.",
+            done: true,
           },
           {
             title: "VAPID keys pour les Web Push notifications",
-            detail: "Notifications navigateur (rappels modules, corrections).",
+            detail: "Rappels modules / corrections / sessions live actifs.",
+            done: true,
           },
           {
             title: "Upstash Redis (optionnel) pour rate-limit auth",
-            detail:
-              "Protège login/signup contre brute-force. Recommandé à partir de 50 stagiaires.",
+            detail: "Brute-force protection en place.",
+            done: true,
           },
           {
             title: "Renseigner toutes les vars sur Vercel (Production)",
+            done: true,
           },
           {
             title: "Re-déployer + smoke-test sur l'URL de prod",
+            detail: "https://maformationtransport.fr en ligne.",
+            done: true,
           },
         ],
       },
       {
         title: "P0 #3 — Domaine custom + DNS",
+        status: "done",
         steps: [
-          {
-            title: "Acheter le domaine maformationtransport.fr",
-            detail: "Registrar recommandé : OVH, Gandi ou Cloudflare.",
-          },
+          { title: "Acheter le domaine maformationtransport.fr", done: true },
           {
             title:
               "Configurer les DNS chez Vercel (A/CNAME + ALIAS pour la racine)",
-          },
-          { title: "Vérifier la propagation (https://dnschecker.org)" },
-          {
-            title:
-              "Activer le HTTPS automatique Vercel (Let's Encrypt managé)",
+            done: true,
           },
           {
-            title:
-              "Configurer la redirection www -> racine (ou inverse selon préférence)",
+            title: "Vérifier la propagation (https://dnschecker.org)",
+            done: true,
           },
+          {
+            title: "Activer le HTTPS automatique Vercel (Let's Encrypt managé)",
+            detail: "Certificat SSL actif.",
+            done: true,
+          },
+          { title: "Configurer la redirection www -> racine", done: true },
           {
             title:
               "Mettre à jour les emails dans Supabase (URL site dans Auth Settings)",
+            done: true,
           },
         ],
       },
       {
         title: "P0 #4 — Tunnel Stripe end-to-end",
+        status: "done",
         steps: [
           {
-            title: "Créer 1 produit Stripe par formation (avec price récurrent ou one-shot)",
+            title:
+              "Créer 1 produit Stripe par formation (price récurrent ou one-shot)",
+            done: true,
           },
           {
-            title:
-              "Brancher /api/checkout/session sur le price_id correspondant",
+            title: "Brancher /api/checkout/session sur le price_id correspondant",
+            done: true,
           },
           {
             title:
               "Tester un paiement complet en mode Test (carte 4242 4242 4242 4242)",
+            done: true,
           },
           {
             title:
               "Vérifier que le webhook stripe -> /api/stripe/webhook crée bien l'enrolment",
+            done: true,
           },
           {
-            title: "Activer Stripe Tax (TVA auto pour les formations) si applicable",
+            title:
+              "Activer Stripe Tax (TVA auto pour les formations) si applicable",
+            done: true,
           },
           {
             title: "Bascule en mode Live + 1er paiement réel à 1€ par toi-même",
+            done: true,
           },
           {
             title: "Configurer un email de réception Stripe (alertes paiements)",
+            done: true,
           },
         ],
       },
@@ -189,14 +244,20 @@ const SECTIONS: Section[] = [
         steps: [
           {
             title: "CCP1 — Organiser et superviser l'exploitation (modules + quiz)",
+            detail: "17 chapitres + examen blanc final + 18 quiz d'entraînement.",
+            done: true,
           },
           {
             title:
               "CCP2 — Manager l'équipe de conduite (modules + études de cas)",
+            detail: "Cours générés depuis PDF : 12 chapitres / 74 leçons.",
+            done: true,
           },
           {
             title:
               "CCP3 — Gérer la relation client et la qualité de service",
+            detail: "12 chapitres / 72 leçons importés depuis le PDF client.",
+            done: true,
           },
           { title: "Banque de questions QR (30+) pour la session blanche" },
           {
@@ -206,12 +267,35 @@ const SECTIONS: Section[] = [
       },
       {
         title: "P1 #2 — Capacité de transport <= 3,5 t",
+        status: "done",
         steps: [
-          { title: "Module 1 : Réglementation transport léger" },
-          { title: "Module 2 : Gestion d'entreprise (compta, fiscal, RH)" },
-          { title: "Module 3 : Sécurité et environnement" },
-          { title: "Quiz blanc Capacité (calé sur le format DREAL)" },
-          { title: "Examen blanc téléchargeable (PDF)" },
+          {
+            title: "Module A — Droit civil et commercial",
+            detail: "540 min, 5 leçons, 5 quiz.",
+            done: true,
+          },
+          {
+            title: "Module B — L'entreprise et son activité commerciale",
+            done: true,
+          },
+          {
+            title:
+              "Module C — Cadre réglementaire du transport (DREAL, CRSR, CGT)",
+            done: true,
+          },
+          {
+            title: "Module D — Activité financière (compta, bilan, coût kilométrique)",
+            done: true,
+          },
+          { title: "Module E — Salariés et droit social", done: true },
+          {
+            title: "Module F — Sécurité (FIMO/FCO, ADR, véhicule)",
+            done: true,
+          },
+          {
+            title: "Examen blanc Capacité (calé sur le format DREAL)",
+            done: true,
+          },
         ],
       },
       {
@@ -249,42 +333,69 @@ const SECTIONS: Section[] = [
     blocks: [
       {
         title: "P2 #1 — Monitoring & analytics",
+        status: "done",
         steps: [
           {
             title:
               "Brancher Sentry (errors front + back) avec source maps Vercel",
+            detail: "Projet javascript-nextjs connecté · dashboard actif sur sentry.io.",
+            done: true,
           },
           {
-            title: "Brancher PostHog (events stagiaire : start quiz, finish module...)",
+            title:
+              "Brancher PostHog (events stagiaire : start quiz, finish module...)",
+            detail:
+              "Cloud EU via tunnel /ingest (anti-adblock). Events trackés automatiquement.",
+            done: true,
           },
           {
-            title: "Dashboard admin temps réel (stagiaires actifs, taux complétion)",
+            title:
+              "Dashboard admin temps réel (stagiaires actifs, taux complétion)",
+            detail:
+              "Lot 1 + Lot 2 : KPIs, Funnel, Heatmap, filtre période, exports PDF, Mode TV.",
+            done: true,
           },
           {
             title:
               "Alertes Slack/Email sur erreurs critiques (Sentry -> webhook)",
+            detail:
+              "3 règles actives sur sentry.io : Nouvelle erreur production · Pic d'erreurs détecté · Erreur route critique.",
+            done: true,
           },
         ],
       },
       {
         title: "P2 #2 — Tests & CI",
+        status: "done",
         steps: [
           {
             title:
               "Couverture tests unitaires (Vitest) sur lib/ critiques (markdown, scoring, utils)",
+            detail: "126 tests verts dans 9 fichiers (lib/permissions, markdown, parsers, admin-guard...).",
+            done: true,
           },
-          { title: "Tests d'intégration sur les routes API server actions" },
+          {
+            title: "Tests d'intégration sur les routes API server actions",
+            detail: "Server actions critiques couvertes (email, admin-guard).",
+            done: true,
+          },
           {
             title:
               "Storybook pour les composants UI (Button, Card, ProgressBar...)",
+            detail: "Storybook 8 + addons (a11y, viewport, themes).",
+            done: true,
           },
           {
             title:
               "GitHub Actions : lint + typecheck + tests E2E sur chaque PR",
+            detail: "Workflows ci.yml + e2e.yml + lighthouse.yml actifs.",
+            done: true,
           },
           {
             title:
               "Lighthouse CI : score perf/a11y/SEO sur chaque déploiement",
+            detail: ".lighthouserc.json + assertions sur score >= 90.",
+            done: true,
           },
         ],
       },
@@ -294,13 +405,30 @@ const SECTIONS: Section[] = [
           {
             title:
               "Audit WCAG 2.1 AA complet (contraste, focus visible, ARIA roles)",
+            detail: "Skip links, focus visible, aria-labels, contraste vérifié.",
+            done: true,
           },
           {
             title: "Tests sur lecteurs d'écran (VoiceOver iOS, NVDA Windows)",
           },
-          { title: "Mode sombre/clair (toggle utilisateur)" },
-          { title: "PWA installable (manifest + icônes + offline minimal)" },
-          { title: "Internationalisation FR/EN (next-intl)" },
+          {
+            title: "Mode sombre/clair (toggle utilisateur)",
+            detail:
+              "ThemeToggle + CSS variables (--bg, --surface, --text, --border) propagées partout.",
+            done: true,
+          },
+          {
+            title: "PWA installable (manifest + icônes + offline minimal)",
+            detail:
+              "manifest.webmanifest + maskable icons + shortcuts + service worker offline.",
+            done: true,
+          },
+          {
+            title: "Internationalisation FR/EN (next-intl)",
+            detail:
+              "27 namespaces · ~600 clés · toggle FR/EN dans la topbar · parcours stagiaire 100 % bilingue.",
+            done: true,
+          },
         ],
       },
     ],
@@ -316,7 +444,10 @@ const SECTIONS: Section[] = [
         title: "P3 #1 — Pédagogie augmentée",
         steps: [
           {
-            title: "Visioconférence intégrée (Daily.co ou LiveKit) pour cours live",
+            title: "Visioconférence intégrée pour cours live",
+            detail:
+              "Livré via Phase 7 : intégration Zoom · Teams · Meet pour les sessions Premium.",
+            done: true,
           },
           {
             title:
@@ -385,7 +516,10 @@ function sanitize(text: string): string {
     .replace(/[←]/g, "<-")
     .replace(/[≤]/g, "<=")
     .replace(/[≥]/g, ">=")
-    .replace(/[•]/g, "·");
+    .replace(/[•]/g, "·")
+    .replace(/[✓]/g, "v")
+    .replace(/[✗✕]/g, "x")
+    .replace(/[…]/g, "...");
 }
 function wrapText(
   text: string,
@@ -448,6 +582,61 @@ async function main() {
   drawSummaryHeader(cur.page, fontBold, fontReg);
   cur.y = PAGE_H - M_TOP - 110;
 
+  // Carte spéciale "Livré récemment"
+  cur.page.drawRectangle({
+    x: M_LEFT,
+    y: cur.y - 38,
+    width: CONTENT_W,
+    height: 44,
+    color: rgb(0.96, 0.99, 0.93),
+    borderColor: EMERALD,
+    borderWidth: 1.2,
+  });
+  cur.page.drawRectangle({
+    x: M_LEFT,
+    y: cur.y - 38,
+    width: 6,
+    height: 44,
+    color: EMERALD,
+  });
+  // Pastille verte avec coche dessinée à la main
+  cur.page.drawCircle({
+    x: M_LEFT + 22,
+    y: cur.y - 16,
+    size: 7,
+    color: EMERALD,
+  });
+  cur.page.drawLine({
+    start: { x: M_LEFT + 19, y: cur.y - 16 },
+    end: { x: M_LEFT + 22, y: cur.y - 19 },
+    thickness: 1.5,
+    color: rgb(1, 1, 1),
+  });
+  cur.page.drawLine({
+    start: { x: M_LEFT + 22, y: cur.y - 19 },
+    end: { x: M_LEFT + 26, y: cur.y - 13 },
+    thickness: 1.5,
+    color: rgb(1, 1, 1),
+  });
+  cur.page.drawText("Livré depuis la dernière roadmap", {
+    x: M_LEFT + 36,
+    y: cur.y - 14,
+    size: 12,
+    font: fontBold,
+    color: NAVY,
+  });
+  cur.page.drawText(
+    `${RECENT_DELIVERIES.length} chantiers complets  ·  voir page 3`,
+    {
+      x: M_LEFT + 18,
+      y: cur.y - 30,
+      size: 9,
+      font: fontReg,
+      color: SLATE_700,
+    },
+  );
+  cur.y -= 56;
+
   for (const sec of SECTIONS) {
     const totalSteps = sec.blocks.reduce((acc, b) => acc + b.steps.length, 0);
     const doneSteps = sec.blocks.reduce(
@@ -486,6 +675,41 @@ async function main() {
     });
     cur.y -= 56;
   }
+
+  // Jalon
+  cur.y -= 4;
+  cur.page.drawRectangle({
+    x: M_LEFT,
+    y: cur.y - 56,
+    width: CONTENT_W,
+    height: 60,
+    color: rgb(0.96, 0.99, 0.93),
+    borderColor: SIGNAL,
+    borderWidth: 1.4,
+  });
+  cur.page.drawText("Jalon « Plateforme commercialisable »", {
+    x: M_LEFT + 18,
+    y: cur.y - 22,
+    size: 11.5,
+    font: fontBold,
+    color: NAVY,
+  });
+  cur.page.drawText(
+    sanitize(
+      "Tous les P0 sont levés + observabilité prod + plateforme bilingue FR/EN.",
+    ),
+    {
+      x: M_LEFT + 18,
+      y: cur.y - 40,
+      size: 9.5,
+      font: fontReg,
+      color: SLATE_700,
+    },
+  );
+
+  // ----- Page "Livré récemment" -----
+  cur = newPage();
+  drawRecentDeliveries(cur.page, fontBold, fontReg, fontItalic);
 
   // ----- Sections -----
   for (const sec of SECTIONS) {
@@ -675,7 +899,7 @@ function drawCover(
     color: rgb(1, 1, 1),
   });
   page.drawText(
-    "De la mise en production aux évolutions stratégiques V2",
+    "Plateforme bilingue + observabilité production — V4",
     {
       x: M_LEFT,
       y: PAGE_H - 230,
@@ -749,7 +973,7 @@ function drawCover(
     month: "long",
     year: "numeric",
   });
-  page.drawText("Édité le " + date, {
+  page.drawText("Édité le " + date + "  ·  Version 4", {
     x: M_LEFT,
     y: 80,
     size: 9,
@@ -774,7 +998,7 @@ function drawSummaryHeader(page: PDFPage, bold: PDFFont, reg: PDFFont) {
     color: NAVY,
   });
   page.drawText(
-    "Quatre niveaux de priorité, chacun découpé en étapes concrètes.",
+    "Quatre niveaux de priorité, plus un récapitulatif des livraisons récentes.",
     {
       x: M_LEFT,
       y: PAGE_H - M_TOP - 54,
@@ -789,6 +1013,123 @@ function drawSummaryHeader(page: PDFPage, bold: PDFFont, reg: PDFFont) {
     thickness: 2,
     color: SIGNAL,
   });
+}
+
+// Page dédiée — récap des chantiers livrés depuis la roadmap v3.
+function drawRecentDeliveries(
+  page: PDFPage,
+  bold: PDFFont,
+  reg: PDFFont,
+  italic: PDFFont,
+) {
+  // Bandeau navy + bande signal
+  page.drawRectangle({
+    x: 0,
+    y: PAGE_H - 110,
+    width: PAGE_W,
+    height: 110,
+    color: NAVY,
+  });
+  page.drawRectangle({
+    x: 0,
+    y: PAGE_H - 116,
+    width: PAGE_W,
+    height: 6,
+    color: SIGNAL,
+  });
+  // Eyebrow
+  page.drawRectangle({
+    x: M_LEFT,
+    y: PAGE_H - 60,
+    width: 110,
+    height: 22,
+    color: SIGNAL,
+  });
+  page.drawText("LIVRÉ MAI 2026", {
+    x: M_LEFT + 10,
+    y: PAGE_H - 54,
+    size: 10,
+    font: bold,
+    color: NAVY,
+  });
+  page.drawText("Ce qui a été livré récemment", {
+    x: M_LEFT,
+    y: PAGE_H - 95,
+    size: 22,
+    font: bold,
+    color: rgb(1, 1, 1),
+  });
+
+  let y = PAGE_H - 160;
+  page.drawText(
+    `${RECENT_DELIVERIES.length} chantiers majeurs livrés en production depuis la roadmap v3.`,
+    {
+      x: M_LEFT,
+      y,
+      size: 10.5,
+      font: reg,
+      color: SLATE_700,
+    },
+  );
+  y -= 24;
+
+  for (const d of RECENT_DELIVERIES) {
+    const titleLines = wrapText(d.title, bold, 11.5, CONTENT_W - 24);
+    const descLines = wrapText(d.desc, reg, 9.5, CONTENT_W - 24);
+    const blockH =
+      titleLines.length * 14 + descLines.length * 12 + 22;
+
+    // Carte
+    page.drawRectangle({
+      x: M_LEFT,
+      y: y - blockH + 8,
+      width: CONTENT_W,
+      height: blockH,
+      color: rgb(0.97, 0.99, 0.94),
+      borderColor: EMERALD,
+      borderWidth: 1,
+    });
+    // Liseré gauche
+    page.drawRectangle({
+      x: M_LEFT,
+      y: y - blockH + 8,
+      width: 4,
+      height: blockH,
+      color: EMERALD,
+    });
+
+    let yy = y;
+    // Pastille LIVRÉ
+    page.drawText("LIVRÉ", {
+      x: M_LEFT + CONTENT_W - 50,
+      y: yy - 4,
+      size: 8.5,
+      font: bold,
+      color: EMERALD,
+    });
+    for (const l of titleLines) {
+      page.drawText(l, {
+        x: M_LEFT + 16,
+        y: yy,
+        size: 11.5,
+        font: bold,
+        color: NAVY,
+      });
+      yy -= 14;
+    }
+    yy -= 2;
+    for (const l of descLines) {
+      page.drawText(l, {
+        x: M_LEFT + 16,
+        y: yy,
+        size: 9.5,
+        font: reg,
+        color: SLATE_700,
+      });
+      yy -= 12;
+    }
+    y -= blockH + 8;
+  }
 }
 
 function drawSectionHeader(
