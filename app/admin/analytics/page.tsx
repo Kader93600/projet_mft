@@ -29,7 +29,14 @@ import {
   QuizOutliersSection,
   RevenueMatrixSection,
 } from "./insights-sections";
+import { FunnelChart } from "./funnel-chart";
+import { HeatmapGrid } from "./heatmap-grid";
+import { FormationTrendsGrid } from "./formation-trends";
+import { UpcomingSessionsSection } from "./upcoming-sessions";
+import { PeriodFilter, KpiWithDelta } from "./period-filter";
+import { PrintButton } from "./print-button";
 import Link from "next/link";
+import { Tv } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -56,8 +63,18 @@ function fmtEuro(cents: number): string {
   }).format((cents ?? 0) / 100);
 }
 
-export default async function AdminAnalytics() {
+export default async function AdminAnalytics({
+  searchParams,
+}: {
+  searchParams?: { period?: string };
+}) {
   const supabase = createClient();
+
+  // Période sélectionnée (par défaut 30 jours)
+  const periodDays = Math.max(
+    1,
+    Math.min(365, parseInt(searchParams?.period ?? "30", 10) || 30)
+  );
 
   // 1. KPIs temps réel
   const { data: kpiRow } = await supabase
@@ -116,6 +133,34 @@ export default async function AdminAnalytics() {
     supabase.from("vw_admin_revenue_by_formation_pack").select("*"),
   ]);
 
+  // 3. Lot 2 : nouvelles requêtes (en parallèle aussi)
+  const [
+    { data: funnel },
+    { data: heatmap },
+    { data: trendsByFormation },
+    { data: upcomingSessions },
+    { data: periodKpis },
+  ] = await Promise.all([
+    supabase.from("vw_admin_funnel_conversion").select("*").single(),
+    supabase.from("vw_admin_activity_heatmap").select("*"),
+    supabase.from("vw_admin_trends_by_formation").select("*"),
+    supabase.from("vw_admin_upcoming_sessions_14d").select("*").limit(10),
+    supabase
+      .rpc("get_admin_kpis_for_period", { p_days: periodDays })
+      .single(),
+  ]);
+
+  const pk = (periodKpis as any) ?? {
+    signups: 0,
+    quiz_attempts: 0,
+    payments: 0,
+    revenue_cents: 0,
+    signups_prev: 0,
+    quiz_attempts_prev: 0,
+    payments_prev: 0,
+    revenue_cents_prev: 0,
+  };
+
   return (
     <div className="space-y-10">
       {/* En-tête */}
@@ -130,8 +175,62 @@ export default async function AdminAnalytics() {
             de la dernière activité. Les données sont actualisées automatiquement.
           </p>
         </div>
-        <RealtimeIndicator />
+        <div className="flex items-center gap-3 flex-wrap print:hidden">
+          <RealtimeIndicator />
+          <PrintButton />
+          <Link
+            href="/admin/analytics/tv"
+            className="inline-flex items-center gap-1.5 px-3 h-9 rounded-lg text-xs font-semibold bg-navy-900 text-white hover:bg-navy-800 transition"
+            title="Mode TV / Kiosk plein écran"
+          >
+            <Tv className="h-3.5 w-3.5" />
+            Mode TV
+          </Link>
+        </div>
       </header>
+
+      {/* ─────────── Section KPIs avec comparaison période (Lot 2) ─────────── */}
+      <section className="rounded-2xl border border-navy-100 bg-white p-4">
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <div>
+            <h2 className="font-display text-base font-semibold text-navy-900 inline-flex items-center gap-2">
+              <BarChart3 className="h-4 w-4 text-brand-700" />
+              Vue d'ensemble
+            </h2>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              KPIs sur la période sélectionnée + comparaison vs période précédente
+            </p>
+          </div>
+          <PeriodFilter />
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <KpiWithDelta
+            label="Inscriptions stagiaire"
+            value={Number(pk.signups)}
+            previous={Number(pk.signups_prev)}
+            hint={`${periodDays} derniers jours`}
+          />
+          <KpiWithDelta
+            label="Tentatives quiz"
+            value={Number(pk.quiz_attempts)}
+            previous={Number(pk.quiz_attempts_prev)}
+            hint={`${periodDays} derniers jours`}
+          />
+          <KpiWithDelta
+            label="Paiements"
+            value={Number(pk.payments)}
+            previous={Number(pk.payments_prev)}
+            hint={`${periodDays} derniers jours`}
+          />
+          <KpiWithDelta
+            label="CA encaissé"
+            value={Number(pk.revenue_cents)}
+            previous={Number(pk.revenue_cents_prev)}
+            format="euro"
+            hint={`${periodDays} derniers jours`}
+          />
+        </div>
+      </section>
 
       {/* ─────────── Section ENGAGEMENT ─────────── */}
       <section>
@@ -273,6 +372,56 @@ export default async function AdminAnalytics() {
 
       {/* ─────────── Quiz à difficulté anormale ─────────── */}
       <QuizOutliersSection rows={(quizOutliers ?? []) as any[]} />
+
+      {/* ─────────── Funnel + Sessions à venir (Lot 2) ─────────── */}
+      <section className="grid lg:grid-cols-2 gap-5">
+        <Card>
+          <CardBody>
+            <div className="flex items-center gap-2 mb-3">
+              <TrendingUp className="h-4 w-4 text-signal-700" />
+              <h3 className="font-display text-base font-semibold text-navy-900">
+                Funnel de conversion stagiaire
+              </h3>
+            </div>
+            <p className="text-[11px] text-slate-500 mb-4">
+              Signup → 1ère leçon → 1er quiz tenté → 1er quiz réussi → 1er paiement
+            </p>
+            <FunnelChart data={(funnel as any) ?? null} />
+          </CardBody>
+        </Card>
+
+        <UpcomingSessionsSection sessions={(upcomingSessions ?? []) as any[]} />
+      </section>
+
+      {/* ─────────── Heatmap activité hebdomadaire (Lot 2) ─────────── */}
+      <Card>
+        <CardBody>
+          <div className="flex items-center gap-2 mb-3">
+            <Calendar className="h-4 w-4 text-brand-700" />
+            <h3 className="font-display text-base font-semibold text-navy-900">
+              Heatmap d'activité hebdomadaire
+            </h3>
+          </div>
+          <p className="text-[11px] text-slate-500 mb-4">
+            Quand vos stagiaires sont-ils le plus actifs ? Tentatives de quiz par jour × heure (90 derniers jours)
+          </p>
+          <HeatmapGrid cells={(heatmap ?? []) as any[]} />
+        </CardBody>
+      </Card>
+
+      {/* ─────────── Évolution par formation (Lot 2) ─────────── */}
+      <section>
+        <div className="flex items-center gap-2 mb-3">
+          <BarChart3 className="h-4 w-4 text-brand-700" />
+          <h2 className="font-display text-base font-semibold text-navy-900">
+            Évolution par formation
+          </h2>
+          <span className="text-[11px] text-slate-500">
+            30 derniers jours · top 6 formations
+          </span>
+        </div>
+        <FormationTrendsGrid rows={(trendsByFormation ?? []) as any[]} />
+      </section>
 
       {/* ─────────── Tableau dernières tentatives ─────────── */}
       <section>

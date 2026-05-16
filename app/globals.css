@@ -24,6 +24,41 @@
       transition-duration: 0.01ms !important;
     }
   }
+
+  /* Print stylesheet — utilisé par le bouton Export PDF du dashboard admin */
+  @media print {
+    @page {
+      size: A4 portrait;
+      margin: 12mm 10mm 12mm 10mm;
+    }
+    body {
+      background: white !important;
+      color: #0E1240 !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    /* Masque les éléments interactifs côté print */
+    nav, aside, button, [role="button"], .no-print {
+      display: none !important;
+    }
+    /* Force l'affichage pleine largeur */
+    main {
+      padding: 0 !important;
+      max-width: 100% !important;
+    }
+    /* Évite de couper les sections au milieu */
+    section, .rounded-2xl, table, ul, ol {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    /* Compresse les titres */
+    h1 { font-size: 18pt !important; margin-bottom: 4mm !important; }
+    h2 { font-size: 14pt !important; margin-bottom: 3mm !important; }
+    h3 { font-size: 12pt !important; }
+    /* Réduit padding général */
+    .space-y-10 > * + * { margin-top: 6mm !important; }
+    .space-y-8 > * + * { margin-top: 5mm !important; }
+  }
 }
 
 @layer components {
