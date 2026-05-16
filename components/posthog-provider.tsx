@@ -15,8 +15,12 @@ import posthog from "posthog-js";
 import { identifyUser } from "@/lib/analytics";
 
 const KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY;
-const HOST =
-  process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://eu.i.posthog.com";
+// API host : on utilise notre PROXY interne /ingest (rewrites Next.js) au
+// lieu de eu.i.posthog.com directement → bypass des ad-blockers.
+// Le ui_host pointe toujours vers PostHog pour que les liens dans la
+// session toolbar et les replays cliquent vers eu.posthog.com.
+const TUNNEL_HOST = "/ingest";
+const UI_HOST = "https://eu.posthog.com";
 
 interface PostHogProviderProps {
   children: React.ReactNode;
@@ -39,7 +43,8 @@ export function PostHogProvider({ children, profile }: PostHogProviderProps) {
     (window as any).__posthog_inited = true;
 
     posthog.init(KEY, {
-      api_host: HOST,
+      api_host: TUNNEL_HOST,
+      ui_host: UI_HOST,
       // ─── RGPD & vie privée ───────────────────────────────────────
       // Anonymise l'IP : PostHog tronque le dernier octet (ex. 1.2.3.0)
       ip: false,

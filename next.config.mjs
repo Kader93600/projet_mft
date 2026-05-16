@@ -115,6 +115,31 @@ const nextConfig = {
       },
     ];
   },
+  // =====================================================================
+  // PostHog tunneling — bypass des ad-blockers.
+  //
+  // Les requêtes PostHog (eu.i.posthog.com) sont systématiquement bloquées
+  // par uBlock Origin, AdGuard, Brave Shields, etc. (~50 % des users).
+  // Solution officielle PostHog : proxyfier via notre propre domaine.
+  // Du coup le navigateur "voit" maformationtransport.fr/ingest/...
+  // au lieu de eu.i.posthog.com/... → indétectable par les ad-blockers.
+  //
+  // skipTrailingSlashRedirect évite que Next.js redirige /ingest → /ingest/
+  // (PostHog n'aime pas la redirection 308 sur ces endpoints).
+  // =====================================================================
+  skipTrailingSlashRedirect: true,
+  async rewrites() {
+    return [
+      {
+        source: "/ingest/static/:path*",
+        destination: "https://eu-assets.i.posthog.com/static/:path*",
+      },
+      {
+        source: "/ingest/:path*",
+        destination: "https://eu.i.posthog.com/:path*",
+      },
+    ];
+  },
 };
 
 // =====================================================================
