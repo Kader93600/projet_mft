@@ -150,8 +150,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </a>
         <NextIntlClientProvider locale={locale} messages={messages}>
           {children}
+          {/* CookieBanner doit rester DANS le provider car il appelle
+              useTranslations("cookies") côté client. */}
+          <CookieBanner />
         </NextIntlClientProvider>
-        <CookieBanner />
       </body>
     </html>
   );
