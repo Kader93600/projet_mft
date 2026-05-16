@@ -281,13 +281,10 @@ npm run dev
 | Modules / Exercices / Examens blancs / Quiz index | ✅ |
 | Accompagnement / Sessions (Premium upsell) | ✅ |
 | Page Tarifs publique | ✅ |
-| Quiz runner (`app/quiz/[id]/quiz-runner.tsx`) | ⏳ 1458 lignes, logique critique — à migrer dans un commit dédié |
-| Page intro quiz (`app/quiz/[id]/page.tsx`) | ⏳ À migrer |
-| Page résultats quiz (`app/quiz/results/[attemptId]/page.tsx`) | ⏳ À migrer |
-| Home publique `app/page.tsx` | ⏳ 737 lignes marketing — à migrer par sections |
-| Sessions list (`app/sessions/sessions-list.tsx`) | ⏳ 457 lignes client component |
-| Messaging shell + components | ⏳ Composants client riches |
-| Pages /messages /accompagnement détail | 🟡 Pages serveur migrées, sous-composants client en FR |
+| Expérience quiz complète (intro + runner + résultats) | ✅ |
+| Home publique `app/page.tsx` | ✅ (témoignages réels laissés en FR — voir note dans le code) |
+| Sessions list client | ✅ |
+| Messaging shell + components | ⏳ Composants client riches — à migrer si besoin EN |
 | Admin (`app/admin/*`) | ⏳ Plus tard (low priority, interface interne) |
 | Formateur (`app/formateur/*`) | ⏳ Plus tard (low priority) |
 
@@ -297,5 +294,10 @@ La migration peut se faire **page par page** sans bloquer le reste — chaque pa
 
 `common`, `nav`, `navGroups`, `navShort`, `shell`, `auth`, `signup`,
 `forgotPassword`, `resetPassword`, `cookies`, `dashboard`, `modules`,
-`exercices`, `examensBlancs`, `quiz`, `coaching`, `sessions`, `tarifs`,
-`footer`, `offline`, `theme`, `language`, `a11y`.
+`exercices`, `examensBlancs`, `quiz`, `quizRunner`, `quizResults`,
+`coaching`, `sessions`, `sessionsList`, `tarifs`, `home`, `footer`,
+`offline`, `theme`, `language`, `a11y`.
+
+**~600 clés FR + EN** au total, couvrant l'intégralité du parcours
+stagiaire (public + connecté + expérience quiz) + page de conversion
+publique + accueil marketing.

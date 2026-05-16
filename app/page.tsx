@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import {
   ArrowRight,
   Award,
@@ -27,6 +28,8 @@ import { LegalFooter } from "@/components/legal/legal-footer";
 import { LEGAL } from "@/lib/legal-config";
 import { FORMATIONS, listByCategory } from "@/lib/formations-config";
 
+type HomeT = Awaited<ReturnType<typeof getTranslations<"home">>>;
+
 export const metadata = {
   title: `${LEGAL.brand} — L'école des pros du transport`,
   description:
@@ -44,28 +47,29 @@ const ICONS: Record<string, any> = {
   ShieldCheck,
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  const t = await getTranslations("home");
   return (
     <div className="min-h-screen bg-night text-white">
-      <Header />
-      <Hero />
+      <Header t={t} />
+      <Hero t={t} />
       <RecognizedBy />
-      <Pillars />
+      <Pillars t={t} />
       <FormationsCarousel />
-      <Experience />
-      <Stats />
+      <Experience t={t} />
+      <Stats t={t} />
       <Testimonials />
-      <Funding />
+      <Funding t={t} />
       <FaqSection />
-      <FinalCTA />
-      <FooterContact />
+      <FinalCTA t={t} />
+      <FooterContact t={t} />
       <LegalFooter variant="dark" />
     </div>
   );
 }
 
 /* =============================================================== HEADER */
-function Header() {
+function Header({ t }: { t: HomeT }) {
   return (
     <header className="sticky top-0 z-30 border-b border-white/5 bg-night/80 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -74,22 +78,22 @@ function Header() {
         </Link>
         <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-white/70">
           <Link href="/formations" className="hover:text-white transition">
-            Formations
+            {t("navFormations")}
           </Link>
           <Link href="/ecole" className="hover:text-white transition">
-            L'école
+            {t("navSchool")}
           </Link>
           <Link href="/financements" className="hover:text-white transition">
-            Financements
+            {t("navFunding")}
           </Link>
           <Link href="/tarifs" className="hover:text-white transition">
-            Tarifs
+            {t("navPricing")}
           </Link>
           <Link href="/temoignages" className="hover:text-white transition">
-            Témoignages
+            {t("navTestimonials")}
           </Link>
           <Link href="/contact" className="hover:text-white transition">
-            Contact
+            {t("navContact")}
           </Link>
         </nav>
         <div className="flex items-center gap-3">
@@ -97,13 +101,13 @@ function Header() {
             href="/contact"
             className="hidden md:inline text-sm text-white/70 hover:text-white transition"
           >
-            Demander un devis
+            {t("requestQuote")}
           </Link>
           <Link
             href="/login"
             className="inline-flex items-center gap-1.5 rounded-xl bg-signal-500 text-night-900 px-4 py-2 text-sm font-semibold hover:bg-signal-400 transition shadow-glow-signal"
           >
-            Espace stagiaire
+            {t("studentSpace")}
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
@@ -113,7 +117,7 @@ function Header() {
 }
 
 /* =============================================================== HERO */
-function Hero() {
+function Hero({ t }: { t: HomeT }) {
   // Stagger : 0ms (badge) → 80 → 160 → 240 → 320 → 400 (KPIs)
   const stagger = (delayMs: number) => ({
     animation: "fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both",
@@ -121,10 +125,10 @@ function Hero() {
   });
 
   const kpis = [
-    { value: "8", label: "formations" },
-    { value: "1 200+", label: "stagiaires formés" },
-    { value: "87 %", label: "taux de réussite" },
-    { value: "Qualiopi", label: "certifié" },
+    { value: "8", label: t("kpiFormations") },
+    { value: "1 200+", label: t("kpiStudents") },
+    { value: "87 %", label: t("kpiSuccess") },
+    { value: "Qualiopi", label: t("kpiQualiopi") },
   ];
 
   return (
@@ -161,7 +165,7 @@ function Hero() {
               className="h-1.5 w-1.5 rounded-full bg-signal-400 animate-glow-pulse motion-reduce:animate-none"
               aria-hidden
             />
-            Certifié Qualiopi · 8 formations transport
+            {t("heroBadge")}
           </div>
 
           {/* H1 — Apple/Stripe scale, punch sur "Sérieusement." */}
@@ -169,9 +173,9 @@ function Hero() {
             style={stagger(80)}
             className="mt-6 font-display font-semibold text-white leading-[1.02] tracking-[-0.025em] text-[44px] sm:text-[56px] md:text-[68px] lg:text-[80px]"
           >
-            Formez-vous au transport.
+            {t("heroTitle1")}
             <span className="block mt-1.5 bg-gradient-to-r from-signal-300 via-signal-400 to-signal-500 bg-clip-text text-transparent">
-              Sérieusement.
+              {t("heroTitle2")}
             </span>
           </h1>
 
@@ -180,9 +184,7 @@ function Hero() {
             style={stagger(160)}
             className="mt-7 text-base md:text-lg text-white/65 max-w-xl mx-auto lg:mx-0 leading-relaxed"
           >
-            Préparation aux titres pros et certifications du transport
-            routier. Plateforme premium, formateurs experts, financements
-            CPF · OPCO · France Travail.
+            {t("heroSubtitle")}
           </p>
 
           {/* CTAs */}
@@ -194,14 +196,14 @@ function Hero() {
               href="/formations"
               className="group relative inline-flex items-center gap-2 rounded-2xl bg-signal-500 text-night-900 px-6 py-3.5 text-[15px] font-semibold transition hover:bg-signal-400 hover:-translate-y-0.5 shadow-glow-signal motion-reduce:hover:translate-y-0"
             >
-              Découvrir les formations
+              {t("ctaDiscover")}
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0" />
             </Link>
             <Link
               href="#experience"
               className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/[0.03] backdrop-blur px-6 py-3.5 text-[15px] font-semibold text-white/90 hover:bg-white/[0.07] hover:border-white/25 transition"
             >
-              Comment ça marche
+              {t("ctaHow")}
             </Link>
           </div>
 
@@ -241,39 +243,23 @@ function Hero() {
 }
 
 /* =============================================================== PILLARS */
-function Pillars() {
+function Pillars({ t }: { t: HomeT }) {
   const items = [
-    {
-      icon: Target,
-      title: "Expertise métier",
-      desc: "Formateurs issus du terrain, contenus mis à jour selon les évolutions réglementaires (R561, AETR, Loi LOM).",
-    },
-    {
-      icon: TrendingUp,
-      title: "Taux de réussite",
-      desc: "Une pédagogie orientée résultat : examens blancs en conditions réelles et corrections personnalisées.",
-    },
-    {
-      icon: Users,
-      title: "Accompagnement humain",
-      desc: "Un coach pédagogique dédié, des sessions live mensuelles et une hotline sous 24h ouvrées.",
-    },
-    {
-      icon: ShieldCheck,
-      title: "Plateforme moderne",
-      desc: "Application accessible 24/7, fiches PDF, vidéos, suivi de progression et certificats officiels.",
-    },
+    { icon: Target, title: t("pillar1Title"), desc: t("pillar1Desc") },
+    { icon: TrendingUp, title: t("pillar2Title"), desc: t("pillar2Desc") },
+    { icon: Users, title: t("pillar3Title"), desc: t("pillar3Desc") },
+    { icon: ShieldCheck, title: t("pillar4Title"), desc: t("pillar4Desc") },
   ];
   return (
     <section className="py-20 md:py-28">
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center max-w-2xl mx-auto">
           <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-signal-400">
-            Pourquoi {LEGAL.brand}
+            {t("pillarsEyebrowPrefix")} {LEGAL.brand}
           </span>
           <h2 className="mt-3 font-display text-3xl md:text-5xl font-semibold tracking-tight">
-            La rigueur d'un centre,{" "}
-            <span className="italic text-signal-400">l'agilité du digital</span>.
+            {t("pillarsTitle1")}{" "}
+            <span className="italic text-signal-400">{t("pillarsTitle2")}</span>.
           </h2>
         </div>
 
@@ -399,39 +385,24 @@ function FormationsCatalog() {
 }
 
 /* =============================================================== EXPERIENCE */
-function Experience() {
+function Experience({ t }: { t: HomeT }) {
   const steps = [
-    {
-      n: "01",
-      title: "Vous choisissez",
-      desc: "Sélectionnez la formation alignée avec votre projet professionnel — un conseiller vous appelle sous 24 h.",
-    },
-    {
-      n: "02",
-      title: "On monte le dossier",
-      desc: "Devis, convention de formation, dossier de financement OPCO/CPF/France Travail. Vous n'avez qu'à signer.",
-    },
-    {
-      n: "03",
-      title: "Vous apprenez",
-      desc: "Plateforme 24/7, sessions live, coach pédagogique dédié. Examens blancs en conditions réelles.",
-    },
-    {
-      n: "04",
-      title: "Vous réussissez",
-      desc: "Préparation à l'examen final, remise du titre ou de l'attestation. On reste à vos côtés ensuite.",
-    },
+    { n: "01", title: t("step1Title"), desc: t("step1Desc") },
+    { n: "02", title: t("step2Title"), desc: t("step2Desc") },
+    { n: "03", title: t("step3Title"), desc: t("step3Desc") },
+    { n: "04", title: t("step4Title"), desc: t("step4Desc") },
   ];
   return (
     <section id="experience" className="py-20 md:py-28 scroll-mt-20">
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center max-w-2xl mx-auto">
           <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-signal-400">
-            Parcours stagiaire
+            {t("experienceEyebrow")}
           </span>
           <h2 className="mt-3 font-display text-3xl md:text-5xl font-semibold tracking-tight">
-            Une trajectoire <span className="italic text-signal-400">claire</span>,
-            de l'envie au diplôme.
+            {t("experienceTitle1")}{" "}
+            <span className="italic text-signal-400">{t("experienceTitle2")}</span>
+            {t("experienceTitle3")}
           </h2>
         </div>
 
@@ -470,12 +441,12 @@ function Experience() {
 }
 
 /* =============================================================== STATS */
-function Stats() {
+function Stats({ t }: { t: HomeT }) {
   const stats = [
-    { value: "8", label: "Formations transport" },
-    { value: "100%", label: "À distance ou en présentiel" },
-    { value: "Qualiopi", label: "Certifié" },
-    { value: "Meaux", label: "Centre en Île-de-France" },
+    { value: "8", label: t("statsLabel1") },
+    { value: "100%", label: t("statsLabel2") },
+    { value: "Qualiopi", label: t("statsLabel3") },
+    { value: "Meaux", label: t("statsLabel4") },
   ];
   return (
     <section className="py-16 md:py-20 bg-gradient-to-b from-brand-950 to-night-300 border-y border-white/5">
@@ -496,6 +467,10 @@ function Stats() {
 }
 
 /* =============================================================== TESTIMONIALS */
+// Les citations restent dans la langue d'origine (FR) — ce sont des
+// témoignages réels de stagiaires. Seuls les chrome (eyebrow/titre) sont
+// traduits. Si besoin de bilingue intégral, ajouter un champ quote_en au
+// modèle de TESTIMONIALS.
 function Testimonials() {
   const items = [
     {
@@ -554,35 +529,33 @@ function Testimonials() {
 }
 
 /* =============================================================== FUNDING */
-function Funding() {
+function Funding({ t }: { t: HomeT }) {
   const items = [
-    { label: "CPF / Mon Compte Formation", desc: "Mobilisez vos droits acquis." },
-    { label: "OPCO", desc: "Prise en charge employeur via votre OPCO." },
-    { label: "France Travail", desc: "Aide individuelle à la formation (AIF)." },
-    { label: "Auto-financement", desc: "Paiement en 3 ou 4 fois sans frais." },
-    { label: "Transitions Pro", desc: "Pour les projets de reconversion." },
-    { label: "Plan employeur", desc: "Inscription dans le plan de développement." },
+    { label: t("fund1Label"), desc: t("fund1Desc") },
+    { label: t("fund2Label"), desc: t("fund2Desc") },
+    { label: t("fund3Label"), desc: t("fund3Desc") },
+    { label: t("fund4Label"), desc: t("fund4Desc") },
+    { label: t("fund5Label"), desc: t("fund5Desc") },
+    { label: t("fund6Label"), desc: t("fund6Desc") },
   ];
   return (
     <section className="py-20 md:py-28 bg-white/[0.02] border-y border-white/5">
       <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-3 gap-10">
         <div>
           <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-signal-400">
-            Financements
+            {t("fundingEyebrow")}
           </span>
           <h2 className="mt-3 font-display text-3xl md:text-4xl font-semibold tracking-tight">
-            Tous les dispositifs <span className="italic text-signal-400">acceptés</span>.
+            {t("fundingTitle1")} <span className="italic text-signal-400">{t("fundingTitle2")}</span>.
           </h2>
           <p className="mt-4 text-white/70 leading-relaxed">
-            Nos formations sont éligibles à l'ensemble des dispositifs de
-            financement professionnels. Notre équipe vous accompagne dans le
-            montage du dossier.
+            {t("fundingBody")}
           </p>
           <Link
             href="/financements"
             className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-signal-400 hover:text-signal-300"
           >
-            Tester mon éligibilité
+            {t("testEligibility")}
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
@@ -603,7 +576,7 @@ function Funding() {
 }
 
 /* =============================================================== FINAL CTA */
-function FinalCTA() {
+function FinalCTA({ t }: { t: HomeT }) {
   return (
     <section className="py-20 md:py-28">
       <div className="max-w-4xl mx-auto px-6">
@@ -617,29 +590,28 @@ function FinalCTA() {
           <div className="relative">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-xs font-medium">
               <Sparkles className="w-3.5 h-3.5 text-signal-400" />
-              Démarrez votre projet
+              {t("finalCtaBadge")}
             </span>
             <h2 className="mt-5 font-display text-3xl md:text-5xl font-semibold tracking-tight">
-              Trouvons ensemble{" "}
-              <span className="italic text-signal-400">votre formation</span>.
+              {t("finalCtaTitle1")}{" "}
+              <span className="italic text-signal-400">{t("finalCtaTitle2")}</span>.
             </h2>
             <p className="mt-4 text-white/80 max-w-xl mx-auto">
-              Un conseiller vous rappelle sous 24 h ouvrées pour étudier votre
-              projet et votre éligibilité au financement.
+              {t("finalCtaBody")}
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <Link
                 href="/contact"
                 className="inline-flex items-center gap-2 rounded-2xl bg-signal-500 text-night px-6 py-3.5 text-sm font-semibold hover:bg-signal-400 shadow-glow-signal transition"
               >
-                Être rappelé(e)
+                {t("ctaBeCalled")}
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 href="/formations"
                 className="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-white/5 backdrop-blur px-6 py-3.5 text-sm font-semibold hover:bg-white/10 transition"
               >
-                Voir les formations
+                {t("ctaSeeFormations")}
               </Link>
             </div>
           </div>
@@ -650,7 +622,7 @@ function FinalCTA() {
 }
 
 /* =============================================================== FOOTER CONTACT */
-function FooterContact() {
+function FooterContact({ t }: { t: HomeT }) {
   return (
     <section className="bg-night border-t border-white/5">
       <div className="max-w-7xl mx-auto px-6 py-16 grid md:grid-cols-3 gap-10">
@@ -662,7 +634,7 @@ function FooterContact() {
         </div>
         <div className="md:col-span-1">
           <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-signal-400 mb-3">
-            Centre de formation
+            {t("centerLabel")}
           </div>
           <div className="space-y-2 text-sm text-white/70">
             <div className="flex items-start gap-2.5">
@@ -691,42 +663,42 @@ function FooterContact() {
         </div>
         <div className="md:col-span-1">
           <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-signal-400 mb-3">
-            Plan du site
+            {t("sitemap")}
           </div>
           <ul className="space-y-1.5 text-sm text-white/70">
             <li>
               <Link href="/formations" className="hover:text-white">
-                Toutes les formations
+                {t("footerAllFormations")}
               </Link>
             </li>
             <li>
               <Link href="/ecole" className="hover:text-white">
-                L'école
+                {t("navSchool")}
               </Link>
             </li>
             <li>
               <Link href="/financements" className="hover:text-white">
-                Financements
+                {t("navFunding")}
               </Link>
             </li>
             <li>
               <Link href="/tarifs" className="hover:text-white">
-                Tarifs
+                {t("navPricing")}
               </Link>
             </li>
             <li>
               <Link href="/temoignages" className="hover:text-white">
-                Témoignages
+                {t("navTestimonials")}
               </Link>
             </li>
             <li>
               <Link href="/contact" className="hover:text-white">
-                Nous contacter
+                {t("footerContact")}
               </Link>
             </li>
             <li>
               <Link href="/login" className="hover:text-white">
-                Espace stagiaire
+                {t("studentSpace")}
               </Link>
             </li>
           </ul>
