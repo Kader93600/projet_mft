@@ -2,195 +2,444 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDate, initials, scoreColor } from "@/lib/utils";
-import { BarChart3, Trophy, TrendingUp, Download } from "lucide-react";
+import {
+  BarChart3,
+  Trophy,
+  TrendingUp,
+  Download,
+  Users,
+  AlertTriangle,
+  CheckCircle2,
+  Banknote,
+  Sparkles,
+  Calendar,
+  CircleDot,
+  ListChecks,
+  UserPlus,
+} from "lucide-react";
 import { AnalyticsToolbar } from "./analytics-toolbar";
 import { DeleteAttemptButton } from "./analytics-row-actions";
+import { TrendsChart } from "./trends-chart";
+import { CompletionBars } from "./completion-bars";
+import { RealtimeIndicator } from "./realtime-indicator";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
+interface KpiSnapshot {
+  active_students_7d: number;
+  at_risk_students: number;
+  quiz_attempts_7d: number;
+  live_sessions_scheduled: number;
+  live_sessions_completed_30d: number;
+  active_enrollments: number;
+  revenue_30d_cents: number;
+  new_users_7d: number;
+  pass_rate_30d: number;
+  mock_exams_30d: number;
+  pending_corrections: number;
+  computed_at: string;
+}
+
+function fmtEuro(cents: number): string {
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+    maximumFractionDigits: 0,
+  }).format((cents ?? 0) / 100);
+}
+
 export default async function AdminAnalytics() {
   const supabase = createClient();
-  const [{ data: attempts }, { data: quizzes }] = await Promise.all([
-    supabase
-      .from("quiz_attempts")
-      .select("*, profiles(id, full_name, email), quizzes(title)")
-      .order("finished_at", { ascending: false })
-      .limit(100),
-    supabase.from("quizzes").select("id, title").order("title"),
-  ]);
 
-  const passed = attempts?.filter((a) => a.passed).length || 0;
-  const avg =
-    attempts && attempts.length
-      ? Math.round(attempts.reduce((s, a) => s + a.percentage, 0) / attempts.length)
-      : 0;
-  const successRate = attempts?.length ? Math.round((passed / attempts.length) * 100) : 0;
+  // 1. KPIs temps réel
+  const { data: kpiRow } = await supabase
+    .from("vw_admin_kpis_realtime")
+    .select("*")
+    .single();
+  const k = (kpiRow as KpiSnapshot | null) ?? {
+    active_students_7d: 0,
+    at_risk_students: 0,
+    quiz_attempts_7d: 0,
+    live_sessions_scheduled: 0,
+    live_sessions_completed_30d: 0,
+    active_enrollments: 0,
+    revenue_30d_cents: 0,
+    new_users_7d: 0,
+    pass_rate_30d: 0,
+    mock_exams_30d: 0,
+    pending_corrections: 0,
+    computed_at: new Date().toISOString(),
+  };
+
+  // 2. Trends 30j (en parallèle des autres requêtes)
+  const [{ data: trends }, { data: completion }, { data: attempts }, { data: quizzes }] =
+    await Promise.all([
+      supabase
+        .from("vw_admin_trends_30d")
+        .select("day, signups, quiz_attempts, payments")
+        .order("day"),
+      supabase
+        .from("vw_admin_completion_by_formation")
+        .select("*")
+        .order("enrolled_count", { ascending: false })
+        .limit(10),
+      supabase
+        .from("quiz_attempts")
+        .select("*, profiles(id, full_name, email), quizzes(title)")
+        .order("finished_at", { ascending: false })
+        .limit(50),
+      supabase.from("quizzes").select("id, title").order("title"),
+    ]);
 
   return (
-    <div className="space-y-8">
-      <header>
-        <span className="eyebrow text-gold-700">Administration</span>
-        <h1 className="mt-2 font-display text-3xl font-semibold text-navy-950 tracking-tight">
-          Performances globales
-        </h1>
-        <p className="mt-2 text-slate-600 max-w-2xl">
-          Indicateurs agrégés sur les 100 dernières tentatives de quiz.
-        </p>
+    <div className="space-y-10">
+      {/* En-tête */}
+      <header className="flex items-end justify-between gap-4 flex-wrap">
+        <div>
+          <span className="eyebrow text-gold-700">Administration</span>
+          <h1 className="mt-2 font-display text-3xl font-semibold text-navy-950 tracking-tight">
+            Performances globales
+          </h1>
+          <p className="mt-2 text-slate-600 max-w-2xl">
+            Vue temps réel de l'engagement stagiaire, des indicateurs business et
+            de la dernière activité. Les données sont actualisées automatiquement.
+          </p>
+        </div>
+        <RealtimeIndicator />
       </header>
 
-      <AnalyticsToolbar quizzes={quizzes ?? []} />
-
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <KPI
-          icon={BarChart3}
-          label="Tentatives"
-          value={String(attempts?.length ?? 0)}
-          hint="100 dernières"
-        />
-        <KPI
-          icon={TrendingUp}
-          label="Moyenne"
-          value={`${avg}%`}
-          hint="score moyen"
-          valueClass={scoreColor(avg)}
-        />
-        <KPI
-          icon={Trophy}
-          label="Taux de réussite"
-          value={`${successRate}%`}
-          hint={`${passed} réussites`}
-          accent
-        />
+      {/* ─────────── Section ENGAGEMENT ─────────── */}
+      <section>
+        <h2 className="font-display text-lg font-semibold text-navy-900 mb-3 inline-flex items-center gap-2">
+          <CircleDot className="h-4 w-4 text-signal-700" />
+          Engagement pédagogique
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          <Kpi
+            icon={Users}
+            label="Stagiaires actifs"
+            value={String(k.active_students_7d)}
+            hint="7 derniers jours"
+            tone="signal"
+          />
+          <Kpi
+            icon={AlertTriangle}
+            label="À risque"
+            value={String(k.at_risk_students)}
+            hint=">14j inactifs"
+            tone={k.at_risk_students > 0 ? "rose" : "slate"}
+          />
+          <Kpi
+            icon={ListChecks}
+            label="Tentatives quiz"
+            value={String(k.quiz_attempts_7d)}
+            hint="7 derniers jours"
+            tone="navy"
+          />
+          <Kpi
+            icon={Trophy}
+            label="Taux de réussite"
+            value={`${k.pass_rate_30d}%`}
+            hint="30 derniers jours"
+            tone={k.pass_rate_30d >= 70 ? "signal" : "gold"}
+          />
+          <Kpi
+            icon={CheckCircle2}
+            label="Examens blancs"
+            value={String(k.mock_exams_30d)}
+            hint="30 derniers jours"
+            tone="navy"
+          />
+        </div>
       </section>
 
-      <Card>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-navy-50/60 text-[11px] uppercase tracking-wider text-slate-600">
-                <th className="text-left px-5 py-3 font-semibold">Stagiaire</th>
-                <th className="text-left px-5 py-3 font-semibold">Exercice</th>
-                <th className="text-left px-5 py-3 font-semibold">Score</th>
-                <th className="text-left px-5 py-3 font-semibold">Statut</th>
-                <th className="text-left px-5 py-3 font-semibold">Date</th>
-                <th className="px-5 py-3" />
-              </tr>
-            </thead>
-            <tbody>
-              {attempts?.map((a: any) => (
-                <tr key={a.id} className="border-t border-navy-50 hover:bg-navy-50/30">
-                  <td className="px-5 py-3.5">
-                    <Link
-                      href={`/admin/users/${a.profiles?.id}`}
-                      className="flex items-center gap-3 group"
-                    >
-                      <div className="h-7 w-7 rounded-full bg-navy-900 text-gold-400 flex items-center justify-center font-semibold text-[10px]">
-                        {initials(a.profiles?.full_name || a.profiles?.email)}
-                      </div>
-                      <div>
-                        <div className="font-medium text-navy-900 group-hover:text-gold-700">
-                          {a.profiles?.full_name || a.profiles?.email}
-                        </div>
-                        <div className="text-xs text-slate-500">
-                          {a.profiles?.email}
-                        </div>
-                      </div>
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3.5 text-slate-700">{a.quizzes?.title}</td>
-                  <td
-                    className={`px-5 py-3.5 font-display font-semibold ${scoreColor(
-                      a.percentage
-                    )}`}
-                  >
-                    {a.percentage}%
-                  </td>
-                  <td className="px-5 py-3.5">
-                    {a.passed ? (
-                      <Badge tone="success" size="sm">
-                        Réussi
-                      </Badge>
-                    ) : (
-                      <Badge tone="slate" size="sm">
-                        Échec
-                      </Badge>
-                    )}
-                  </td>
-                  <td className="px-5 py-3.5 text-slate-500 text-xs">
-                    {a.finished_at && formatDate(a.finished_at)}
-                  </td>
-                  <td className="px-5 py-3.5 text-right">
-                    <div className="inline-flex items-center gap-1">
-                      <a
-                        href={`/admin/analytics/export/pdf?attempt=${a.id}`}
-                        target="_blank"
-                        title="Télécharger la copie corrigée"
-                        className="h-7 w-7 rounded-md text-slate-400 hover:text-navy-900 hover:bg-navy-50 inline-flex items-center justify-center"
-                      >
-                        <Download className="h-3.5 w-3.5" />
-                      </a>
-                      <DeleteAttemptButton id={a.id} />
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {(!attempts || attempts.length === 0) && (
-                <tr>
-                  <td colSpan={6} className="px-5 py-16 text-center text-slate-400">
-                    Aucune tentative pour le moment.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+      {/* ─────────── Section BUSINESS ─────────── */}
+      <section>
+        <h2 className="font-display text-lg font-semibold text-navy-900 mb-3 inline-flex items-center gap-2">
+          <Banknote className="h-4 w-4 text-gold-700" />
+          Business
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          <Kpi
+            icon={Banknote}
+            label="CA 30 jours"
+            value={fmtEuro(k.revenue_30d_cents)}
+            hint="Encaissements"
+            tone="gold"
+          />
+          <Kpi
+            icon={UserPlus}
+            label="Nouveaux stagiaires"
+            value={String(k.new_users_7d)}
+            hint="7 derniers jours"
+            tone="signal"
+          />
+          <Kpi
+            icon={BarChart3}
+            label="Inscriptions actives"
+            value={String(k.active_enrollments)}
+            hint="En cours"
+            tone="navy"
+          />
+          <Kpi
+            icon={Calendar}
+            label="Sessions live"
+            value={String(k.live_sessions_scheduled)}
+            hint={`${k.live_sessions_completed_30d} clôturées 30j`}
+            tone="navy"
+          />
+          <Kpi
+            icon={Sparkles}
+            label="Copies à corriger"
+            value={String(k.pending_corrections)}
+            hint="Formateurs"
+            tone={k.pending_corrections > 0 ? "gold" : "slate"}
+            href="/formateur/corrections"
+          />
         </div>
-      </Card>
+      </section>
+
+      {/* ─────────── Graphique trends 30j ─────────── */}
+      <section className="grid lg:grid-cols-2 gap-5">
+        <Card>
+          <CardBody>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="font-display text-base font-semibold text-navy-900">
+                  Activité — 30 derniers jours
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Inscriptions, tentatives de quiz, paiements (par jour)
+                </p>
+              </div>
+            </div>
+            <TrendsChart data={(trends ?? []) as any[]} />
+          </CardBody>
+        </Card>
+
+        <Card>
+          <CardBody>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="font-display text-base font-semibold text-navy-900">
+                  Taux de complétion par formation
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Leçons complétées / total leçons (inscriptions actives)
+                </p>
+              </div>
+            </div>
+            <CompletionBars data={(completion ?? []) as any[]} />
+          </CardBody>
+        </Card>
+      </section>
+
+      {/* ─────────── Tableau dernières tentatives ─────────── */}
+      <section>
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <h2 className="font-display text-lg font-semibold text-navy-900 inline-flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-brand-700" />
+            Dernières tentatives
+          </h2>
+          <span className="text-xs text-slate-500">
+            50 plus récentes ·{" "}
+            <span className="text-signal-700 font-medium">
+              {attempts?.length ?? 0}
+            </span>
+          </span>
+        </div>
+
+        <AnalyticsToolbar quizzes={quizzes ?? []} />
+
+        <Card className="mt-3">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-navy-50/60 text-[11px] uppercase tracking-wider text-slate-600">
+                  <th className="text-left px-5 py-3 font-semibold">Stagiaire</th>
+                  <th className="text-left px-5 py-3 font-semibold">Exercice</th>
+                  <th className="text-left px-5 py-3 font-semibold">Score</th>
+                  <th className="text-left px-5 py-3 font-semibold">Statut</th>
+                  <th className="text-left px-5 py-3 font-semibold">Date</th>
+                  <th className="px-5 py-3" />
+                </tr>
+              </thead>
+              <tbody>
+                {attempts?.map((a: any) => (
+                  <tr
+                    key={a.id}
+                    className="border-t border-navy-50 hover:bg-navy-50/30"
+                  >
+                    <td className="px-5 py-3.5">
+                      <Link
+                        href={`/admin/users/${a.profiles?.id}`}
+                        className="flex items-center gap-3 group"
+                      >
+                        <div className="h-7 w-7 rounded-full bg-navy-900 text-gold-400 flex items-center justify-center font-semibold text-[10px]">
+                          {initials(a.profiles?.full_name || a.profiles?.email)}
+                        </div>
+                        <div>
+                          <div className="font-medium text-navy-900 group-hover:text-gold-700">
+                            {a.profiles?.full_name || a.profiles?.email}
+                          </div>
+                          <div className="text-xs text-slate-500">
+                            {a.profiles?.email}
+                          </div>
+                        </div>
+                      </Link>
+                    </td>
+                    <td className="px-5 py-3.5 text-slate-700">
+                      {a.quizzes?.title}
+                    </td>
+                    <td
+                      className={`px-5 py-3.5 font-display font-semibold ${scoreColor(
+                        a.percentage ?? 0
+                      )}`}
+                    >
+                      {a.percentage != null ? `${a.percentage}%` : "—"}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      {a.status === "awaiting_review" ? (
+                        <Badge tone="gold" size="sm">
+                          En correction
+                        </Badge>
+                      ) : a.passed === true ? (
+                        <Badge tone="success" size="sm">
+                          Réussi
+                        </Badge>
+                      ) : a.passed === false ? (
+                        <Badge tone="slate" size="sm">
+                          Échec
+                        </Badge>
+                      ) : (
+                        <Badge tone="navy" size="sm">
+                          —
+                        </Badge>
+                      )}
+                    </td>
+                    <td className="px-5 py-3.5 text-slate-500 text-xs">
+                      {a.finished_at && formatDate(a.finished_at)}
+                    </td>
+                    <td className="px-5 py-3.5 text-right">
+                      <div className="inline-flex items-center gap-1">
+                        <a
+                          href={`/admin/analytics/export/pdf?attempt=${a.id}`}
+                          target="_blank"
+                          title="Télécharger la copie corrigée"
+                          className="h-7 w-7 rounded-md text-slate-400 hover:text-navy-900 hover:bg-navy-50 inline-flex items-center justify-center"
+                        >
+                          <Download className="h-3.5 w-3.5" />
+                        </a>
+                        <DeleteAttemptButton id={a.id} />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {(!attempts || attempts.length === 0) && (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="px-5 py-16 text-center text-slate-400"
+                    >
+                      Aucune tentative pour le moment.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      </section>
     </div>
   );
 }
 
-function KPI({
+// =====================================================================
+// KPI Card — version compacte (5 par ligne au lieu de 3)
+// =====================================================================
+function Kpi({
   icon: Icon,
   label,
   value,
   hint,
-  valueClass,
-  accent,
+  tone,
+  href,
 }: {
   icon: any;
   label: string;
   value: string;
   hint?: string;
-  valueClass?: string;
-  accent?: boolean;
+  tone?: "navy" | "signal" | "gold" | "rose" | "slate";
+  href?: string;
 }) {
-  return (
-    <Card variant={accent ? "gold" : "default"}>
-      <CardBody className="flex items-start gap-4">
+  const styles: Record<string, { bg: string; iconBg: string; iconColor: string; valueColor: string }> = {
+    navy: {
+      bg: "bg-white border-navy-100",
+      iconBg: "bg-navy-50",
+      iconColor: "text-navy-900",
+      valueColor: "text-navy-950",
+    },
+    signal: {
+      bg: "bg-white border-signal-500/30",
+      iconBg: "bg-signal-500/15",
+      iconColor: "text-signal-800",
+      valueColor: "text-navy-950",
+    },
+    gold: {
+      bg: "bg-gradient-to-br from-gold-50 to-white border-gold-200",
+      iconBg: "bg-gold-100",
+      iconColor: "text-gold-800",
+      valueColor: "text-navy-950",
+    },
+    rose: {
+      bg: "bg-rose-50/40 border-rose-200",
+      iconBg: "bg-rose-100",
+      iconColor: "text-rose-700",
+      valueColor: "text-rose-900",
+    },
+    slate: {
+      bg: "bg-white border-navy-100",
+      iconBg: "bg-slate-100",
+      iconColor: "text-slate-500",
+      valueColor: "text-slate-700",
+    },
+  };
+  const s = styles[tone ?? "navy"];
+
+  const inner = (
+    <div
+      className={`rounded-2xl border p-4 transition ${s.bg} ${
+        href ? "hover:shadow-soft cursor-pointer" : ""
+      }`}
+    >
+      <div className="flex items-start gap-3">
         <div
-          className={
-            accent
-              ? "h-11 w-11 rounded-xl bg-gold-100 text-gold-800 flex items-center justify-center"
-              : "h-11 w-11 rounded-xl bg-navy-50 text-navy-800 flex items-center justify-center"
-          }
+          className={`h-9 w-9 rounded-lg ${s.iconBg} ${s.iconColor} flex items-center justify-center shrink-0`}
         >
-          <Icon className="h-5 w-5" />
+          <Icon className="h-4 w-4" />
         </div>
-        <div>
-          <div className="text-[11px] uppercase tracking-wider text-slate-500 font-medium">
+        <div className="min-w-0 flex-1">
+          <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold truncate">
             {label}
           </div>
           <div
-            className={`font-display text-2xl font-semibold mt-0.5 ${
-              valueClass ?? "text-navy-900"
-            }`}
+            className={`font-display text-xl font-semibold mt-0.5 ${s.valueColor} truncate`}
           >
             {value}
           </div>
-          {hint && <div className="text-xs text-slate-500 mt-0.5">{hint}</div>}
+          {hint && (
+            <div className="text-[11px] text-slate-500 mt-0.5 truncate">
+              {hint}
+            </div>
+          )}
         </div>
-      </CardBody>
-    </Card>
+      </div>
+    </div>
   );
+
+  if (href) {
+    return <Link href={href}>{inner}</Link>;
+  }
+  return inner;
 }
