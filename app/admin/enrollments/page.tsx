@@ -13,7 +13,11 @@ import {
   Ban,
   Trash2,
   Download,
+  Clock,
+  MessageSquare,
+  GraduationCap,
 } from "lucide-react";
+import { findFormation } from "@/lib/formations-config";
 import {
   deleteFunder,
   deleteEnrollment,
@@ -58,6 +62,56 @@ function fmtEuros(cents: number) {
     currency: "EUR",
   });
 }
+
+/**
+ * Extrait le slug de la formation visée :
+ * 1) prioritairement `formation_slug` (rempli quand le lead choisit
+ *    explicitement une formation depuis la page tarifs/inscription)
+ * 2) sinon parse le message libre, qui contient souvent
+ *    "Formation visée : <slug>" généré par le formulaire de contact.
+ */
+function extractFormationSlug(req: any): string | null {
+  if (req.formation_slug) return req.formation_slug as string;
+  const m = (req.message as string | null)?.match(
+    /Formation\s+vis[ée]e\s*:\s*([a-z0-9-]+)/i,
+  );
+  return m ? m[1].toLowerCase() : null;
+}
+
+/** "aujourd'hui" / "hier" / "il y a Nj" */
+function relativeAge(iso: string): string {
+  const days = Math.floor(
+    (Date.now() - new Date(iso).getTime()) / 86_400_000,
+  );
+  if (days <= 0) return "aujourd'hui";
+  if (days === 1) return "hier";
+  if (days < 7) return `il y a ${days}j`;
+  if (days < 30) return `il y a ${Math.floor(days / 7)}sem`;
+  return `il y a ${Math.floor(days / 30)}mois`;
+}
+
+/** "17 mai · 10:50" */
+function fmtDateTime(iso: string): string {
+  const d = new Date(iso);
+  return `${d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" })} · ${d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`;
+}
+
+const FUNDING_LABEL: Record<string, string> = {
+  auto: "Auto",
+  cpf: "CPF",
+  opco: "OPCO",
+  france_travail: "France Travail",
+  employeur: "Employeur",
+  autre: "Autre",
+};
+
+const FUNDING_TONE: Record<string, "slate" | "navy" | "gold" | "success"> = {
+  auto: "slate",
+  cpf: "navy",
+  opco: "gold",
+  france_travail: "success",
+  employeur: "navy",
+};
 
 export default async function AdminEnrollmentsPage() {
   const supabase = createClient();
@@ -131,51 +185,131 @@ export default async function AdminEnrollmentsPage() {
                 <thead className="bg-navy-50 text-[11px] uppercase tracking-wider text-slate-600">
                   <tr>
                     <th className="text-left px-4 py-3">Contact</th>
+                    <th className="hidden md:table-cell text-left px-4 py-3">Formation &amp; pack</th>
                     <th className="hidden md:table-cell text-left px-4 py-3">Financement</th>
+                    <th className="hidden xl:table-cell text-left px-4 py-3">Message</th>
                     <th className="hidden sm:table-cell text-left px-4 py-3">Statut</th>
-                    <th className="hidden lg:table-cell text-left px-4 py-3">Reçue le</th>
+                    <th className="hidden lg:table-cell text-left px-4 py-3">Reçue</th>
                     <th className="text-right px-4 py-3 whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {openReq.map((r: any) => (
-                    <tr key={r.id} className="border-t border-navy-50">
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-navy-900">{r.full_name}</div>
-                        <div className="text-xs text-slate-500 flex items-center gap-2 flex-wrap">
-                          <Mail className="h-3 w-3" />
-                          <a href={`mailto:${r.email}`} className="hover:text-navy-900">
-                            {r.email}
-                          </a>
-                          {r.phone && (
-                            <>
-                              <Phone className="h-3 w-3 ml-2" />
+                  {openReq.map((r: any) => {
+                    const fSlug = extractFormationSlug(r);
+                    const formation = fSlug ? findFormation(fSlug) : null;
+                    const message =
+                      typeof r.message === "string" ? r.message.trim() : "";
+                    // Le formulaire de contact préfixe parfois le message
+                    // par "Formation visée : X" — on retire ce préfixe pour
+                    // ne garder que le contenu utile dans la cellule message.
+                    const cleanMessage = message
+                      .replace(
+                        /Formation\s+vis[ée]e\s*:\s*[a-z0-9-]+\s*\.?\s*/i,
+                        "",
+                      )
+                      .trim();
+                    return (
+                      <tr key={r.id} className="border-t border-navy-50">
+                        <td className="px-4 py-3 align-top">
+                          <div className="font-medium text-navy-900">
+                            {r.full_name}
+                          </div>
+                          <div className="mt-1 text-xs text-slate-500 flex items-center gap-2 flex-wrap">
+                            <a
+                              href={`mailto:${r.email}`}
+                              className="inline-flex items-center gap-1 hover:text-navy-900"
+                            >
+                              <Mail className="h-3 w-3" />
+                              {r.email}
+                            </a>
+                            {r.phone && (
                               <a
                                 href={`tel:${r.phone}`}
-                                className="hover:text-navy-900"
+                                className="inline-flex items-center gap-1 hover:text-navy-900"
                               >
+                                <Phone className="h-3 w-3" />
                                 {r.phone}
                               </a>
-                            </>
+                            )}
+                          </div>
+                        </td>
+                        <td className="hidden md:table-cell px-4 py-3 align-top">
+                          <div className="flex flex-col gap-1">
+                            {formation ? (
+                              <span
+                                className="inline-flex items-center gap-1.5 self-start rounded-md border px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider"
+                                style={{
+                                  backgroundColor: `${formation.accent}15`,
+                                  borderColor: `${formation.accent}55`,
+                                  color: formation.accent,
+                                }}
+                                title={formation.title}
+                              >
+                                <GraduationCap className="h-3 w-3" />
+                                {formation.code}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-slate-400 italic">
+                                non précisée
+                              </span>
+                            )}
+                            {r.pack_slug && (
+                              <PackChip pack={r.pack_slug} />
+                            )}
+                          </div>
+                        </td>
+                        <td className="hidden md:table-cell px-4 py-3 align-top">
+                          <Badge
+                            tone={FUNDING_TONE[r.funding_kind] ?? "slate"}
+                            size="sm"
+                          >
+                            {FUNDING_LABEL[r.funding_kind] ??
+                              String(r.funding_kind).replace("_", " ")}
+                          </Badge>
+                        </td>
+                        <td className="hidden xl:table-cell px-4 py-3 align-top max-w-[260px]">
+                          {cleanMessage ? (
+                            <div
+                              className="text-xs text-slate-700 leading-snug line-clamp-3"
+                              title={cleanMessage}
+                            >
+                              <MessageSquare className="inline h-3 w-3 mr-1 -mt-0.5 text-slate-400" />
+                              {cleanMessage}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-slate-400 italic">
+                              —
+                            </span>
                           )}
-                        </div>
-                      </td>
-                      <td className="hidden md:table-cell px-4 py-3 capitalize text-slate-700">
-                        {String(r.funding_kind).replace("_", " ")}
-                      </td>
-                      <td className="hidden sm:table-cell px-4 py-3">
-                        <Badge tone={REQUEST_STATUS_TONE[r.status] ?? "slate"} size="sm">
-                          {REQUEST_STATUS_LABEL[r.status] ?? r.status}
-                        </Badge>
-                      </td>
-                      <td className="hidden lg:table-cell px-4 py-3 text-slate-500 whitespace-nowrap">
-                        {new Date(r.created_at).toLocaleDateString("fr-FR")}
-                      </td>
-                      <td className="px-4 py-3">
-                        <LeadActions request={r} />
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="hidden sm:table-cell px-4 py-3 align-top">
+                          <Badge
+                            tone={REQUEST_STATUS_TONE[r.status] ?? "slate"}
+                            size="sm"
+                          >
+                            {REQUEST_STATUS_LABEL[r.status] ?? r.status}
+                          </Badge>
+                        </td>
+                        <td
+                          className="hidden lg:table-cell px-4 py-3 align-top whitespace-nowrap"
+                          title={new Date(r.created_at).toLocaleString(
+                            "fr-FR",
+                          )}
+                        >
+                          <div className="text-xs text-slate-700">
+                            {fmtDateTime(r.created_at)}
+                          </div>
+                          <div className="text-[11px] text-slate-500 inline-flex items-center gap-1 mt-0.5">
+                            <Clock className="h-3 w-3" />
+                            {relativeAge(r.created_at)}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          <LeadActions request={r} />
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </CardBody>
