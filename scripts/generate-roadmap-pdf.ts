@@ -59,6 +59,11 @@ type Section = {
 type Delivery = { title: string; desc: string };
 const RECENT_DELIVERIES: Delivery[] = [
   {
+    title: "Vidéos intro GOTRM — CCP1 + CCP2 importées (CCP3 à venir)",
+    desc:
+      "2 vidéos d'introduction (~4 min chacune, compressées CRF 28 pour passer sous la limite Supabase 50 MB) attachées aux 17 modules du CCP1 et aux 12 modules du CCP2. Le stagiaire voit la vidéo intro du CCP correspondant quel que soit le chapitre ouvert. Nouveau script scripts/import-gotrm-intro-videos.ts qui réutilise l'infra Capa (bucket privé, composant <ModuleIntroVideo />, RLS authenticated_read). CCP3 attendu dès que le client aura tourné la 3e vidéo.",
+  },
+  {
     title: "Admin enrollments — tableau Leads enrichi (formation, pack, message, âge)",
     desc:
       "Le tableau « Leads à contacter » affiche désormais : badge formation (extrait de formation_slug ou parsé du message « Formation visée : X »), badge pack souhaité (Initial/Medium/Premium), aperçu line-clamp-3 du message libre avec tooltip, financement en badge coloré (Auto/CPF/OPCO/France Travail/Employeur), et la date enrichie avec un âge relatif (« aujourd'hui », « il y a 3j », « il y a 2sem »). Permet de prioriser les leads chauds en un coup d'œil.",
