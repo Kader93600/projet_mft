@@ -59,6 +59,11 @@ type Section = {
 type Delivery = { title: string; desc: string };
 const RECENT_DELIVERIES: Delivery[] = [
   {
+    title: "Banque QR CCP1 — 66 exercices rédigés + 23 annexes",
+    desc:
+      "Import automatisé via scripts/import-ccp1-qr.ts à partir des 89 PDFs client : 66 QR (17 chapitres) + 23 annexes PDF uploadées dans le bucket Storage privé. Format pro (bandeau navy, sections contexte/travail/annexe colorées, tableaux préservés). Compatible correction formateur, scoring, statistiques, examens blancs.",
+  },
+  {
     title: "GOTRM complet — CCP3 importé (Optimiser les moyens du transport)",
     desc:
       "Le CCP3 du Titre Pro GOTRM est en ligne : 12 chapitres / 72 leçons (management d'équipe, CCNTR, temps de service, prépaie, formation pro, recrutement, QVCT, coûts d'exploitation, seuil de rentabilité, SIG/BFR/FRNG/CAF, budget, qualité). Avec CCP1 + CCP2 déjà livrés, le titre complet (RNCP 40990) est désormais accessible aux stagiaires.",
@@ -259,7 +264,11 @@ const SECTIONS: Section[] = [
             detail: "12 chapitres / 72 leçons importés depuis le PDF client.",
             done: true,
           },
-          { title: "Banque de questions QR (30+) pour la session blanche" },
+          {
+            title: "Banque de questions QR (30+) pour la session blanche",
+            detail: "66 QR importés depuis les PDFs client (17 chapitres) + 23 annexes liées dans Storage.",
+            done: true,
+          },
           {
             title: "Vidéos pédagogiques (au moins 1 par CCP, 5–10 min chacune)",
           },
