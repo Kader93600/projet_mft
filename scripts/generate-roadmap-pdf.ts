@@ -330,22 +330,11 @@ const SECTIONS: Section[] = [
           { title: "ADR Matières dangereuses (option différée)" },
         ],
       },
-      {
-        title: "P1 #4 — Médias",
-        steps: [
-          {
-            title: "Tournage vidéo intro formateur (1 min, page d'accueil)",
-          },
-          {
-            title:
-              "Photos formateurs + témoignages stagiaires (page À propos / Témoignages)",
-          },
-          {
-            title:
-              "Visuels formations (1 image hero par formation, optimisée WebP)",
-          },
-        ],
-      },
+      // Note : la section "P1 #4 — Médias" (tournage formateur, photos,
+      // témoignages stagiaires) a été retirée à la demande du client
+      // (2026-05-17) — il préfère ne pas apparaître en photo/vidéo.
+      // Les visuels hero des formations peuvent passer par des banques
+      // d'images génériques sans personne identifiable.
     ],
   },
   {
