@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { createClient } from "@/lib/supabase/server";
 import { SessionTracker } from "@/components/session-tracker";
+import { DailyCheckin } from "@/components/gamification/daily-checkin";
 import { isStaff } from "@/lib/permissions";
 import { PostHogProvider } from "@/components/posthog-provider";
 
@@ -37,6 +38,7 @@ export async function AuthLayout({
     >
       <AppShell profile={profile}>
         <SessionTracker />
+        {profile.role === "student" && <DailyCheckin />}
         {children}
       </AppShell>
     </PostHogProvider>

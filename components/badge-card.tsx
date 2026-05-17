@@ -46,6 +46,7 @@ export function BadgeCard({
   badge,
   earned,
   earnedAt,
+  progress,
 }: {
   badge: {
     name: string;
@@ -57,6 +58,18 @@ export function BadgeCard({
   };
   earned: boolean;
   earnedAt?: string | null;
+  /**
+   * Progression vers le déblocage (badges non earned uniquement).
+   * Si fourni et badge non earned : on remplace "À débloquer" par une
+   * mini-barre + libellé "Quiz réussis 3 / 5" pour donner un objectif
+   * visible au stagiaire.
+   */
+  progress?: {
+    current: number;
+    target: number;
+    percent: number;
+    label: string;
+  } | null;
 }) {
   const wasEarnedRef = useRef<boolean>(earned);
   const [justUnlocked, setJustUnlocked] = useState(false);
@@ -183,7 +196,23 @@ export function BadgeCard({
               })}
             </div>
           )}
-          {!earned && (
+          {!earned && progress && progress.target > 0 && (
+            <div className="w-full mt-auto pt-2 space-y-1.5">
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-slate-500">{progress.label}</span>
+                <span className="text-slate-700 font-medium tabular-nums">
+                  {progress.current} / {progress.target}
+                </span>
+              </div>
+              <div className="h-1 rounded-full bg-slate-100 overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-gold-400 to-gold-600 transition-all duration-500"
+                  style={{ width: `${progress.percent}%` }}
+                />
+              </div>
+            </div>
+          )}
+          {!earned && !progress && (
             <div className="text-[11px] text-slate-400 mt-auto inline-flex items-center gap-1.5">
               <span className="h-1 w-1 rounded-full bg-slate-300" />
               À débloquer

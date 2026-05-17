@@ -13,6 +13,7 @@ import {
   ChevronDown,
   Shield,
   BellRing,
+  ShieldCheck,
 } from "lucide-react";
 
 /**
@@ -234,6 +235,15 @@ export function UserMenu({
           >
             <BellRing className="w-4 h-4 text-slate-500" />
             Préférences notifications
+          </Link>
+          {/* Préférences de confidentialité (classement, etc.) */}
+          <Link
+            href="/parametres/confidentialite"
+            onClick={close}
+            className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium text-navy-800 hover:bg-navy-50 transition-colors"
+          >
+            <ShieldCheck className="w-4 h-4 text-slate-500" />
+            Confidentialité
           </Link>
           <button
             type="button"
