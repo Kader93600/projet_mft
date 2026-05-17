@@ -104,6 +104,14 @@ export function IntroVideoPlayer({
         </div>
       )}
 
+      {/*
+        NE PAS mettre `crossOrigin="anonymous"` ici : Supabase Storage
+        signed URL renvoie bien `Access-Control-Allow-Origin: *` mais
+        pas tous les headers CORS étendus exigés par ce mode, ce qui
+        fait rejeter la source avec MEDIA_ERR_SRC_NOT_SUPPORTED.
+        Sans crossOrigin, le browser charge la URL en mode "no-cors"
+        et la lit sans souci (le streaming Range marche).
+      */}
       <video
         ref={videoRef}
         src={signedUrl}
@@ -111,7 +119,6 @@ export function IntroVideoPlayer({
         controlsList="nodownload"
         preload="auto"
         playsInline
-        crossOrigin="anonymous"
         onError={handleError}
         onLoadedMetadata={handleLoadedMetadata}
         className="block aspect-video w-full bg-night-950"
