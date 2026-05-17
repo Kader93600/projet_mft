@@ -25,6 +25,74 @@ const DSN =
 const HAS_SENTRY = !!DSN;
 
 /**
+ * Sérialise un objet inconnu en `Error` utilisable.
+ *
+ * Avant ce fix, `new Error(String(err))` produisait "[object Object]"
+ * pour tout ce qui n'était pas une `Error` native (PostgrestError de
+ * Supabase, StripeError, fetch Response, etc.). Résultat : les alertes
+ * Sentry étaient illisibles dans l'email reçu (cf. issue du 17/05 sur
+ * /api/cron/inactivity).
+ *
+ * Maintenant on reconstruit un `Error` à partir des champs `message`,
+ * `code`, `details`, `hint` (présents sur PostgrestError / Stripe /
+ * fetch error), et on attache l'objet brut dans `cause` + `extra`
+ * pour pouvoir l'inspecter côté Sentry.
+ */
+function serializeUnknownError(err: unknown): {
+  error: Error;
+  meta: Record<string, unknown>;
+} {
+  if (err instanceof Error) {
+    return { error: err, meta: {} };
+  }
+  if (typeof err === "string") {
+    return { error: new Error(err), meta: {} };
+  }
+  if (err && typeof err === "object") {
+    const obj = err as Record<string, unknown>;
+    const parts: string[] = [];
+    if (typeof obj.message === "string" && obj.message.trim()) {
+      parts.push(obj.message);
+    }
+    if (typeof obj.code === "string" || typeof obj.code === "number") {
+      parts.push(`[code=${obj.code}]`);
+    }
+    if (typeof obj.statusCode === "number") {
+      parts.push(`[status=${obj.statusCode}]`);
+    }
+    if (typeof obj.details === "string" && obj.details.trim()) {
+      parts.push(`details: ${obj.details}`);
+    }
+    if (typeof obj.hint === "string" && obj.hint.trim()) {
+      parts.push(`hint: ${obj.hint}`);
+    }
+    const msg =
+      parts.length > 0
+        ? parts.join(" · ")
+        : safeJsonStringify(obj) || "Unknown error object";
+    const e = new Error(msg);
+    // Préserve l'objet original pour inspection dans Sentry
+    (e as Error & { cause?: unknown }).cause = err;
+    return {
+      error: e,
+      meta: {
+        original_error_keys: Object.keys(obj),
+        original_error_json: safeJsonStringify(obj),
+      },
+    };
+  }
+  return { error: new Error(String(err)), meta: {} };
+}
+
+function safeJsonStringify(v: unknown): string {
+  try {
+    return JSON.stringify(v);
+  } catch {
+    return "";
+  }
+}
+
+/**
  * Capture une exception. Acceptable depuis n'importe quel runtime
  * (client, server action, route handler, edge).
  */
@@ -32,7 +100,7 @@ export async function captureException(
   err: unknown,
   opts: CaptureOptions = {}
 ) {
-  const e = err instanceof Error ? err : new Error(String(err));
+  const { error: e, meta } = serializeUnknownError(err);
 
   if (HAS_SENTRY) {
     Sentry.withScope((scope) => {
@@ -50,10 +118,9 @@ export async function captureException(
           scope.setTag(k, String(v));
         }
       }
-      if (opts.extra) {
-        for (const [k, v] of Object.entries(opts.extra)) {
-          scope.setExtra(k, v);
-        }
+      const extras = { ...(opts.extra ?? {}), ...meta };
+      for (const [k, v] of Object.entries(extras)) {
+        scope.setExtra(k, v);
       }
       Sentry.captureException(e);
     });
@@ -62,7 +129,7 @@ export async function captureException(
 
   // Fallback dev / DSN absent
   // eslint-disable-next-line no-console
-  console.error(`[${opts.level ?? "error"}]`, e, opts);
+  console.error(`[${opts.level ?? "error"}]`, e, { ...opts, meta });
 }
 
 /**
