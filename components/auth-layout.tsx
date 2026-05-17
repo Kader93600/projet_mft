@@ -6,6 +6,8 @@ import { DailyCheckin } from "@/components/gamification/daily-checkin";
 import { PwaInstallPrompt } from "@/components/pwa/install-prompt";
 import { OfflineIndicator } from "@/components/pwa/offline-indicator";
 import { OfflineSync } from "@/components/pwa/offline-sync";
+import { TutorFab } from "@/components/tutor/tutor-fab";
+import { getTutorAccess } from "@/lib/tutor/access";
 import { isStaff } from "@/lib/permissions";
 import { PostHogProvider } from "@/components/posthog-provider";
 
@@ -29,6 +31,12 @@ export async function AuthLayout({
   if (!profile) redirect("/login");
   // requireAdmin autorise admin ET super_admin (cohérent avec requireAdmin() côté actions).
   if (requireAdmin && !isStaff(profile.role)) redirect("/dashboard");
+
+  // Feature flag global : si désactivé, le FAB tuteur n'est jamais monté.
+  const tutorEnabled = process.env.FEATURE_AI_TUTOR === "true";
+  // Gate Premium (côté serveur) : on calcule l'accès une fois ici pour
+  // éviter un round-trip côté client. Admin/trainer = override.
+  const tutorAccess = tutorEnabled ? await getTutorAccess() : null;
   return (
     <PostHogProvider
       profile={{
@@ -48,6 +56,11 @@ export async function AuthLayout({
             <PwaInstallPrompt />
             <OfflineSync />
           </>
+        )}
+        {tutorAccess?.allowed && (
+          <TutorFab
+            formationSlug={profile.current_formation_slug ?? null}
+          />
         )}
         {children}
       </AppShell>
