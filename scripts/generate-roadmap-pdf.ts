@@ -59,6 +59,11 @@ type Section = {
 type Delivery = { title: string; desc: string };
 const RECENT_DELIVERIES: Delivery[] = [
   {
+    title: "Vidéos intro Capa ≤ 3,5 t — 6 modules avec player HTML5 natif",
+    desc:
+      "6 vidéos d'introduction (modules A à F, ~3 min chacune) hébergées dans Supabase Storage privé (bucket module-intro-videos, signed URL 1h). Composant <ModuleIntroVideo /> Server Component avec player 16:9, badge gold, durée affichée. Pipeline d'import automatisé (scripts/import-capa-intro-videos.ts) avec détection auto du module via convention de nommage + extraction durée MP4 zéro-dépendance. Infra réutilisable pour les futures vidéos GOTRM/CCP3.",
+  },
+  {
     title: "Banque QR CCP1 — 66 exercices rédigés + 23 annexes",
     desc:
       "Import automatisé via scripts/import-ccp1-qr.ts à partir des 89 PDFs client : 66 QR (17 chapitres) + 23 annexes PDF uploadées dans le bucket Storage privé. Format pro (bandeau navy, sections contexte/travail/annexe colorées, tableaux préservés). Compatible correction formateur, scoring, statistiques, examens blancs.",
