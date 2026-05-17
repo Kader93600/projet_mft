@@ -59,6 +59,16 @@ type Section = {
 type Delivery = { title: string; desc: string };
 const RECENT_DELIVERIES: Delivery[] = [
   {
+    title: "Admin enrollments — tableau Leads enrichi (formation, pack, message, âge)",
+    desc:
+      "Le tableau « Leads à contacter » affiche désormais : badge formation (extrait de formation_slug ou parsé du message « Formation visée : X »), badge pack souhaité (Initial/Medium/Premium), aperçu line-clamp-3 du message libre avec tooltip, financement en badge coloré (Auto/CPF/OPCO/France Travail/Employeur), et la date enrichie avec un âge relatif (« aujourd'hui », « il y a 3j », « il y a 2sem »). Permet de prioriser les leads chauds en un coup d'œil.",
+  },
+  {
+    title: "Sentry alertes lisibles — PostgrestError sérialisé proprement",
+    desc:
+      "Découvert via une alerte « [object Object] » illisible sur /api/cron/inactivity (RPC run_inactivity_check manquante, PGRST202). Le wrapper lib/observability.ts sérialise maintenant les objets non-Error (Supabase, Stripe, fetch) en extrayant message/code/details/hint pour produire des alertes lisibles directement dans l'email. Les 3 règles Sentry du dashboard restent inchangées.",
+  },
+  {
     title: "Vidéos intro Capa ≤ 3,5 t — 6 modules avec player HTML5 natif",
     desc:
       "6 vidéos d'introduction (modules A à F, ~3 min chacune) hébergées dans Supabase Storage privé (bucket module-intro-videos, signed URL 1h). Composant <ModuleIntroVideo /> Server Component avec player 16:9, badge gold, durée affichée. Pipeline d'import automatisé (scripts/import-capa-intro-videos.ts) avec détection auto du module via convention de nommage + extraction durée MP4 zéro-dépendance. Infra réutilisable pour les futures vidéos GOTRM/CCP3.",
