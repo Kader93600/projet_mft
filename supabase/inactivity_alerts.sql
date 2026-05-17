@@ -16,7 +16,9 @@ SELECT
   p.full_name,
   p.email,
   GREATEST(
-    COALESCE((SELECT max(updated_at) FROM public.lesson_progress lp WHERE lp.user_id = p.id), 'epoch'::timestamptz),
+    -- Note : lesson_progress n'a pas de colonne updated_at, on prend
+    -- completed_at qui représente la dernière complétion de leçon.
+    COALESCE((SELECT max(completed_at) FROM public.lesson_progress lp WHERE lp.user_id = p.id), 'epoch'::timestamptz),
     COALESCE((SELECT max(finished_at) FROM public.quiz_attempts qa WHERE qa.user_id = p.id), 'epoch'::timestamptz),
     COALESCE((SELECT max(created_at) FROM public.xp_events xe WHERE xe.user_id = p.id), 'epoch'::timestamptz),
     COALESCE((SELECT max(signed_at) FROM public.attendance_signatures sg WHERE sg.user_id = p.id), 'epoch'::timestamptz)
