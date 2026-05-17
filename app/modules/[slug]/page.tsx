@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ProgressBar } from "@/components/ui/progress";
 import { FormationStripe } from "@/components/formation/formation-stripe";
+import { ModuleIntroVideo } from "@/components/modules/intro-video";
 import { FormationBadge } from "@/components/formation/formation-badge";
 import { resolveFormationFromModule } from "@/lib/formation-resolver";
 import { findFormation } from "@/lib/formations-config";
@@ -300,6 +301,14 @@ export default async function ModuleDetail({
           </div>
         )}
       </header>
+
+      {/* Vidéo d'introduction (si présente) — affichée juste après le hero,
+          avant la progression et la timeline des leçons. */}
+      <ModuleIntroVideo
+        videoPath={(module as any).intro_video_path ?? null}
+        label={(module as any).intro_video_label ?? null}
+        durationS={(module as any).intro_video_duration_s ?? null}
+      />
 
       {/* Progression */}
       {user && total > 0 && (
