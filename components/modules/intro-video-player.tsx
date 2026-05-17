@@ -8,9 +8,10 @@ import { PlayCircle, Clock, AlertTriangle } from "lucide-react";
  *
  * Le `<video>` HTML5 standard avale les erreurs silencieusement par
  * défaut (écran noir, 0:00). On ajoute :
- *   - onError sur l'élément <video>
- *   - log explicite en console + état d'erreur visible côté UI
- *   - tentative de reload automatique avec load() une fois
+ *   - onError sur l'élément <video> → bandeau rouge visible sous le
+ *     player avec un message humain + détails techniques cliquables
+ *   - tentative de reload automatique avec load() une fois (absorbe
+ *     un glitch réseau initial avant d'afficher l'erreur)
  *
  * Le composant reçoit une signed URL pré-générée côté Server.
  */
@@ -43,7 +44,6 @@ export function IntroVideoPlayer({
   const handleError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
     const v = e.currentTarget;
     const code = v.error?.code;
-    const message = v.error?.message ?? "";
     const codeName =
       code === 1
         ? "MEDIA_ERR_ABORTED"
@@ -54,18 +54,13 @@ export function IntroVideoPlayer({
             : code === 4
               ? "MEDIA_ERR_SRC_NOT_SUPPORTED"
               : "UNKNOWN";
-    const networkState = v.networkState;
-    const readyState = v.readyState;
-    const info = `code=${code} (${codeName}) networkState=${networkState} readyState=${readyState} src=${v.currentSrc?.slice(0, 80)}…`;
-    // eslint-disable-next-line no-console
-    console.error("[IntroVideoPlayer] erreur lecture :", info, message);
-    setDebugInfo(info);
+    setDebugInfo(
+      `code=${code} (${codeName}) networkState=${v.networkState} readyState=${v.readyState}`,
+    );
 
-    // Auto-retry une fois (peut résoudre un glitch réseau initial)
+    // Auto-retry une fois (absorbe un glitch réseau initial)
     if (!reloadedRef.current) {
       reloadedRef.current = true;
-      // eslint-disable-next-line no-console
-      console.info("[IntroVideoPlayer] tentative de reload…");
       setTimeout(() => v.load(), 250);
       return;
     }
@@ -82,8 +77,6 @@ export function IntroVideoPlayer({
   };
 
   const handleLoadedMetadata = () => {
-    // eslint-disable-next-line no-console
-    console.info("[IntroVideoPlayer] métadonnées chargées OK");
     setErrorMsg(null);
   };
 
