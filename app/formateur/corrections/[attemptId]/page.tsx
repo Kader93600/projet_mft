@@ -78,15 +78,21 @@ export default async function CorrectionDetailPage({
   }
 
   // Charger les QR responses + textes des questions (depuis question_bank)
+  // Sprint 3.3 : on récupère aussi les colonnes ai_* pour permettre au
+  // formateur d'utiliser la proposition Claude comme point de départ.
   const { data: responses } = await supabase
     .from("qr_responses")
     .select(
       `id, question_id, student_answer, trainer_score, max_score,
        trainer_comment, graded_at, graded_by, submitted_at,
+       ai_score, ai_feedback_md, ai_criteria, ai_confidence,
+       ai_concerns, ai_graded_at,
        question:question_bank(statement, expected_answer, scoring_grid, tags)`
     )
     .eq("attempt_id", params.attemptId)
     .order("submitted_at");
+
+  const aiEnabled = process.env.FEATURE_AI_TUTOR === "true";
 
   const list = (responses ?? []) as any[];
   const ungradedCount = list.filter((r) => !r.graded_at).length;
@@ -217,8 +223,15 @@ export default async function CorrectionDetailPage({
                 trainer_comment: r.trainer_comment,
                 graded_at: r.graded_at,
                 tags: r.question?.tags ?? [],
+                ai_score: r.ai_score,
+                ai_feedback_md: r.ai_feedback_md,
+                ai_criteria: r.ai_criteria,
+                ai_confidence: r.ai_confidence,
+                ai_concerns: r.ai_concerns,
+                ai_graded_at: r.ai_graded_at,
               }}
               disabled={isAlreadyGraded}
+              aiEnabled={aiEnabled}
             />
           ))}
         </div>
