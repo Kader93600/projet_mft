@@ -39,9 +39,10 @@ export type PackFeature =
   | "exams_ai_grading" // Examens blancs corrigés par Claude
   // Medium — accompagnement personnalisé
   | "messaging_dedicated_trainer" //  Messagerie avec UN formateur dédié
-  // Premium — présentiel + visio
+  // Premium — présentiel + visio + chat IA
   | "live_sessions" //    Sessions présentielles planifiées (admin/formateur)
-  | "zoom_link"; //       Lien Zoom optionnel sur sessions présentielles
+  | "zoom_link" //        Lien Zoom optionnel sur sessions présentielles
+  | "ai_tutor_chat"; //   Chat IA tuteur (RAG sur les modules)
 
 /**
  * Features INTRODUITES par chaque pack (non cumulatif — pour le cumul,
@@ -56,7 +57,7 @@ const PACK_FEATURES: Record<PackSlug, readonly PackFeature[]> = {
     "exams_ai_grading",
   ],
   medium: ["messaging_dedicated_trainer"],
-  premium: ["live_sessions", "zoom_link"],
+  premium: ["live_sessions", "zoom_link", "ai_tutor_chat"],
 };
 
 /**
@@ -296,6 +297,8 @@ export const FEATURE_LABEL: Record<PackFeature, string> = {
     "Messagerie privée avec un formateur dédié",
   live_sessions: "Sessions présentielles en salle (planning admin)",
   zoom_link: "Lien Zoom pour suivre la session à distance",
+  ai_tutor_chat:
+    "Tuteur IA : chat 24/7 entraîné sur vos modules (Claude Sonnet 4)",
 };
 
 // ---------------------------------------------------------------------
