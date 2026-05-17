@@ -3,6 +3,9 @@ import { AppShell } from "@/components/app-shell";
 import { createClient } from "@/lib/supabase/server";
 import { SessionTracker } from "@/components/session-tracker";
 import { DailyCheckin } from "@/components/gamification/daily-checkin";
+import { PwaInstallPrompt } from "@/components/pwa/install-prompt";
+import { OfflineIndicator } from "@/components/pwa/offline-indicator";
+import { OfflineSync } from "@/components/pwa/offline-sync";
 import { isStaff } from "@/lib/permissions";
 import { PostHogProvider } from "@/components/posthog-provider";
 
@@ -38,7 +41,14 @@ export async function AuthLayout({
     >
       <AppShell profile={profile}>
         <SessionTracker />
-        {profile.role === "student" && <DailyCheckin />}
+        <OfflineIndicator />
+        {profile.role === "student" && (
+          <>
+            <DailyCheckin />
+            <PwaInstallPrompt />
+            <OfflineSync />
+          </>
+        )}
         {children}
       </AppShell>
     </PostHogProvider>

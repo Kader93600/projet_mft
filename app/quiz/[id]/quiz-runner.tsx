@@ -11,13 +11,14 @@ import { ProgressBar, RadialProgress } from "@/components/ui/progress";
 import {
   Check, X, Clock, Target, Lightbulb, ArrowRight, ArrowLeft,
   AlertTriangle, Maximize, ShieldAlert, Lock, Flag, Grid3X3,
-  CheckCircle2, Paperclip, ExternalLink, FileText,
+  CheckCircle2, Paperclip, ExternalLink, FileText, CloudOff,
 } from "lucide-react";
 import { cn, scoreColor } from "@/lib/utils";
 import { FormationBadge } from "@/components/formation/formation-badge";
 import { FormationStripe } from "@/components/formation/formation-stripe";
 import { RichTextDisplay } from "@/components/rich-text/rich-text-display";
 import { trackEvent } from "@/lib/analytics";
+import { enqueueAttempt } from "@/lib/pwa/sync-queue";
 
 interface Choice { id: string; label: string; is_correct: boolean; order: number; }
 interface QuestionAnnex {
@@ -101,6 +102,9 @@ export function QuizRunner({
   // Réponses rédigées (QR) — texte libre du stagiaire
   const [qrAnswers, setQrAnswers] = useState<Record<string, string>>({});
   const [finished, setFinished] = useState(false);
+  // Tentative QCM enqueuée hors-ligne — sera resync au retour réseau
+  // par <OfflineSync /> dans AuthLayout.
+  const [offlineQueued, setOfflineQueued] = useState(false);
   const [remaining, setRemaining] = useState(quiz.time_limit_s ?? 0);
   const [startedAt, setStartedAt] = useState<Date | null>(null);
   const [focusLoss, setFocusLoss] = useState(0);
@@ -395,6 +399,43 @@ export function QuizRunner({
     };
     if (formationId) insertPayload.formation_id = formationId;
 
+    // ─── Gate offline : quiz QCM d'entraînement uniquement ─────────────
+    // Si le navigateur est hors-ligne ET que le quiz est un entraînement
+    // QCM pur (pas QR, pas examen blanc), on enregistre la tentative dans
+    // IndexedDB pour resync au retour réseau (cf. <OfflineSync /> dans
+    // AuthLayout + endpoint /api/quiz/sync-offline).
+    // Décision client 2026-05 : les examens blancs et QR restent online-only
+    // pour ne pas polluer les stats officielles ni faire correspondre les
+    // QR sans connexion (correction formateur).
+    if (
+      typeof navigator !== "undefined" &&
+      !navigator.onLine &&
+      mode === "entrainement" &&
+      !hasQr &&
+      !quiz.is_mock_exam
+    ) {
+      try {
+        await enqueueAttempt(insertPayload);
+        // Pas d'attemptId → on ne redirige pas vers /quiz/results/[id].
+        // L'utilisateur voit un écran de confirmation offline.
+        setOfflineQueued(true);
+        setFinished(true);
+        trackEvent("quiz_finished_offline", {
+          quiz_id: quiz.id,
+          quiz_title: quiz.title,
+          formation_slug: formationSlug ?? undefined,
+          mode,
+          qcm_score: qcmPercentage ?? undefined,
+          total_questions: orderedQuestions.length,
+        });
+        return;
+      } catch (e) {
+        console.error("[quiz submit] offline enqueue failed", e);
+        setSubmitError(t("unableToSave", { msg: String(e) }));
+        return;
+      }
+    }
+
     const { data: inserted, error: insertErr } = await supabase
       .from("quiz_attempts")
       .insert(insertPayload)
@@ -657,6 +698,62 @@ export function QuizRunner({
                 </Button>
               </div>
             )}
+          </CardBody>
+        </Card>
+      </div>
+    );
+  }
+
+  // ----- Confirmation hors-ligne (avant les résultats normaux) -----
+  // Si le quiz a été enqueué offline, on ne peut pas rediriger vers
+  // /quiz/results/[id] (pas d'attemptId). On affiche un écran sobre
+  // qui rappelle le score local + la sync automatique au retour réseau.
+  if (finished && offlineQueued && result) {
+    return (
+      <div className="max-w-2xl mx-auto space-y-6">
+        <Card>
+          <CardBody className="text-center py-10">
+            <div className="mx-auto h-14 w-14 rounded-2xl bg-amber-100 border border-amber-300 text-amber-700 flex items-center justify-center">
+              <CloudOff className="h-7 w-7" />
+            </div>
+            <div className="mt-5 font-display text-2xl font-semibold text-navy-900">
+              Tentative enregistrée hors ligne
+            </div>
+            <p className="text-slate-700 mt-2 max-w-md mx-auto">
+              Votre connexion n&apos;est pas disponible. Vos réponses ont été
+              sauvegardées localement et seront envoyées automatiquement dès
+              que vous serez à nouveau en ligne.
+            </p>
+            <div className="mt-6 inline-flex flex-col items-center">
+              <div className="text-xs uppercase tracking-wider text-slate-500">
+                Score local
+              </div>
+              <div
+                className={cn(
+                  "font-display text-3xl font-semibold mt-1",
+                  scoreColor(result.percentage)
+                )}
+              >
+                {result.percentage}%
+              </div>
+              <div className="text-sm text-slate-600 mt-0.5">
+                {t("resultScore", {
+                  score: result.score,
+                  total: result.total,
+                })}
+              </div>
+            </div>
+            <div className="mt-6 flex justify-center gap-2 flex-wrap">
+              <Link href="/quiz">
+                <Button>
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  Retour aux quiz
+                </Button>
+              </Link>
+              <Link href="/dashboard">
+                <Button variant="ghost">Tableau de bord</Button>
+              </Link>
+            </div>
           </CardBody>
         </Card>
       </div>

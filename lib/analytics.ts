@@ -40,6 +40,7 @@ export type EventName =
   | "module_completed"
   | "quiz_started"
   | "quiz_finished"
+  | "quiz_finished_offline"
   // Examens
   | "exam_finished"
   // Business
