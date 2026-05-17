@@ -60,14 +60,21 @@ export async function ModuleIntroVideo({
         </div>
       )}
 
+      {/*
+        Note : on met `src` directement sur <video> au lieu d'utiliser un
+        <source> enfant. Avec <source>, certains browsers refusent de
+        charger les métadonnées avant un play explicite, ce qui rend la
+        vidéo "noire" tant qu'on n'a pas cliqué — comportement observé
+        en prod sur Chrome avec preload="metadata" + <source>.
+      */}
       <video
+        src={signed.signedUrl}
         controls
+        controlsList="nodownload"
         preload="metadata"
         playsInline
         className="block aspect-video w-full bg-night-950"
-        // poster optionnel — par défaut on laisse la frame 0 du MP4
       >
-        <source src={signed.signedUrl} type="video/mp4" />
         Votre navigateur ne supporte pas la lecture vidéo HTML5.
       </video>
 
