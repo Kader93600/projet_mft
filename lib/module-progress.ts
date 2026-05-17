@@ -111,7 +111,10 @@ export function getModuleKind(slug: string): ModuleKind {
   if (slug.includes("msp-final") || slug.includes("dossier-pro")) {
     return "final";
   }
-  if (slug.includes("examen-blanc-synthese")) {
+  // Match tous les examens blancs : "examen-blanc-synthese" (livret CCP),
+  // "examen-blanc-final" (CCP1 GOTRM transversal), "capa-examen-blanc-final"
+  // (DREAL), etc. Tout slug contenant "examen-blanc" est traité comme exam.
+  if (slug.includes("examen-blanc")) {
     return "exam";
   }
   return "course";

@@ -15,7 +15,7 @@ import {
   pickNextModule,
   type ModuleProgress,
 } from "@/lib/module-progress";
-import { AlertCircle, BookOpen, GraduationCap, Layers, Lock } from "lucide-react";
+import { AlertCircle, BookOpen, Layers } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -365,18 +365,22 @@ export default async function ModulesPage() {
 
   // Calcul de la formation active réelle (pour la ContinueCard)
   // Priorité : formation enrollment > première formation visible
+  // On exclut les modules d'examen blanc / final pour ne pas fausser
+  // le calcul de progression et la suggestion "prochain module".
+  // Ils sont gérés exclusivement par /examens-blancs.
   const primaryGroup = grouped[0];
-  const primaryProgressList = primaryGroup
-    ? primaryGroup.modules.map((c) => c.__progress)
+  const primaryCourseModules = primaryGroup
+    ? primaryGroup.modules.filter((c) => c.kind === "course")
     : [];
+  const primaryProgressList = primaryCourseModules.map((c) => c.__progress);
   const nextModule = primaryGroup ? pickNextModule(primaryProgressList) : null;
   const nextModuleData = nextModule
-    ? primaryGroup!.modules.find((c) => c.id === nextModule.id)
+    ? primaryCourseModules.find((c) => c.id === nextModule.id)
     : null;
   const allDoneInPrimary =
     primaryGroup &&
-    primaryGroup.modules.length > 0 &&
-    primaryGroup.modules.every((c) => c.state === "done");
+    primaryCourseModules.length > 0 &&
+    primaryCourseModules.every((c) => c.state === "done");
   const globalPercent =
     primaryProgressList.length === 0
       ? 0
@@ -386,7 +390,9 @@ export default async function ModulesPage() {
         );
 
   const orphans = allCards.filter((c) => !c.formation_slug);
-  const totalModules = allCards.length;
+  // Compteur global "modules au catalogue" : seulement les cours, pas
+  // les examens blancs (qui ne sont plus listés ici).
+  const totalModules = allCards.filter((c) => c.kind === "course").length;
 
   return (
     <div className="space-y-10 md:space-y-12">
@@ -425,10 +431,13 @@ export default async function ModulesPage() {
       {/* ----- Sections par formation ----- */}
       {grouped.map(({ formation, modules: mods }, sectionIdx) => {
         const courses = mods.filter((m) => m.kind === "course");
-        const exams = mods.filter((m) => m.kind === "exam");
-        const finals = mods.filter((m) => m.kind === "final");
-        const examFinalCount = exams.length + finals.length;
-        const modulesDone = mods.filter((m) => m.state === "done").length;
+        // Note : les modules `exam` (examens blancs) et `final` (livrables
+        // type MSP/dossier pro) ne sont PLUS affichés ici depuis 2026-05-18.
+        // Ils sont accessibles uniquement via /examens-blancs (où le quiz
+        // associé est listé proprement avec timer, scoring, historique).
+        // Cela évite la confusion "j'ai 18 modules de cours" quand en réalité
+        // 17 sont des cours + 1 est un examen final transversal.
+        const modulesDone = courses.filter((m) => m.state === "done").length;
         const isPrimary = sectionIdx === 0;
 
         return (
@@ -457,29 +466,20 @@ export default async function ModulesPage() {
               <div className="md:w-72 shrink-0">
                 <FormationProgress
                   formationSlug={formation.slug}
-                  modulesTotal={mods.length}
+                  modulesTotal={courses.length}
                   modulesDone={modulesDone}
                 />
               </div>
             </div>
 
-            {/* Sous-section Cours */}
+            {/* Sous-section Cours (seuls les modules pédagogiques, pas
+                les examens blancs qui sont sur /examens-blancs) */}
             {courses.length > 0 && (
               <SubsectionCourses
                 modules={courses}
                 sectionIdx={sectionIdx}
-                showHeader={examFinalCount > 0}
+                showHeader={false}
                 formationSlug={formation.slug}
-                t={t}
-              />
-            )}
-
-            {/* Sous-section Préparer l'examen final */}
-            {examFinalCount > 0 && (
-              <SubsectionExams
-                exams={exams}
-                finals={finals}
-                sectionIdx={sectionIdx}
                 t={t}
               />
             )}
@@ -665,57 +665,11 @@ function ModulesGrid({
   );
 }
 
-function SubsectionExams({
-  exams,
-  finals,
-  sectionIdx,
-  t,
-}: {
-  exams: (ModuleCardData & { __progress: ModuleProgress })[];
-  finals: (ModuleCardData & { __progress: ModuleProgress })[];
-  sectionIdx: number;
-  t: ModulesT;
-}) {
-  const all = [...exams, ...finals];
-  const allLocked = all.every((m) => m.state === "locked");
-
-  return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-baseline justify-between gap-3">
-        <div className="flex items-baseline gap-2">
-          <h3 className="font-display text-[15px] font-semibold text-navy-900 tracking-tight inline-flex items-center gap-1.5">
-            <GraduationCap className="h-4 w-4 text-amber-700" />
-            {t("prepFinalExam")}
-          </h3>
-          <span className="text-[12px] text-slate-500">
-            {t("examCount", { count: exams.length })}
-            {t("finalCount", { count: finals.length })}
-          </span>
-        </div>
-        {allLocked && (
-          <span className="inline-flex items-center gap-1.5 text-[12px] text-slate-500">
-            <Lock className="h-3 w-3" />
-            {t("lockedAfterCourses")}
-          </span>
-        )}
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-5">
-        {all.map((m, i) => (
-          <div
-            key={m.id}
-            style={{
-              animation: `fade-up 0.45s ease-out ${
-                sectionIdx * 80 + i * 40 + 100
-              }ms both`,
-            }}
-          >
-            <ModuleCard module={m} />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+// Note : SubsectionExams a été supprimée en 2026-05-18. Les modules
+// d'examen blanc (kind === "exam") et finaux (kind === "final") ne sont
+// plus affichés dans /modules — ils sont accessibles uniquement via
+// /examens-blancs où ils sont rendus comme des QUIZ avec timer, scoring,
+// historique des tentatives, etc.
 
 // ---------------------------------------------------------------------
 // Helpers
