@@ -188,6 +188,7 @@ async function main() {
   // ───── 1. Upload vers Storage ─────
   console.log("\n[1/2] Upload vers Storage...");
   let uploaded = 0;
+  const uploadedTasks: Task[] = [];
   for (const t of tasks) {
     const buf = readFileSync(t.file);
     const ext = extname(t.file).toLowerCase().slice(1);
@@ -199,17 +200,30 @@ async function main() {
     });
     if (error) {
       console.error(`  X ${t.storagePath} : ${error.message}`);
+      // Nettoie l'éventuel intro_video_path précédent en base
+      // (si l'upload échoue, on ne veut pas pointer vers un fichier inexistant)
+      const { error: cleanErr } = await supabase
+        .from("modules")
+        .update({
+          intro_video_path: null,
+          intro_video_label: null,
+          intro_video_duration_s: null,
+        })
+        .eq("slug", t.slug);
+      if (cleanErr) console.error(`     /!\\ Cleanup DB ${t.slug} : ${cleanErr.message}`);
+      else console.error(`     → intro_video_path remis à NULL pour ${t.slug}`);
       continue;
     }
     uploaded++;
+    uploadedTasks.push(t);
     console.log(`  ✓ ${t.storagePath}`);
   }
   console.log(`✓ ${uploaded}/${tasks.length} vidéos uploadées`);
 
-  // ───── 2. UPDATE modules ─────
+  // ───── 2. UPDATE modules (seulement pour ceux dont l'upload a réussi) ─────
   console.log("\n[2/2] Mise à jour des modules en base...");
   let updated = 0;
-  for (const t of tasks) {
+  for (const t of uploadedTasks) {
     const { error } = await supabase
       .from("modules")
       .update({
@@ -225,7 +239,7 @@ async function main() {
     updated++;
     console.log(`  ✓ ${t.slug}`);
   }
-  console.log(`✓ ${updated}/${tasks.length} modules mis à jour`);
+  console.log(`✓ ${updated}/${uploadedTasks.length} modules mis à jour`);
 
   console.log("\n╔══════════════════════════════════════════════════════════");
   console.log("║ ✓ IMPORT VIDÉOS INTRO CAPA TERMINÉ");
