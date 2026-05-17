@@ -3,6 +3,12 @@
 -- Vue + RPC ; déclenchement par cron quotidien (route Next).
 -- =====================================================================
 
+-- Nettoyage des anciennes versions (si présentes en base) :
+-- CREATE OR REPLACE VIEW refuse de modifier la structure d'une vue
+-- existante. DROP CASCADE force la recréation propre.
+DROP VIEW IF EXISTS public.inactivity_alerts CASCADE;
+DROP VIEW IF EXISTS public.user_last_activity CASCADE;
+
 -- Vue : dernière activité par stagiaire
 CREATE OR REPLACE VIEW public.user_last_activity AS
 SELECT
