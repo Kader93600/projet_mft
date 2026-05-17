@@ -59,6 +59,15 @@ const cspDirectives = {
     `https://${supabaseHost}`,
     "https://*.supabase.co",
   ],
+  // Vidéos d'introduction des modules (Supabase Storage, signed URL).
+  // Sans cette directive, le browser tombe sur default-src 'self' et
+  // rejette les <video> cross-origin avec MEDIA_ERR_SRC_NOT_SUPPORTED.
+  "media-src": [
+    "'self'",
+    "blob:",
+    `https://${supabaseHost}`,
+    "https://*.supabase.co",
+  ],
   "frame-ancestors": ["'none'"],
   "base-uri": ["'self'"],
   "form-action": ["'self'"],
