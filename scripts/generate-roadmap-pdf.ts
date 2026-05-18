@@ -13,7 +13,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const VERSION = "v4";
+const VERSION = "v5";
 const OUTPUT = resolve(__dirname, "output", `MFT-Roadmap-Checklist-${VERSION}.pdf`);
 mkdirSync(dirname(OUTPUT), { recursive: true });
 
@@ -58,6 +58,21 @@ type Section = {
 // Affichés sur la page "Ce qui a été livré récemment".
 type Delivery = { title: string; desc: string };
 const RECENT_DELIVERIES: Delivery[] = [
+  {
+    title: "P3 #1 LIVRÉ —IA Tuteur (Claude Sonnet 4.6) + correction QR par IA",
+    desc:
+      "Chat IA tuteur 24/7 sur RAG (pgvector + 896 chunks de leçons embeddés via OpenAI text-embedding-3-small). Réservé au pack Premium. Streaming SSE, citations cliquables vers les modules sources, drawer + page /tuteur plein écran. Correction QR par Claude avec proposition + validation systématique formateur (score, appréciation markdown, critères détaillés, niveau de confiance). Production-grade : modération pré-prompt (OpenAI moderations API, gratuit, self-harm = orientation 3114), quota mensuel strict (200 msg/Premium, illimité staff), rate limit 5/min, page admin /admin/tutor (KPIs, courbe 30j chat vs QR, top consommateurs, audit modération, alerte si > 30€/mois). Plafonds Anthropic 50 USD/mois + OpenAI 5 USD/mois. Coût observé : ~20 €/mois pour 50 stagiaires Premium actifs.",
+  },
+  {
+    title: "P3 #1 LIVRÉ —PWA renforcée (offline + install prompt + sync différée)",
+    desc:
+      "Install prompt natif Chrome/Edge + instructions iOS Safari. Indicateur réseau sticky avec flash vert au retour. Service worker v2 avec stale-while-revalidate dédié pour /modules/*, /lecons/*, /exercices/* (cache séparé plafonné à 50 entrées). Quiz QCM d'entraînement passables hors-ligne : IndexedDB queue (mft-sync.quiz-attempts) + drain automatique au retour réseau via /api/quiz/sync-offline. Déduplication serveur via client_attempt_id UNIQUE. Permet à un stagiaire en zone blanche (route, 4G faible) de continuer une leçon et passer un quiz d'entraînement sans réseau.",
+  },
+  {
+    title: "P3 #1 LIVRÉ —Gamification (streak quotidien + progression badges + opt-out)",
+    desc:
+      "Bonus XP automatique à la connexion (5 XP/jour idempotent + bonus série progressif min(streak × 5, 50) à partir de 3 jours consécutifs). Composant DailyCheckin avec toast doré. Helper badge-progress.ts qui calcule current/target/percent pour les badges verrouillés (first_quiz_passed, quiz_passed_count, perfect_score, mock_exam_passed, lessons_completed, bloc_mastered). /reussites enrichie avec hero niveau + XP + série + record + 3 KPIs + historique 20 derniers gains. Opt-out classement public via /parametres/confidentialite + toggle accessible.",
+  },
   {
     title: "Vidéos intro GOTRM — CCP1 + CCP2 importées (CCP3 à venir)",
     desc:
@@ -460,6 +475,7 @@ const SECTIONS: Section[] = [
     blocks: [
       {
         title: "P3 #1 — Pédagogie augmentée",
+        status: "done",
         steps: [
           {
             title: "Visioconférence intégrée pour cours live",
@@ -469,14 +485,22 @@ const SECTIONS: Section[] = [
           },
           {
             title:
-              "IA tuteur (RAG sur les modules) — chatbot stagiaire personnalisé",
+              "IA tuteur (Claude Sonnet 4.6 + RAG sur les modules) — chatbot stagiaire Premium 24/7",
+            detail:
+              "pgvector + 896 chunks embeddés (OpenAI text-embedding-3-small). Streaming SSE, citations cliquables, drawer + page /tuteur. Correction QR par IA avec validation formateur. Modération pré-prompt + quota mensuel 200 msg + monitoring admin /admin/tutor.",
+            done: true,
           },
           {
-            title:
-              "Application mobile (React Native ou PWA renforcée) pour modules offline",
+            title: "PWA renforcée pour modules offline",
+            detail:
+              "Install prompt natif + indicateur réseau + cache leçons stale-while-revalidate + quiz QCM offline avec sync différée IndexedDB. Pas d'app React Native nécessaire — la PWA couvre les cas d'usage en zone blanche.",
+            done: true,
           },
           {
             title: "Gamification : badges, leaderboard, séries de jours",
+            detail:
+              "Bonus XP quotidien à la connexion + bonus de série progressif (3j+). Progression visible sur badges verrouillés (current/target/percent). Historique XP, opt-out classement public dans /parametres/confidentialite.",
+            done: true,
           },
         ],
       },
