@@ -83,7 +83,8 @@
     "adminAudit": "Journal d'audit",
     "adminTutor": "Tuteur IA — Monitoring",
     "adminReferrals": "Parrainages",
-    "adminOrganizations": "Entreprises clientes"
+    "adminOrganizations": "Entreprises clientes",
+    "adminMarketplace": "Marketplace formateurs"
   },
   "navGroups": {
     "learn": "Apprendre",

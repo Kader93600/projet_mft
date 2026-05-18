@@ -83,7 +83,8 @@
     "adminAudit": "Audit log",
     "adminTutor": "AI Tutor — Monitoring",
     "adminReferrals": "Referrals",
-    "adminOrganizations": "Client organizations"
+    "adminOrganizations": "Client organizations",
+    "adminMarketplace": "Trainer marketplace"
   },
   "navGroups": {
     "learn": "Learn",
