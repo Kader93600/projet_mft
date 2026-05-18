@@ -13,8 +13,7 @@ import {
   GraduationCap,
 } from "lucide-react";
 import { FORMATIONS } from "@/lib/formations-config";
-import { fmtEuros, type PackSlug } from "@/lib/packs";
-import { useCountUp } from "@/lib/use-count-up";
+import { type PackSlug } from "@/lib/packs";
 import { ScrollReveal } from "@/components/site/scroll-reveal";
 
 interface PriceEntry {
@@ -54,18 +53,6 @@ export function PricingSection({ prices, defaultFormationSlug }: Props) {
   const [selectedSlug, setSelectedSlug] = useState<string>(initialSlug);
   const selectedFormation = FORMATIONS.find((f) => f.slug === selectedSlug);
   const accent = selectedFormation?.accent ?? "#9FE220";
-
-  const priceForPack = useMemo(() => {
-    const map: Record<PackSlug, PriceEntry | undefined> = {
-      initial: undefined,
-      medium: undefined,
-      premium: undefined,
-    };
-    for (const p of prices) {
-      if (p.formationSlug === selectedSlug) map[p.pack] = p;
-    }
-    return map;
-  }, [prices, selectedSlug]);
 
   const isCapaciteOnly = selectedSlug === "capacite-3-5t";
 
@@ -168,42 +155,31 @@ export function PricingSection({ prices, defaultFormationSlug }: Props) {
       >
         {isCapaciteOnly ? (
           <CapaciteOnlyLayout
-            priceCents={priceForPack.initial?.priceCents ?? null}
-            compareAtCents={priceForPack.initial?.compareAtCents ?? null}
             formationCode={selectedFormation?.code ?? "Capacité ≤ 3,5 t"}
             formationSlug={selectedSlug}
           />
         ) : (
           <div className="grid lg:grid-cols-12 gap-5 md:gap-6 items-stretch">
             <ScrollReveal delay={0} distance={32} className="lg:col-span-4">
-              <InitialCard
-                priceCents={priceForPack.initial?.priceCents ?? null}
-                compareAtCents={priceForPack.initial?.compareAtCents ?? null}
-                formationSlug={selectedSlug}
-              />
+              <InitialCard formationSlug={selectedSlug} />
             </ScrollReveal>
             <ScrollReveal delay={120} distance={32} className="lg:col-span-4">
-              <MediumCard
-                priceCents={priceForPack.medium?.priceCents ?? null}
-                compareAtCents={priceForPack.medium?.compareAtCents ?? null}
-                formationSlug={selectedSlug}
-              />
+              <MediumCard formationSlug={selectedSlug} />
             </ScrollReveal>
             <ScrollReveal delay={240} distance={32} className="lg:col-span-4">
-              <PremiumCard
-                priceCents={priceForPack.premium?.priceCents ?? null}
-                compareAtCents={priceForPack.premium?.compareAtCents ?? null}
-                formationSlug={selectedSlug}
-                accent={accent}
-              />
+              <PremiumCard formationSlug={selectedSlug} accent={accent} />
             </ScrollReveal>
           </div>
         )}
 
         <ScrollReveal delay={400}>
-          <p className="mt-10 text-center text-sm text-white/45">
-            Tarifs nets, exonérés de TVA (art. 261-4-4° CGI). Achat unique
-            sans engagement. Financement CPF, OPCO, employeur, France Travail.
+          <p className="mt-10 text-center text-sm text-white/55 max-w-2xl mx-auto leading-relaxed">
+            Tarif net, exonéré de TVA (art. 261-4-4° CGI). Demandez votre
+            devis personnalisé : nous évaluons ensemble votre financement
+            <span className="text-white/75">
+              {" "}(CPF · OPCO · employeur · France Travail · auto-financement){" "}
+            </span>
+            et vous proposons le pack adapté.
           </p>
         </ScrollReveal>
       </div>
@@ -212,41 +188,38 @@ export function PricingSection({ prices, defaultFormationSlug }: Props) {
 }
 
 // =====================================================================
-// AnimatedPrice — prix avec count-up animé au changement
+// PricePlaceholder — bloc qui remplace les prix par un CTA contact.
 // =====================================================================
-function AnimatedPrice({
-  priceCents,
+// Décision client 2026-05 : on n'affiche plus les prix sur la page
+// vitrine /tarifs pour pousser les prospects à contacter MFT et
+// permettre une qualification commerciale (financement, profil, etc.).
+// =====================================================================
+function PricePlaceholder({
   size,
+  accentClass,
 }: {
-  priceCents: number | null;
   size: "lg" | "xl";
+  accentClass?: string; // classe pour la couleur principale (signal / gold)
 }) {
-  const target = priceCents ?? 0;
-  const displayed = useCountUp(target, 600);
-
-  if (priceCents == null) {
-    return (
-      <span
+  return (
+    <div>
+      <div
         className={
-          "font-display font-semibold text-white tracking-tight " +
-          (size === "xl" ? "text-5xl" : "text-4xl")
+          "font-display font-semibold tracking-tight text-white " +
+          (size === "xl" ? "text-4xl md:text-5xl" : "text-3xl md:text-4xl")
+        }
+        style={size === "xl" ? { letterSpacing: "-0.02em" } : undefined}
+      >
+        Tarif sur demande
+      </div>
+      <div
+        className={
+          "mt-2 text-[13px] " + (accentClass ?? "text-white/55")
         }
       >
-        —
-      </span>
-    );
-  }
-
-  return (
-    <span
-      className={
-        "font-display font-semibold tracking-tight text-white tabular-nums " +
-        (size === "xl" ? "text-5xl" : "text-4xl")
-      }
-      style={size === "xl" ? { letterSpacing: "-0.03em" } : undefined}
-    >
-      {fmtEuros(Math.round(displayed))}
-    </span>
+        Selon votre profil et votre financement.
+      </div>
+    </div>
   );
 }
 
@@ -254,12 +227,11 @@ function AnimatedPrice({
 // INITIAL — Card compacte, ton sobre, autonome
 // =====================================================================
 function InitialCard({
-  priceCents,
-  compareAtCents,
   formationSlug,
 }: {
-  priceCents: number | null;
-  compareAtCents: number | null;
+  // Props prix conservés pour API stable mais non utilisés (décision client).
+  priceCents?: number | null;
+  compareAtCents?: number | null;
   formationSlug: string;
 }) {
   return (
@@ -286,16 +258,8 @@ function InitialCard({
         seul·e mais jamais perdu·e : l'IA corrige tout en temps réel.
       </p>
 
-      <div className="mt-7 flex items-baseline gap-2">
-        <AnimatedPrice priceCents={priceCents} size="lg" />
-        {compareAtCents != null && (
-          <span className="text-sm text-white/35 line-through">
-            {fmtEuros(compareAtCents)}
-          </span>
-        )}
-      </div>
-      <div className="text-[12px] text-white/45 mt-1">
-        Net, exonéré TVA · Paiement unique
+      <div className="mt-7">
+        <PricePlaceholder size="lg" />
       </div>
 
       <ul className="mt-7 space-y-3 text-[14.5px] text-white/80">
@@ -316,7 +280,7 @@ function InitialCard({
           formationSlug={formationSlug}
           pack="initial"
           variant="ghost"
-          label="Choisir Initial"
+          label="Demander un devis"
         />
       </div>
     </article>
@@ -327,12 +291,10 @@ function InitialCard({
 // MEDIUM — Pack intermédiaire, hover signal-glow
 // =====================================================================
 function MediumCard({
-  priceCents,
-  compareAtCents,
   formationSlug,
 }: {
-  priceCents: number | null;
-  compareAtCents: number | null;
+  priceCents?: number | null;
+  compareAtCents?: number | null;
   formationSlug: string;
 }) {
   return (
@@ -372,16 +334,8 @@ function MediumCard({
         formateur dédié, joignable du début à la fin de votre parcours.
       </p>
 
-      <div className="mt-7 flex items-baseline gap-2">
-        <AnimatedPrice priceCents={priceCents} size="lg" />
-        {compareAtCents != null && (
-          <span className="text-sm text-white/35 line-through">
-            {fmtEuros(compareAtCents)}
-          </span>
-        )}
-      </div>
-      <div className="text-[12px] text-white/55 mt-1">
-        Net, exonéré TVA · Paiement unique
+      <div className="mt-7">
+        <PricePlaceholder size="lg" accentClass="text-signal-300/70" />
       </div>
 
       <ul className="mt-7 space-y-3 text-[14.5px] text-white/85">
@@ -403,7 +357,7 @@ function MediumCard({
           formationSlug={formationSlug}
           pack="medium"
           variant="secondary"
-          label="Choisir Medium"
+          label="Demander un devis"
         />
       </div>
     </article>
@@ -414,13 +368,11 @@ function MediumCard({
 // PREMIUM — Vedette : shimmer doré + glow permanent + hover lift
 // =====================================================================
 function PremiumCard({
-  priceCents,
-  compareAtCents,
   formationSlug,
   accent,
 }: {
-  priceCents: number | null;
-  compareAtCents: number | null;
+  priceCents?: number | null;
+  compareAtCents?: number | null;
   formationSlug: string;
   accent: string;
 }) {
@@ -520,16 +472,8 @@ function PremiumCard({
         leurs chances de réussir <em>vraiment</em> à l'examen.
       </p>
 
-      <div className="mt-7 flex items-baseline gap-2 relative">
-        <AnimatedPrice priceCents={priceCents} size="xl" />
-        {compareAtCents != null && (
-          <span className="text-sm text-white/40 line-through">
-            {fmtEuros(compareAtCents)}
-          </span>
-        )}
-      </div>
-      <div className="text-[12px] text-white/60 mt-1 relative">
-        Net, exonéré TVA · Paiement unique
+      <div className="mt-7 relative">
+        <PricePlaceholder size="xl" accentClass="text-amber-300/75" />
       </div>
 
       <ul className="mt-7 space-y-3 text-[15px] text-white/90 relative">
@@ -564,7 +508,7 @@ function PremiumCard({
           formationSlug={formationSlug}
           pack="premium"
           variant="gold"
-          label="Choisir Premium"
+          label="Demander un devis"
         />
       </div>
     </article>
@@ -575,24 +519,18 @@ function PremiumCard({
 // CAPACITÉ ≤ 3,5 T — Layout spécifique
 // =====================================================================
 function CapaciteOnlyLayout({
-  priceCents,
-  compareAtCents,
   formationCode,
   formationSlug,
 }: {
-  priceCents: number | null;
-  compareAtCents: number | null;
+  priceCents?: number | null;
+  compareAtCents?: number | null;
   formationCode: string;
   formationSlug: string;
 }) {
   return (
     <div className="grid lg:grid-cols-12 gap-6 items-stretch">
       <ScrollReveal delay={0} distance={32} className="lg:col-span-7">
-        <InitialCard
-          priceCents={priceCents}
-          compareAtCents={compareAtCents}
-          formationSlug={formationSlug}
-        />
+        <InitialCard formationSlug={formationSlug} />
       </ScrollReveal>
       <ScrollReveal delay={150} distance={32} className="lg:col-span-5">
         <div className="rounded-3xl bg-white/[0.03] border border-white/10 p-7 md:p-8 flex flex-col justify-center h-full transition-all duration-500 motion-reduce:transition-none hover:bg-white/[0.05] hover:border-white/20">
@@ -672,9 +610,13 @@ function CTAButton({
       : variant === "secondary"
         ? "bg-signal-500 text-night-900 hover:bg-signal-400 hover:shadow-[0_8px_24px_-8px_rgba(159,226,32,0.6)]"
         : "bg-white/[0.08] text-white border border-white/15 hover:bg-white/[0.14] hover:border-white/25";
+  // Décision client 2026-05 : on n'envoie plus directement à l'inscription
+  // payante depuis la page /tarifs vitrine. Tous les CTA "Choisir/Demander
+  // un devis" redirigent vers le formulaire de contact pré-rempli, pour
+  // qualification commerciale (financement, profil, dispo, etc.).
   return (
     <Link
-      href={`/inscription?formation=${formationSlug}&pack=${pack}`}
+      href={`/contact?formation=${formationSlug}&pack=${pack}`}
       className={
         "group inline-flex items-center justify-center gap-2 w-full px-5 py-3 rounded-xl text-sm font-semibold " +
         "transition-all duration-300 motion-reduce:transition-none " +

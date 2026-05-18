@@ -32,8 +32,15 @@ export async function POST(req: Request) {
   const phone = String(body?.phone ?? "").trim() || null;
   const formation = String(body?.formation ?? "").trim() || null;
   const financeur = String(body?.financeur ?? "").trim() || null;
+  const pack = String(body?.pack ?? "").trim() || null;
   const message = String(body?.message ?? "").trim() || null;
   const consent = !!body?.consent;
+
+  const PACK_LABELS: Record<string, string> = {
+    initial: "Initial (préparation autonome)",
+    medium: "Medium (formateur attitré)",
+    premium: "Premium (sessions présentielles)",
+  };
 
   if (!firstName || !lastName || !email || !consent) {
     return NextResponse.json({ ok: false, error: "missing_fields" }, { status: 400 });
@@ -59,6 +66,7 @@ export async function POST(req: Request) {
     funding_kind: financeur ? fundingMap[financeur] ?? "autre" : "auto",
     message: [
       formation ? `Formation visée : ${formation}` : null,
+      pack ? `Pack souhaité : ${PACK_LABELS[pack] ?? pack}` : null,
       message ?? null,
     ]
       .filter(Boolean)

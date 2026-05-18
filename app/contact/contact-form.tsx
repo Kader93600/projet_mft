@@ -4,10 +4,18 @@ import { useSearchParams } from "next/navigation";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { FORMATIONS } from "@/lib/formations-config";
 
+const PACK_LABEL: Record<string, string> = {
+  initial: "Initial",
+  medium: "Medium",
+  premium: "Premium",
+};
+
 export function ContactForm() {
   const params = useSearchParams();
   const presetFormation = params.get("formation") ?? "";
   const presetFinanceur = params.get("financeur") ?? "";
+  const presetPack = params.get("pack") ?? "";
+  const presetPackLabel = PACK_LABEL[presetPack] ?? "";
 
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -99,6 +107,27 @@ export function ContactForm() {
           <option value="transitions_pro">Transitions Pro</option>
           <option value="auto">Auto-financement</option>
         </select>
+      </div>
+
+      <div>
+        <Label>Pack envisagé (modifiable)</Label>
+        <select
+          name="pack"
+          defaultValue={presetPack}
+          className="w-full bg-night-50 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-signal-500 focus:outline-none focus:ring-2 focus:ring-signal-500/30"
+        >
+          <option value="">— Je ne sais pas encore —</option>
+          <option value="initial">Initial · préparation autonome</option>
+          <option value="medium">Medium · formateur attitré</option>
+          <option value="premium">Premium · sessions présentielles</option>
+        </select>
+        {presetPackLabel && (
+          <p className="mt-1.5 text-xs text-signal-300/80">
+            Vous avez pré-sélectionné le pack{" "}
+            <strong className="text-white">{presetPackLabel}</strong>. Notre
+            équipe vous expliquera tous les détails.
+          </p>
+        )}
       </div>
 
       <div>
