@@ -132,6 +132,46 @@ export function QrGradingForm({
     }
   }
 
+  /**
+   * Validation 1-clic : reprend la note IA + le feedback IA et les
+   * enregistre directement comme note finale du formateur. Évite le
+   * détour "Reprendre cette proposition" → "Noter cette réponse" en
+   * 2 clics. Une confirmation est demandée pour éviter les clics
+   * accidentels.
+   */
+  function validateAiProposalDirectly() {
+    if (aiProposal.ai_score == null) return;
+    const ok = window.confirm(
+      `Valider la proposition IA (${aiProposal.ai_score} / ${response.max_score}) telle quelle ?\n\n` +
+        `Le score et l'appréciation seront enregistrés comme votre note finale. ` +
+        `Cette action peut être modifiée plus tard via "Modifier la note".`
+    );
+    if (!ok) return;
+
+    const num = Number(aiProposal.ai_score);
+    setErrorMsg(null);
+    // On reflète aussi dans les champs UI pour le feedback visuel post-validation
+    setScore(String(num));
+    if (aiProposal.ai_feedback_md) {
+      setComment(aiProposal.ai_feedback_md);
+    }
+    startTransition(async () => {
+      try {
+        await gradeQrResponse(
+          response.id,
+          num,
+          aiProposal.ai_feedback_md?.trim() || null
+        );
+        setFeedback("ok");
+        setTimeout(() => setFeedback("idle"), 2200);
+        router.refresh();
+      } catch (e: any) {
+        setFeedback("err");
+        setErrorMsg(e.message ?? "Erreur lors de la validation");
+      }
+    });
+  }
+
   function onSave() {
     const num = parseFloat(score.replace(",", "."));
     if (isNaN(num) || num < 0 || num > response.max_score) {
@@ -349,14 +389,34 @@ export function QrGradingForm({
                       </span>
                     </div>
                   </div>
-                  <Button
-                    onClick={adoptAiProposal}
-                    size="sm"
-                    variant="secondary"
-                    className="self-end"
-                  >
-                    Reprendre cette proposition
-                  </Button>
+                  <div className="flex flex-col sm:flex-row gap-2 self-end">
+                    <Button
+                      onClick={adoptAiProposal}
+                      size="sm"
+                      variant="secondary"
+                      disabled={pending}
+                    >
+                      Reprendre puis ajuster
+                    </Button>
+                    <Button
+                      onClick={validateAiProposalDirectly}
+                      size="sm"
+                      variant="gold"
+                      disabled={pending}
+                    >
+                      {pending ? (
+                        <>
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          Validation…
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          Valider la note IA
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Feedback */}
