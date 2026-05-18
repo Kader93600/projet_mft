@@ -84,6 +84,7 @@ export const STUDENT_GROUPS: NavGroup[] = [
     labelKey: "navGroups.account",
     items: [
       { href: "/inscription", labelKey: "nav.enrollment", icon: Receipt, shortKey: "navShort.enrollment" },
+      { href: "/parrainage", labelKey: "nav.referral", icon: Gift, shortKey: "navShort.referral" },
       { href: "/mes-documents", labelKey: "nav.documents", icon: FileText, shortKey: "navShort.documents" },
       { href: "/accessibilite", labelKey: "nav.accessibility", icon: Accessibility, shortKey: "navShort.accessibility" },
       { href: "/mes-donnees", labelKey: "nav.personalData", icon: ShieldCheck, shortKey: "navShort.personalData" },

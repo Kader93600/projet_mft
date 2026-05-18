@@ -50,6 +50,7 @@
     "attendance": "Attendance",
     "satisfaction": "Reviews",
     "enrollment": "My enrollment",
+    "referral": "Referrals",
     "personalData": "My data",
     "accessibility": "Accessibility",
     "adminOverview": "Overview",
@@ -112,6 +113,7 @@
     "attendance": "Sign.",
     "satisfaction": "Reviews",
     "enrollment": "Enroll.",
+    "referral": "Refer",
     "documents": "Docs",
     "accessibility": "A11y",
     "personalData": "GDPR"

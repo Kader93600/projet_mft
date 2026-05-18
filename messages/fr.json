@@ -50,6 +50,7 @@
     "attendance": "Émargement",
     "satisfaction": "Évaluations",
     "enrollment": "Mon inscription",
+    "referral": "Parrainage",
     "personalData": "Mes données",
     "accessibility": "Accessibilité",
     "adminOverview": "Vue d'ensemble",
@@ -112,6 +113,7 @@
     "attendance": "Émarg.",
     "satisfaction": "Avis",
     "enrollment": "Inscr.",
+    "referral": "Parrain.",
     "documents": "Docs",
     "accessibility": "A11y",
     "personalData": "RGPD"
