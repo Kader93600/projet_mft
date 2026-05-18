@@ -82,7 +82,8 @@
     "adminSecurity": "Security (2FA)",
     "adminAudit": "Audit log",
     "adminTutor": "AI Tutor — Monitoring",
-    "adminReferrals": "Referrals"
+    "adminReferrals": "Referrals",
+    "adminOrganizations": "Client organizations"
   },
   "navGroups": {
     "learn": "Learn",

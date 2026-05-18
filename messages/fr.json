@@ -82,7 +82,8 @@
     "adminSecurity": "Sécurité (2FA)",
     "adminAudit": "Journal d'audit",
     "adminTutor": "Tuteur IA — Monitoring",
-    "adminReferrals": "Parrainages"
+    "adminReferrals": "Parrainages",
+    "adminOrganizations": "Entreprises clientes"
   },
   "navGroups": {
     "learn": "Apprendre",

@@ -101,11 +101,13 @@ async function handlePaid(session: any) {
       ? `Achat en ligne — ${formationSlug} (${packSlug})`
       : `Achat en ligne — ${planId ?? "inconnu"}`;
 
+    const organizationId: string | null = metadata.organization_id || null;
     const { data: enrollment } = await supabase
       .from("enrollments")
       .insert({
         user_id: userId,
         formation_id: formationId,
+        organization_id: organizationId,
         funding_kind: "auto",
         session_label: sessionLabel,
         total_amount_cents: amountCents,

@@ -175,6 +175,30 @@ export async function POST(req: Request) {
       );
     }
 
+    // ─── Multi-tenant : achat pour le compte d'une orga (org_admin) ────
+    // Si l'utilisateur courant est org_admin et qu'il a passé un
+    // `organization_id` dans le body, on rattache l'enrollment à cette
+    // orga. Décision client : 1 facture/stagiaire en v1 (pas de Stripe
+    // Customer per org, juste un metadata).
+    let organizationId: string | null = null;
+    const rawOrgId = body?.organization_id
+      ? String(body.organization_id).trim()
+      : null;
+    if (rawOrgId && user?.id) {
+      const { data: orgMember } = await supabase
+        .from("organization_members")
+        .select("organization_id, role")
+        .eq("user_id", user.id)
+        .eq("organization_id", rawOrgId)
+        .maybeSingle();
+      if (
+        orgMember &&
+        (orgMember.role === "org_admin" || orgMember.role === "org_viewer")
+      ) {
+        organizationId = orgMember.organization_id;
+      }
+    }
+
     try {
       const session = await createCheckoutSession({
         planId: `${formationSlug}_${packSlug}`,
@@ -193,6 +217,7 @@ export async function POST(req: Request) {
           referral_reduction_cents: String(referralReductionCents),
           credit_applied_cents: String(creditToApplyCents),
           original_amount_cents: String(price.priceCents),
+          organization_id: organizationId ?? "",
         },
       });
       return NextResponse.json({ id: session.id, url: session.url });
