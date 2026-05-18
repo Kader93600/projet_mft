@@ -28,6 +28,7 @@ import {
   GraduationCap,
   Video,
   CalendarDays,
+  Sparkles,
 } from "lucide-react";
 
 /**
@@ -142,6 +143,7 @@ export const ADMIN_GROUPS: NavGroup[] = [
       { href: "/admin/rgpd", labelKey: "nav.adminRgpd", icon: ShieldCheck },
       { href: "/admin/security", labelKey: "nav.adminSecurity", icon: ShieldCheck },
       { href: "/admin/audit", labelKey: "nav.adminAudit", icon: Shield },
+      { href: "/admin/tutor", labelKey: "nav.adminTutor", icon: Sparkles },
     ],
   },
 ];

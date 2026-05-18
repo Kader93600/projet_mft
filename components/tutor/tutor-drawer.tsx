@@ -3,6 +3,7 @@
 // =====================================================================
 // Drawer slide-in droite. Contient l'ensemble du chat tuteur :
 //   • header (titre + reset + fermer)
+//   • barre quota (X / 200 messages ce mois)
 //   • liste des messages (TutorMessage)
 //   • input bottom (TutorInput)
 //
@@ -10,12 +11,21 @@
 // et expose juste un état `open` contrôlé par le parent (FAB).
 // =====================================================================
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Sparkles, RefreshCw, X, AlertCircle } from "lucide-react";
 import { useTutor } from "@/hooks/use-tutor";
 import { TutorMessage } from "./tutor-message";
 import { TutorInput } from "./tutor-input";
 import { cn } from "@/lib/utils";
+
+interface QuotaState {
+  used: number;
+  limit: number | null;
+  percent: number;
+  allowed: boolean;
+  resets_at: string;
+  is_staff: boolean;
+}
 
 export function TutorDrawer({
   open,
@@ -28,6 +38,20 @@ export function TutorDrawer({
 }) {
   const tutor = useTutor({ formationSlug });
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [quota, setQuota] = useState<QuotaState | null>(null);
+
+  // Charge le quota à l'ouverture + après chaque message envoyé
+  useEffect(() => {
+    if (!open) return;
+    const ac = new AbortController();
+    fetch("/api/tutor/quota", { signal: ac.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data && !ac.signal.aborted) setQuota(data);
+      })
+      .catch(() => {});
+    return () => ac.abort();
+  }, [open, tutor.messages.length]);
 
   // Auto-scroll en bas quand un nouveau message arrive ou que le
   // dernier message grossit pendant le streaming.
@@ -111,6 +135,42 @@ export function TutorDrawer({
             </button>
           </div>
         </header>
+
+        {/* Compteur quota — visible pour les stagiaires (pas pour le staff) */}
+        {quota && !quota.is_staff && quota.limit !== null && (
+          <div className="px-4 py-2 border-b border-navy-100 bg-white">
+            <div className="flex items-center justify-between gap-2 text-[11px]">
+              <span className="text-slate-500">
+                Quota mensuel
+              </span>
+              <span
+                className={cn(
+                  "tabular-nums font-medium",
+                  quota.percent >= 90
+                    ? "text-rose-700"
+                    : quota.percent >= 70
+                    ? "text-amber-700"
+                    : "text-slate-700"
+                )}
+              >
+                {quota.used} / {quota.limit}
+              </span>
+            </div>
+            <div className="mt-1 h-1 rounded-full bg-slate-100 overflow-hidden">
+              <div
+                className={cn(
+                  "h-full transition-all duration-500",
+                  quota.percent >= 90
+                    ? "bg-rose-500"
+                    : quota.percent >= 70
+                    ? "bg-amber-500"
+                    : "bg-gold-500"
+                )}
+                style={{ width: `${quota.percent}%` }}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Messages */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-4">

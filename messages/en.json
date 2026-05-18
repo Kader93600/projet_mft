@@ -79,7 +79,8 @@
     "adminSettingsDocuments": "Welcome documents",
     "adminRgpd": "GDPR & privacy",
     "adminSecurity": "Security (2FA)",
-    "adminAudit": "Audit log"
+    "adminAudit": "Audit log",
+    "adminTutor": "AI Tutor — Monitoring"
   },
   "navGroups": {
     "learn": "Learn",

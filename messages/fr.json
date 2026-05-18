@@ -79,7 +79,8 @@
     "adminSettingsDocuments": "Documents d'accueil",
     "adminRgpd": "RGPD & confidentialité",
     "adminSecurity": "Sécurité (2FA)",
-    "adminAudit": "Journal d'audit"
+    "adminAudit": "Journal d'audit",
+    "adminTutor": "Tuteur IA — Monitoring"
   },
   "navGroups": {
     "learn": "Apprendre",

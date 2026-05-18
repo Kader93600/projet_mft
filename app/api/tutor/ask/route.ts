@@ -35,6 +35,8 @@ import {
   type ChatMessage,
 } from "@/lib/tutor/claude";
 import { buildTutorSystem, type RagChunk } from "@/lib/tutor/prompts";
+import { checkModeration } from "@/lib/tutor/moderation";
+import { getQuotaStatus, buildQuotaExceededMessage } from "@/lib/tutor/quota";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -105,9 +107,26 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // ── Rate limit ──────────────────────────────────────────────────────
-  // 5 messages/minute par utilisateur — anti-spam léger, le quota
-  // mensuel est dans tutor_quotas.
+  // ── Modération pré-prompt (OpenAI Moderations API, gratuite) ─────────
+  // Si flaggé : on ne consomme pas Anthropic, on stream une réponse
+  // polie directement. Self-harm = traitement empathique avec orientation
+  // vers les ressources d'aide humaine.
+  const moderation = await checkModeration(question);
+  if (moderation.outcome !== "ok") {
+    return streamModerationRefusal({
+      supabase,
+      userId: user.id,
+      question,
+      formationSlug: body.formation_slug ?? null,
+      conversationId: body.conversation_id ?? null,
+      moderationOutcome: moderation.outcome,
+      flaggedCategories: moderation.flagged_categories,
+      refusalMessage: moderation.user_message ?? "Je ne peux pas répondre à ce message.",
+    });
+  }
+
+  // ── Rate limit (anti-spam court terme) ──────────────────────────────
+  // 5 messages/minute par utilisateur.
   const rl = await rateLimit({
     key: `tutor:${user.id}`,
     limit: 5,
@@ -126,6 +145,34 @@ export async function POST(req: NextRequest) {
           "Retry-After": String(Math.ceil((rl.reset - Date.now()) / 1000)),
         },
       }
+    );
+  }
+
+  // ── Quota strict mensuel (200 msg/mois Premium, illimité staff) ─────
+  // Admin/trainer = override (access.pack === 'premium' artificiel dans
+  // getTutorAccess). On détecte le staff via la requête sur profiles
+  // pour ne pas surcharger getTutorAccess.
+  const { data: roleData } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+  const isStaff =
+    roleData?.role === "admin" ||
+    roleData?.role === "super_admin" ||
+    roleData?.role === "trainer";
+
+  const quota = await getQuotaStatus(user.id, isStaff);
+  if (!quota.allowed) {
+    return new Response(
+      JSON.stringify({
+        error: "quota_exceeded",
+        message: buildQuotaExceededMessage(quota),
+        used: quota.used,
+        limit: quota.limit,
+        resets_at: quota.resets_at,
+      }),
+      { status: 429, headers: { "Content-Type": "application/json" } }
     );
   }
 
@@ -326,6 +373,131 @@ export async function POST(req: NextRequest) {
       "Cache-Control": "no-cache, no-transform",
       Connection: "keep-alive",
       "X-Accel-Buffering": "no", // Désactive le buffering Vercel/Nginx
+    },
+  });
+}
+
+// =====================================================================
+// Stream une réponse de refus modération sans toucher Anthropic.
+//
+// La réponse est néanmoins persistée dans tutor_messages avec
+// moderation_passed=false pour traçabilité (utile pour audit + détection
+// de patterns abusifs).
+// =====================================================================
+async function streamModerationRefusal(args: {
+  supabase: ReturnType<typeof createClient>;
+  userId: string;
+  question: string;
+  formationSlug: string | null;
+  conversationId: string | null;
+  moderationOutcome: "blocked" | "self_harm";
+  flaggedCategories: string[];
+  refusalMessage: string;
+}): Promise<Response> {
+  const {
+    supabase,
+    userId,
+    question,
+    formationSlug,
+    conversationId: incomingConvId,
+    moderationOutcome,
+    flaggedCategories,
+    refusalMessage,
+  } = args;
+
+  // Crée/réutilise la conv (même logique que le flux normal)
+  let conversationId = incomingConvId;
+  if (!conversationId) {
+    const { data: conv } = await supabase
+      .from("tutor_conversations")
+      .insert({
+        user_id: userId,
+        title: question.slice(0, 80),
+        context_formation_slug: formationSlug,
+      })
+      .select("id")
+      .single();
+    conversationId = conv?.id ?? null;
+  }
+
+  // Persiste le message user (pour traçabilité)
+  if (conversationId) {
+    await supabase.from("tutor_messages").insert({
+      conversation_id: conversationId,
+      role: "user",
+      content: question,
+    });
+  }
+
+  // Stream la réponse de refus en simulant un chunk unique
+  const stream = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      const encoder = new TextEncoder();
+
+      // Envoie le texte complet en 1 chunk SSE (pas de streaming réel)
+      controller.enqueue(
+        encoder.encode(
+          `event: chunk\ndata: ${JSON.stringify({ delta: refusalMessage })}\n\n`
+        )
+      );
+
+      // Persiste le message assistant avec moderation_passed=false
+      if (conversationId) {
+        const { data: inserted } = await supabase
+          .from("tutor_messages")
+          .insert({
+            conversation_id: conversationId,
+            role: "assistant",
+            content: refusalMessage,
+            citations: [],
+            tokens_in: 0,
+            tokens_out: 0,
+            cost_cents: 0,
+            moderation_passed: false,
+          })
+          .select("id")
+          .single();
+
+        // Log d'audit (visible côté admin pour suivre les patterns)
+        console.warn("[tutor/ask] message modéré", {
+          user_id: userId,
+          conversation_id: conversationId,
+          outcome: moderationOutcome,
+          categories: flaggedCategories,
+        });
+
+        controller.enqueue(
+          encoder.encode(
+            `event: done\ndata: ${JSON.stringify({
+              message_id: inserted?.id ?? null,
+              conversation_id: conversationId,
+              citations: [],
+              moderated: true,
+              moderation_outcome: moderationOutcome,
+            })}\n\n`
+          )
+        );
+      } else {
+        controller.enqueue(
+          encoder.encode(
+            `event: done\ndata: ${JSON.stringify({
+              moderated: true,
+              moderation_outcome: moderationOutcome,
+            })}\n\n`
+          )
+        );
+      }
+
+      controller.close();
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream; charset=utf-8",
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+      "X-Accel-Buffering": "no",
     },
   });
 }
