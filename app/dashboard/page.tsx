@@ -239,9 +239,18 @@ export default async function DashboardPage() {
   const completedLessons = progress?.filter((p) => p.completed).length || 0;
   const progressPct = totalLessons ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
+  // Note : `percentage` peut être NULL pour les quiz QR-only (en attente de
+  // correction formateur). On filtre les tentatives sans pourcentage QCM
+  // pour ne pas polluer la moyenne avec des NaN.
+  const attemptsWithPct = (attempts ?? []).filter(
+    (a: any) => typeof a.percentage === "number"
+  );
   const avgScore =
-    attempts && attempts.length > 0
-      ? Math.round(attempts.reduce((s, a) => s + a.percentage, 0) / attempts.length)
+    attemptsWithPct.length > 0
+      ? Math.round(
+          attemptsWithPct.reduce((s, a: any) => s + a.percentage, 0) /
+            attemptsWithPct.length
+        )
       : 0;
 
   const firstName =

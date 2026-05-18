@@ -253,7 +253,9 @@ export default async function AdminHome() {
                     {a.profiles?.full_name || a.profiles?.email}
                   </div>
                 </div>
-                <Badge tone={a.passed ? "success" : "slate"}>{a.percentage}%</Badge>
+                <Badge tone={a.passed ? "success" : "slate"}>
+                  {typeof a.percentage === "number" ? `${a.percentage}%` : "En cours"}
+                </Badge>
               </div>
             ))}
             {(recentAttempts ?? []).length === 0 && (
