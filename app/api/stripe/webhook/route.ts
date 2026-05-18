@@ -101,16 +101,57 @@ async function handlePaid(session: any) {
       ? `Achat en ligne — ${formationSlug} (${packSlug})`
       : `Achat en ligne — ${planId ?? "inconnu"}`;
 
-    await supabase.from("enrollments").insert({
-      user_id: userId,
-      formation_id: formationId,
-      funding_kind: "auto",
-      session_label: sessionLabel,
-      total_amount_cents: amountCents,
-      paid_amount_cents: amountCents,
-      status: "en_cours",
-      pack: packSlug ?? "initial",
-    });
+    const { data: enrollment } = await supabase
+      .from("enrollments")
+      .insert({
+        user_id: userId,
+        formation_id: formationId,
+        funding_kind: "auto",
+        session_label: sessionLabel,
+        total_amount_cents: amountCents,
+        paid_amount_cents: amountCents,
+        status: "en_cours",
+        pack: packSlug ?? "initial",
+      })
+      .select("id")
+      .single();
+
+    // ─── Parrainage : qualifier le referral si présent ────────────────
+    // Métadonnées posées par /api/stripe/checkout. Si referrer_code,
+    // alors le filleul a payé sa 1re inscription → admin pourra valider
+    // le cashout dans /admin/referrals.
+    const referrerCode: string = metadata.referrer_code || "";
+    if (referrerCode && enrollment?.id) {
+      const { error: qErr } = await supabase.rpc("qualify_referral", {
+        p_referred_user: userId,
+        p_enrollment_id: enrollment.id,
+      });
+      if (qErr) {
+        await captureException(qErr, {
+          tags: { service: "referrals", action: "qualify" },
+          extra: { user_id: userId, code: referrerCode },
+        });
+      }
+    }
+
+    // ─── Crédit utilisateur : consommer ce qui a été annoncé au checkout ─
+    // Le checkout a calculé un montant `credit_applied_cents` et l'a
+    // déduit du prix Stripe. On insère maintenant la ligne ledger
+    // négative pour matérialiser la consommation.
+    const creditAppliedCents = Number(metadata.credit_applied_cents || "0");
+    if (creditAppliedCents > 0) {
+      const { error: cErr } = await supabase.rpc("apply_credit_to_checkout", {
+        p_user: userId,
+        p_price_cents: creditAppliedCents,
+        p_session_id: session.id,
+      });
+      if (cErr) {
+        await captureException(cErr, {
+          tags: { service: "credits", action: "apply" },
+          extra: { user_id: userId, amount: creditAppliedCents },
+        });
+      }
+    }
 
     // Analytics : payment + enrollment
     await trackServerEvent({

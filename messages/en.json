@@ -80,7 +80,8 @@
     "adminRgpd": "GDPR & privacy",
     "adminSecurity": "Security (2FA)",
     "adminAudit": "Audit log",
-    "adminTutor": "AI Tutor — Monitoring"
+    "adminTutor": "AI Tutor — Monitoring",
+    "adminReferrals": "Referrals"
   },
   "navGroups": {
     "learn": "Learn",

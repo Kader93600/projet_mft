@@ -29,6 +29,7 @@ import {
   Video,
   CalendarDays,
   Sparkles,
+  Gift,
 } from "lucide-react";
 
 /**
@@ -144,6 +145,7 @@ export const ADMIN_GROUPS: NavGroup[] = [
       { href: "/admin/security", labelKey: "nav.adminSecurity", icon: ShieldCheck },
       { href: "/admin/audit", labelKey: "nav.adminAudit", icon: Shield },
       { href: "/admin/tutor", labelKey: "nav.adminTutor", icon: Sparkles },
+      { href: "/admin/referrals", labelKey: "nav.adminReferrals", icon: Gift },
     ],
   },
 ];

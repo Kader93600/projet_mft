@@ -100,11 +100,86 @@ export async function POST(req: Request) {
     const packName = PACK_METADATA[packSlug].name;
     const productLabel = `${packName} — ${formation.code}`;
 
+    // ─── Parrainage : −10 % filleul si referrer_code valide ────────────
+    // Le code est validé serveur-side via RPC (anti-tampering). On stocke
+    // un pending referral en BD pour traçabilité, qui sera "qualified"
+    // par le webhook après paiement réussi.
+    let amountCents = price.priceCents;
+    let referrerCode: string | null = null;
+    let referralReductionCents = 0;
+    const rawReferrerCode = body?.referrer_code
+      ? String(body.referrer_code).trim().toUpperCase()
+      : null;
+
+    if (rawReferrerCode && user?.id) {
+      const { data: validation } = await supabase
+        .rpc("validate_referral_code", {
+          p_code: rawReferrerCode,
+          p_new_user: user.id,
+        })
+        .single();
+
+      if (validation && (validation as any).valid) {
+        referrerCode = rawReferrerCode;
+        // -10 % sur le prix de base, arrondi à l'euro inférieur
+        referralReductionCents = Math.floor(price.priceCents * 0.1);
+        amountCents -= referralReductionCents;
+
+        // Crée le pending referral (idempotent via UNIQUE referred_user_id)
+        await supabase
+          .rpc("create_pending_referral", {
+            p_code: rawReferrerCode,
+            p_referred_user: user.id,
+          })
+          .then(({ error }) => {
+            if (
+              error &&
+              !error.message?.includes("referral_invalid") &&
+              error.code !== "23505" // already exists, OK
+            ) {
+              console.warn("[checkout] create_pending_referral", error.message);
+            }
+          });
+      }
+    }
+
+    // ─── Crédit utilisateur (récompenses parrainages précédents) ───────
+    // On calcule combien on PEUT appliquer. La consommation effective
+    // (insertion de la ligne ledger négative) est faite par le webhook
+    // après paiement réussi via apply_credit_to_checkout.
+    let creditToApplyCents = 0;
+    if (user?.id) {
+      const { data: balance } = await supabase
+        .from("user_credit_balance")
+        .select("balance_cents")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      const balanceCents = (balance as any)?.balance_cents ?? 0;
+      if (balanceCents > 0) {
+        creditToApplyCents = Math.min(balanceCents, amountCents);
+        amountCents -= creditToApplyCents;
+      }
+    }
+
+    // Garde-fou : Stripe exige amount >= 50 centimes. Si tout est offert
+    // via crédit + parrainage, on bascule sur un workflow "enrollment direct"
+    // sans Stripe (à venir). Pour l'instant on bloque proprement.
+    if (amountCents < 50) {
+      return NextResponse.json(
+        {
+          error: "amount_too_low",
+          message:
+            "Le crédit et la réduction couvrent presque la totalité du prix. Contactez le support pour finaliser l'inscription.",
+        },
+        { status: 400 }
+      );
+    }
+
     try {
       const session = await createCheckoutSession({
         planId: `${formationSlug}_${packSlug}`,
         planName: productLabel,
-        amountCents: price.priceCents,
+        amountCents,
         email,
         successUrl: `${appUrl}/inscription/success`,
         cancelUrl: `${appUrl}/inscription?cancel=1`,
@@ -114,6 +189,10 @@ export async function POST(req: Request) {
           formation_id: formation.slug, // back-compat (formation_slug ré-utilisé)
           pack_slug: packSlug,
           user_id: user?.id ?? "",
+          referrer_code: referrerCode ?? "",
+          referral_reduction_cents: String(referralReductionCents),
+          credit_applied_cents: String(creditToApplyCents),
+          original_amount_cents: String(price.priceCents),
         },
       });
       return NextResponse.json({ id: session.id, url: session.url });

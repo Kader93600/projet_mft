@@ -444,30 +444,42 @@ app/api/stripe/webhook/route.ts                    EDIT — créer N enrollments
 
 ---
 
-## Décisions à trancher avant de coder
+## Décisions arrêtées (2026-05-19)
 
-### Sprint A — Parrainage
+| Sujet | Décision |
+|---|---|
+| **Sprint A — Récompense** | **50 € de crédit pour le parrain** sur sa prochaine formation (cashback si plus rien à acheter) + **−10 % pour le filleul** sur sa 1re inscription |
+| **Sprint A — Déclenchement** | À la 1re inscription **payée** du filleul (pas à la création de compte) |
+| **Sprint A — Plafond annuel** | 10 parrainages / parrain / an |
+| **Sprint A — Validation admin** | Systématique en v1 (workflow manuel pour éviter la fraude) |
+| **Sprint A — Périmètre** | Tout stagiaire peut parrainer tout autre stagiaire, peu importe les formations |
+| **Sprint C — Facturation** | **1 facture par stagiaire (Option A)** pour la v1. La consolidation mensuelle (Option B) reportée à plus tard si besoin client |
+| **Sprint D — Marketplace formateurs** | **Maintenu en planning** mais EN DERNIÈRE POSITION (après A+B+C). Ajoute ~2 semaines au planning |
+| **Démarrage** | **Sprint A — Parrainage** en premier (2-3 j, quick win indépendant) |
 
-1. **Récompense parrain** : 50 € crédit + 10 % filleul (proposition) ou autre ratio ?
-2. **Déclenchement** : à la 1re inscription **payée** du filleul (proposition) ou dès la création de compte ?
-3. **Plafond annuel** : 10 parrainages/an/parrain (proposition) ?
-4. **Validation admin** : systématique en v1 (proposition) ou auto ?
-5. **Capacité Initial** : un stagiaire Capacité (formation à 1 pack unique) peut-il parrainer un GOTRM (multi-packs) ? Réponse par défaut : oui, tout le monde peut parrainer tout le monde.
+### Implications du Sprint A "récompense 50 € crédit"
 
-### Sprint B — Dashboard financeur
+- Le crédit doit être stocké quelque part : nouvelle table `user_credits` ou nouveau champ `enrollments.discount_credit_cents` ?
+- **Choix retenu** : nouvelle table `user_credits` (history complet, débit/crédit, traçabilité audit)
+- Au checkout : si `user_credits.balance > 0`, on applique le crédit avant le paiement Stripe
+- Si le balance dépasse le prix de la formation → cashback à demander explicitement (POST /api/referrals/cashout) qui déclenche un virement (à valider avec admin) — workflow manuel en v1
 
-1. **Notification au funder** : email + dashboard (proposition) ou dashboard seul ?
-2. **Granularité accès** : un financeur voit-il les **messages** échangés entre stagiaire et formateur ? Par défaut : **non** (RGPD, confidentialité pédagogique).
-3. **Exports** : PDF + CSV + JSON (proposition) ou CSV seul suffit ?
-4. **Cofinancement** : un stagiaire peut-il avoir 2 financeurs (ex: 50 % CPF + 50 % employeur) ? **À confirmer avec le client** — schéma actuel = 1 financeur par enrollment.
+### Décisions restantes à trancher (Sprint B et C)
 
-### Sprint C — Multi-tenant entreprise
+### Sprint B — Dashboard financeur (à valider au démarrage du Sprint)
 
-1. **Facturation** : 1 facture/stagiaire (Option A, plus simple) ou consolidée mensuelle (Option B, plus pro) ? **Recommandation : A pour v1, B en v2 quand on a un vrai besoin client.**
-2. **Pré-paiement de places** : oui (Flow A) ou non (Flow B seul) ? **Recommandation : les 2, c'est juste de l'UI.**
-3. **Branding orga** : logo seul (proposition) ou logo + couleur primaire + favicon ? **Recommandation : logo + couleur, le reste en v2.**
-4. **Rôles dans l'orga** : org_admin uniquement (v1) ou org_admin + org_viewer (RH consultatif) ? **Recommandation : les 2 dès la v1, c'est juste une enum.**
-5. **Validation SIRET** : INSEE API (gratuite, recommandé) ou pas de validation ?
+1. **Notification au funder** : email + dashboard ou dashboard seul ?
+2. **Granularité accès** : un financeur voit-il les messages stagiaire ↔ formateur ? (par défaut : non, RGPD)
+3. **Exports** : PDF + CSV + JSON, ou CSV seul ?
+4. **Cofinancement** : un stagiaire peut-il avoir 2 financeurs (50 % CPF + 50 % employeur) ?
+
+### Sprint C — Multi-tenant entreprise (à valider au démarrage du Sprint)
+
+1. ~~Facturation~~ ✅ Locked : 1 facture/stagiaire (Option A)
+2. **Pré-paiement de places** : oui (Flow A) ou non (Flow B seul) ?
+3. **Branding orga** : logo seul ou logo + couleur primaire + favicon ?
+4. **Rôles dans l'orga** : org_admin seul, ou org_admin + org_viewer (RH consultatif) ?
+5. **Validation SIRET** : INSEE API (gratuite) ou pas de validation ?
 
 ---
 

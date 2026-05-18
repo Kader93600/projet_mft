@@ -14,6 +14,7 @@ import {
   Shield,
   BellRing,
   ShieldCheck,
+  Gift,
 } from "lucide-react";
 
 /**
@@ -227,6 +228,18 @@ export function UserMenu({
               Mon profil
             </Link>
           )}
+          {/* Programme parrainage — accessible à tous les stagiaires */}
+          <Link
+            href="/parrainage"
+            onClick={close}
+            className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium text-navy-800 hover:bg-navy-50 transition-colors"
+          >
+            <Gift className="w-4 h-4 text-gold-700" />
+            Parrainer un ami
+            <span className="ml-auto text-[10px] font-semibold text-gold-700 bg-gold-50 border border-gold-200 px-1.5 py-0.5 rounded">
+              +50 €
+            </span>
+          </Link>
           {/* Préférences de notifications — accessible à tous */}
           <Link
             href="/parametres/notifications"
