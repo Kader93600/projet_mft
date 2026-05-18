@@ -86,7 +86,7 @@ export function TutorDrawer({
                 Tuteur IA
               </div>
               <div className="text-[11px] text-slate-500">
-                Claude Sonnet 4 · Premium
+                Claude Sonnet 4.6 · Premium
               </div>
             </div>
           </div>

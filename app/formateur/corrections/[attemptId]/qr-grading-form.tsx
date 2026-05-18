@@ -269,7 +269,7 @@ export function QrGradingForm({
             <div className="flex items-center justify-between gap-2 px-3.5 py-2 border-b border-gold-200">
               <div className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-gold-800">
                 <Sparkles className="h-3.5 w-3.5" />
-                Tuteur IA — Claude Sonnet 4
+                Tuteur IA — Claude Sonnet 4.6
                 {hasAi && aiProposal.ai_confidence && (
                   <span
                     className={

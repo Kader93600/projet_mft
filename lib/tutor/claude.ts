@@ -15,8 +15,21 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 
-/** Modèle Claude utilisé. Centralisé pour pouvoir basculer facilement. */
-export const CLAUDE_MODEL = "claude-sonnet-4-20250514";
+/**
+ * Modèle Claude utilisé. Centralisé pour pouvoir basculer facilement.
+ *
+ * `claude-sonnet-4-6` (Sonnet 4.6) : latest stable au 2026-05.
+ *   - Pricing : $3/MTok input, $15/MTok output (identique Sonnet 4.5)
+ *   - Context window : 1M tokens
+ *   - Max output : 64k tokens
+ *
+ * Note : `claude-sonnet-4-20250514` (Sonnet 4 mai 2025) est en cours de
+ * dépréciation et inaccessible aux nouveaux comptes.
+ *
+ * Cf. https://docs.claude.com/en/about-claude/models/overview pour les
+ * identifiants à jour.
+ */
+export const CLAUDE_MODEL = "claude-sonnet-4-6";
 
 let _client: Anthropic | null = null;
 

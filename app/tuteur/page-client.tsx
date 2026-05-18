@@ -37,7 +37,7 @@ export function TutorPageClient({
           Posez-moi vos questions
         </h1>
         <p className="mt-1 text-sm text-slate-600">
-          Claude Sonnet 4, entraîné sur vos modules. Citations garanties.
+          Claude Sonnet 4.6, entraîné sur vos modules. Citations garanties.
         </p>
       </header>
 
