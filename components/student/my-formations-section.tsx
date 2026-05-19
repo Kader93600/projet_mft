@@ -67,7 +67,29 @@ export async function MyFormationsSection() {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data: enrollments } = await supabase
+  // Détecte staff : ils doivent voir leurs propres enrollments via
+  // un client service_role (bypass RLS), pour éviter le cas où une
+  // policy obscure renvoie 0 ligne malgré is_admin()=true.
+  const { data: meRole } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+  const isStaff =
+    meRole?.role === "admin" ||
+    meRole?.role === "super_admin" ||
+    meRole?.role === "trainer";
+
+  // Pour les staff, on utilise un client service_role pour lire
+  // les enrollments (bypass des RLS éventuellement défectueuses).
+  // Import dynamique pour éviter de charger admin client côté student.
+  let enrollmentsClient = supabase;
+  if (isStaff) {
+    const { createAdminClient } = await import("@/lib/supabase/admin");
+    enrollmentsClient = createAdminClient() as any;
+  }
+
+  const { data: enrollments } = await enrollmentsClient
     .from("enrollments")
     .select(
       "id, formation_slug, session_label, status, start_date, end_date, total_amount_cents, paid_amount_cents, created_at"

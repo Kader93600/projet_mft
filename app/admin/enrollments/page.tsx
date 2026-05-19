@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -114,27 +115,37 @@ const FUNDING_TONE: Record<string, "slate" | "navy" | "gold" | "success"> = {
 };
 
 export default async function AdminEnrollmentsPage() {
-  const supabase = createClient();
+  // Le middleware admin a déjà vérifié les permissions avant d'entrer
+  // ici. On utilise le client service_role pour bypass total des RLS :
+  // certaines policies obscures (org_admin avec organization_id NULL,
+  // funder cross-check, etc.) peuvent empêcher un super_admin de voir
+  // l'intégralité des enrollments via le client server classique.
+  const supabase = createClient(); // session admin pour mutations
+  const admin = createAdminClient(); // service_role pour lectures
+
   const [
     { data: enrollments },
     { data: funders },
     { data: overview },
     { data: requests },
   ] = await Promise.all([
-    supabase
+    admin
       .from("enrollments")
       .select(
         "*, user:profiles!user_id(full_name, email), funder:funders(name, kind)"
       )
       .order("created_at", { ascending: false }),
-    supabase.from("funders").select("*").order("name"),
-    supabase.from("funder_overview").select("*"),
-    supabase
+    admin.from("funders").select("*").order("name"),
+    admin.from("funder_overview").select("*"),
+    admin
       .from("enrollment_requests")
       .select("*")
       .order("created_at", { ascending: false })
       .limit(30),
   ]);
+  // Note : supabase (session) reste utilisé implicitement par les
+  // server actions appelées depuis les boutons de cette page.
+  void supabase;
 
   const openReq = (requests ?? []).filter(
     (r: any) => !["inscrit", "refuse"].includes(r.status)
