@@ -1,11 +1,17 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { z } from "zod";
 import { formatZodError } from "./validations";
 import { isStaff, isSuperAdmin } from "./permissions";
 
 /**
  * Vérifie qu'un membre du staff (admin OU super_admin) est connecté.
- * Renvoie le client Supabase + le profil.
+ * Renvoie :
+ *   - `supabase` : client session (RLS appliqué, à utiliser pour les
+ *     lectures où l'on veut respecter les permissions)
+ *   - `admin` : profil du staff connecté
+ *   - `service` : client service_role (bypass RLS, à utiliser pour les
+ *     mutations sensibles où RLS bloque silencieusement les staff)
  * Utilisé dans toutes les server actions sensibles côté /admin.
  *
  * NB : le miroir SQL `public.is_admin()` autorise déjà admin + super_admin
@@ -25,7 +31,8 @@ export async function requireAdmin() {
   if (!profile) throw new Error("Profil introuvable");
   if (profile.disabled) throw new Error("Compte désactivé");
   if (!isStaff(profile.role)) throw new Error("Accès refusé");
-  return { supabase, admin: profile };
+  const service = createAdminClient();
+  return { supabase, admin: profile, service, profile };
 }
 
 /**

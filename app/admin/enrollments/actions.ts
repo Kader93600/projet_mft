@@ -9,7 +9,7 @@ import {
 
 // ---- Funders ----
 export async function createFunder(formData: FormData) {
-  const { supabase } = await requireAdmin();
+  const { service: supabase } = await requireAdmin();
   const data = validate(funderSchema, {
     name: formData.get("name"),
     kind: formData.get("kind"),
@@ -32,7 +32,7 @@ export async function createFunder(formData: FormData) {
 }
 
 export async function updateFunder(id: string, formData: FormData) {
-  const { supabase } = await requireAdmin();
+  const { service: supabase } = await requireAdmin();
   const data = validate(funderSchema, {
     name: formData.get("name"),
     kind: formData.get("kind"),
@@ -51,7 +51,7 @@ export async function updateFunder(id: string, formData: FormData) {
 }
 
 export async function deleteFunder(id: string) {
-  const { supabase } = await requireAdmin();
+  const { service: supabase } = await requireAdmin();
   const { error } = await supabase.from("funders").delete().eq("id", id);
   if (error) throw new Error(error.message);
   await auditLog("funder_delete", "funder", id);
@@ -60,7 +60,7 @@ export async function deleteFunder(id: string) {
 
 // ---- Enrollments ----
 export async function upsertEnrollment(formData: FormData) {
-  const { supabase } = await requireAdmin();
+  const { service: supabase } = await requireAdmin();
   const id = (formData.get("id") as string) || null;
   // Pack + formation : optionnels (le DEFAULT côté DB est 'initial').
   // Si le formulaire ne les envoie pas, on les omet du payload (laisse DB).
@@ -151,8 +151,12 @@ export async function upsertEnrollment(formData: FormData) {
 }
 
 export async function deleteEnrollment(id: string) {
-  const { supabase } = await requireAdmin();
-  const { error } = await supabase.from("enrollments").delete().eq("id", id);
+  // Mutation sensible : on passe par service_role pour bypass RLS
+  // (les policies enrollments_* retournent 0 ligne pour les super_admin
+  // dans certains contextes, ce qui fait échouer le DELETE silencieusement).
+  // requireAdmin() vérifie l'autorisation côté code en amont.
+  const { service } = await requireAdmin();
+  const { error } = await service.from("enrollments").delete().eq("id", id);
   if (error) throw new Error(error.message);
   await auditLog("enrollment_delete", "enrollment", id);
   revalidatePath("/admin/enrollments");
@@ -160,7 +164,7 @@ export async function deleteEnrollment(id: string) {
 
 // ---- Payments ----
 export async function upsertPayment(formData: FormData) {
-  const { supabase } = await requireAdmin();
+  const { service: supabase } = await requireAdmin();
   const id = (formData.get("id") as string) || null;
   const data = validate(paymentSchema, {
     enrollment_id: formData.get("enrollment_id"),
@@ -188,7 +192,7 @@ export async function upsertPayment(formData: FormData) {
 }
 
 export async function deletePayment(id: string) {
-  const { supabase } = await requireAdmin();
+  const { service: supabase } = await requireAdmin();
   const { error } = await supabase.from("payment_schedule").delete().eq("id", id);
   if (error) throw new Error(error.message);
   await auditLog("payment_delete", "payment", id);
@@ -199,7 +203,7 @@ export async function deletePayment(id: string) {
 type RequestStatus = "nouveau" | "contacte" | "devis_envoye" | "inscrit" | "refuse";
 
 export async function setRequestStatus(id: string, status: RequestStatus) {
-  const { supabase } = await requireAdmin();
+  const { service: supabase } = await requireAdmin();
   const { error } = await supabase
     .from("enrollment_requests")
     .update({ status })
@@ -210,7 +214,7 @@ export async function setRequestStatus(id: string, status: RequestStatus) {
 }
 
 export async function deleteEnrollmentRequest(id: string) {
-  const { supabase } = await requireAdmin();
+  const { service: supabase } = await requireAdmin();
   const { error } = await supabase
     .from("enrollment_requests")
     .delete()
@@ -232,7 +236,7 @@ type EnrollmentStatus =
   | "refuse";
 
 export async function setEnrollmentStatus(id: string, status: EnrollmentStatus) {
-  const { supabase } = await requireAdmin();
+  const { service: supabase } = await requireAdmin();
   const { error } = await supabase
     .from("enrollments")
     .update({ status })
