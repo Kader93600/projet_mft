@@ -25,6 +25,7 @@ export default async function NewStudentPage({
     { data: trainers },
     { data: funders },
     { data: leads },
+    { data: moduleCountsRaw },
   ] = await Promise.all([
     supabase
       .from("formations")
@@ -56,7 +57,22 @@ export default async function NewStudentPage({
       .in("status", ["nouveau", "contacte", "devis_envoye"])
       .order("created_at", { ascending: false })
       .limit(50),
+    // Compteur de modules par formation — pour alerter l'admin si
+    // la formation choisie n'a aucun module rattaché (cas observé :
+    // BOUCHOUCHA inscrit sur ECSR sans modules → écran "Aucun module
+    // disponible" après login).
+    supabase
+      .from("formation_modules")
+      .select("formation_id, formations!inner(slug)"),
   ]);
+
+  // Calcule le nb de modules par formation slug pour l'afficher
+  // dans le dropdown du form (warning visuel si 0).
+  const moduleCountBySlug: Record<string, number> = {};
+  for (const row of (moduleCountsRaw ?? []) as any[]) {
+    const slug = row.formations?.slug;
+    if (slug) moduleCountBySlug[slug] = (moduleCountBySlug[slug] ?? 0) + 1;
+  }
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -90,6 +106,7 @@ export default async function NewStudentPage({
             trainers={trainers ?? []}
             funders={funders ?? []}
             leads={(leads ?? []) as any[]}
+            moduleCountBySlug={moduleCountBySlug}
             initialValues={{
               full_name: searchParams?.full_name,
               email: searchParams?.email,

@@ -81,6 +81,7 @@ export function CreateStudentForm({
   trainers,
   funders,
   leads = [],
+  moduleCountBySlug = {},
   initialValues,
 }: {
   formations: Formation[];
@@ -90,6 +91,11 @@ export function CreateStudentForm({
   /** Liste des leads non-terminaux du CRM, proposés dans un dropdown
    *  "Importer depuis un lead" en haut du formulaire. */
   leads?: LeadOpt[];
+  /** Nb de modules rattachés à chaque formation slug. Permet d'alerter
+   *  l'admin si la formation choisie est "vide" (cas BOUCHOUCHA :
+   *  inscrit sur une formation sans modules → écran "Aucun module"
+   *  après login). */
+  moduleCountBySlug?: Record<string, number>;
   /** Pré-remplissage depuis les query params (ex: conversion d'un lead
    *  CRM en stagiaire — voir /admin/crm onglet "Convertis & refusés"). */
   initialValues?: {
@@ -495,12 +501,34 @@ export function CreateStudentForm({
               required
             >
               <option value="">— Sélectionner —</option>
-              {formations.map((fo) => (
-                <option key={fo.slug} value={fo.slug}>
-                  {fo.code} — {fo.title}
-                </option>
-              ))}
+              {formations.map((fo) => {
+                const n = moduleCountBySlug[fo.slug] ?? 0;
+                const suffix = n === 0 ? " ⚠ aucun module" : ` (${n} modules)`;
+                return (
+                  <option key={fo.slug} value={fo.slug}>
+                    {fo.code} — {fo.title}
+                    {suffix}
+                  </option>
+                );
+              })}
             </Select>
+            {f.formation_slug &&
+              (moduleCountBySlug[f.formation_slug] ?? 0) === 0 && (
+                <div className="mt-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                  <strong>Attention :</strong> cette formation n'a aucun
+                  module pédagogique rattaché. Le stagiaire pourra se
+                  connecter mais ne verra aucun contenu (cours / exercices /
+                  examens / glossaire). Rattachez d'abord des modules via{" "}
+                  <a
+                    href={`/admin/formations`}
+                    className="underline text-amber-950 font-semibold"
+                  >
+                    Catalogue formations
+                  </a>
+                  , ou choisissez GOTRM / Capacité ≤ 3,5t qui ont déjà
+                  leur contenu.
+                </div>
+              )}
           </Field>
           <Field label="Session / Promotion">
             <Input
