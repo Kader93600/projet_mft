@@ -2,7 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, GraduationCap } from "lucide-react";
+import { Plus, GraduationCap, FileText, CheckCircle2 } from "lucide-react";
 import { getAuthorizedFormationSlugs } from "@/lib/admin-guard";
 import { QuizTable } from "./quiz-table";
 
@@ -103,11 +103,32 @@ export default async function AdminQuizzes() {
               " · créez des entraînements et examens blancs."}
           </p>
         </div>
-        <Link href="/admin/quizzes/new">
-          <Button variant="gold">
-            <Plus className="h-4 w-4" /> Nouvel exercice
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          <Link
+            href="/admin/banque-questions/new-qr"
+            title="Créer une question rédigée (correction manuelle formateur)"
+          >
+            <Button variant="secondary" size="sm">
+              <FileText className="h-3.5 w-3.5" />
+              Nouvelle QR
+            </Button>
+          </Link>
+          <Link
+            href="/admin/banque-questions/new-qcm"
+            title="Créer un QCM (correction automatique)"
+          >
+            <Button variant="secondary" size="sm">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              Nouveau QCM
+            </Button>
+          </Link>
+          <Link href="/admin/quizzes/new">
+            <Button variant="gold">
+              <Plus className="h-4 w-4" />
+              Nouvel exercice
+            </Button>
+          </Link>
+        </div>
       </header>
 
       {/* Bandeau formateur : rappel du scope */}
