@@ -195,14 +195,6 @@ export function CcpAccordion({
             >
               <div className="ccp-collapsible-inner">
                 <div className="px-4 pb-4 md:px-6 md:pb-5 pt-1 space-y-4 md:space-y-5">
-                  {/* DEBUG TEMP : montre si la vidéo a été trouvée côté server */}
-                  <div className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
-                    🛠 debug introVideo pour {b.code} :{" "}
-                    {b.introVideo
-                      ? `OK — url ${b.introVideo.url.slice(0, 60)}…`
-                      : "NULL (pas de vidéo trouvée côté server)"}
-                  </div>
-
                   {/* Vidéo d'intro du CCP — affichée 1× en tête de
                       section, avant les chapitres. Plus de répétition
                       sur chaque page module. */}
