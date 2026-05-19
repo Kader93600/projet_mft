@@ -33,6 +33,7 @@ import {
   Briefcase,
   Store,
   Inbox,
+  Crown,
 } from "lucide-react";
 
 /**
@@ -88,6 +89,7 @@ export const STUDENT_GROUPS: NavGroup[] = [
     items: [
       { href: "/inscription", labelKey: "nav.enrollment", icon: Receipt, shortKey: "navShort.enrollment" },
       { href: "/parrainage", labelKey: "nav.referral", icon: Gift, shortKey: "navShort.referral" },
+      { href: "/fidelite", labelKey: "nav.loyalty", icon: Crown, shortKey: "navShort.loyalty" },
       { href: "/mes-documents", labelKey: "nav.documents", icon: FileText, shortKey: "navShort.documents" },
       { href: "/accessibilite", labelKey: "nav.accessibility", icon: Accessibility, shortKey: "navShort.accessibility" },
       { href: "/mes-donnees", labelKey: "nav.personalData", icon: ShieldCheck, shortKey: "navShort.personalData" },

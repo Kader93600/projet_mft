@@ -51,6 +51,7 @@
     "satisfaction": "Évaluations",
     "enrollment": "Mon inscription",
     "referral": "Parrainage",
+    "loyalty": "Fidélité",
     "personalData": "Mes données",
     "accessibility": "Accessibilité",
     "adminOverview": "Vue d'ensemble",
@@ -117,6 +118,7 @@
     "satisfaction": "Avis",
     "enrollment": "Inscr.",
     "referral": "Parrain.",
+    "loyalty": "Fidélité",
     "documents": "Docs",
     "accessibility": "A11y",
     "personalData": "RGPD"

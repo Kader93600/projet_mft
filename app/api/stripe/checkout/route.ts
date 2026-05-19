@@ -11,6 +11,10 @@ import {
 import { findFormation } from "@/lib/formations-config";
 import { rateLimit, rateLimitHeaders, clientIp } from "@/lib/rate-limit";
 import { captureException } from "@/lib/observability";
+import {
+  getUserLoyaltyTier,
+  computeLoyaltyDiscount,
+} from "@/lib/loyalty";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -100,11 +104,23 @@ export async function POST(req: Request) {
     const packName = PACK_METADATA[packSlug].name;
     const productLabel = `${packName} — ${formation.code}`;
 
+    // ─── Programme de fidélité : -10 % (Silver) ou -15 % (Gold) auto ───
+    // Appliqué EN PREMIER (avant parrainage), sur le prix de base.
+    // Plafond : 200 € (cf. lib/loyalty.ts).
+    let amountCents = price.priceCents;
+    let loyaltyDiscountCents = 0;
+    let loyaltyTier: string = "none";
+    if (user?.id) {
+      loyaltyTier = await getUserLoyaltyTier(user.id);
+      const ld = computeLoyaltyDiscount(loyaltyTier as any, price.priceCents);
+      loyaltyDiscountCents = ld.amount_cents;
+      amountCents -= loyaltyDiscountCents;
+    }
+
     // ─── Parrainage : −10 % filleul si referrer_code valide ────────────
     // Le code est validé serveur-side via RPC (anti-tampering). On stocke
     // un pending referral en BD pour traçabilité, qui sera "qualified"
     // par le webhook après paiement réussi.
-    let amountCents = price.priceCents;
     let referrerCode: string | null = null;
     let referralReductionCents = 0;
     const rawReferrerCode = body?.referrer_code
@@ -121,7 +137,8 @@ export async function POST(req: Request) {
 
       if (validation && (validation as any).valid) {
         referrerCode = rawReferrerCode;
-        // -10 % sur le prix de base, arrondi à l'euro inférieur
+        // -10 % sur le prix de base (cumulable avec la réduction loyalty),
+        // arrondi à l'euro inférieur
         referralReductionCents = Math.floor(price.priceCents * 0.1);
         amountCents -= referralReductionCents;
 
@@ -218,6 +235,8 @@ export async function POST(req: Request) {
           credit_applied_cents: String(creditToApplyCents),
           original_amount_cents: String(price.priceCents),
           organization_id: organizationId ?? "",
+          loyalty_tier: loyaltyTier,
+          loyalty_discount_cents: String(loyaltyDiscountCents),
         },
       });
       return NextResponse.json({ id: session.id, url: session.url });

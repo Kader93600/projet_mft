@@ -136,6 +136,30 @@ async function handlePaid(session: any) {
       }
     }
 
+    // ─── Programme de fidélité : applique la réduction annoncée ──────────
+    // Le checkout a calculé un montant `loyalty_discount_cents` selon le
+    // tier du user (avant cette nouvelle enrollment). On consomme via la
+    // RPC qui inscrit la ligne ledger + l'événement loyalty_events.
+    // IMPORTANT : on appelle AVANT que la nouvelle enrollment n'élève
+    // le tier du user (ordre : insert enrollment → RPC loyalty avec le
+    // montant ANNONCÉ qui était calculé sur le tier antérieur).
+    const loyaltyDiscountCents = Number(
+      metadata.loyalty_discount_cents || "0"
+    );
+    if (loyaltyDiscountCents > 0) {
+      const { error: lErr } = await supabase.rpc("apply_loyalty_discount", {
+        p_user: userId,
+        p_price_cents: loyaltyDiscountCents,
+        p_session_id: session.id,
+      });
+      if (lErr) {
+        await captureException(lErr, {
+          tags: { service: "loyalty", action: "apply_discount" },
+          extra: { user_id: userId, amount: loyaltyDiscountCents },
+        });
+      }
+    }
+
     // ─── Crédit utilisateur : consommer ce qui a été annoncé au checkout ─
     // Le checkout a calculé un montant `credit_applied_cents` et l'a
     // déduit du prix Stripe. On insère maintenant la ligne ledger

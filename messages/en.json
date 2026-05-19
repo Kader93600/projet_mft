@@ -51,6 +51,7 @@
     "satisfaction": "Reviews",
     "enrollment": "My enrollment",
     "referral": "Referrals",
+    "loyalty": "Loyalty",
     "personalData": "My data",
     "accessibility": "Accessibility",
     "adminOverview": "Overview",
@@ -117,6 +118,7 @@
     "satisfaction": "Reviews",
     "enrollment": "Enroll.",
     "referral": "Refer",
+    "loyalty": "Loyalty",
     "documents": "Docs",
     "accessibility": "A11y",
     "personalData": "GDPR"

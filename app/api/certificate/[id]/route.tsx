@@ -26,6 +26,26 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#f5b100",
   },
+  // Variante "Gold" : bordure plus épaisse et double pour les certificats
+  // délivrés à un stagiaire ayant déjà 1+ certificat final (loyalty Gold).
+  outerBorderGold: {
+    position: "absolute",
+    top: 20,
+    left: 20,
+    right: 20,
+    bottom: 20,
+    borderWidth: 4,
+    borderColor: "#d97706",
+  },
+  outerBorderGoldInner: {
+    position: "absolute",
+    top: 28,
+    left: 28,
+    right: 28,
+    bottom: 28,
+    borderWidth: 1,
+    borderColor: "#f5b100",
+  },
   innerBorder: {
     position: "absolute",
     top: 30,
@@ -34,6 +54,40 @@ const styles = StyleSheet.create({
     bottom: 30,
     borderWidth: 0.5,
     borderColor: "#0E1240",
+  },
+  // Sceau "Stagiaire fidèle Gold" en haut à droite
+  loyaltySeal: {
+    position: "absolute",
+    top: 45,
+    right: 50,
+    width: 90,
+    height: 90,
+    borderWidth: 2,
+    borderColor: "#d97706",
+    borderRadius: 45,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#fef3c7",
+  },
+  loyaltySealTopText: {
+    fontSize: 7,
+    fontWeight: "bold",
+    color: "#92400e",
+    letterSpacing: 1,
+    textTransform: "uppercase",
+  },
+  loyaltySealMainText: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#92400e",
+    letterSpacing: 2,
+    marginTop: 4,
+  },
+  loyaltySealBottomText: {
+    fontSize: 6,
+    color: "#92400e",
+    marginTop: 4,
+    letterSpacing: 0.5,
   },
   brand: {
     fontSize: 26,
@@ -142,14 +196,33 @@ function CertificatePDF({
 }) {
   const C = React.createElement;
   const isFinal = cert.type === "final";
+  const isLoyalty = cert.is_loyalty === true;
   return C(
     Document,
     {},
     C(
       Page,
       { size: "A4", orientation: "landscape", style: styles.page },
-      C(View, { style: styles.outerBorder }),
+      // Bordure : double + plus épaisse pour les certificats Gold
+      isLoyalty
+        ? C(
+            View,
+            {},
+            C(View, { style: styles.outerBorderGold }),
+            C(View, { style: styles.outerBorderGoldInner })
+          )
+        : C(View, { style: styles.outerBorder }),
       C(View, { style: styles.innerBorder }),
+      // Sceau loyalty visible uniquement sur les certifs Gold
+      isLoyalty
+        ? C(
+            View,
+            { style: styles.loyaltySeal },
+            C(Text, { style: styles.loyaltySealTopText }, "Stagiaire"),
+            C(Text, { style: styles.loyaltySealMainText }, "GOLD"),
+            C(Text, { style: styles.loyaltySealBottomText }, "Fidèle MFT")
+          )
+        : null,
 
       C(
         View,
