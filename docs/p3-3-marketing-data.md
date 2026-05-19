@@ -359,23 +359,23 @@ app/admin/analytics/social/connect/page.tsx      # Page OAuth (1ère config)
 
 ---
 
-## Décisions à trancher AVANT de coder
+## Décisions arrêtées (2026-05-19)
 
-### Sprint A — CRM
-1. Auto-assignation : self-assign (v1) ou round-robin auto ?
-2. Notes : visibles entre admins ou privées par auteur ?
-3. Relances : email seul ou email + SMS Twilio ?
-4. Délai relance par défaut : 3 jours après 1er contact ?
+| Sujet | Décision |
+|---|---|
+| **Démarrage** | Sprint A en premier (CRM) |
+| **Sprint A — Assignation** | Self-assign ("Je prends ce lead") |
+| **Sprint A — Notes** | Visibles entre admins (transparence interne) |
+| **Sprint A — Relances** | Email seul (pas de SMS en v1) |
+| **Sprint A — Délai relance défaut** | 3 jours après dernier contact |
+| **Sprint C — Pré-requis** | ❌ Rien d'installé côté client → **Sprint C reporté en P4** |
 
-### Sprint B — UTM
-5. Attribution : first-touch (v1) ou last-touch ?
-6. Cookie consent : tracker AVANT consent (session-only) ou ATTENDRE consent ?
-7. Périmètre : pages publiques uniquement ?
+### Décisions restantes (Sprint B — UTM)
 
-### Sprint C — Social
-8. Comptes Business Instagram + Page LinkedIn déjà créés ?
-9. Application Developer Meta + LinkedIn : qui les crée (client ou nous) ?
-10. v1 = lecture seule ?
+À trancher au démarrage du Sprint B :
+1. Attribution : first-touch (recommandé v1) ou last-touch ?
+2. Cookie consent : tracker AVANT consent (session-only) ou ATTENDRE consent ?
+3. Périmètre : pages publiques uniquement ?
 
 ---
 

@@ -84,7 +84,8 @@
     "adminTutor": "AI Tutor — Monitoring",
     "adminReferrals": "Referrals",
     "adminOrganizations": "Client organizations",
-    "adminMarketplace": "Trainer marketplace"
+    "adminMarketplace": "Trainer marketplace",
+    "adminCrm": "CRM — Pipeline"
   },
   "navGroups": {
     "learn": "Learn",

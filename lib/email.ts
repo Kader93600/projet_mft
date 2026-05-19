@@ -693,6 +693,52 @@ export function inactivityReminderEmail(input: {
 }
 
 /**
+ * Notification interne pour l'admin : un ou plusieurs leads ont une
+ * relance due aujourd'hui. Déclenché par /api/cron/crm-followup.
+ *
+ * Note : c'est un email INTERNE (vers l'équipe MFT), pas vers le prospect.
+ */
+export function crmFollowupReminderEmail(input: {
+  adminFullName?: string | null;
+  leads: Array<{
+    id: string;
+    fullName: string;
+    email: string;
+    status: string;
+    nextFollowupAt: string;
+  }>;
+  crmUrl: string;
+}) {
+  const firstName = ((input.adminFullName ?? "") as string).split(" ")[0];
+  const greeting = firstName ? `, ${escapeHtml(firstName)}` : "";
+  const count = input.leads.length;
+  const listHtml = input.leads
+    .map((l) => {
+      const date = new Date(l.nextFollowupAt);
+      return `<li style="margin-bottom: 8px;">
+        <strong>${escapeHtml(l.fullName)}</strong>
+        <span style="color: ${COLORS.slate500};"> — ${escapeHtml(l.email)} · ${escapeHtml(l.status)} · prévu ${date.toLocaleDateString("fr-FR")}</span>
+      </li>`;
+    })
+    .join("\n");
+  return {
+    subject: `Vous avez ${count} relance${count > 1 ? "s" : ""} CRM à effectuer aujourd'hui`,
+    html: emailLayout(
+      `${count} relance${count > 1 ? "s" : ""} à faire${greeting}`,
+      `
+      <p>Voici vos prospects à recontacter aujourd'hui :</p>
+      <ul style="padding-left: 18px; margin: 16px 0;">${listHtml}</ul>
+      ${ctaButton("Ouvrir le CRM", input.crmUrl, "signal")}
+      <p class="mft-muted" style="font-size: 13px; color: ${COLORS.slate500};">Pas le temps aujourd'hui ? Vous pouvez mettre un lead en pause depuis sa fiche pour reporter la relance.</p>
+      `,
+      {
+        preheader: `${count} prospect${count > 1 ? "s" : ""} attend${count > 1 ? "ent" : ""} votre rappel.`,
+      }
+    ),
+  };
+}
+
+/**
  * Confirmation de paiement Stripe reçu.
  * Déclencheur : webhook /api/stripe/webhook (checkout.session.completed).
  */
