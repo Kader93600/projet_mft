@@ -364,6 +364,14 @@ export default async function ModulesPage() {
       // Info bloc (CCP) — utilisée pour grouper les modules GOTRM
       // par CCP1/CCP2/CCP3 sur la page stagiaire.
       __bloc: m.bloc_id ? blocsById.get(m.bloc_id) ?? null : null,
+      // Champs vidéo d'intro — utilisés par SubsectionCourses pour
+      // afficher la vidéo en tête de section CCP. Sans ces champs,
+      // `find(m => m.intro_video_path)` retournait toujours undefined
+      // et la vidéo n'apparaissait jamais sur /modules.
+      intro_video_path: (m as any).intro_video_path ?? null,
+      intro_video_label: (m as any).intro_video_label ?? null,
+      intro_video_duration_s: (m as any).intro_video_duration_s ?? null,
+      order: (m as any).order ?? null,
     };
   });
 
