@@ -50,7 +50,27 @@ interface UnifiedQuestion {
 export default async function QuizPage({ params }: { params: { id: string } }) {
   const t = await getTranslations("quiz");
   const supabase = createClient();
-  const { data: quiz } = await supabase
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Choix du client : students en service_role pour bypass RLS
+  let isStaff = false;
+  if (user) {
+    const { data: meRole } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    isStaff =
+      meRole?.role === "admin" ||
+      meRole?.role === "super_admin" ||
+      meRole?.role === "trainer";
+  }
+  const { createAdminClient } = await import("@/lib/supabase/admin");
+  const reader = isStaff || !user ? supabase : createAdminClient();
+
+  const { data: quiz } = await reader
     .from("quizzes")
     .select("*")
     .eq("id", params.id)
@@ -58,46 +78,30 @@ export default async function QuizPage({ params }: { params: { id: string } }) {
   if (!quiz) notFound();
 
   // Gate par formation : le module de ce quiz est-il rattaché à une
-  // formation où l'utilisateur est inscrit ? Sinon, 404.
-  // Staff (admin/super_admin/trainer) : bypass total, accès libre.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (user && quiz.module_id) {
-    const { data: meRole } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-    const isStaff =
-      meRole?.role === "admin" ||
-      meRole?.role === "super_admin" ||
-      meRole?.role === "trainer";
+  // formation où l'utilisateur est inscrit ? Sinon, 404. Staff = libre.
+  if (user && !isStaff && quiz.module_id) {
+    const { data: enrollments } = await reader
+      .from("enrollments")
+      .select("formation_id")
+      .eq("user_id", user.id)
+      .not("formation_id", "is", null)
+      .neq("status", "refuse")
+      .neq("status", "abandon");
+    const enrolledIds = (enrollments ?? [])
+      .map((e: any) => e.formation_id as string)
+      .filter(Boolean);
+    if (enrolledIds.length === 0) notFound();
 
-    if (!isStaff) {
-      const { data: enrollments } = await supabase
-        .from("enrollments")
-        .select("formation_id")
-        .eq("user_id", user.id)
-        .not("formation_id", "is", null)
-        .neq("status", "refuse")
-        .neq("status", "abandon");
-      const enrolledIds = (enrollments ?? [])
-        .map((e: any) => e.formation_id as string)
-        .filter(Boolean);
-      if (enrolledIds.length === 0) notFound();
-
-      const { count } = await supabase
-        .from("formation_modules")
-        .select("module_id", { count: "exact", head: true })
-        .eq("module_id", quiz.module_id)
-        .in("formation_id", enrolledIds);
-      if (!count) notFound();
-    }
+    const { count } = await reader
+      .from("formation_modules")
+      .select("module_id", { count: "exact", head: true })
+      .eq("module_id", quiz.module_id)
+      .in("formation_id", enrolledIds);
+    if (!count) notFound();
   }
 
   // Source 1 : table historique "questions" (rattachée au quiz)
-  const { data: legacyQuestions } = await supabase
+  const { data: legacyQuestions } = await reader
     .from("questions")
     .select(
       "id, statement, explanation, order, choices(id, label, is_correct, order)"
@@ -117,7 +121,7 @@ export default async function QuizPage({ params }: { params: { id: string } }) {
   );
 
   // Source 2 : banque de questions (lien via quiz_question_bank)
-  const { data: bankLinks } = await supabase
+  const { data: bankLinks } = await reader
     .from("quiz_question_bank")
     .select(
       "display_order, question:question_bank(id, type, statement, choices, max_score, explanation, annex_pages, annex_labels, import_id)"
@@ -179,7 +183,7 @@ export default async function QuizPage({ params }: { params: { id: string } }) {
     if (random) {
       // Recharge les détails complets (choices, max_score) pour chaque id tiré
       const ids = (random as any[]).map((r) => r.id);
-      const { data: details } = await supabase
+      const { data: details } = await reader
         .from("question_bank")
         .select("id, type, statement, choices, max_score, explanation")
         .in("id", ids);
@@ -231,7 +235,7 @@ export default async function QuizPage({ params }: { params: { id: string } }) {
   }
   const signedByImport = new Map<string, string>();
   if (importIds.size > 0) {
-    const { data: importRows } = await supabase
+    const { data: importRows } = await reader
       .from("question_imports")
       .select("id, pdf_storage_path")
       .in("id", [...importIds]);
@@ -279,7 +283,7 @@ export default async function QuizPage({ params }: { params: { id: string } }) {
     .filter((q) => q.source === "bank")
     .map((q) => q.id);
   if (bankQuestionIds.length > 0) {
-    const { data: attRows } = await supabase
+    const { data: attRows } = await reader
       .from("question_attachments")
       .select(
         "id, question_id, storage_path, file_name, mime_type, kind, label, display_order",

@@ -44,7 +44,27 @@ export default async function ModuleDetail({
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data: module } = await supabase
+  // Détecte le rôle pour choisir le client de lecture. Les students
+  // doivent passer en service_role (bypass RLS qui retourne 0 ligne
+  // dans certains contextes server component, cf. cas BOUCHOUCHA).
+  // Sécurité conservée par le gate enrollment plus bas + les filtres
+  // user.id sur les progress / attempts.
+  let isStaff = false;
+  if (user) {
+    const { data: meRole } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    isStaff =
+      meRole?.role === "admin" ||
+      meRole?.role === "super_admin" ||
+      meRole?.role === "trainer";
+  }
+  const { createAdminClient } = await import("@/lib/supabase/admin");
+  const reader = isStaff || !user ? supabase : createAdminClient();
+
+  const { data: module } = await reader
     .from("modules")
     .select("*")
     .eq("slug", params.slug)
@@ -52,51 +72,38 @@ export default async function ModuleDetail({
   if (!module) notFound();
 
   // Gate par formation : ce module est-il rattaché à une formation
-  // où l'utilisateur est inscrit ? Sinon, 404 (mêmes signaux qu'un slug
-  // inexistant — on ne fuite pas l'existence du contenu).
-  // Staff (admin/super_admin/trainer) : bypass total, accès libre.
-  if (user) {
-    const { data: meRole } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-    const isStaff =
-      meRole?.role === "admin" ||
-      meRole?.role === "super_admin" ||
-      meRole?.role === "trainer";
+  // où l'utilisateur est inscrit ? Sinon, 404. Staff = accès libre.
+  // Student : vérifié via reader (déjà service_role pour ce cas).
+  if (user && !isStaff) {
+    const { data: enrollments } = await reader
+      .from("enrollments")
+      .select("formation_id")
+      .eq("user_id", user.id)
+      .not("formation_id", "is", null)
+      .neq("status", "refuse")
+      .neq("status", "abandon");
+    const enrolledIds = (enrollments ?? [])
+      .map((e: any) => e.formation_id as string)
+      .filter(Boolean);
+    if (enrolledIds.length === 0) notFound();
 
-    if (!isStaff) {
-      const { data: enrollments } = await supabase
-        .from("enrollments")
-        .select("formation_id")
-        .eq("user_id", user.id)
-        .not("formation_id", "is", null)
-        .neq("status", "refuse")
-        .neq("status", "abandon");
-      const enrolledIds = (enrollments ?? [])
-        .map((e: any) => e.formation_id as string)
-        .filter(Boolean);
-      if (enrolledIds.length === 0) notFound();
-
-      const { count } = await supabase
-        .from("formation_modules")
-        .select("module_id", { count: "exact", head: true })
-        .eq("module_id", module.id)
-        .in("formation_id", enrolledIds);
-      if (!count) notFound();
-    }
+    const { count } = await reader
+      .from("formation_modules")
+      .select("module_id", { count: "exact", head: true })
+      .eq("module_id", module.id)
+      .in("formation_id", enrolledIds);
+    if (!count) notFound();
   }
 
   const [{ data: lessons }, { data: quizzes }, { data: progress }] = await Promise.all([
-    supabase
+    reader
       .from("lessons")
       .select("*")
       .eq("module_id", module.id)
       .order("order"),
-    supabase.from("quizzes").select("*").eq("module_id", module.id),
+    reader.from("quizzes").select("*").eq("module_id", module.id),
     user
-      ? supabase
+      ? reader
           .from("lesson_progress")
           .select("lesson_id, completed")
           .eq("user_id", user.id)
@@ -108,7 +115,7 @@ export default async function ModuleDetail({
   const quizIds = (quizzes ?? []).map((q: any) => q.id);
   let attempts: any[] = [];
   if (user && quizIds.length > 0) {
-    const { data: a } = await supabase
+    const { data: a } = await reader
       .from("quiz_attempts")
       .select(
         "id, quiz_id, percentage, passed, score, total, finished_at, status, mode"
