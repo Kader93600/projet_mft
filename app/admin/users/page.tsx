@@ -72,10 +72,18 @@ export default async function AdminUsers({
           <h1 className="mt-2 font-display text-3xl font-semibold text-navy-950 tracking-tight">
             Utilisateurs
           </h1>
-          <p className="mt-2 text-slate-600">
+          <p className="mt-2 text-slate-600 max-w-2xl">
             {total} compte{total > 1 ? "s" : ""}
-            {q && ` correspondant à « ${q} »`} · gérez rôles, groupes,
-            activité et accès.
+            {q && ` correspondant à « ${q} »`} · pilotage RH : rôles,
+            groupes, activité, accès. Pour inscrire un client à une
+            formation, préférez{" "}
+            <Link
+              href="/admin/enrollments"
+              className="text-brand-700 underline hover:text-brand-900"
+            >
+              Inscriptions & paiements
+            </Link>
+            .
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -88,7 +96,7 @@ export default async function AdminUsers({
           </a>
           <Link href="/admin/users/new">
             <Button variant="gold">
-              <UserPlus className="h-4 w-4" /> Nouveau stagiaire
+              <UserPlus className="h-4 w-4" /> Nouvel utilisateur
             </Button>
           </Link>
         </div>

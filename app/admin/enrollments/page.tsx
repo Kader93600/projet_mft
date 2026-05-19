@@ -162,11 +162,25 @@ export default async function AdminEnrollmentsPage() {
 
   return (
     <div className="space-y-10">
-      <header>
-        <span className="eyebrow text-gold-700">Administration</span>
-        <h1 className="mt-2 font-display text-3xl font-semibold text-navy-950">
-          Inscriptions, financeurs & paiements
-        </h1>
+      <header className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <span className="eyebrow text-gold-700">Administration</span>
+          <h1 className="mt-2 font-display text-3xl font-semibold text-navy-950">
+            Inscriptions, financeurs & paiements
+          </h1>
+          <p className="mt-2 text-sm text-slate-600 max-w-2xl">
+            Vue commerciale : leads, dossiers, paiements. Pour inscrire
+            un nouveau client de A à Z (compte + dossier), cliquez sur{" "}
+            <strong>+ Nouveau stagiaire</strong>.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <Link href="/admin/users/new">
+            <Button variant="gold">
+              <UserPlus className="h-4 w-4" />+ Nouveau stagiaire
+            </Button>
+          </Link>
+        </div>
       </header>
 
       {/* KPIs */}
@@ -494,10 +508,22 @@ export default async function AdminEnrollmentsPage() {
 function LeadActions({ request: r }: { request: any }) {
   const isNouveau = r.status === "nouveau";
   const isContacte = r.status === "contacte";
-  // Construit l'URL "Créer dossier" en pré-remplissant nom/email
-  const newEnrollmentUrl = `/admin/enrollments/new?email=${encodeURIComponent(
-    r.email
-  )}&name=${encodeURIComponent(r.full_name)}`;
+  // URL "Convertir en stagiaire" — pré-remplit le formulaire complet
+  // (compte auth + profil + dossier d'inscription) avec les infos du lead.
+  // À la création réussie, le lead est auto-marqué "inscrit" côté action
+  // server (cf. createStudent dans app/admin/users/actions.ts).
+  const formationSlug = extractFormationSlug(r);
+  const convertUrl =
+    `/admin/users/new` +
+    `?email=${encodeURIComponent(r.email ?? "")}` +
+    `&full_name=${encodeURIComponent(r.full_name ?? "")}` +
+    `&phone=${encodeURIComponent(r.phone ?? "")}` +
+    (formationSlug
+      ? `&formation_slug=${encodeURIComponent(formationSlug)}`
+      : "") +
+    (r.funding_kind
+      ? `&funding_kind=${encodeURIComponent(r.funding_kind)}`
+      : "");
 
   return (
     <div className="flex items-center justify-end gap-1">
@@ -523,12 +549,12 @@ function LeadActions({ request: r }: { request: any }) {
         </form>
       )}
 
-      {/* Convertir en dossier (toujours dispo) */}
+      {/* Convertir en stagiaire (compte + dossier en une fois) */}
       <Link
-        href={newEnrollmentUrl}
-        title="Créer un dossier d'inscription"
-        aria-label="Créer un dossier d'inscription"
-        className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-gold-200 text-gold-800 hover:bg-gold-50 transition"
+        href={convertUrl}
+        title="Convertir en stagiaire (créer compte + dossier)"
+        aria-label="Convertir en stagiaire"
+        className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-signal-300 bg-signal-50 text-signal-800 hover:bg-signal-100 transition"
       >
         <UserPlus className="h-3.5 w-3.5" />
       </Link>

@@ -237,7 +237,33 @@ export async function createStudent(raw: unknown): Promise<CreateStudentResult> 
     console.log("[createStudent] 6/ enrollment inserted");
   }
 
-  // 4) Audit log — non-bloquant si la table audit_log n'est pas dispo.
+  // 4) Auto-marquage des leads correspondants en "inscrit". Si l'admin
+  //    a créé ce stagiaire depuis le CRM (bouton "Convertir") ou même
+  //    manuellement avec un email qui matche un lead existant, on
+  //    marque tous les leads avec cet email comme convertis pour qu'ils
+  //    apparaissent dans la section "Convertis & refusés" sans rester
+  //    bloqués en attente dans le pipeline.
+  try {
+    const { data: updated } = await sb
+      .from("enrollment_requests")
+      .update({ status: "inscrit" })
+      .ilike("email", data.email)
+      .not("status", "eq", "refuse")
+      .select("id");
+    if (updated && updated.length > 0) {
+      console.log(
+        "[createStudent] 7/ leads CRM auto-marqués inscrit",
+        updated.length
+      );
+    }
+  } catch (e: any) {
+    console.error(
+      "[createStudent] auto-mark lead failed (non-fatal)",
+      e?.message ?? e
+    );
+  }
+
+  // 5) Audit log — non-bloquant si la table audit_log n'est pas dispo.
   try {
     await auditLog("create_student", "profile", userId, {
       email: data.email,
@@ -253,6 +279,7 @@ export async function createStudent(raw: unknown): Promise<CreateStudentResult> 
 
   revalidatePath("/admin/users");
   revalidatePath("/admin/enrollments");
+  revalidatePath("/admin/crm");
   console.log("[createStudent] 8/ done", { userId });
 
   return { ok: true, userId, email: data.email, accessMode: data.access_mode };
