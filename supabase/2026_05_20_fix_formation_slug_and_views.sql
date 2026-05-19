@@ -119,24 +119,36 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.has_formation_access(uuid, text) TO authenticated;
 
--- ─── 4) Vue formations_demand (manquante) ───────────────────────────────
+-- ─── 4) Vue formations_demand ───────────────────────────────────────────
 -- Agrège les demandes d'inscription par formation_slug sur la fenêtre
 -- glissante 30 jours, plus le total en attente de traitement.
 -- Consommée par :
 --   - components/admin/formation-pipeline.tsx:47
 --   - app/admin/formations/page.tsx:24
-CREATE OR REPLACE VIEW public.formations_demand AS
+--
+-- DROP préalable obligatoire : une version antérieure de la vue peut
+-- exister avec des noms de colonnes différents (ex: "requests" au lieu
+-- de "requests_30d"). PostgreSQL refuse CREATE OR REPLACE quand un
+-- nom de colonne change, d'où le drop forcé en CASCADE.
+DROP VIEW IF EXISTS public.formations_demand CASCADE;
+
+CREATE VIEW public.formations_demand AS
 SELECT
   er.formation_slug,
+  -- Total lifetime des demandes (alias historique conservé pour compat
+  -- avec app/admin/formations/page.tsx qui lit "requests")
+  count(*)                                        AS requests,
+  -- Fenêtre glissante 30 jours (nouveau nom utilisé partout)
   count(*) FILTER (WHERE er.created_at >= now() - interval '30 days') AS requests_30d,
+  -- En attente de traitement : statuts non terminaux, et seulement
+  -- les demandes encore "chaudes" (≤ 90j)
   count(*) FILTER (
     WHERE er.status IN ('nouveau','contacte','devis_envoye')
       AND er.created_at >= now() - interval '90 days'
   ) AS pending,
-  count(*) FILTER (WHERE er.status = 'inscrit')  AS converted,
-  count(*) FILTER (WHERE er.status = 'refuse')    AS refused,
-  count(*) AS total_lifetime,
-  max(er.created_at)                              AS last_request_at
+  count(*) FILTER (WHERE er.status = 'inscrit') AS converted,
+  count(*) FILTER (WHERE er.status = 'refuse')   AS refused,
+  max(er.created_at)                             AS last_request_at
 FROM public.enrollment_requests er
 WHERE er.formation_slug IS NOT NULL
 GROUP BY er.formation_slug;
