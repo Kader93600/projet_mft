@@ -75,11 +75,20 @@ export function CoachingPanel({
               className="md:flex-1"
             >
               <option value="">Aucun référent assigné</option>
-              {trainers.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.full_name || t.email}
-                </option>
-              ))}
+              {trainers.map((t) => {
+                const suffix =
+                  t.role === "super_admin"
+                    ? " · super-admin"
+                    : t.role === "admin"
+                      ? " · admin"
+                      : "";
+                return (
+                  <option key={t.id} value={t.id}>
+                    {t.full_name || t.email}
+                    {suffix}
+                  </option>
+                );
+              })}
             </Select>
             <Button onClick={saveReferent} disabled={isPending}>
               <Save className="h-4 w-4" /> Enregistrer

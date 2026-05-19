@@ -15,10 +15,13 @@ const updateNoteSchema = coachingNoteSchema.partial().extend({ id: uuid });
 
 // ---------- Référent ----------
 export async function assignReferent(userId: string, trainerId: string | null) {
-  const { supabase } = await requireAdmin();
+  // service_role pour bypass RLS (les RLS sur profiles bloquent les
+  // UPDATE par admin/super_admin dans certains contextes — même
+  // symptôme qu'on a vu sur enrollments).
+  const { service } = await requireAdmin();
   validate(uuid, userId);
   if (trainerId) validate(uuid, trainerId);
-  const { error } = await supabase
+  const { error } = await service
     .from("profiles")
     .update({ referent_id: trainerId })
     .eq("id", userId);

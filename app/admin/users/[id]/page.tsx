@@ -91,10 +91,14 @@ export default async function UserProfilePage({
     { data: coachingNotes },
     { data: { user: authMe } },
   ] = await Promise.all([
+    // Référents pédagogiques éligibles : admin + super_admin
+    // (les trainers ont leur propre tag "Formateur assigné" plus bas,
+    // ce champ-ci est réservé au suivi RH par un admin).
     supabase
       .from("profiles")
-      .select("id, full_name, email")
-      .eq("role", "admin")
+      .select("id, full_name, email, role")
+      .in("role", ["admin", "super_admin"])
+      .eq("disabled", false)
       .order("full_name"),
     supabase
       .from("coaching_sessions")

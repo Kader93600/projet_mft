@@ -42,10 +42,12 @@ export default async function AdminCoachingPage() {
       .not("risk_flag", "is", null)
       .order("last_attempt_at", { ascending: true, nullsFirst: true })
       .limit(30),
+    // Référents pédagogiques éligibles : admin + super_admin
     supabase
       .from("profiles")
-      .select("id, full_name, email")
-      .eq("role", "admin")
+      .select("id, full_name, email, role")
+      .in("role", ["admin", "super_admin"])
+      .eq("disabled", false)
       .order("full_name"),
     supabase
       .from("profiles")
