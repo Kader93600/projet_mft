@@ -666,7 +666,14 @@ async function SubsectionCourses({
   // d'intro et générer la signed URL côté server. Plus économique
   // que de l'afficher sur chaque page module (auparavant 17× pour
   // un CCP de 17 chapitres) — désormais 1× en tête de section CCP.
-  const supabaseSigner = (await import("@/lib/supabase/server")).createClient();
+  //
+  // ⚠️ On utilise systématiquement le service_role pour les signed URLs :
+  // les policies storage du bucket "module-intro-videos" peuvent bloquer
+  // le client session selon le rôle, alors que createSignedUrl en
+  // service_role marche partout. La signed URL générée est protégée
+  // par token (TTL 1h), donc pas de risque d'exposition.
+  const { createAdminClient: ac } = await import("@/lib/supabase/admin");
+  const storageSigner = ac();
   const blocsWithIntro = await Promise.all(
     blocs.map(async (b) => {
       // Priorité au module avec le plus petit "order" (= 1er chapitre).
@@ -679,10 +686,17 @@ async function SubsectionCourses({
       if (!introMod) {
         return { bloc: b, introVideo: null };
       }
-      const { data: signed } = await supabaseSigner.storage
+      const { data: signed, error: signErr } = await storageSigner.storage
         .from("module-intro-videos")
         .createSignedUrl(introMod.intro_video_path as string, 60 * 60);
-      if (!signed?.signedUrl) {
+      if (signErr || !signed?.signedUrl) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          "[CcpIntroVideo] createSignedUrl failed for",
+          b.code,
+          introMod.intro_video_path,
+          signErr?.message,
+        );
         return { bloc: b, introVideo: null };
       }
       return {
