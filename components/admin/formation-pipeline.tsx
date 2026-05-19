@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -38,7 +38,9 @@ const ICONS: Record<string, any> = {
  * avec un lien direct vers la liste filtrée.
  */
 export async function FormationPipeline() {
-  const supabase = createClient();
+  // service_role pour bypass des RLS — le composant est rendu
+  // sous /admin/* déjà protégé par le middleware.
+  const supabase = createAdminClient();
 
   const [
     { data: demand },
