@@ -115,9 +115,23 @@ export async function POST(req: Request) {
     process.env.NEXT_PUBLIC_APP_URL ||
     new URL(req.url).origin;
 
+  // Helper fire-and-forget qui catch silencieusement les erreurs
+  // transient (timeout Resend, abort à la fin de la fonction Vercel).
+  // Sans ce wrapper, le `void sendEmail(...)` faisait remonter à Sentry
+  // chaque TypeError: fetch failed (JAVASCRIPT-NEXTJS-5) → pollution
+  // d'alertes sans intérêt opérationnel (l'utilisateur ne voit pas
+  // l'échec, la commande a déjà répondu 200).
+  const fireEmail = (payload: Parameters<typeof sendEmail>[0]) => {
+    sendEmail(payload).catch(() => {
+      // L'erreur a déjà été loggée dans lib/email.ts (Sentry
+      // captureException tagué service:email). Pas besoin de
+      // re-propager au handler ici.
+    });
+  };
+
   // Admin : nouveau lead à traiter
   if (adminEmail) {
-    void sendEmail({
+    fireEmail({
       to: adminEmail,
       ...newLeadEmail({
         fullName,
@@ -133,7 +147,7 @@ export async function POST(req: Request) {
   }
 
   // Prospect : accusé de réception
-  void sendEmail({
+  fireEmail({
     to: email,
     ...enrollmentReceivedEmail({ fullName }),
     tags: [{ name: "kind", value: "lead_ack" }],

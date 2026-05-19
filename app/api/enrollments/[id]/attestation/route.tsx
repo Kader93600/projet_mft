@@ -38,7 +38,7 @@ function Doc({ ref, stagiaire, e, hoursDone, attendanceRate, successRate }: Prop
   return (
     <Document>
       <Page size="A4" style={pdfStyles.page}>
-        <PdfHeader ref={ref} type="Attestation" />
+        <PdfHeader refLabel={ref} type="Attestation" />
         <Text style={pdfStyles.title}>Attestation de fin de formation</Text>
         <Text style={pdfStyles.subtitle}>
           Article L. 6353-1 du Code du travail

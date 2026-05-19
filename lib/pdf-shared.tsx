@@ -122,7 +122,17 @@ export const pdfStyles = StyleSheet.create({
   },
 });
 
-export function PdfHeader({ ref, type }: { ref: string; type: string }) {
+// ⚠️ La prop s'appelait `ref` initialement — c'est un mot réservé en
+// React 18+ (forwardRef + string refs dépréciées) qui levait
+// "Element ref was specified as a string but no owner was set" à la
+// génération du PDF. Renommée en `refLabel`.
+export function PdfHeader({
+  refLabel,
+  type,
+}: {
+  refLabel: string;
+  type: string;
+}) {
   const today = new Intl.DateTimeFormat("fr-FR", {
     day: "2-digit",
     month: "long",
@@ -138,7 +148,7 @@ export function PdfHeader({ ref, type }: { ref: string; type: string }) {
       </View>
       <View>
         <Text style={pdfStyles.ref}>
-          {type} n° {ref}
+          {type} n° {refLabel}
         </Text>
         <Text style={pdfStyles.ref}>Émis le {today}</Text>
       </View>

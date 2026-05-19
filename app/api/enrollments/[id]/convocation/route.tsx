@@ -41,7 +41,7 @@ function Doc({ ref, stagiaire, e }: Props) {
   return (
     <Document>
       <Page size="A4" style={pdfStyles.page}>
-        <PdfHeader ref={ref} type="Convocation" />
+        <PdfHeader refLabel={ref} type="Convocation" />
         <Text style={pdfStyles.title}>Convocation à formation</Text>
         <Text style={pdfStyles.subtitle}>
           Indicateur Qualiopi 4 — information préalable du stagiaire

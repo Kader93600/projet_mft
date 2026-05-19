@@ -66,8 +66,22 @@ export async function sendEmail(input: SendEmailInput): Promise<{
     const data = (await res.json()) as { id: string };
     return { ok: true, id: data.id };
   } catch (e) {
-    await captureException(e, { tags: { service: "email" } });
-    return { ok: false, error: e instanceof Error ? e.message : "unknown" };
+    // Ne pas spam Sentry pour les TypeError: fetch failed (transient :
+    // timeout côté Resend, abort à la fin d'une fonction Vercel, etc.).
+    // On loggue uniquement les erreurs durables.
+    const msg = e instanceof Error ? e.message : "unknown";
+    const isTransient =
+      msg.includes("fetch failed") ||
+      msg.includes("ETIMEDOUT") ||
+      msg.includes("ECONNRESET") ||
+      msg.includes("aborted");
+    if (!isTransient) {
+      await captureException(e, { tags: { service: "email" } });
+    } else {
+      // eslint-disable-next-line no-console
+      console.warn("[email] transient send failure (not Sentry'd)", msg);
+    }
+    return { ok: false, error: msg };
   }
 }
 

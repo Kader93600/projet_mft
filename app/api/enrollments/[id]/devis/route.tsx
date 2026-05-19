@@ -51,7 +51,7 @@ function Doc({ ref, stagiaire, funder, e, validityDate }: Props) {
   return (
     <Document>
       <Page size="A4" style={pdfStyles.page}>
-        <PdfHeader ref={ref} type="Devis" />
+        <PdfHeader refLabel={ref} type="Devis" />
         <Text style={pdfStyles.title}>Devis de formation</Text>
         <Text style={pdfStyles.subtitle}>
           Valable jusqu'au {validityDate} — non engageant

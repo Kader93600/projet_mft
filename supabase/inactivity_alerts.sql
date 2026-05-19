@@ -81,7 +81,7 @@ BEGIN
         OR p.last_pinged_at < now() - INTERVAL '7 days'
   LOOP
     -- 1) Notification au stagiaire
-    INSERT INTO public.notifications(user_id, kind, title, body, link_url)
+    INSERT INTO public.notifications(user_id, type, title, body, link_url)
     VALUES (
       r.user_id,
       'system',
@@ -94,7 +94,7 @@ BEGIN
     );
 
     -- 2) Notification à tous les admins
-    INSERT INTO public.notifications(user_id, kind, title, body, link_url)
+    INSERT INTO public.notifications(user_id, type, title, body, link_url)
     SELECT
       ad.id,
       'system',
