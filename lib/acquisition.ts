@@ -1,15 +1,17 @@
 // =====================================================================
-// Helpers acquisition (UTM tracking) — côté client + côté serveur.
+// Helpers acquisition (UTM tracking) — SERVER ONLY.
+//
+// ⚠️ Ce fichier importe `next/headers` (cookies()) qui est strictement
+// server-side. Ne JAMAIS l'importer depuis un composant 'use client' —
+// sinon Next refuse de builder.
+//
+// Pour les helpers côté client (browser), voir lib/acquisition-client.ts
+// (sans dépendance Next.js).
 //
 // Le visitor_id vit dans un cookie httpOnly posé par /api/acquisition/track.
-// Côté client on ne sait pas lire ce cookie (httpOnly), c'est volontaire :
-// l'identité visiteur n'est jamais accessible au JS exécuté dans le navigateur,
-// elle ne sert qu'à l'attribution serveur.
-//
-// Côté serveur, on peut lire le cookie pour faire le link visitor_id → user_id
-// au moment du signup (cf. helper linkVisitorToUser).
 // =====================================================================
 
+import "server-only";
 import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 
@@ -53,43 +55,4 @@ export async function linkVisitorToUser(userId: string): Promise<void> {
   } catch {
     // Best-effort
   }
-}
-
-/**
- * Construit le payload de tracking depuis une window publique.
- * À utiliser côté client uniquement (window.location et document.referrer).
- */
-export function buildTrackingPayloadFromBrowser(kind: string = "landing") {
-  if (typeof window === "undefined") return null;
-  const url = new URL(window.location.href);
-  const sp = url.searchParams;
-
-  // Filtres : utm_* + autres params marketing courants
-  const utm_source = sp.get("utm_source") ?? sp.get("ref") ?? null;
-  const utm_medium = sp.get("utm_medium") ?? null;
-  const utm_campaign = sp.get("utm_campaign") ?? null;
-  const utm_content = sp.get("utm_content") ?? null;
-  const utm_term = sp.get("utm_term") ?? null;
-
-  // Le referrer (URL d'origine si différente du même domaine)
-  let referrer: string | null = null;
-  try {
-    if (document.referrer) {
-      const r = new URL(document.referrer);
-      if (r.origin !== url.origin) referrer = document.referrer;
-    }
-  } catch {
-    // ignore
-  }
-
-  return {
-    kind,
-    landing_page: url.pathname + (url.search || ""),
-    referrer,
-    utm_source,
-    utm_medium,
-    utm_campaign,
-    utm_content,
-    utm_term,
-  };
 }

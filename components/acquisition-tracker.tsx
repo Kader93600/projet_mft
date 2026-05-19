@@ -17,7 +17,7 @@
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { buildTrackingPayloadFromBrowser } from "@/lib/acquisition";
+import { buildTrackingPayloadFromBrowser } from "@/lib/acquisition-client";
 
 const SESSION_KEY_PREFIX = "mft.acquisition.tracked.";
 
