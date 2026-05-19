@@ -46,7 +46,7 @@ export default async function FinanceurEnrollmentPage({
   const { data: e } = await supabase
     .from("enrollments")
     .select(
-      "*, user:profiles!enrollments_user_id_fkey(full_name, email), funder:funders(name, kind)"
+      "*, user:profiles!user_id(full_name, email), funder:funders(name, kind)"
     )
     .eq("id", params.id)
     .maybeSingle();

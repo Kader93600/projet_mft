@@ -46,7 +46,7 @@ export default async function OrganisationStagiairesPage() {
     .select(`
       id, status, pack, created_at, seats_reserved,
       total_amount_cents, paid_amount_cents,
-      user:profiles!enrollments_user_id_fkey ( id, full_name, email ),
+      user:profiles!user_id ( id, full_name, email ),
       formation:formations ( title, code, slug )
     `)
     .eq("organization_id", access.organization_id)

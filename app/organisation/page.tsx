@@ -88,7 +88,7 @@ export default async function OrganisationPage() {
     .from("enrollments")
     .select(`
       id, status, pack, created_at, seats_reserved, total_amount_cents,
-      user:profiles!enrollments_user_id_fkey ( full_name, email ),
+      user:profiles!user_id ( full_name, email ),
       formation:formations ( title, slug, code )
     `)
     .eq("organization_id", access.organization_id)

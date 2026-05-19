@@ -173,7 +173,7 @@ export async function GET(
   const { data: enrollment } = await supabase
     .from("enrollments")
     .select(
-      "*, user:profiles!enrollments_user_id_fkey(full_name, email, address)"
+      "*, user:profiles!user_id(full_name, email, address)"
     )
     .eq("id", params.id)
     .maybeSingle();

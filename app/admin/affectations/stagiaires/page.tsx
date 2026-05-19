@@ -52,7 +52,7 @@ export default async function StagiairesAffectationsPage({
   let enrollQuery = supabase
     .from("enrollments")
     .select(
-      "id, user_id, formation_slug, status, funding_kind, created_at, user:profiles!enrollments_user_id_fkey(full_name, email)"
+      "id, user_id, formation_slug, status, funding_kind, created_at, user:profiles!user_id(full_name, email)"
     )
     .not("formation_slug", "is", null)
     .order("created_at", { ascending: false })
