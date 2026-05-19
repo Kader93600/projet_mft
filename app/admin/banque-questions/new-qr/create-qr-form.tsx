@@ -1,5 +1,5 @@
 "use client";
-import { useState, useTransition } from "react";
+import { useState, useRef, useTransition } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
@@ -7,7 +7,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toast";
 import { createQrQuestion } from "../actions";
-import { Save, Loader2, CheckCircle2 } from "lucide-react";
+import {
+  Save,
+  Loader2,
+  CheckCircle2,
+  Paperclip,
+  X,
+  FileText,
+  Image as ImageIcon,
+} from "lucide-react";
 
 interface Formation {
   slug: string;
@@ -44,6 +52,41 @@ export function CreateQrForm({
     active: true,
   });
 
+  // Annexe optionnelle (PDF / image / doc) à attacher à la question
+  // après sa création. L'upload se fait en step 2 via l'API existante
+  // /api/admin/questions/[id]/attachments (qui exige un question_id).
+  const [attachment, setAttachment] = useState<{
+    file: File;
+    label: string;
+  } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function handleFilePick(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 15 * 1024 * 1024) {
+      toast("Fichier trop volumineux (max 15 Mo)", "error");
+      return;
+    }
+    setAttachment({ file, label: attachment?.label ?? "" });
+  }
+
+  async function uploadAttachment(questionId: string) {
+    if (!attachment) return { ok: true };
+    const fd = new FormData();
+    fd.append("file", attachment.file);
+    if (attachment.label.trim()) fd.append("label", attachment.label.trim());
+    const res = await fetch(`/api/admin/questions/${questionId}/attachments`, {
+      method: "POST",
+      body: fd,
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      return { ok: false, error: data?.error ?? "Upload annexe échoué" };
+    }
+    return { ok: true };
+  }
+
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!f.statement.trim()) {
@@ -59,6 +102,7 @@ export function CreateQrForm({
       .map((t) => t.trim())
       .filter(Boolean);
     start(async () => {
+      // Step 1 : créer la question
       const res = await createQrQuestion({
         formation_slug: f.formation_slug,
         module_id: f.module_id || null,
@@ -75,8 +119,22 @@ export function CreateQrForm({
         toast(res.error, "error");
         return;
       }
+      // Step 2 : upload de l'annexe si présente
+      if (attachment) {
+        const up = await uploadAttachment(res.questionId);
+        if (!up.ok) {
+          toast(
+            `Question créée mais annexe échouée : ${up.error}. Ajoutez-la depuis la page d'édition.`,
+            "error",
+          );
+          // On laisse passer en success quand même : la question est créée.
+        } else {
+          toast("Question + annexe créées avec succès", "success");
+        }
+      } else {
+        toast("Question rédigée créée", "success");
+      }
       setSuccess(true);
-      toast("Question rédigée créée", "success");
     });
   }
 
@@ -226,6 +284,72 @@ export function CreateQrForm({
           onChange={(e) => setF((s) => ({ ...s, explanation: e.target.value }))}
           placeholder="Cette question évalue votre compréhension globale du rôle réglementaire du gestionnaire de transport."
           rows={2}
+        />
+      </div>
+
+      {/* Annexe optionnelle (PDF / image / doc, 15 Mo max) */}
+      <div>
+        <Label>Annexe (optionnelle)</Label>
+        <p className="text-xs text-slate-500 mb-2">
+          PDF, image ou document (15 Mo max) qui clarifie l'énoncé —
+          tableau, schéma, carte de tournée, etc. Visible par le stagiaire
+          pendant qu'il rédige sa réponse.
+        </p>
+        {!attachment ? (
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="w-full rounded-xl border-2 border-dashed border-navy-200 bg-navy-50/30 px-4 py-6 text-center hover:border-brand-300 hover:bg-brand-50/40 transition cursor-pointer"
+          >
+            <Paperclip className="mx-auto h-5 w-5 text-slate-400" />
+            <div className="mt-2 text-sm font-medium text-navy-900">
+              Cliquez pour choisir un fichier
+            </div>
+            <div className="text-xs text-slate-500 mt-0.5">
+              PDF, PNG, JPG, DOCX, XLSX, CSV — max 15 Mo
+            </div>
+          </button>
+        ) : (
+          <div className="rounded-xl border border-brand-300 bg-brand-50/60 px-3 py-3 space-y-2">
+            <div className="flex items-center gap-2">
+              {attachment.file.type.startsWith("image/") ? (
+                <ImageIcon className="h-4 w-4 text-brand-700 shrink-0" />
+              ) : (
+                <FileText className="h-4 w-4 text-brand-700 shrink-0" />
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="font-medium text-navy-900 text-sm truncate">
+                  {attachment.file.name}
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  {(attachment.file.size / 1024).toFixed(0)} Ko ·{" "}
+                  {attachment.file.type || "type inconnu"}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAttachment(null)}
+                className="shrink-0 h-7 w-7 rounded-lg border border-rose-200 bg-white text-rose-700 hover:bg-rose-50 flex items-center justify-center"
+                title="Retirer ce fichier"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <Input
+              value={attachment.label}
+              onChange={(e) =>
+                setAttachment({ ...attachment, label: e.target.value })
+              }
+              placeholder="Libellé de l'annexe (ex: Tableau coûts d'exploitation)"
+            />
+          </div>
+        )}
+        <input
+          ref={fileInputRef}
+          type="file"
+          className="hidden"
+          accept="application/pdf,image/png,image/jpeg,image/webp,image/gif,image/svg+xml,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain,text/csv"
+          onChange={handleFilePick}
         />
       </div>
 
