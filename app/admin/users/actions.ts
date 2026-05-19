@@ -382,3 +382,226 @@ export async function deleteAttempt(attemptId: string) {
   revalidatePath("/admin/analytics");
   return { ok: true };
 }
+
+// ─── Schémas trainer & admin (formulaire allégé) ──────────────────────
+const createTrainerSchema = z.object({
+  email: z.string().trim().email("Email invalide").max(254),
+  full_name: z.string().trim().min(2, "Nom complet requis").max(160),
+  phone: z.string().trim().max(30).optional().nullable(),
+  /** Liste de formation slugs sur lesquels habiliter le formateur. */
+  formation_slugs: z.array(z.string().trim().min(1)).default([]),
+  can_grade: z.boolean().default(true),
+  can_edit_content: z.boolean().default(false),
+  access_mode: z.enum(["invite", "password"]).default("invite"),
+  initial_password: z.string().min(8).max(128).optional().nullable(),
+});
+
+const createAdminSchema = z.object({
+  email: z.string().trim().email("Email invalide").max(254),
+  full_name: z.string().trim().min(2, "Nom complet requis").max(160),
+  phone: z.string().trim().max(30).optional().nullable(),
+  access_mode: z.enum(["invite", "password"]).default("invite"),
+  initial_password: z.string().min(8).max(128).optional().nullable(),
+  /** super_admin : régalien (gestion des rôles), à utiliser avec parcimonie */
+  is_super_admin: z.boolean().default(false),
+});
+
+type StaffCreateResult =
+  | {
+      ok: true;
+      userId: string;
+      email: string;
+      accessMode: "invite" | "password";
+    }
+  | { ok: false; error: string; step?: string };
+
+// ─── createTrainer ────────────────────────────────────────────────────
+export async function createTrainer(raw: unknown): Promise<StaffCreateResult> {
+  const fail = (step: string, error: string): StaffCreateResult => {
+    console.error(`[createTrainer] ${step}: ${error}`);
+    return { ok: false, error, step };
+  };
+
+  let adminProfile: { id: string };
+  try {
+    const r = await requireAdmin();
+    adminProfile = r.admin;
+  } catch (e: any) {
+    return fail("requireAdmin", e?.message ?? "Authentification requise");
+  }
+
+  let data: z.infer<typeof createTrainerSchema>;
+  try {
+    data = validate(createTrainerSchema, raw);
+  } catch (e: any) {
+    return fail("validate", e?.message ?? "Données invalides");
+  }
+  if (data.access_mode === "password" && !data.initial_password) {
+    return fail("validate", "Mot de passe initial requis en mode 'password'");
+  }
+
+  const sb = createAdminClient();
+
+  // 1) Création auth user
+  let userId: string;
+  if (data.access_mode === "invite") {
+    const redirectTo = (process.env.NEXT_PUBLIC_APP_URL ?? "") + "/login";
+    const { data: invited, error: invErr } = await sb.auth.admin.inviteUserByEmail(
+      data.email,
+      {
+        data: { full_name: data.full_name, created_by: adminProfile.id },
+        redirectTo,
+      }
+    );
+    if (invErr) return fail("invite", `Invitation impossible : ${invErr.message}`);
+    userId = invited.user.id;
+  } else {
+    const { data: created, error: cErr } = await sb.auth.admin.createUser({
+      email: data.email,
+      password: data.initial_password!,
+      email_confirm: true,
+      user_metadata: { full_name: data.full_name, created_by: adminProfile.id },
+    });
+    if (cErr) return fail("create_user", `Création impossible : ${cErr.message}`);
+    userId = created.user.id;
+  }
+
+  // 2) Profil formateur
+  const { error: pErr } = await sb.from("profiles").upsert(
+    {
+      id: userId,
+      email: data.email,
+      full_name: data.full_name,
+      role: "trainer",
+      phone: data.phone || null,
+      onboarding_completed_at: new Date().toISOString(),
+      placement_completed_at: new Date().toISOString(),
+    },
+    { onConflict: "id" }
+  );
+  if (pErr) {
+    await sb.auth.admin.deleteUser(userId).catch(() => {});
+    return fail("profile_upsert", `Création du profil impossible : ${pErr.message}`);
+  }
+
+  // 3) Habilitations sur les formations (trainer_formations)
+  if (data.formation_slugs.length > 0) {
+    const { data: foundFormations } = await sb
+      .from("formations")
+      .select("id, slug")
+      .in("slug", data.formation_slugs);
+    const rows = (foundFormations ?? []).map((f: any) => ({
+      trainer_id: userId,
+      formation_id: f.id,
+      can_grade: data.can_grade,
+      can_edit_content: data.can_edit_content,
+      is_lead: false,
+    }));
+    if (rows.length > 0) {
+      const { error: tErr } = await sb.from("trainer_formations").insert(rows);
+      if (tErr) console.error("[createTrainer] habilitations failed (non-fatal)", tErr);
+    }
+  }
+
+  try {
+    await auditLog("create_trainer", "profile", userId, {
+      email: data.email,
+      formation_slugs: data.formation_slugs,
+    });
+  } catch {
+    /* best-effort */
+  }
+
+  revalidatePath("/admin/users");
+  return { ok: true, userId, email: data.email, accessMode: data.access_mode };
+}
+
+// ─── createAdminUser ──────────────────────────────────────────────────
+export async function createAdminUser(raw: unknown): Promise<StaffCreateResult> {
+  const fail = (step: string, error: string): StaffCreateResult => {
+    console.error(`[createAdminUser] ${step}: ${error}`);
+    return { ok: false, error, step };
+  };
+
+  let adminProfile: { id: string; role: string };
+  try {
+    const r = await requireAdmin();
+    adminProfile = r.admin as any;
+  } catch (e: any) {
+    return fail("requireAdmin", e?.message ?? "Authentification requise");
+  }
+
+  let data: z.infer<typeof createAdminSchema>;
+  try {
+    data = validate(createAdminSchema, raw);
+  } catch (e: any) {
+    return fail("validate", e?.message ?? "Données invalides");
+  }
+  if (data.access_mode === "password" && !data.initial_password) {
+    return fail("validate", "Mot de passe initial requis en mode 'password'");
+  }
+  // Seul un super_admin peut créer un autre super_admin (privilège régalien)
+  if (data.is_super_admin && adminProfile.role !== "super_admin") {
+    return fail(
+      "permission",
+      "Seul un super_admin peut promouvoir un compte en super_admin"
+    );
+  }
+
+  const sb = createAdminClient();
+  const targetRole = data.is_super_admin ? "super_admin" : "admin";
+
+  // 1) Création auth user
+  let userId: string;
+  if (data.access_mode === "invite") {
+    const redirectTo = (process.env.NEXT_PUBLIC_APP_URL ?? "") + "/login";
+    const { data: invited, error: invErr } = await sb.auth.admin.inviteUserByEmail(
+      data.email,
+      {
+        data: { full_name: data.full_name, created_by: adminProfile.id },
+        redirectTo,
+      }
+    );
+    if (invErr) return fail("invite", `Invitation impossible : ${invErr.message}`);
+    userId = invited.user.id;
+  } else {
+    const { data: created, error: cErr } = await sb.auth.admin.createUser({
+      email: data.email,
+      password: data.initial_password!,
+      email_confirm: true,
+      user_metadata: { full_name: data.full_name, created_by: adminProfile.id },
+    });
+    if (cErr) return fail("create_user", `Création impossible : ${cErr.message}`);
+    userId = created.user.id;
+  }
+
+  // 2) Profil admin/super_admin
+  const { error: pErr } = await sb.from("profiles").upsert(
+    {
+      id: userId,
+      email: data.email,
+      full_name: data.full_name,
+      role: targetRole,
+      phone: data.phone || null,
+      onboarding_completed_at: new Date().toISOString(),
+      placement_completed_at: new Date().toISOString(),
+    },
+    { onConflict: "id" }
+  );
+  if (pErr) {
+    await sb.auth.admin.deleteUser(userId).catch(() => {});
+    return fail("profile_upsert", `Création du profil impossible : ${pErr.message}`);
+  }
+
+  try {
+    await auditLog("create_admin", "profile", userId, {
+      email: data.email,
+      role: targetRole,
+    });
+  } catch {
+    /* best-effort */
+  }
+
+  revalidatePath("/admin/users");
+  return { ok: true, userId, email: data.email, accessMode: data.access_mode };
+}

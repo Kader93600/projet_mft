@@ -2,7 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { UsersTable } from "./users-table";
 import { Button } from "@/components/ui/button";
-import { UserPlus, Download } from "lucide-react";
+import { UserPlus, Download, Crown, GraduationCap } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -86,7 +86,7 @@ export default async function AdminUsers({
             .
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
           <a
             href="/api/admin/export/users"
             className="inline-flex items-center gap-2 h-9 px-3 rounded-lg border border-navy-200 bg-white text-sm text-navy-800 hover:bg-navy-50 transition"
@@ -94,9 +94,19 @@ export default async function AdminUsers({
           >
             <Download className="h-4 w-4" /> CSV
           </a>
+          <Link href="/admin/users/new-admin">
+            <Button variant="secondary" size="sm">
+              <Crown className="h-3.5 w-3.5" /> Admin
+            </Button>
+          </Link>
+          <Link href="/admin/users/new-trainer">
+            <Button variant="secondary" size="sm">
+              <GraduationCap className="h-3.5 w-3.5" /> Formateur
+            </Button>
+          </Link>
           <Link href="/admin/users/new">
             <Button variant="gold">
-              <UserPlus className="h-4 w-4" /> Nouvel utilisateur
+              <UserPlus className="h-4 w-4" /> Stagiaire
             </Button>
           </Link>
         </div>
