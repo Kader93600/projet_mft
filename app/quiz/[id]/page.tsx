@@ -68,7 +68,8 @@ export default async function QuizPage({ params }: { params: { id: string } }) {
       .select("formation_id")
       .eq("user_id", user.id)
       .not("formation_id", "is", null)
-      .not("status", "in", "(refuse,abandon)");
+      .neq("status", "refuse")
+      .neq("status", "abandon");
     const enrolledIds = (enrollments ?? [])
       .map((e: any) => e.formation_id as string)
       .filter(Boolean);

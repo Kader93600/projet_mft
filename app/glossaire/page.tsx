@@ -32,8 +32,8 @@ export default async function GlossairePage({
       .from("enrollments")
       .select("formation_id, formation:formations(slug, code, title, active)")
       .eq("user_id", user.id)
-      .not("formation_id", "is", null)
-      .not("status", "in", "(refuse,abandon)");
+      .neq("status", "refuse")
+      .neq("status", "abandon");
     enrolledFormationIds = (enrollments ?? [])
       .map((e: any) => e.formation_id as string)
       .filter(Boolean);

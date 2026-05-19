@@ -130,7 +130,8 @@ export default async function SessionDetailPage({
     )
     .eq("formation_id", (session.formation as any).id)
     .eq("pack", "premium")
-    .not("status", "in", '("refuse","abandon")');
+    .neq("status", "refuse")
+    .neq("status", "abandon");
 
   const enrolledIds = new Set(userIds);
   const candidates = (premiumEligible ?? [])

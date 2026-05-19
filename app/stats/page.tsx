@@ -55,7 +55,8 @@ export default async function StatsPage() {
     .select("formation_id")
     .eq("user_id", user.id)
     .not("formation_id", "is", null)
-    .not("status", "in", "(refuse,abandon)");
+    .neq("status", "refuse")
+      .neq("status", "abandon");
   const enrolledFormationIds = (enrollments ?? [])
     .map((e: any) => e.formation_id as string)
     .filter(Boolean);

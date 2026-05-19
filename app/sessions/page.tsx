@@ -72,7 +72,8 @@ export default async function StudentSessionsPage() {
     .select("formation_id, formations!inner(slug, title, code)")
     .eq("user_id", user.id)
     .eq("pack", "premium")
-    .not("status", "in", '("refuse","abandon")');
+    .neq("status", "refuse")
+    .neq("status", "abandon");
 
   const hasPremium = (myPremium ?? []).length > 0;
 

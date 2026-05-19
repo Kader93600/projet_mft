@@ -119,7 +119,8 @@ export default async function FormateurSessionDetailPage({
     .select("user_id, profile:profiles!inner(id, full_name, email)")
     .eq("formation_id", (session.formation as any).id)
     .eq("pack", "premium")
-    .not("status", "in", '("refuse","abandon")');
+    .neq("status", "refuse")
+    .neq("status", "abandon");
 
   const enrolledIds = new Set(userIds);
   const candidates = (premiumEligible ?? [])

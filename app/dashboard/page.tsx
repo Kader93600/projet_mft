@@ -53,12 +53,23 @@ export default async function DashboardPage() {
   if (!user) return null;
 
   // Formations du stagiaire (filtrage de la portée)
-  const { data: enrollments } = await supabase
+  //
+  // ⚠️ La syntaxe .not("status","in","(refuse,abandon)") est
+  // historiquement instable côté postgrest (selon versions, le tuple
+  // unquoted peut être mal interprété et filtrer 0 ligne sans erreur).
+  // On utilise donc 2 .neq chainés, plus explicites et garantis.
+  const { data: enrollments, error: enrollErr } = await supabase
     .from("enrollments")
-    .select("formation_id")
+    .select("id, formation_id, formation_slug, status, user_id")
     .eq("user_id", user.id)
-    .not("formation_id", "is", null)
-    .not("status", "in", "(refuse,abandon)");
+    .neq("status", "refuse")
+    .neq("status", "abandon");
+
+  if (enrollErr) {
+    // eslint-disable-next-line no-console
+    console.error("[dashboard] enrollments query failed", enrollErr);
+  }
+
   const enrolledFormationIds = (enrollments ?? [])
     .map((e: any) => e.formation_id as string)
     .filter(Boolean);

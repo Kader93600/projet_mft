@@ -53,8 +53,8 @@ export default async function ExercicesPage({
       .from("enrollments")
       .select("formation_id, status")
       .eq("user_id", user.id)
-      .not("formation_id", "is", null)
-      .not("status", "in", "(refuse,abandon)");
+      .neq("status", "refuse")
+      .neq("status", "abandon");
     enrolledFormationIds = (enrollments ?? [])
       .map((e: any) => e.formation_id)
       .filter(Boolean);
