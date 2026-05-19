@@ -39,10 +39,14 @@ export default async function EnrollmentEditorPage({
           .select("*, payments:payment_schedule(*)")
           .eq("id", params.id)
           .single(),
+    // Tous les profils sauf super_admin sont éligibles à un dossier
+    // (un admin/trainer peut être inscrit à une formation en test, mais
+    // un super_admin ne devrait pas l'être). On retire le filtre strict
+    // sur role='student' qui masquait les comptes non-bascules en student.
     supabase
       .from("profiles")
-      .select("id, full_name, email")
-      .eq("role", "student")
+      .select("id, full_name, email, role")
+      .neq("role", "super_admin")
       .order("full_name"),
     supabase.from("funders").select("id, name, kind").order("name"),
     supabase
@@ -97,11 +101,19 @@ export default async function EnrollmentEditorPage({
                 className="w-full h-11 rounded-xl border border-navy-200 bg-white px-3.5 text-[15px]"
               >
                 <option value="">— Sélectionner —</option>
-                {(users ?? []).map((u: any) => (
-                  <option key={u.id} value={u.id}>
-                    {u.full_name ?? u.email} ({u.email})
-                  </option>
-                ))}
+                {(users ?? []).map((u: any) => {
+                  const roleLabel =
+                    u.role === "admin"
+                      ? " [admin]"
+                      : u.role === "trainer"
+                        ? " [formateur]"
+                        : "";
+                  return (
+                    <option key={u.id} value={u.id}>
+                      {u.full_name ?? u.email} ({u.email}){roleLabel}
+                    </option>
+                  );
+                })}
               </select>
             </div>
             <div>
