@@ -44,25 +44,38 @@ export default async function LessonPage({
 
   // Gate par formation : 404 si l'utilisateur n'est pas inscrit à une
   // formation contenant ce module.
+  // Staff (admin/super_admin/trainer) : bypass total, accès libre.
   if (user) {
-    const { data: enrollments } = await supabase
-      .from("enrollments")
-      .select("formation_id")
-      .eq("user_id", user.id)
-      .not("formation_id", "is", null)
-      .neq("status", "refuse")
-      .neq("status", "abandon");
-    const enrolledIds = (enrollments ?? [])
-      .map((e: any) => e.formation_id as string)
-      .filter(Boolean);
-    if (enrolledIds.length === 0) notFound();
+    const { data: meRole } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    const isStaff =
+      meRole?.role === "admin" ||
+      meRole?.role === "super_admin" ||
+      meRole?.role === "trainer";
 
-    const { count } = await supabase
-      .from("formation_modules")
-      .select("module_id", { count: "exact", head: true })
-      .eq("module_id", module.id)
-      .in("formation_id", enrolledIds);
-    if (!count) notFound();
+    if (!isStaff) {
+      const { data: enrollments } = await supabase
+        .from("enrollments")
+        .select("formation_id")
+        .eq("user_id", user.id)
+        .not("formation_id", "is", null)
+        .neq("status", "refuse")
+        .neq("status", "abandon");
+      const enrolledIds = (enrollments ?? [])
+        .map((e: any) => e.formation_id as string)
+        .filter(Boolean);
+      if (enrolledIds.length === 0) notFound();
+
+      const { count } = await supabase
+        .from("formation_modules")
+        .select("module_id", { count: "exact", head: true })
+        .eq("module_id", module.id)
+        .in("formation_id", enrolledIds);
+      if (!count) notFound();
+    }
   }
 
   const { data: lesson } = await supabase
