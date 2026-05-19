@@ -13,7 +13,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const VERSION = "v8";
+const VERSION = "v9";
 const OUTPUT = resolve(__dirname, "output", `MFT-Roadmap-Checklist-${VERSION}.pdf`);
 mkdirSync(dirname(OUTPUT), { recursive: true });
 
@@ -58,6 +58,21 @@ type Section = {
 // Affichés sur la page "Ce qui a été livré récemment".
 type Delivery = { title: string; desc: string };
 const RECENT_DELIVERIES: Delivery[] = [
+  {
+    title: "Page BPF — KPI refondus (suppression tuile statique RNCP)",
+    desc:
+      "La 4e tuile « ACTION RNCP 40990 » était hardcodée et factuellement fausse depuis l'ouverture des 8 formations (GOTRM, FIMO/FCO, Taxi/VTC, Capacité, etc.). Remplacée par une grille dynamique sur 2 lignes. Tier 1 (chiffres CERFA 10443*16) : Stagiaires, Heures réalisées, CA, Certifications délivrées (avec taux de réussite en sous-titre). Tier 2 (qualité Qualiopi) : Actions de formation actives au catalogue, Heures moyennes/stagiaire, Coût horaire moyen. Tous calculés côté server component avec garde-fous division par zéro. Aucune migration SQL nécessaire.",
+  },
+  {
+    title: "Banque de questions — nettoyage HTML dans les sélecteurs admin",
+    desc:
+      "Les énoncés saisis via TipTap étaient stockés en HTML brut (<h2>, <span style>, <strong>, <p>) et affichés tels quels dans 6 emplacements admin, rendant les questions illisibles. Helper réutilisable lib/strip-html.ts (stripHtml + stripHtmlPreview) avec décodage des entités HTML communes appliqué à : sélecteur quiz (bank-questions-picker), liste banque (/admin/banque-questions/liste), créateur quiz statique, page de validation QCM, et les 2 modales de suppression. La recherche utilise désormais un index plain-text mémoïsé — taper 'Identifier' trouve enfin les questions dont l'énoncé commence par <h2>Identifier.",
+  },
+  {
+    title: "Marketplace formateurs ABANDONNÉ — rollback complet (décision client)",
+    desc:
+      "Le client a confirmé l'abandon de la feature Marketplace formateurs externes (P3 #2 Sprint D scaffolding). Migration SQL rollback (DROP trainer_payouts, trainer_revenue_events, vue trainer_revenue_summary + DROP colonnes marketplace_* sur modules). Nettoyage code (routes /admin/marketplace, /formateur/*, types, nav). Aucune donnée perdue (aucun trainer partenaire activé en prod).",
+  },
   {
     title: "P3 #3 LIVRÉ — Programme de fidélité (tiers + remise auto + certificat doré)",
     desc:
