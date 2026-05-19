@@ -31,8 +31,22 @@ export async function requireAdmin() {
   if (!profile) throw new Error("Profil introuvable");
   if (profile.disabled) throw new Error("Compte désactivé");
   if (!isStaff(profile.role)) throw new Error("Accès refusé");
-  const service = createAdminClient();
-  return { supabase, admin: profile, service, profile };
+
+  // `service` : client service_role lazy (ne se construit qu'à la
+  // première lecture). Évite de jeter en environnement de test où
+  // SUPABASE_SERVICE_ROLE_KEY n'est pas configuré, tout en restant
+  // ergonomique pour les server actions qui font juste { service }.
+  let _service: ReturnType<typeof createAdminClient> | null = null;
+  const result = {
+    supabase,
+    admin: profile,
+    profile,
+    get service() {
+      if (_service === null) _service = createAdminClient();
+      return _service;
+    },
+  };
+  return result;
 }
 
 /**
