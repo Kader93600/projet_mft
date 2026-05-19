@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
@@ -23,7 +23,11 @@ export default async function EnrollmentEditorPage({
   params: { id: string };
 }) {
   const isNew = params.id === "new";
-  const supabase = createClient();
+  // service_role : bypass des RLS (le middleware /admin a déjà vérifié
+  // les permissions). Sans ce bypass, .single() retourne null sur les
+  // enrollments des super_admin → notFound() → 404 trompeur sur le
+  // crayon "modifier" depuis /admin/enrollments.
+  const supabase = createAdminClient();
 
   const [
     { data: enrollment },
