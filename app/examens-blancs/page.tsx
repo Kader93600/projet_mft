@@ -54,18 +54,37 @@ export default async function ExamensBlancsPage({
   }
 
   // Inscriptions actives → formations accessibles
+  // Staff : bypass — voit toutes les formations actives.
   let enrolledFormationIds: string[] = [];
   if (user) {
-    const { data: enrollments } = await supabase
-      .from("enrollments")
-      .select("formation_id, status")
-      .eq("user_id", user.id)
-      .not("formation_id", "is", null)
-      .neq("status", "refuse")
-      .neq("status", "abandon");
-    enrolledFormationIds = (enrollments ?? [])
-      .map((e: any) => e.formation_id)
-      .filter(Boolean);
+    const { data: meRole } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    const isStaff =
+      meRole?.role === "admin" ||
+      meRole?.role === "super_admin" ||
+      meRole?.role === "trainer";
+
+    if (isStaff) {
+      const { data: allFormations } = await supabase
+        .from("formations")
+        .select("id")
+        .eq("active", true);
+      enrolledFormationIds = (allFormations ?? []).map((f: any) => f.id);
+    } else {
+      const { data: enrollments } = await supabase
+        .from("enrollments")
+        .select("formation_id, status")
+        .eq("user_id", user.id)
+        .not("formation_id", "is", null)
+        .neq("status", "refuse")
+        .neq("status", "abandon");
+      enrolledFormationIds = (enrollments ?? [])
+        .map((e: any) => e.formation_id)
+        .filter(Boolean);
+    }
   }
 
   // Modules accessibles via formation_modules

@@ -63,32 +63,57 @@ export default async function ModulesPage() {
     firstName = extractFirstName(profile?.full_name ?? null);
   }
 
+  // Détecte staff (admin/super_admin/trainer) pour bypass du filtre
+  // par enrollment : ils voient toutes les formations + modules.
+  let isStaff = false;
+  if (user) {
+    const { data: meRole } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    isStaff =
+      meRole?.role === "admin" ||
+      meRole?.role === "super_admin" ||
+      meRole?.role === "trainer";
+  }
+
   // Formations où le stagiaire est inscrit (1 ou plusieurs)
   // + formation active (la "courante" — sera mise en premier visuellement)
   let enrolledFormationIds: string[] = [];
   let activeFormationSlug: string | null = null;
   if (user) {
-    const { data: enrollments } = await supabase
-      .from("enrollments")
-      .select("formation_id, formation_slug, status, created_at")
-      .eq("user_id", user.id)
-      .not("formation_id", "is", null)
-      .neq("status", "refuse")
-      .neq("status", "abandon")
-      .order("created_at", { ascending: false });
-    enrolledFormationIds = (enrollments ?? [])
-      .map((e: any) => e.formation_id as string)
-      .filter(Boolean);
-    // active = en_cours en priorité, sinon le plus récent
-    const sorted = [...(enrollments ?? [])].sort((a: any, b: any) => {
-      const ar = a.status === "en_cours" ? 0 : 1;
-      const br = b.status === "en_cours" ? 0 : 1;
-      if (ar !== br) return ar - br;
-      return (
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-    });
-    activeFormationSlug = (sorted[0] as any)?.formation_slug ?? null;
+    if (isStaff) {
+      const { data: allFormations } = await supabase
+        .from("formations")
+        .select("id, slug")
+        .eq("active", true)
+        .order("code");
+      enrolledFormationIds = (allFormations ?? []).map((f: any) => f.id as string);
+      activeFormationSlug = (allFormations?.[0] as any)?.slug ?? null;
+    } else {
+      const { data: enrollments } = await supabase
+        .from("enrollments")
+        .select("formation_id, formation_slug, status, created_at")
+        .eq("user_id", user.id)
+        .not("formation_id", "is", null)
+        .neq("status", "refuse")
+        .neq("status", "abandon")
+        .order("created_at", { ascending: false });
+      enrolledFormationIds = (enrollments ?? [])
+        .map((e: any) => e.formation_id as string)
+        .filter(Boolean);
+      // active = en_cours en priorité, sinon le plus récent
+      const sorted = [...(enrollments ?? [])].sort((a: any, b: any) => {
+        const ar = a.status === "en_cours" ? 0 : 1;
+        const br = b.status === "en_cours" ? 0 : 1;
+        if (ar !== br) return ar - br;
+        return (
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+      });
+      activeFormationSlug = (sorted[0] as any)?.formation_slug ?? null;
+    }
   }
 
   // Filtrage par formation : on récupère uniquement les modules rattachés

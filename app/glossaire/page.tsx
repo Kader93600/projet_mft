@@ -24,29 +24,50 @@ export default async function GlossairePage({
   const blocFilter = searchParams?.bloc ?? "";
   const formationFilter = searchParams?.formation ?? "";
 
-  // Formations où le stagiaire est inscrit (ou liste vide pour invité)
+  // Formations où le stagiaire est inscrit (ou liste vide pour invité).
+  // Staff : bypass — voit le glossaire de toutes les formations actives.
   let enrolledFormationIds: string[] = [];
   let enrolledFormations: any[] = [];
   if (user) {
-    const { data: enrollments } = await supabase
-      .from("enrollments")
-      .select("formation_id, formation:formations(slug, code, title, active)")
-      .eq("user_id", user.id)
-      .neq("status", "refuse")
-      .neq("status", "abandon");
-    enrolledFormationIds = (enrollments ?? [])
-      .map((e: any) => e.formation_id as string)
-      .filter(Boolean);
-    // Dédup pour le dropdown
-    const seen = new Set<string>();
-    enrolledFormations = (enrollments ?? [])
-      .map((e: any) => e.formation)
-      .filter((f: any) => {
-        if (!f?.slug || seen.has(f.slug)) return false;
-        seen.add(f.slug);
-        return true;
-      })
-      .sort((a: any, b: any) => (a.code || "").localeCompare(b.code || ""));
+    const { data: meRole } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    const isStaff =
+      meRole?.role === "admin" ||
+      meRole?.role === "super_admin" ||
+      meRole?.role === "trainer";
+
+    if (isStaff) {
+      const { data: allFormations } = await supabase
+        .from("formations")
+        .select("id, slug, code, title, active")
+        .eq("active", true)
+        .order("code");
+      enrolledFormationIds = (allFormations ?? []).map((f: any) => f.id);
+      enrolledFormations = allFormations ?? [];
+    } else {
+      const { data: enrollments } = await supabase
+        .from("enrollments")
+        .select("formation_id, formation:formations(slug, code, title, active)")
+        .eq("user_id", user.id)
+        .neq("status", "refuse")
+        .neq("status", "abandon");
+      enrolledFormationIds = (enrollments ?? [])
+        .map((e: any) => e.formation_id as string)
+        .filter(Boolean);
+      // Dédup pour le dropdown
+      const seen = new Set<string>();
+      enrolledFormations = (enrollments ?? [])
+        .map((e: any) => e.formation)
+        .filter((f: any) => {
+          if (!f?.slug || seen.has(f.slug)) return false;
+          seen.add(f.slug);
+          return true;
+        })
+        .sort((a: any, b: any) => (a.code || "").localeCompare(b.code || ""));
+    }
   }
 
   let query = supabase

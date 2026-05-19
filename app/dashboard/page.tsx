@@ -52,37 +52,57 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  // Formations du stagiaire (filtrage de la portée)
-  //
-  // ⚠️ La syntaxe .not("status","in","(refuse,abandon)") est
-  // historiquement instable côté postgrest (selon versions, le tuple
-  // unquoted peut être mal interprété et filtrer 0 ligne sans erreur).
-  // On utilise donc 2 .neq chainés, plus explicites et garantis.
-  const { data: enrollments, error: enrollErr } = await supabase
-    .from("enrollments")
-    .select("id, formation_id, formation_slug, status, user_id")
-    .eq("user_id", user.id)
-    .neq("status", "refuse")
-    .neq("status", "abandon");
+  // Détecte le rôle pour décider du scoping. Staff (admin/super_admin/
+  // trainer) bypasse le filtre par enrollment : ils voient tout le
+  // catalogue. Stagiaire : limité à ses formations inscrites.
+  const { data: meRole } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+  const isStaff =
+    meRole?.role === "admin" ||
+    meRole?.role === "super_admin" ||
+    meRole?.role === "trainer";
 
-  if (enrollErr) {
-    // eslint-disable-next-line no-console
-    console.error("[dashboard] enrollments query failed", enrollErr);
-  }
-
-  const enrolledFormationIds = (enrollments ?? [])
-    .map((e: any) => e.formation_id as string)
-    .filter(Boolean);
-
+  let enrolledFormationIds: string[] = [];
   let allowedModuleIds: string[] = [];
-  if (enrolledFormationIds.length > 0) {
-    const { data: links } = await supabase
-      .from("formation_modules")
-      .select("module_id")
-      .in("formation_id", enrolledFormationIds);
-    allowedModuleIds = Array.from(
-      new Set((links ?? []).map((l: any) => l.module_id as string))
-    );
+
+  if (isStaff) {
+    // Staff : toutes les formations actives + tous les modules
+    const [{ data: allFormations }, { data: allModules }] = await Promise.all([
+      supabase.from("formations").select("id").eq("active", true),
+      supabase.from("modules").select("id"),
+    ]);
+    enrolledFormationIds = (allFormations ?? []).map((f: any) => f.id as string);
+    allowedModuleIds = (allModules ?? []).map((m: any) => m.id as string);
+  } else {
+    // Stagiaire : périmètre via enrollments
+    const { data: enrollments, error: enrollErr } = await supabase
+      .from("enrollments")
+      .select("formation_id")
+      .eq("user_id", user.id)
+      .neq("status", "refuse")
+      .neq("status", "abandon");
+
+    if (enrollErr) {
+      // eslint-disable-next-line no-console
+      console.error("[dashboard] enrollments query failed", enrollErr);
+    }
+
+    enrolledFormationIds = (enrollments ?? [])
+      .map((e: any) => e.formation_id as string)
+      .filter(Boolean);
+
+    if (enrolledFormationIds.length > 0) {
+      const { data: links } = await supabase
+        .from("formation_modules")
+        .select("module_id")
+        .in("formation_id", enrolledFormationIds);
+      allowedModuleIds = Array.from(
+        new Set((links ?? []).map((l: any) => l.module_id as string))
+      );
+    }
   }
   const noModules = allowedModuleIds.length === 0;
 
