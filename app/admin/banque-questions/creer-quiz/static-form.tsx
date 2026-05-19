@@ -17,6 +17,7 @@ import {
 import { FORMATIONS } from "@/lib/formations-config";
 import { getQuestionFilterConfig } from "@/lib/question-filters";
 import { createStaticQuiz } from "./actions";
+import { stripHtml } from "@/lib/strip-html";
 
 interface QuestionRow {
   id: string;
@@ -88,6 +89,14 @@ export function StaticQuizForm({
     })();
   }, [formationSlug]);
 
+  // Index plain-text des énoncés (calculé 1× par changement de banque,
+  // pas à chaque keystroke de recherche).
+  const plainStatements = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const q of questions) m.set(q.id, stripHtml(q.statement));
+    return m;
+  }, [questions]);
+
   // Filtres côté client (UX rapide)
   const filtered = useMemo(() => {
     const s = search.trim().toLowerCase();
@@ -97,10 +106,13 @@ export function StaticQuizForm({
         const wantTag = `${filterConfig.tagPrefix}${moduleFilter}`;
         if (!q.tags?.includes(wantTag)) return false;
       }
-      if (s && !q.statement.toLowerCase().includes(s)) return false;
+      if (s) {
+        const plain = plainStatements.get(q.id) ?? "";
+        if (!plain.toLowerCase().includes(s)) return false;
+      }
       return true;
     });
-  }, [questions, search, typeFilter, moduleFilter, filterConfig]);
+  }, [questions, search, typeFilter, moduleFilter, filterConfig, plainStatements]);
 
   // Sélection rapide
   function toggle(id: string) {
@@ -330,7 +342,7 @@ export function StaticQuizForm({
                               (isExp ? "" : "line-clamp-2")
                             }
                           >
-                            {q.statement}
+                            {plainStatements.get(q.id) ?? stripHtml(q.statement)}
                           </p>
                         </div>
                       </div>

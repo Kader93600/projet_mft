@@ -18,6 +18,7 @@ import {
   setBankQuestionsForQuiz,
 } from "../actions";
 import { useToast } from "@/components/ui/toast";
+import { stripHtml } from "@/lib/strip-html";
 
 interface BankQuestion {
   id: string;
@@ -107,6 +108,14 @@ export function BankQuestionsPicker({
     return counts;
   }, [questions, filterConfig]);
 
+  // Index plain-text des énoncés : on strippe le HTML une seule fois
+  // pour éviter de payer le coût à chaque keystroke de recherche.
+  const plainStatements = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const q of questions) m.set(q.id, stripHtml(q.statement));
+    return m;
+  }, [questions]);
+
   // Questions filtrées (recherche + type + groupe + statut)
   const filtered = useMemo(() => {
     const s = search.trim().toLowerCase();
@@ -118,10 +127,21 @@ export function BankQuestionsPicker({
         const wantTag = `${filterConfig.tagPrefix}${groupFilter}`;
         if (!q.tags?.includes(wantTag)) return false;
       }
-      if (s && !q.statement.toLowerCase().includes(s)) return false;
+      if (s) {
+        const plain = plainStatements.get(q.id) ?? "";
+        if (!plain.toLowerCase().includes(s)) return false;
+      }
       return true;
     });
-  }, [questions, search, typeFilter, groupFilter, statusFilter, filterConfig]);
+  }, [
+    questions,
+    search,
+    typeFilter,
+    groupFilter,
+    statusFilter,
+    filterConfig,
+    plainStatements,
+  ]);
 
   function toggle(q: BankQuestion) {
     const wasLinked = linkedIds.has(q.id);
@@ -388,7 +408,7 @@ export function BankQuestionsPicker({
                     )}
                   </div>
                   <p className="text-[12.5px] text-navy-900 leading-snug line-clamp-2">
-                    {q.statement}
+                    {plainStatements.get(q.id) ?? stripHtml(q.statement)}
                   </p>
                 </div>
               </li>

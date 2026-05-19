@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, X, AlertCircle, Loader2, FileText } from "lucide-react";
 import { validateQcm, deactivateQuestion } from "./actions";
+import { stripHtml } from "@/lib/strip-html";
 
 interface Choice {
   id: string;
@@ -109,7 +110,7 @@ export function ValidationForm({
         </div>
 
         <h3 className="font-display text-lg font-semibold text-navy-900 leading-snug">
-          {question.statement}
+          {stripHtml(question.statement)}
         </h3>
 
         <fieldset className="mt-4 space-y-2">

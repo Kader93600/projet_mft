@@ -19,6 +19,7 @@ import { ToggleActiveButton } from "./toggle-active-button";
 import { ConfirmAction } from "@/components/ui/confirm-action";
 import { deleteQuestion } from "../validation-qr/actions";
 import { GroupAssignSelect } from "../group-assign-select";
+import { stripHtml, stripHtmlPreview } from "@/lib/strip-html";
 
 export const dynamic = "force-dynamic";
 
@@ -304,7 +305,7 @@ export default async function BanqueQuestionsListPage({
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-navy-900 leading-relaxed">
-                          {q.statement}
+                          {stripHtml(q.statement)}
                         </p>
                         <div className="mt-2 flex items-center gap-2 flex-wrap text-[11px]">
                           <span className="text-slate-500">
@@ -353,7 +354,7 @@ export default async function BanqueQuestionsListPage({
                         <ConfirmAction
                           action={deleteQuestion.bind(null, q.id)}
                           title="Supprimer cette question ?"
-                          description={`L'énoncé "${(q.statement ?? "").slice(0, 100)}${(q.statement ?? "").length > 100 ? "…" : ""}" sera supprimé définitivement, ainsi que son rattachement à tous les quiz. Cette action est irréversible.`}
+                          description={`L'énoncé "${stripHtmlPreview(q.statement, 100)}" sera supprimé définitivement, ainsi que son rattachement à tous les quiz. Cette action est irréversible.`}
                           confirmLabel="Supprimer définitivement"
                           successMsg="Question supprimée"
                           icon={<Trash2 className="h-3.5 w-3.5" />}

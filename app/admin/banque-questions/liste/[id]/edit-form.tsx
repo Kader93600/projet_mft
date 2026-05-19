@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle2, AlertCircle, Loader2, Trash2 } from "lucide-react";
 import { ConfirmAction } from "@/components/ui/confirm-action";
 import { deleteQuestion } from "../../validation-qr/actions";
+import { stripHtmlPreview } from "@/lib/strip-html";
 
 interface QuestionData {
   id: string;
@@ -190,7 +191,7 @@ export function EditQuestionForm({ question }: { question: QuestionData }) {
             router.push("/admin/banque-questions/liste");
           }}
           title="Supprimer cette question ?"
-          description={`L'énoncé "${question.statement.slice(0, 100)}${question.statement.length > 100 ? "…" : ""}" sera supprimé définitivement, ainsi que son rattachement à tous les quiz. Cette action est irréversible.`}
+          description={`L'énoncé "${stripHtmlPreview(question.statement, 100)}" sera supprimé définitivement, ainsi que son rattachement à tous les quiz. Cette action est irréversible.`}
           confirmLabel="Supprimer définitivement"
           successMsg="Question supprimée"
           icon={<Trash2 className="h-3.5 w-3.5" />}

@@ -32,6 +32,7 @@ import {
   type QuestionAttachment,
 } from "./attachment-manager";
 import { RichTextEditor } from "@/components/rich-text/rich-text-editor";
+import { stripHtmlPreview } from "@/lib/strip-html";
 import { RichTextDisplay } from "@/components/rich-text/rich-text-display";
 
 interface QrData {
@@ -434,7 +435,7 @@ export function QrEditor({
             <ConfirmAction
               action={deleteQuestion.bind(null, question.id)}
               title="Supprimer cette question ?"
-              description={`L'énoncé "${question.statement.slice(0, 100)}${question.statement.length > 100 ? "…" : ""}" sera supprimé définitivement, ainsi que son rattachement à tous les quiz. Cette action est irréversible.`}
+              description={`L'énoncé "${stripHtmlPreview(question.statement, 100)}" sera supprimé définitivement, ainsi que son rattachement à tous les quiz. Cette action est irréversible.`}
               confirmLabel="Supprimer définitivement"
               successMsg="Question supprimée"
               icon={<Trash2 className="h-3.5 w-3.5" />}
