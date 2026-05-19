@@ -3,7 +3,16 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Download, BookOpen, Users, Wallet, Activity } from "lucide-react";
+import {
+  Download,
+  Users,
+  Wallet,
+  Activity,
+  GraduationCap,
+  BookOpenCheck,
+  Clock,
+  Coins,
+} from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -15,17 +24,54 @@ function fmtEuros(eur: number) {
   }).format(eur);
 }
 
+function fmtNumber(n: number, digits = 0) {
+  return new Intl.NumberFormat("fr-FR", {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(n);
+}
+
 export default async function BpfPage({
   searchParams,
 }: {
   searchParams?: { year?: string };
 }) {
   const year = Number(searchParams?.year ?? new Date().getFullYear() - 1);
+  const yearStart = `${year}-01-01`;
+  const yearEnd = `${year + 1}-01-01`;
   const supabase = createClient();
-  const { data: summary } = await supabase.rpc("bpf_summary", { p_year: year });
 
-  const s = (summary ?? {}) as any;
+  // 1) Synthèse principale (KPI tier 1)
+  const summaryRes = await supabase.rpc("bpf_summary", { p_year: year });
+  const s = (summaryRes.data ?? {}) as any;
   const revenues = (s.recettes_par_financeur ?? []) as any[];
+  const stagiairesTotal = Number(s.stagiaires_total ?? 0);
+  const heuresRealisees = Number(s.heures_realisees ?? 0);
+  const recetteEur = Number(s.recette_totale_eur ?? 0);
+
+  // 2) KPI Qualiopi / qualité — calculés ici (pas dans la RPC pour éviter
+  // une migration). Tous filtrés sur l'exercice sélectionné.
+  const [{ count: certCount }, { count: actionsCount }] = await Promise.all([
+    // Certifications "finales" délivrées sur l'exercice (titre complet)
+    supabase
+      .from("certificates")
+      .select("id", { count: "exact", head: true })
+      .eq("type", "final")
+      .gte("issued_at", yearStart)
+      .lt("issued_at", yearEnd),
+    // Actions de formation actives au catalogue
+    supabase
+      .from("formations")
+      .select("id", { count: "exact", head: true })
+      .eq("active", true),
+  ]);
+
+  // Ratios dérivés (avec garde-fous division par zéro)
+  const heuresParStagiaire =
+    stagiairesTotal > 0 ? heuresRealisees / stagiairesTotal : 0;
+  const coutHoraireMoyen = heuresRealisees > 0 ? recetteEur / heuresRealisees : 0;
+  const tauxCertification =
+    stagiairesTotal > 0 ? ((certCount ?? 0) / stagiairesTotal) * 100 : 0;
 
   const yearOptions = [year + 1, year, year - 1, year - 2].filter(
     (y) => y <= new Date().getFullYear()
@@ -69,32 +115,70 @@ export default async function BpfPage({
         </form>
       </header>
 
-      {/* KPIs */}
-      <section className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Kpi
-          icon={Users}
-          label="Stagiaires"
-          value={String(s.stagiaires_total ?? 0)}
-          sub="Personnes ayant suivi ≥ 1 h"
-        />
-        <Kpi
-          icon={Activity}
-          label="Heures réalisées"
-          value={String(s.heures_realisees ?? 0)}
-          sub="Total h-stagiaires"
-        />
-        <Kpi
-          icon={Wallet}
-          label="Chiffre d'affaires"
-          value={fmtEuros(Number(s.recette_totale_eur ?? 0))}
-          sub={`Exercice ${year}`}
-        />
-        <Kpi
-          icon={BookOpen}
-          label="Action"
-          value="RNCP 40990"
-          sub="Titre professionnel"
-        />
+      {/* KPI tier 1 — chiffres CERFA 10443*16 (cases obligatoires) */}
+      <section>
+        <h2 className="sr-only">Indicateurs CERFA</h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Kpi
+            icon={Users}
+            label="Stagiaires"
+            value={fmtNumber(stagiairesTotal)}
+            sub="Personnes ayant suivi ≥ 1 h"
+          />
+          <Kpi
+            icon={Activity}
+            label="Heures réalisées"
+            value={fmtNumber(heuresRealisees, 1)}
+            sub="Total h-stagiaires"
+          />
+          <Kpi
+            icon={Wallet}
+            label="Chiffre d'affaires"
+            value={fmtEuros(recetteEur)}
+            sub={`Exercice ${year}`}
+          />
+          <Kpi
+            icon={GraduationCap}
+            label="Certifications délivrées"
+            value={fmtNumber(certCount ?? 0)}
+            sub={
+              stagiairesTotal > 0
+                ? `Taux de réussite ${fmtNumber(tauxCertification, 1)} %`
+                : "Titres professionnels finaux"
+            }
+          />
+        </div>
+      </section>
+
+      {/* KPI tier 2 — indicateurs qualité (Qualiopi / pilotage) */}
+      <section>
+        <h2 className="font-display text-base font-semibold text-navy-900 mb-3">
+          Indicateurs qualité
+        </h2>
+        <div className="grid sm:grid-cols-3 gap-4">
+          <Kpi
+            icon={BookOpenCheck}
+            label="Actions de formation"
+            value={fmtNumber(actionsCount ?? 0)}
+            sub="Formations actives au catalogue"
+          />
+          <Kpi
+            icon={Clock}
+            label="Heures moy. / stagiaire"
+            value={`${fmtNumber(heuresParStagiaire, 1)} h`}
+            sub="Volume horaire individuel moyen"
+          />
+          <Kpi
+            icon={Coins}
+            label="Coût horaire moyen"
+            value={
+              coutHoraireMoyen > 0
+                ? `${fmtNumber(coutHoraireMoyen, 0)} € / h`
+                : "—"
+            }
+            sub="Recettes / h-stagiaire"
+          />
+        </div>
       </section>
 
       {/* Recettes par financeur */}
