@@ -114,13 +114,31 @@ export default async function BanqueQuestionsPage({
             réponse cochée) avant d'être actives en circulation.
           </p>
         </div>
-        <Link
-          href="/admin/banque-questions/import"
-          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gold-500 text-night-900 font-semibold text-sm hover:bg-gold-400 transition shadow-soft whitespace-nowrap"
-        >
-          <FileText className="h-4 w-4" />
-          Importer un PDF
-        </Link>
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          <Link
+            href="/admin/banque-questions/new-qr"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-navy-200 bg-white text-navy-900 font-semibold text-sm hover:bg-navy-50 transition whitespace-nowrap"
+            title="Question rédigée avec correction manuelle"
+          >
+            <FileText className="h-3.5 w-3.5" />
+            Nouvelle QR
+          </Link>
+          <Link
+            href="/admin/banque-questions/new-qcm"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-navy-200 bg-white text-navy-900 font-semibold text-sm hover:bg-navy-50 transition whitespace-nowrap"
+            title="Question à choix multiples (correction auto)"
+          >
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            Nouveau QCM
+          </Link>
+          <Link
+            href="/admin/banque-questions/import"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gold-500 text-night-900 font-semibold text-sm hover:bg-gold-400 transition shadow-soft whitespace-nowrap"
+          >
+            <FileText className="h-4 w-4" />
+            Importer un PDF
+          </Link>
+        </div>
       </header>
 
       {/* KPIs globaux */}
