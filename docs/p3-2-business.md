@@ -12,7 +12,7 @@
 | **A** | Programme parrainage | **2-3 j** | Faible | ★★ Croissance B2C |
 | **B** | Dashboard financeur enrichi | **3-4 j** | Moyen | ★★★★ Contrats OPCO/B2B |
 | **C** | Multi-tenant entreprise | **5-7 j** | Élevé | ★★★★★ Ventes pros |
-| ~~D~~ | ~~Marketplace formateurs externes~~ | ~~7-10 j~~ | Très élevé | Reporté en P4 |
+| ~~D~~ | ~~Marketplace formateurs externes~~ | — | — | **ABANDONNÉ** (décision client 2026-05-20) |
 
 **Total : 10-14 jours** sur ~3 semaines pour A+B+C.
 

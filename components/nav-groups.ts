@@ -31,7 +31,6 @@ import {
   Sparkles,
   Gift,
   Briefcase,
-  Store,
   Inbox,
   Crown,
 } from "lucide-react";
@@ -145,7 +144,6 @@ export const ADMIN_GROUPS: NavGroup[] = [
       { href: "/admin/crm", labelKey: "nav.adminCrm", icon: Inbox },
       { href: "/admin/enrollments", labelKey: "nav.adminEnrollments", icon: Wallet },
       { href: "/admin/organizations", labelKey: "nav.adminOrganizations", icon: Briefcase },
-      { href: "/admin/marketplace", labelKey: "nav.adminMarketplace", icon: Store },
       { href: "/admin/pricing", labelKey: "nav.adminPricing", icon: Tags },
       { href: "/admin/settings", labelKey: "nav.adminSettingsIndex", icon: Settings, exact: true },
       { href: "/admin/settings/formation", labelKey: "nav.adminSettingsFormation", icon: Settings },

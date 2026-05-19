@@ -13,7 +13,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const VERSION = "v7";
+const VERSION = "v8";
 const OUTPUT = resolve(__dirname, "output", `MFT-Roadmap-Checklist-${VERSION}.pdf`);
 mkdirSync(dirname(OUTPUT), { recursive: true });
 
@@ -557,12 +557,6 @@ const SECTIONS: Section[] = [
             detail:
               "50 € crédit parrain + -10 % filleul. 3 tables + 7 RPCs + Stripe étendu (referrer_code) + page /parrainage + /admin/referrals. Plafond 10 parrainages/an. Validation admin systématique en v1.",
             done: true,
-          },
-          {
-            title:
-              "Marketplace de formateurs externes (les formateurs créent et vendent leurs propres parcours)",
-            detail:
-              "Scaffolding livré (tables modules.created_by, trainer_payouts, trainer_revenue_events + page placeholder /admin/marketplace). Bloqué par 3 pré-requis client : validation juridique CGU, Stripe Connect, 2-3 formateurs partenaires. Roadmap détaillée dans docs/p3-2-marketplace-roadmap.md.",
           },
         ],
       },
