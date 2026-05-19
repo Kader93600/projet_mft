@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createServiceClient } from "@supabase/supabase-js";
 import {
   sendEmail,
   newLeadEmail,
@@ -80,6 +82,30 @@ export async function POST(req: Request) {
       { ok: false, error: "insert_failed" },
       { status: 500 }
     );
+  }
+
+  // Tracking acquisition : émet un event "contact_form" lié au visitor_id
+  // (best-effort). Permet de mesurer le funnel landing → contact par canal.
+  try {
+    const visitorId = cookies().get("mft_vid")?.value;
+    if (visitorId) {
+      const supaUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supaKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      if (supaUrl && supaKey) {
+        const svc = createServiceClient(supaUrl, supaKey, {
+          auth: { persistSession: false },
+        });
+        await svc.from("acquisition_events").insert({
+          visitor_id: visitorId,
+          kind: "contact_form",
+          landing_page: "/contact",
+          referrer: req.headers.get("referer") ?? null,
+          user_agent: req.headers.get("user-agent")?.slice(0, 300) ?? null,
+        });
+      }
+    }
+  } catch (e) {
+    console.warn("[contact] acquisition tracking failed (non-bloquant)", e);
   }
 
   // Notifications email (best-effort, ne bloque pas la réponse)

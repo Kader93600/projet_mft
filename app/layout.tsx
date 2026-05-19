@@ -7,6 +7,7 @@ import { ThemeInit } from "@/components/theme-toggle";
 import { CookieBanner } from "@/components/cookie-banner";
 import { JsonLd, organizationSchema } from "@/components/seo/json-ld";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
+import { AcquisitionTracker } from "@/components/acquisition-tracker";
 import { LEGAL } from "@/lib/legal-config";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
@@ -149,6 +150,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           {locale === "en" ? "Skip to main content" : "Aller au contenu principal"}
         </a>
         <NextIntlClientProvider locale={locale} messages={messages}>
+          {/* AcquisitionTracker : monté globalement, filtre les routes
+              publiques uniquement côté client (cf. AUTH_ROUTE_PREFIXES). */}
+          <AcquisitionTracker />
           {children}
           {/* CookieBanner doit rester DANS le provider car il appelle
               useTranslations("cookies") côté client. */}
