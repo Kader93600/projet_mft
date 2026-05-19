@@ -13,7 +13,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const VERSION = "v6";
+const VERSION = "v7";
 const OUTPUT = resolve(__dirname, "output", `MFT-Roadmap-Checklist-${VERSION}.pdf`);
 mkdirSync(dirname(OUTPUT), { recursive: true });
 
@@ -58,6 +58,11 @@ type Section = {
 // Affichés sur la page "Ce qui a été livré récemment".
 type Delivery = { title: string; desc: string };
 const RECENT_DELIVERIES: Delivery[] = [
+  {
+    title: "P3 #3 LIVRÉ — Programme de fidélité (tiers + remise auto + certificat doré)",
+    desc:
+      "Tiers basés sur les enrollments payées : None (0), Bronze (1, statut affiché), Silver (2, -10 % auto sur prochain achat), Gold (3+, -15 % auto + certificat doré). Plafond 200 € par achat, cumulable avec parrainage filleul. ALTER certificates.is_loyalty + 2 triggers auto (BEFORE INSERT marque is_loyalty=true si user a déjà 1+ certif final + AFTER INSERT notifie). Vue user_loyalty_status, table loyalty_events (audit), 3 RPCs SQL. Page /fidelite avec hero coloré par tier, échelle des 3 tiers, 3 KPIs (total économisé, formations payées, certificats finaux), historique des événements. PDF certificat doré avec bordure double 4px + sceau circulaire 'Stagiaire GOLD Fidèle MFT'. Intégration Stripe checkout (calcule + applique avant parrainage) + webhook (consomme via apply_loyalty_discount).",
+  },
   {
     title: "P3 #3 LIVRÉ — UTM tracking + funnel multi-touch first-touch",
     desc:
@@ -588,7 +593,8 @@ const SECTIONS: Section[] = [
             title:
               "Programme de fidélité (réduction sur 2ᵉ formation, certificat doré)",
             detail:
-              "Reporté en v2. Couvert partiellement par le système de crédit utilisateur du parrainage (réutilisable pour des bonus fidélité).",
+              "4 tiers basés sur enrollments payées : None / Bronze (1) / Silver (2, -10 %) / Gold (3+, -15 % + certificat doré). Plafond 200 €/achat. Cumulable avec parrainage. Page /fidelite avec échelle des avantages + historique. Trigger auto sur certificates pour marquer is_loyalty=true. PDF certificat doré avec bordure double + sceau 'Stagiaire GOLD Fidèle MFT'.",
+            done: true,
           },
         ],
       },
