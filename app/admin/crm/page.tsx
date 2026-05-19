@@ -11,8 +11,15 @@ import {
   Clock,
   UserPlus,
   ChevronRight,
+  RotateCcw,
+  Trash2,
 } from "lucide-react";
 import { isStaff } from "@/lib/permissions";
+import { ConfirmAction } from "@/components/ui/confirm-action";
+import {
+  deleteEnrollmentRequest,
+  setRequestStatus,
+} from "../enrollments/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -354,6 +361,44 @@ function LeadRow({
             <UserPlus className="h-3.5 w-3.5" />
             Créer le compte
           </Link>
+        )}
+        {showCreateCta && (
+          <div className="shrink-0 flex items-center gap-1.5">
+            {/* Réactiver : repasse en "contacté" pour réintégrer le pipeline */}
+            <ConfirmAction
+              action={setRequestStatus.bind(null, lead.id, "contacte")}
+              title={
+                status === "inscrit"
+                  ? "Annuler l'inscription de ce lead ?"
+                  : "Réactiver ce lead refusé ?"
+              }
+              description={
+                status === "inscrit"
+                  ? `Le lead « ${lead.full_name} » repassera en "Contacté" et réapparaîtra dans le pipeline. Cette action n'affecte pas un éventuel compte stagiaire déjà créé.`
+                  : `Le lead « ${lead.full_name} » repassera en "Contacté" et réapparaîtra dans le pipeline pour être recontacté.`
+              }
+              confirmLabel="Réactiver"
+              successMsg="Lead réactivé en Contacté"
+              icon={<RotateCcw className="h-3.5 w-3.5" />}
+              iconLabel={
+                status === "inscrit" ? "Annuler l'inscription" : "Réactiver"
+              }
+              tone="navy"
+              variant="soft"
+            />
+            {/* Supprimer : irréversible */}
+            <ConfirmAction
+              action={deleteEnrollmentRequest.bind(null, lead.id)}
+              title="Supprimer définitivement ce lead ?"
+              description={`Le lead « ${lead.full_name} » (${lead.email}) sera supprimé de la base CRM. Cette action est irréversible et n'affecte pas un éventuel compte stagiaire déjà créé.`}
+              confirmLabel="Supprimer définitivement"
+              successMsg="Lead supprimé"
+              icon={<Trash2 className="h-3.5 w-3.5" />}
+              iconLabel="Supprimer le lead"
+              tone="rose"
+              variant="soft"
+            />
+          </div>
         )}
         <ChevronRight className="h-4 w-4 text-slate-400 shrink-0" />
       </div>
