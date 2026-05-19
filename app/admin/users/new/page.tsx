@@ -6,7 +6,17 @@ import { CreateStudentForm } from "./create-student-form";
 
 export const dynamic = "force-dynamic";
 
-export default async function NewStudentPage() {
+export default async function NewStudentPage({
+  searchParams,
+}: {
+  searchParams?: {
+    email?: string;
+    full_name?: string;
+    phone?: string;
+    formation_slug?: string;
+    funding_kind?: string;
+  };
+}) {
   const supabase = createClient();
 
   const [{ data: formations }, { data: staff }, { data: trainers }, { data: funders }] =
@@ -64,6 +74,13 @@ export default async function NewStudentPage() {
             staff={staff ?? []}
             trainers={trainers ?? []}
             funders={funders ?? []}
+            initialValues={{
+              full_name: searchParams?.full_name,
+              email: searchParams?.email,
+              phone: searchParams?.phone,
+              formation_slug: searchParams?.formation_slug,
+              funding_kind: searchParams?.funding_kind,
+            }}
           />
         </CardBody>
       </Card>

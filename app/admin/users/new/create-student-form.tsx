@@ -65,11 +65,21 @@ export function CreateStudentForm({
   staff,
   trainers,
   funders,
+  initialValues,
 }: {
   formations: Formation[];
   staff: StaffOpt[];
   trainers: StaffOpt[];
   funders: FunderOpt[];
+  /** Pré-remplissage depuis les query params (ex: conversion d'un lead
+   *  CRM en stagiaire — voir /admin/crm onglet "Convertis & refusés"). */
+  initialValues?: {
+    full_name?: string;
+    email?: string;
+    phone?: string;
+    formation_slug?: string;
+    funding_kind?: string;
+  };
 }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -81,19 +91,37 @@ export function CreateStudentForm({
   } | null>(null);
   const [showPw, setShowPw] = useState(false);
 
+  // Détecte si la formation pré-remplie existe bien dans le catalogue
+  const prefilledFormationExists =
+    initialValues?.formation_slug &&
+    formations.some((fo) => fo.slug === initialValues.formation_slug);
+  const prefilledFundingKind = (
+    ["opco", "cpf", "employeur", "pole_emploi", "auto", "autre"] as const
+  ).includes((initialValues?.funding_kind ?? "") as any)
+    ? (initialValues!.funding_kind as
+        | "opco"
+        | "cpf"
+        | "employeur"
+        | "pole_emploi"
+        | "auto"
+        | "autre")
+    : null;
+
   // Form state
   const [f, setF] = useState({
     // Personnel
-    full_name: "",
-    email: "",
-    phone: "",
+    full_name: initialValues?.full_name ?? "",
+    email: initialValues?.email ?? "",
+    phone: initialValues?.phone ?? "",
     date_naissance: "",
     adresse: "",
     code_postal: "",
     ville: "",
 
     // Pédagogique
-    formation_slug: formations[0]?.slug ?? "",
+    formation_slug: prefilledFormationExists
+      ? initialValues!.formation_slug!
+      : formations[0]?.slug ?? "",
     session_label: "",
     entry_date: new Date().toISOString().slice(0, 10),
     referent_id: "",
@@ -101,7 +129,7 @@ export function CreateStudentForm({
 
     // Administratif
     funder_id: "",
-    funding_kind: "auto" as
+    funding_kind: (prefilledFundingKind ?? "auto") as
       | "opco"
       | "cpf"
       | "employeur"

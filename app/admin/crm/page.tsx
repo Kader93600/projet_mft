@@ -77,6 +77,20 @@ export default async function AdminCrmPage() {
     .limit(60);
   const pool = (poolRaw ?? []) as any[];
 
+  // Leads convertis ou refusés (statut terminal). Sans ce bloc, un lead
+  // "inscrit" disparaît de toutes les vues admin alors qu'il n'a peut-être
+  // pas encore son compte stagiaire / dossier créés → on perd des clients.
+  const { data: closedRaw } = await supabase
+    .from("enrollment_requests")
+    .select(`
+      id, full_name, email, phone, status, funding_kind, source,
+      created_at, message, formation_slug
+    `)
+    .in("status", ["inscrit", "refuse"])
+    .order("created_at", { ascending: false })
+    .limit(60);
+  const closed = (closedRaw ?? []) as any[];
+
   // Stats globales
   const totalNew = counters.find((c) => c.status === "nouveau")?.count ?? 0;
   const totalContacted =
@@ -208,6 +222,41 @@ export default async function AdminCrmPage() {
           </Card>
         )}
       </section>
+
+      {/* Convertis & refusés — historique des leads terminaux.
+          Indispensable pour retrouver un lead "inscrit" qui n'aurait pas
+          encore vu son compte stagiaire créé (action manuelle requise). */}
+      <section>
+        <h2 className="font-display text-xl font-semibold text-navy-900 mb-4 inline-flex items-center gap-2">
+          <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+          Convertis & refusés ({closed.length})
+        </h2>
+        <p className="text-sm text-slate-500 -mt-2 mb-4 max-w-2xl">
+          Leads dont le statut a été passé à <strong>inscrit</strong> ou{" "}
+          <strong>refusé</strong>. Un lead « inscrit » ne crée pas
+          automatiquement son compte stagiaire : clic sur la ligne →{" "}
+          <em>Créer le compte stagiaire</em> pour finaliser.
+        </p>
+        {closed.length === 0 ? (
+          <Card>
+            <CardBody className="text-center py-8">
+              <p className="text-sm text-slate-500">
+                Aucun lead clôturé pour l'instant.
+              </p>
+            </CardBody>
+          </Card>
+        ) : (
+          <Card>
+            <CardBody className="p-0">
+              <ul className="divide-y divide-navy-50">
+                {closed.map((lead) => (
+                  <LeadRow key={lead.id} lead={lead} showCreateCta />
+                ))}
+              </ul>
+            </CardBody>
+          </Card>
+        )}
+      </section>
     </div>
   );
 }
@@ -217,9 +266,13 @@ export default async function AdminCrmPage() {
 function LeadRow({
   lead,
   showFollowup = false,
+  showCreateCta = false,
 }: {
   lead: any;
   showFollowup?: boolean;
+  /** Affiche un CTA secondaire "Créer le compte stagiaire" — pour les
+   *  leads "inscrit" qui n'ont pas encore leur profil créé. */
+  showCreateCta?: boolean;
 }) {
   const status = lead.status as keyof typeof STATUS_LABEL;
   const tone = STATUS_TONE[status] ?? "slate";
@@ -233,50 +286,77 @@ function LeadRow({
     new Date(lead.next_followup_at) <= new Date();
   const isSnoozed = lead.is_snoozed === true;
 
+  // Pré-remplit /admin/users/new avec les infos du lead via query params
+  const createUrl =
+    `/admin/users/new` +
+    `?email=${encodeURIComponent(lead.email ?? "")}` +
+    `&full_name=${encodeURIComponent(lead.full_name ?? "")}` +
+    `&phone=${encodeURIComponent(lead.phone ?? "")}` +
+    (lead.formation_slug
+      ? `&formation_slug=${encodeURIComponent(lead.formation_slug)}`
+      : "") +
+    (lead.funding_kind
+      ? `&funding_kind=${encodeURIComponent(lead.funding_kind)}`
+      : "");
+
   return (
     <li className="px-5 py-3.5 hover:bg-navy-50/30">
-      <Link href={`/admin/crm/${lead.id}`} className="block">
-        <div className="flex items-center justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 flex-wrap mb-0.5">
-              <span className="font-medium text-navy-900">
-                {lead.full_name}
-              </span>
-              <Badge tone={tone} size="sm">
-                {STATUS_LABEL[status] ?? status}
+      <div className="flex items-center justify-between gap-3">
+        <Link
+          href={`/admin/crm/${lead.id}`}
+          className="block min-w-0 flex-1 group"
+        >
+          <div className="flex items-center gap-2 flex-wrap mb-0.5">
+            <span className="font-medium text-navy-900 group-hover:text-brand-700">
+              {lead.full_name}
+            </span>
+            <Badge tone={tone} size="sm">
+              {STATUS_LABEL[status] ?? status}
+            </Badge>
+            {followupDue && (
+              <Badge tone="rose" size="sm">
+                <AlertCircle className="h-3 w-3" />
+                Relance due
               </Badge>
-              {followupDue && (
-                <Badge tone="rose" size="sm">
-                  <AlertCircle className="h-3 w-3" />
-                  Relance due
-                </Badge>
-              )}
-              {isSnoozed && (
-                <Badge tone="slate" size="sm">
-                  <Clock className="h-3 w-3" />
-                  En pause
-                </Badge>
-              )}
-              {Array.isArray(lead.tags) &&
-                lead.tags.slice(0, 3).map((t: string) => (
-                  <span
-                    key={t}
-                    className="inline-flex items-center text-[10px] uppercase tracking-wider text-slate-500 bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5"
-                  >
-                    #{t}
-                  </span>
-                ))}
-            </div>
-            <div className="text-xs text-slate-500">
-              {lead.email} · Reçu il y a {ageDays} j
-              {lead.funding_kind && (
-                <span className="ml-1">· {lead.funding_kind.toUpperCase()}</span>
-              )}
-            </div>
+            )}
+            {isSnoozed && (
+              <Badge tone="slate" size="sm">
+                <Clock className="h-3 w-3" />
+                En pause
+              </Badge>
+            )}
+            {Array.isArray(lead.tags) &&
+              lead.tags.slice(0, 3).map((t: string) => (
+                <span
+                  key={t}
+                  className="inline-flex items-center text-[10px] uppercase tracking-wider text-slate-500 bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5"
+                >
+                  #{t}
+                </span>
+              ))}
           </div>
-          <ChevronRight className="h-4 w-4 text-slate-400 shrink-0" />
-        </div>
-      </Link>
+          <div className="text-xs text-slate-500">
+            {lead.email} · Reçu il y a {ageDays} j
+            {lead.funding_kind && (
+              <span className="ml-1">· {lead.funding_kind.toUpperCase()}</span>
+            )}
+            {lead.formation_slug && (
+              <span className="ml-1">· {lead.formation_slug.toUpperCase()}</span>
+            )}
+          </div>
+        </Link>
+        {showCreateCta && status === "inscrit" && (
+          <Link
+            href={createUrl}
+            className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-signal-300 bg-signal-50 text-signal-800 text-xs font-semibold hover:bg-signal-100"
+            title="Créer le compte stagiaire à partir des infos du lead"
+          >
+            <UserPlus className="h-3.5 w-3.5" />
+            Créer le compte
+          </Link>
+        )}
+        <ChevronRight className="h-4 w-4 text-slate-400 shrink-0" />
+      </div>
     </li>
   );
 }
