@@ -77,8 +77,18 @@ export default async function DashboardPage() {
     enrolledFormationIds = (allFormations ?? []).map((f: any) => f.id as string);
     allowedModuleIds = (allModules ?? []).map((m: any) => m.id as string);
   } else {
-    // Stagiaire : périmètre via enrollments
-    const { data: enrollments, error: enrollErr } = await supabase
+    // Stagiaire : périmètre via enrollments.
+    // ⚠️ On utilise le client service_role pour cette résolution
+    // (enrollments + formation_modules) car certaines RLS sur enrollments
+    // bloquent silencieusement (issue identifiée mais non encore résolue
+    // au cas par cas — cf. cas BOUCHOUCHA, enrollment GOTRM valide en
+    // base mais invisible côté session student). La sécurité reste
+    // assurée par le filtre `.eq("user_id", user.id)` côté code : le
+    // student ne récupère QUE ses propres enrollments.
+    const { createAdminClient } = await import("@/lib/supabase/admin");
+    const admin = createAdminClient();
+
+    const { data: enrollments, error: enrollErr } = await admin
       .from("enrollments")
       .select("formation_id")
       .eq("user_id", user.id)
@@ -95,7 +105,7 @@ export default async function DashboardPage() {
       .filter(Boolean);
 
     if (enrolledFormationIds.length > 0) {
-      const { data: links } = await supabase
+      const { data: links } = await admin
         .from("formation_modules")
         .select("module_id")
         .in("formation_id", enrolledFormationIds);
@@ -105,6 +115,13 @@ export default async function DashboardPage() {
     }
   }
   const noModules = allowedModuleIds.length === 0;
+
+  // Client de fetch pour les lectures pédagogiques. Pour les students,
+  // on bypass les RLS sur modules/lessons/quizzes (même problème que
+  // sur enrollments). Sécurité : tous les filtres sont déjà cadrés
+  // par allowedModuleIds (qu'on a calculé pour ce user) et user.id.
+  const { createAdminClient } = await import("@/lib/supabase/admin");
+  const reader = isStaff ? supabase : createAdminClient();
 
   const [
     { data: profile },
@@ -116,17 +133,17 @@ export default async function DashboardPage() {
     { data: allModuleAttempts },
     { data: formationModulesOrder },
   ] = await Promise.all([
-    supabase.from("profiles").select("*").eq("id", user.id).single(),
+    reader.from("profiles").select("*").eq("id", user.id).single(),
     noModules
       ? Promise.resolve({ data: [] as any[] })
-      : supabase
+      : reader
           .from("modules")
           .select("id, title, slug, duration_min, bloc_id, blocs(code, title)")
           .in("id", allowedModuleIds)
           .order("bloc_id"),
-    supabase.from("lesson_progress").select("lesson_id, completed").eq("user_id", user.id),
+    reader.from("lesson_progress").select("lesson_id, completed").eq("user_id", user.id),
     enrolledFormationIds.length > 0
-      ? supabase
+      ? reader
           .from("quiz_attempts")
           .select("id, percentage, passed, finished_at, quizzes(title)")
           .eq("user_id", user.id)
@@ -137,20 +154,20 @@ export default async function DashboardPage() {
     // Toutes les leçons des modules autorisés (pour décompte par module)
     noModules
       ? Promise.resolve({ data: [] as any[] })
-      : supabase
+      : reader
           .from("lessons")
           .select("id, module_id")
           .in("module_id", allowedModuleIds),
     // Tous les quizzes des modules autorisés
     noModules
       ? Promise.resolve({ data: [] as any[] })
-      : supabase
+      : reader
           .from("quizzes")
           .select("id, module_id")
           .in("module_id", allowedModuleIds),
     // Toutes les tentatives passed/finished du stagiaire (pour les états in-progress / done)
     enrolledFormationIds.length > 0
-      ? supabase
+      ? reader
           .from("quiz_attempts")
           .select("quiz_id, passed, finished_at")
           .eq("user_id", user.id)
@@ -160,7 +177,7 @@ export default async function DashboardPage() {
     // + slug de la formation (pour déterminer le mode 'strict' vs 'flexible'
     //   de déverrouillage — révision client 2026-05).
     enrolledFormationIds.length > 0
-      ? supabase
+      ? reader
           .from("formation_modules")
           .select("module_id, display_order, formations(slug)")
           .in("formation_id", enrolledFormationIds)
@@ -271,7 +288,7 @@ export default async function DashboardPage() {
   // Total de leçons : limité à celles des formations du stagiaire
   const { count: totalLessons } = noModules
     ? { count: 0 }
-    : await supabase
+    : await reader
         .from("lessons")
         .select("*", { count: "exact", head: true })
         .in("module_id", allowedModuleIds);

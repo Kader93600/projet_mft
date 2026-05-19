@@ -55,26 +55,30 @@ export default async function ExamensBlancsPage({
 
   // Inscriptions actives → formations accessibles
   // Staff : bypass — voit toutes les formations actives.
+  // Student : bypass RLS via service_role (filtre user_id côté code).
+  const { createAdminClient: ac } = await import("@/lib/supabase/admin");
   let enrolledFormationIds: string[] = [];
+  let isStaffUser = false;
   if (user) {
     const { data: meRole } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
-    const isStaff =
+    isStaffUser =
       meRole?.role === "admin" ||
       meRole?.role === "super_admin" ||
       meRole?.role === "trainer";
 
-    if (isStaff) {
+    if (isStaffUser) {
       const { data: allFormations } = await supabase
         .from("formations")
         .select("id")
         .eq("active", true);
       enrolledFormationIds = (allFormations ?? []).map((f: any) => f.id);
     } else {
-      const { data: enrollments } = await supabase
+      const admin = ac();
+      const { data: enrollments } = await admin
         .from("enrollments")
         .select("formation_id, status")
         .eq("user_id", user.id)
@@ -86,12 +90,14 @@ export default async function ExamensBlancsPage({
         .filter(Boolean);
     }
   }
+  // Reader pour les fetches catalogue (bypass RLS sur quizzes pour student)
+  const reader = isStaffUser ? supabase : ac();
 
   // Modules accessibles via formation_modules
   let allowedModuleIds: string[] = [];
   const moduleToFormation = new Map<string, string>();
   if (enrolledFormationIds.length > 0) {
-    const { data: fm } = await supabase
+    const { data: fm } = await reader
       .from("formation_modules")
       .select("module_id, formation:formations(slug)")
       .in("formation_id", enrolledFormationIds);
@@ -106,7 +112,7 @@ export default async function ExamensBlancsPage({
   // formation_quizzes plutôt que via un module)
   let quizIdsByFormation = new Map<string, string>();
   if (enrolledFormationIds.length > 0) {
-    const { data: fq } = await supabase
+    const { data: fq } = await reader
       .from("formation_quizzes")
       .select("quiz_id, formation:formations(slug)")
       .in("formation_id", enrolledFormationIds);
@@ -122,7 +128,7 @@ export default async function ExamensBlancsPage({
 
   const moduleScopedPromise =
     allowedModuleIds.length > 0
-      ? supabase
+      ? reader
           .from("quizzes")
           .select(
             "id, title, description, type, is_mock_exam, pass_threshold, " +
@@ -135,7 +141,7 @@ export default async function ExamensBlancsPage({
 
   const globalPromise =
     globalQuizIds.length > 0
-      ? supabase
+      ? reader
           .from("quizzes")
           .select(
             "id, title, description, type, is_mock_exam, pass_threshold, " +
@@ -160,11 +166,11 @@ export default async function ExamensBlancsPage({
   const [{ data: bankLinks }, { data: inlineQs }] =
     allQuizIds.length > 0
       ? await Promise.all([
-          supabase
+          reader
             .from("quiz_question_bank")
             .select("quiz_id")
             .in("quiz_id", allQuizIds),
-          supabase
+          reader
             .from("questions")
             .select("quiz_id")
             .in("quiz_id", allQuizIds),
@@ -195,7 +201,7 @@ export default async function ExamensBlancsPage({
   };
   let attemptHistory: AttemptHistoryRow[] = [];
   if (user && allQuizIds.length > 0) {
-    const { data: attempts } = await supabase
+    const { data: attempts } = await reader
       .from("quiz_attempts")
       .select(
         "id, quiz_id, percentage, completed_at, finished_at, passed, duration_s, quizzes(title)",

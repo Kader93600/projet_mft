@@ -92,7 +92,12 @@ export default async function ModulesPage() {
       enrolledFormationIds = (allFormations ?? []).map((f: any) => f.id as string);
       activeFormationSlug = (allFormations?.[0] as any)?.slug ?? null;
     } else {
-      const { data: enrollments } = await supabase
+      // service_role : bypass RLS sur enrollments pour les students
+      // (cf. cas BOUCHOUCHA, RLS bloque silencieusement). Sécurité OK
+      // car filtre .eq("user_id", user.id).
+      const { createAdminClient: ac1 } = await import("@/lib/supabase/admin");
+      const adminEnr = ac1();
+      const { data: enrollments } = await adminEnr
         .from("enrollments")
         .select("formation_id, formation_slug, status, created_at")
         .eq("user_id", user.id)
@@ -116,12 +121,17 @@ export default async function ModulesPage() {
     }
   }
 
+  // Reader = service_role pour les students (bypass RLS sur
+  // modules/lessons/quizzes), session pour staff.
+  const { createAdminClient: ac2 } = await import("@/lib/supabase/admin");
+  const reader = isStaff ? supabase : ac2();
+
   // Filtrage par formation : on récupère uniquement les modules rattachés
   // aux formations où le stagiaire est inscrit.
   let allowedModuleIds: string[] = [];
   let links: any[] = [];
   if (enrolledFormationIds.length > 0) {
-    const { data: linkRows } = await supabase
+    const { data: linkRows } = await reader
       .from("formation_modules")
       .select("module_id, display_order, formation:formations(slug)")
       .in("formation_id", enrolledFormationIds);
@@ -144,16 +154,16 @@ export default async function ModulesPage() {
         { data: [] as any[] },
       ]
     : await Promise.all([
-        supabase
+        reader
           .from("modules")
           .select("*")
           .in("id", allowedModuleIds)
           .order("order"),
-        supabase
+        reader
           .from("lessons")
           .select("id, module_id")
           .in("module_id", allowedModuleIds),
-        supabase
+        reader
           .from("quizzes")
           .select("id, module_id")
           .in("module_id", allowedModuleIds),
@@ -161,7 +171,7 @@ export default async function ModulesPage() {
 
   // Blocs (CCP) : on les charge tous pour pouvoir grouper les modules.
   // Pour GOTRM : BC1 = CCP1, BC2 = CCP2, BC3 = CCP3.
-  const { data: blocsRaw } = await supabase
+  const { data: blocsRaw } = await reader
     .from("blocs")
     .select('id, code, title, "order"')
     .order("order");

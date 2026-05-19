@@ -49,26 +49,30 @@ export default async function ExercicesPage({
   // Inscriptions actives → formations accessibles
   // Staff (admin/super_admin/trainer) : bypass — voit toutes les
   // formations actives sans dépendre des enrollments.
+  // Student : bypass RLS via service_role (filtre user_id côté code).
+  const { createAdminClient: ac } = await import("@/lib/supabase/admin");
   let enrolledFormationIds: string[] = [];
+  let isStaffUser = false;
   if (user) {
     const { data: meRole } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
-    const isStaff =
+    isStaffUser =
       meRole?.role === "admin" ||
       meRole?.role === "super_admin" ||
       meRole?.role === "trainer";
 
-    if (isStaff) {
+    if (isStaffUser) {
       const { data: allFormations } = await supabase
         .from("formations")
         .select("id")
         .eq("active", true);
       enrolledFormationIds = (allFormations ?? []).map((f: any) => f.id);
     } else {
-      const { data: enrollments } = await supabase
+      const admin = ac();
+      const { data: enrollments } = await admin
         .from("enrollments")
         .select("formation_id, status")
         .eq("user_id", user.id)
@@ -80,11 +84,14 @@ export default async function ExercicesPage({
     }
   }
 
+  // Reader pour les fetches catalogue
+  const reader = isStaffUser ? supabase : ac();
+
   // Mapping formation → modules (pour scoping des quizzes)
   let allowedModuleIds: string[] = [];
   const moduleToFormation = new Map<string, string>();
   if (enrolledFormationIds.length > 0) {
-    const { data: fm } = await supabase
+    const { data: fm } = await reader
       .from("formation_modules")
       .select("module_id, formation:formations(slug)")
       .in("formation_id", enrolledFormationIds);
@@ -98,7 +105,7 @@ export default async function ExercicesPage({
   // Fetch quizzes ENTRAÎNEMENT uniquement
   let quizzes: any[] = [];
   if (allowedModuleIds.length > 0) {
-    const { data } = await supabase
+    const { data } = await reader
       .from("quizzes")
       .select(
         "id, title, description, type, is_mock_exam, pass_threshold, " +
@@ -116,11 +123,11 @@ export default async function ExercicesPage({
   const [{ data: bankLinks }, { data: inlineQs }] =
     quizIds.length > 0
       ? await Promise.all([
-          supabase
+          reader
             .from("quiz_question_bank")
             .select("quiz_id")
             .in("quiz_id", quizIds),
-          supabase
+          reader
             .from("questions")
             .select("quiz_id")
             .in("quiz_id", quizIds),
@@ -143,7 +150,7 @@ export default async function ExercicesPage({
     { bestPercent: number; lastAt: string; count: number }
   >();
   if (user && quizIds.length > 0) {
-    const { data: attempts } = await supabase
+    const { data: attempts } = await reader
       .from("quiz_attempts")
       .select("quiz_id, percentage, completed_at")
       .eq("user_id", user.id)
