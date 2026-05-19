@@ -13,7 +13,11 @@
 //      - Permet la consultation hors-ligne des leçons déjà visitées
 // ============================================================
 
-const CACHE_VERSION = "mft-v2";
+// Bump v2 → v3 (2026-05-19) : invalide les caches construits avant
+// que /dashboard ait export const dynamic="force-dynamic". Sans ce
+// bump, le SW peut continuer à servir un HTML "fossilisé" du
+// dashboard (sans modules) cached avant la migration data.
+const CACHE_VERSION = "mft-v3";
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const CONTENT_CACHE = `${CACHE_VERSION}-content`;
 const OFFLINE_URL = "/offline";

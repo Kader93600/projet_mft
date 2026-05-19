@@ -36,6 +36,14 @@ import {
   type ModuleProgress,
 } from "@/lib/module-progress";
 
+// Force le rendu dynamique à chaque requête : la page lit la session
+// + les enrollments du stagiaire, donc le HTML doit être recalculé à
+// chaque visite (sinon un user peut voir un dashboard "fossilisé"
+// d'un autre snapshot — typiquement après une migration de data ou
+// une création d'enrollment).
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function DashboardPage() {
   const t = await getTranslations("dashboard");
   const supabase = createClient();
