@@ -35,7 +35,7 @@
 --   4) Créer la vue formations_demand attendue par le code
 -- =====================================================================
 
--- ─── 1) Backfill enrollments.formation_slug ─────────────────────────────
+-- ─── 1a) Backfill enrollments.formation_slug (depuis formation_id) ──────
 -- Pour chaque enrollment ayant formation_id mais pas formation_slug,
 -- on récupère le slug depuis la table formations.
 UPDATE public.enrollments e
@@ -43,6 +43,22 @@ UPDATE public.enrollments e
   FROM public.formations f
  WHERE e.formation_id = f.id
    AND e.formation_slug IS NULL;
+
+-- ─── 1b) Backfill enrollments.formation_id (depuis formation_slug) ──────
+-- Symétrique : pour chaque enrollment ayant formation_slug mais pas
+-- formation_id, on remonte vers la formation. C'est ce backfill-ci qui
+-- débloque le dashboard stagiaire (app/dashboard/page.tsx:50 filtre
+-- `.not("formation_id","is",null)`).
+--
+-- Cas observé : Sfaxi a un enrollment legacy avec formation_slug='gotrm'
+-- (visible dans la section "Mes formations" qui lit le slug) mais
+-- formation_id NULL → dashboard.allowedModuleIds = [] → "Aucun module
+-- disponible".
+UPDATE public.enrollments e
+   SET formation_id = f.id
+  FROM public.formations f
+ WHERE e.formation_slug = f.slug
+   AND e.formation_id IS NULL;
 
 -- ─── 2) Trigger inverse : formation_id → formation_slug ─────────────────
 -- L'existant `tg_enrollment_resolve_formation` ne se déclenche que sur
@@ -160,16 +176,37 @@ DO $$
 DECLARE
   n_enrollments_total int;
   n_enrollments_with_slug int;
+  n_enrollments_with_id int;
+  n_enrollments_complete int;
   n_formations_demand int;
+  n_modules_via_formations int;
 BEGIN
   SELECT count(*) INTO n_enrollments_total FROM public.enrollments;
   SELECT count(*) INTO n_enrollments_with_slug FROM public.enrollments
    WHERE formation_slug IS NOT NULL;
+  SELECT count(*) INTO n_enrollments_with_id FROM public.enrollments
+   WHERE formation_id IS NOT NULL;
+  SELECT count(*) INTO n_enrollments_complete FROM public.enrollments
+   WHERE formation_slug IS NOT NULL AND formation_id IS NOT NULL;
   SELECT count(*) INTO n_formations_demand FROM public.formations_demand;
+  SELECT count(DISTINCT module_id) INTO n_modules_via_formations
+    FROM public.formation_modules;
 
-  RAISE NOTICE '════════ HOTFIX formation_slug + formations_demand ════════';
-  RAISE NOTICE '  enrollments total ....................... %', n_enrollments_total;
-  RAISE NOTICE '  enrollments avec formation_slug ......... %', n_enrollments_with_slug;
-  RAISE NOTICE '  lignes dans formations_demand ........... %', n_formations_demand;
-  RAISE NOTICE '════════════════════════════════════════════════════════════';
+  RAISE NOTICE '════════ HOTFIX formation_slug + formation_id ════════════';
+  RAISE NOTICE '  enrollments total ........................ %', n_enrollments_total;
+  RAISE NOTICE '  enrollments avec formation_slug .......... %', n_enrollments_with_slug;
+  RAISE NOTICE '  enrollments avec formation_id ............ %', n_enrollments_with_id;
+  RAISE NOTICE '  enrollments avec les deux (complets) ..... %', n_enrollments_complete;
+  RAISE NOTICE '  modules rattachés à une formation ........ %', n_modules_via_formations;
+  RAISE NOTICE '  lignes dans formations_demand ............ %', n_formations_demand;
+  RAISE NOTICE '═══════════════════════════════════════════════════════════';
+
+  IF n_enrollments_with_id < n_enrollments_total THEN
+    RAISE WARNING '⚠ % enrollment(s) n''ont toujours pas de formation_id — leur formation_slug pointe sans doute vers une formation inexistante ou supprimée. À investiguer manuellement.',
+      n_enrollments_total - n_enrollments_with_id;
+  END IF;
+
+  IF n_modules_via_formations = 0 THEN
+    RAISE WARNING '⚠ AUCUN module n''est rattaché à une formation via formation_modules. Le dashboard restera vide même avec un enrollment valide. Vérifier la table formation_modules.';
+  END IF;
 END $$;
