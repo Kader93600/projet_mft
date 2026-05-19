@@ -575,7 +575,7 @@ export default async function ModulesPage() {
 
 type ModulesT = Awaited<ReturnType<typeof getTranslations<"modules">>>;
 
-function SubsectionCourses({
+async function SubsectionCourses({
   modules,
   sectionIdx,
   showHeader,
@@ -662,15 +662,50 @@ function SubsectionCourses({
     );
   }
 
+  // Pour chaque bloc CCP : identifier le 1er module qui a une vidéo
+  // d'intro et générer la signed URL côté server. Plus économique
+  // que de l'afficher sur chaque page module (auparavant 17× pour
+  // un CCP de 17 chapitres) — désormais 1× en tête de section CCP.
+  const supabaseSigner = (await import("@/lib/supabase/server")).createClient();
+  const blocsWithIntro = await Promise.all(
+    blocs.map(async (b) => {
+      // Priorité au module avec le plus petit "order" (= 1er chapitre).
+      const sortedModules = [...b.modules].sort(
+        (m1: any, m2: any) => (m1.order ?? 999) - (m2.order ?? 999),
+      );
+      const introMod = sortedModules.find(
+        (m: any) => !!m.intro_video_path,
+      ) as any;
+      if (!introMod) {
+        return { bloc: b, introVideo: null };
+      }
+      const { data: signed } = await supabaseSigner.storage
+        .from("module-intro-videos")
+        .createSignedUrl(introMod.intro_video_path as string, 60 * 60);
+      if (!signed?.signedUrl) {
+        return { bloc: b, introVideo: null };
+      }
+      return {
+        bloc: b,
+        introVideo: {
+          url: signed.signedUrl,
+          label: (introMod.intro_video_label as string | null) ?? null,
+          durationS: (introMod.intro_video_duration_s as number | null) ?? null,
+        },
+      };
+    }),
+  );
+
   // Sous-groupement par CCP avec accordion (composant client pour
   // l'animation pliage/dépliage fluide via grid-template-rows).
   return (
     <CcpAccordion
-      blocs={blocs.map((b) => ({
+      blocs={blocsWithIntro.map(({ bloc: b, introVideo }) => ({
         code: b.code,
         title: b.title,
         ccpLabel: ccpLabelByCode[b.code] ?? b.code,
         modules: b.modules,
+        introVideo,
       }))}
       sectionIdx={sectionIdx}
       storageKey={`ccp-accordion-${sectionIdx}`}

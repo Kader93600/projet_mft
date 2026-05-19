@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ProgressBar } from "@/components/ui/progress";
 import { FormationStripe } from "@/components/formation/formation-stripe";
-import { ModuleIntroVideo } from "@/components/modules/intro-video";
+// ModuleIntroVideo retiré : la vidéo d'intro est désormais affichée
+// 1× en tête de section CCP sur /modules (cf. components/modules/
+// ccp-accordion.tsx). Évite la répétition sur chaque chapitre.
 import { FormationBadge } from "@/components/formation/formation-badge";
 import { resolveFormationFromModule } from "@/lib/formation-resolver";
 import { findFormation } from "@/lib/formations-config";
@@ -323,13 +325,9 @@ export default async function ModuleDetail({
         )}
       </header>
 
-      {/* Vidéo d'introduction (si présente) — affichée juste après le hero,
-          avant la progression et la timeline des leçons. */}
-      <ModuleIntroVideo
-        videoPath={(module as any).intro_video_path ?? null}
-        label={(module as any).intro_video_label ?? null}
-        durationS={(module as any).intro_video_duration_s ?? null}
-      />
+      {/* Vidéo d'introduction retirée de la page chapitre : elle est
+          désormais affichée 1× en tête de section CCP sur /modules
+          (auparavant répétée 17× pour le CCP1 GOTRM). */}
 
       {/* Progression */}
       {user && total > 0 && (

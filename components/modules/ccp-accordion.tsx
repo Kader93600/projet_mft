@@ -4,12 +4,22 @@ import { useEffect, useState } from "react";
 import { ChevronDown, Lock } from "lucide-react";
 import { ModuleCard, type ModuleCardData } from "./module-card";
 import type { ModuleProgress } from "@/lib/module-progress";
+import { IntroVideoPlayer } from "./intro-video-player";
+
+interface CcpIntroVideo {
+  url: string;
+  label: string | null;
+  durationS: number | null;
+}
 
 interface CcpBloc {
   code: string;
   title: string;
   ccpLabel: string;
   modules: (ModuleCardData & { __progress: ModuleProgress })[];
+  /** Vidéo d'intro du CCP (signed URL générée côté server). Affichée
+   *  en tête du contenu déplié, avant la grille de modules. */
+  introVideo?: CcpIntroVideo | null;
 }
 
 /**
@@ -184,14 +194,35 @@ export function CcpAccordion({
               aria-hidden={!isOpen}
             >
               <div className="ccp-collapsible-inner">
-                <div className="px-4 pb-4 md:px-6 md:pb-5 pt-1">
+                <div className="px-4 pb-4 md:px-6 md:pb-5 pt-1 space-y-4 md:space-y-5">
+                  {/* Vidéo d'intro du CCP — affichée 1× en tête de
+                      section, avant les chapitres. Plus de répétition
+                      sur chaque page module. */}
+                  {b.introVideo && (
+                    <div
+                      style={{
+                        animation: isOpen
+                          ? "fade-up 0.45s ease-out both"
+                          : undefined,
+                      }}
+                    >
+                      <IntroVideoPlayer
+                        signedUrl={b.introVideo.url}
+                        label={
+                          b.introVideo.label ??
+                          `Introduction ${b.ccpLabel}`
+                        }
+                        durationS={b.introVideo.durationS}
+                      />
+                    </div>
+                  )}
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-5">
                     {b.modules.map((m, i) => (
                       <div
                         key={m.id}
                         style={{
                           animation: isOpen
-                            ? `fade-up 0.45s ease-out ${i * 40}ms both`
+                            ? `fade-up 0.45s ease-out ${i * 40 + (b.introVideo ? 100 : 0)}ms both`
                             : undefined,
                         }}
                       >
