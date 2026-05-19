@@ -76,6 +76,29 @@ export function ContactForm() {
         />
       </div>
 
+      {/* Adresse complète (facultative mais accélère l'inscription une
+          fois le lead converti — évite à l'admin de redemander). */}
+      <Field
+        name="adresse"
+        label="Adresse postale (facultatif)"
+        placeholder="N° et nom de la voie"
+        autoComplete="street-address"
+      />
+      <div className="grid sm:grid-cols-2 gap-4">
+        <Field
+          name="code_postal"
+          label="Code postal (facultatif)"
+          placeholder="77100"
+          autoComplete="postal-code"
+        />
+        <Field
+          name="ville"
+          label="Ville (facultatif)"
+          placeholder="Meaux"
+          autoComplete="address-level2"
+        />
+      </div>
+
       <div>
         <Label>Formation qui vous intéresse</Label>
         <select
@@ -175,12 +198,14 @@ function Field({
   type = "text",
   required,
   autoComplete,
+  placeholder,
 }: {
   name: string;
   label: string;
   type?: string;
   required?: boolean;
   autoComplete?: string;
+  placeholder?: string;
 }) {
   return (
     <div>
@@ -193,6 +218,7 @@ function Field({
         type={type}
         required={required}
         autoComplete={autoComplete}
+        placeholder={placeholder}
         className="w-full bg-night-50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:border-signal-500 focus:outline-none focus:ring-2 focus:ring-signal-500/30"
       />
     </div>

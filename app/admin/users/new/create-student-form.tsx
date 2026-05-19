@@ -60,17 +60,36 @@ function generatePassword(): string {
     .join("");
 }
 
+interface LeadOpt {
+  id: string;
+  full_name: string;
+  email: string;
+  phone?: string | null;
+  adresse?: string | null;
+  code_postal?: string | null;
+  ville?: string | null;
+  formation_slug?: string | null;
+  funding_kind?: string | null;
+  message?: string | null;
+  status: string;
+  created_at: string;
+}
+
 export function CreateStudentForm({
   formations,
   staff,
   trainers,
   funders,
+  leads = [],
   initialValues,
 }: {
   formations: Formation[];
   staff: StaffOpt[];
   trainers: StaffOpt[];
   funders: FunderOpt[];
+  /** Liste des leads non-terminaux du CRM, proposés dans un dropdown
+   *  "Importer depuis un lead" en haut du formulaire. */
+  leads?: LeadOpt[];
   /** Pré-remplissage depuis les query params (ex: conversion d'un lead
    *  CRM en stagiaire — voir /admin/crm onglet "Convertis & refusés"). */
   initialValues?: {
@@ -327,8 +346,76 @@ export function CreateStudentForm({
     animation: `fade-up 0.4s cubic-bezier(0.22, 1, 0.36, 1) ${i * 60}ms both`,
   });
 
+  // Hydrate le formulaire depuis un lead sélectionné dans le dropdown.
+  // Le lead garde sa valeur après hydratation pour que l'admin puisse
+  // savoir d'où viennent les données.
+  function hydrateFromLead(leadId: string) {
+    const lead = leads.find((l) => l.id === leadId);
+    if (!lead) return;
+    const formationOk = formations.some((fo) => fo.slug === lead.formation_slug);
+    const fundingOk = (
+      ["opco", "cpf", "employeur", "pole_emploi", "auto", "autre"] as const
+    ).includes((lead.funding_kind ?? "") as any);
+    setF((prev) => ({
+      ...prev,
+      full_name: lead.full_name ?? prev.full_name,
+      email: lead.email ?? prev.email,
+      phone: lead.phone ?? prev.phone,
+      adresse: lead.adresse ?? prev.adresse,
+      code_postal: lead.code_postal ?? prev.code_postal,
+      ville: lead.ville ?? prev.ville,
+      formation_slug:
+        formationOk && lead.formation_slug
+          ? lead.formation_slug
+          : prev.formation_slug,
+      funding_kind: fundingOk
+        ? (lead.funding_kind as typeof prev.funding_kind)
+        : prev.funding_kind,
+    }));
+    toast(`Données du lead "${lead.full_name}" importées`, "success");
+  }
+
   return (
     <div className="space-y-8">
+      {/* Dropdown "Importer depuis un lead" — accélère la création
+          quand un prospect a déjà rempli le formulaire public /contact.
+          Affiché uniquement s'il y a au moins 1 lead actif. */}
+      {leads.length > 0 && (
+        <div className="rounded-2xl border border-signal-300 bg-signal-50/60 px-5 py-4">
+          <Label className="text-signal-900 font-semibold">
+            <Sparkles className="inline h-3.5 w-3.5 mr-1 -mt-0.5" />
+            Importer depuis un lead existant ({leads.length} disponibles)
+          </Label>
+          <p className="text-xs text-signal-900/70 mt-1 mb-3">
+            Sélectionnez un prospect du CRM pour pré-remplir
+            automatiquement nom, email, téléphone, adresse, formation et
+            financement. Vous pourrez ajuster avant validation.
+          </p>
+          <Select
+            value=""
+            onChange={(e) => {
+              if (e.target.value) hydrateFromLead(e.target.value);
+            }}
+          >
+            <option value="">— Sélectionner un lead —</option>
+            {leads.map((l) => {
+              const labelParts = [l.full_name, l.email];
+              if (l.formation_slug)
+                labelParts.push(`[${l.formation_slug.toUpperCase()}]`);
+              const dateStr = new Date(l.created_at).toLocaleDateString(
+                "fr-FR",
+                { day: "2-digit", month: "short" }
+              );
+              return (
+                <option key={l.id} value={l.id}>
+                  {labelParts.join(" · ")} — {l.status} ({dateStr})
+                </option>
+              );
+            })}
+          </Select>
+        </div>
+      )}
+
       {/* Section 1 — Informations personnelles */}
       <Section
         icon={User}

@@ -19,29 +19,44 @@ export default async function NewStudentPage({
 }) {
   const supabase = createClient();
 
-  const [{ data: formations }, { data: staff }, { data: trainers }, { data: funders }] =
-    await Promise.all([
-      supabase
-        .from("formations")
-        .select("slug, code, title")
-        .eq("active", true)
-        .order("code"),
-      // Référents pédagogiques = admin / super_admin
-      supabase
-        .from("profiles")
-        .select("id, full_name, email, role")
-        .in("role", ["admin", "super_admin"])
-        .eq("disabled", false)
-        .order("full_name"),
-      // Formateurs = trainer
-      supabase
-        .from("profiles")
-        .select("id, full_name, email, role")
-        .eq("role", "trainer")
-        .eq("disabled", false)
-        .order("full_name"),
-      supabase.from("funders").select("id, name, kind").order("name"),
-    ]);
+  const [
+    { data: formations },
+    { data: staff },
+    { data: trainers },
+    { data: funders },
+    { data: leads },
+  ] = await Promise.all([
+    supabase
+      .from("formations")
+      .select("slug, code, title")
+      .eq("active", true)
+      .order("code"),
+    // Référents pédagogiques = admin / super_admin
+    supabase
+      .from("profiles")
+      .select("id, full_name, email, role")
+      .in("role", ["admin", "super_admin"])
+      .eq("disabled", false)
+      .order("full_name"),
+    // Formateurs = trainer
+    supabase
+      .from("profiles")
+      .select("id, full_name, email, role")
+      .eq("role", "trainer")
+      .eq("disabled", false)
+      .order("full_name"),
+    supabase.from("funders").select("id, name, kind").order("name"),
+    // Leads non-terminaux (à contacter ou en cours d'échange) pour le
+    // dropdown "Importer depuis un lead" qui pré-remplit le formulaire.
+    supabase
+      .from("enrollment_requests")
+      .select(
+        "id, full_name, email, phone, adresse, code_postal, ville, formation_slug, funding_kind, message, status, created_at"
+      )
+      .in("status", ["nouveau", "contacte", "devis_envoye"])
+      .order("created_at", { ascending: false })
+      .limit(50),
+  ]);
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -74,6 +89,7 @@ export default async function NewStudentPage({
             staff={staff ?? []}
             trainers={trainers ?? []}
             funders={funders ?? []}
+            leads={(leads ?? []) as any[]}
             initialValues={{
               full_name: searchParams?.full_name,
               email: searchParams?.email,

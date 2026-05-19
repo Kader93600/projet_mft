@@ -32,6 +32,9 @@ export async function POST(req: Request) {
   const lastName = String(body?.lastName ?? "").trim();
   const email = String(body?.email ?? "").trim().toLowerCase();
   const phone = String(body?.phone ?? "").trim() || null;
+  const adresse = String(body?.adresse ?? "").trim() || null;
+  const codePostal = String(body?.code_postal ?? "").trim() || null;
+  const ville = String(body?.ville ?? "").trim() || null;
   const formation = String(body?.formation ?? "").trim() || null;
   const financeur = String(body?.financeur ?? "").trim() || null;
   const pack = String(body?.pack ?? "").trim() || null;
@@ -65,6 +68,10 @@ export async function POST(req: Request) {
     full_name: `${firstName} ${lastName}`.trim(),
     email,
     phone,
+    adresse,
+    code_postal: codePostal,
+    ville,
+    formation_slug: formation || null,
     funding_kind: financeur ? fundingMap[financeur] ?? "autre" : "auto",
     message: [
       formation ? `Formation visée : ${formation}` : null,
