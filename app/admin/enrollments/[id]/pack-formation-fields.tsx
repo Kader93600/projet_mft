@@ -256,23 +256,12 @@ function PriceHelper({
   packName: string;
   onApply: () => void;
 }) {
+  // État "no-price" : on n'affiche plus le bandeau d'avertissement
+  // pour ne pas bruiter l'UI quand la matrice /admin/pricing n'est pas
+  // remplie pour la combinaison choisie. L'admin saisit librement le
+  // montant — c'est sa responsabilité de cohérence.
   if (state === "no-price") {
-    return (
-      <div className="rounded-xl border border-rose-200 bg-rose-50/60 px-3.5 py-2.5 text-[13px] text-rose-800 flex items-start gap-2">
-        <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
-        <div>
-          <strong>Aucun prix catalogue actif</strong> pour cette combinaison.
-          Vérifiez la matrice{" "}
-          <a
-            href="/admin/pricing"
-            className="underline underline-offset-2 hover:text-rose-900"
-          >
-            /admin/pricing
-          </a>
-          .
-        </div>
-      </div>
-    );
+    return null;
   }
 
   if (state === "to-fill" && catalogPriceCents != null) {
