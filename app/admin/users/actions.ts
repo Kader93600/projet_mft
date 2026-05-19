@@ -48,6 +48,9 @@ const createStudentSchema = z.object({
       "termine",
     ])
     .default("en_cours"),
+  /** Pack pédagogique : determine les fonctionnalités (Initial = autonome,
+   *  Medium = formateur attitré, Premium = présentiel + Zoom + IA tuteur). */
+  pack: z.enum(["initial", "medium", "premium"]).default("initial"),
   total_amount_cents: z.number().int().min(0).max(99_999_999).optional(),
 
   // Accès
@@ -216,7 +219,13 @@ export async function createStudent(raw: unknown): Promise<CreateStudentResult> 
   }
   console.log("[createStudent] 5/ profile upserted");
 
-  // 3) Création de l'enrollment
+  // 3) Création de l'enrollment.
+  // Pour Capacité ≤ 3,5t : seul le pack 'initial' est autorisé par le
+  // trigger SQL côté DB. Si l'admin a forcé un autre pack, on force
+  // 'initial' pour éviter une erreur côté insert.
+  const isCapaLight = formation.slug === "capacite-3-5t";
+  const safePack = isCapaLight ? "initial" : data.pack;
+
   const enrollmentPayload: Record<string, any> = {
     user_id: userId,
     formation_slug: formation.slug,
@@ -227,6 +236,7 @@ export async function createStudent(raw: unknown): Promise<CreateStudentResult> 
       data.session_label || `${formation.slug}-${new Date().getFullYear()}`,
     start_date: data.entry_date || null,
     status: data.enrollment_status,
+    pack: safePack,
     total_amount_cents: data.total_amount_cents ?? 0,
   };
 

@@ -168,6 +168,7 @@ export function CreateStudentForm({
       | "a_payer"
       | "en_cours"
       | "termine",
+    pack: "initial" as "initial" | "medium" | "premium",
     total_amount_eur: "",
 
     // Accès
@@ -201,6 +202,7 @@ export function CreateStudentForm({
           funder_id: f.funder_id || null,
           funding_kind: f.funding_kind,
           enrollment_status: f.enrollment_status,
+          pack: f.pack,
           total_amount_cents: f.total_amount_eur
             ? Math.round(Number(f.total_amount_eur) * 100)
             : 0,
@@ -332,6 +334,7 @@ export function CreateStudentForm({
                 funder_id: "",
                 funding_kind: "auto",
                 enrollment_status: "en_cours",
+                pack: "initial",
                 total_amount_eur: "",
                 access_mode: "invite",
                 initial_password: "",
@@ -530,6 +533,17 @@ export function CreateStudentForm({
                 </div>
               )}
           </Field>
+
+          {/* Sélecteur de pack pédagogique. Capacité ≤ 3,5t = Initial
+              uniquement (contrainte trigger SQL). */}
+          <Field label="Pack pédagogique" className="md:col-span-2">
+            <PackPicker
+              value={f.pack}
+              onChange={(p) => setF((s) => ({ ...s, pack: p }))}
+              capaLight={f.formation_slug === "capacite-3-5t"}
+            />
+          </Field>
+
           <Field label="Session / Promotion">
             <Input
               value={f.session_label}
@@ -808,4 +822,92 @@ function Field({
 
 function UserPlusIcon() {
   return <Sparkles className="h-4 w-4" />;
+}
+
+/**
+ * 3 cards Initial / Medium / Premium — cohérent avec la matrice de
+ * pricing utilisée dans /admin/enrollments/[id] et /contact.
+ */
+function PackPicker({
+  value,
+  onChange,
+  capaLight,
+}: {
+  value: "initial" | "medium" | "premium";
+  onChange: (p: "initial" | "medium" | "premium") => void;
+  /** Si la formation est capacite-3-5t, force Initial (contrainte DB) */
+  capaLight: boolean;
+}) {
+  const packs: {
+    key: "initial" | "medium" | "premium";
+    label: string;
+    desc: string;
+    tone: string;
+  }[] = [
+    {
+      key: "initial",
+      label: "Initial",
+      desc: "Cours + IA",
+      tone: "text-signal-700 border-signal-300 bg-signal-50/60",
+    },
+    {
+      key: "medium",
+      label: "Medium",
+      desc: "Formateur dédié",
+      tone: "text-brand-700 border-brand-300 bg-brand-50/60",
+    },
+    {
+      key: "premium",
+      label: "Premium",
+      desc: "Présentiel + Zoom",
+      tone: "text-gold-800 border-gold-300 bg-gold-50/60",
+    },
+  ];
+  return (
+    <div className="space-y-1.5">
+      <div className="grid grid-cols-3 gap-2">
+        {packs.map((p) => {
+          const active = value === p.key;
+          const disabled = capaLight && p.key !== "initial";
+          return (
+            <button
+              key={p.key}
+              type="button"
+              disabled={disabled}
+              onClick={() => onChange(p.key)}
+              className={
+                "rounded-xl border px-3 py-2.5 text-left transition disabled:opacity-40 disabled:cursor-not-allowed " +
+                (active && !disabled
+                  ? p.tone + " ring-2 ring-offset-1 ring-current"
+                  : "border-navy-100 bg-white hover:border-navy-300")
+              }
+            >
+              <div
+                className={
+                  "text-[10px] font-bold uppercase tracking-wider " +
+                  (active && !disabled ? "" : "text-slate-500")
+                }
+              >
+                {p.label}
+              </div>
+              <div
+                className={
+                  "text-sm mt-0.5 " +
+                  (active && !disabled ? "" : "text-navy-900")
+                }
+              >
+                {p.desc}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+      {capaLight && (
+        <p className="text-xs text-slate-500">
+          Capacité ≤ 3,5t : seul le pack <strong>Initial</strong> est
+          autorisé (contrainte réglementaire de la formation).
+        </p>
+      )}
+    </div>
+  );
 }
