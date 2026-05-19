@@ -13,7 +13,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const VERSION = "v5";
+const VERSION = "v6";
 const OUTPUT = resolve(__dirname, "output", `MFT-Roadmap-Checklist-${VERSION}.pdf`);
 mkdirSync(dirname(OUTPUT), { recursive: true });
 
@@ -58,6 +58,31 @@ type Section = {
 // Affichés sur la page "Ce qui a été livré récemment".
 type Delivery = { title: string; desc: string };
 const RECENT_DELIVERIES: Delivery[] = [
+  {
+    title: "P3 #3 LIVRÉ — UTM tracking + funnel multi-touch first-touch",
+    desc:
+      "Cookie httpOnly mft_vid (90 j) + endpoint /api/acquisition/track + composant AcquisitionTracker monté globalement (filtre 30 préfixes auth pour ne capter que les pages publiques). Table acquisition_events + 4 vues admin (acquisition_attribution, vw_admin_funnel_by_utm, vw_admin_top_campaigns, vw_admin_acquisition_daily). Page /admin/analytics/acquisition avec 4 KPIs (visiteurs, signups, payants, top canal), tableau funnel par source × medium × campagne avec taux de conversion, courbe 30 j, top campagnes, encart explicatif UTM. Permet de mesurer le ROI marketing par canal (Instagram, LinkedIn, Google Ads, etc.).",
+  },
+  {
+    title: "P3 #3 LIVRÉ — CRM léger (pipeline + notes + relances + cron quotidien)",
+    desc:
+      "Étend enrollment_requests avec assigné, relances, snooze, tags. Tables lead_notes (call/email/sms/meeting/note) + lead_activities (audit trail auto via trigger). Pages /admin/crm (KPIs + ma file + pool non-assigné) et /admin/crm/[id] (drill-down complet avec barre d'actions, quick pickers relance/snooze, formulaire note 5 types, timeline, tags editor). Server actions 11 fonctions sécurisées via ensureAdmin. Cron /api/cron/crm-followup quotidien à 08:00 UTC : notif in-app + email récap à chaque admin avec leads en relance due. Décisions client : self-assign, notes visibles entre admins, email seul.",
+  },
+  {
+    title: "P3 #2 LIVRÉ — Multi-tenant entreprise B2B (MVP v1)",
+    desc:
+      "Permet aux entreprises clientes (transporteurs, gestionnaires de flotte) d'inscrire plusieurs salariés et suivre leur progression. Tables organizations + organization_members avec 3 rôles (org_admin, org_viewer, org_learner). ALTER enrollments avec organization_id + seats_reserved. RLS critique : isolation cross-orga testée. Pages /organisation (dashboard + KPIs + liens rapides), /organisation/stagiaires, /organisation/parametres/equipe (gestion membres). Côté admin MFT : /admin/organizations (liste + KPIs globaux) + nouveau (formulaire création avec rattachement contact en org_admin) + détail. Stripe checkout étendu accepte body.organization_id. Décision client : 1 facture/stagiaire (option A) en v1.",
+  },
+  {
+    title: "P3 #2 LIVRÉ — Dashboard financeur enrichi (drill-down + exports + notifs)",
+    desc:
+      "Étend l'existant (table funders + RLS portail) avec un vrai portail temps réel. Vue funder_student_details (progression, score, examen blanc, certification, dernière activité, jours d'inactivité). Vue funder_recent_events (timeline 90 j). 3 triggers notifications financeur sur jalons (1er ping = entrée formation, 1er examen blanc passé, certification finale). Page /financeur enrichie avec 4 KPIs + carte budget + timeline. /financeur/stagiaires (tableau filtrable). /financeur/stagiaires/[id] (drill-down complet). Exports CSV + JSON avec respect RGPD (pas de messages stagiaire/formateur).",
+  },
+  {
+    title: "P3 #2 LIVRÉ — Programme de parrainage (50 € parrain + -10 % filleul)",
+    desc:
+      "3 tables (referral_codes, referrals, user_credits ledger event-sourced) + 7 RPCs + trigger anti-self-referral + RLS. Stripe checkout accepte referrer_code (validé serveur-side, applique -10 % au filleul, crée pending referral). Webhook qualifie le referral après paiement + consomme le crédit annoncé. Page stagiaire /parrainage avec hero code + 4 boutons partage (copy/WhatsApp/email/native Share API) + 4 KPIs + liste filleuls + historique crédit. Page admin /admin/referrals avec file d'attente cashout + valider/refuser. Plafond : 10 parrainages/an/parrain.",
+  },
   {
     title: "P3 #1 LIVRÉ —IA Tuteur (Claude Sonnet 4.6) + correction QR par IA",
     desc:
@@ -506,39 +531,64 @@ const SECTIONS: Section[] = [
       },
       {
         title: "P3 #2 — Business & comptes pros",
+        status: "done",
         steps: [
           {
             title: "Multi-tenant (1 espace dédié par entreprise cliente)",
+            detail:
+              "Tables organizations + organization_members (3 rôles), RLS isolation cross-orga, pages /organisation + /admin/organizations, Stripe checkout étendu avec organization_id. Option A (1 facture/stagiaire) en v1.",
+            done: true,
           },
           {
             title:
               "Dashboard financeur (OPCO, Pôle Emploi) avec exports CSV/PDF",
+            detail:
+              "Vue funder_student_details + 3 triggers notifications jalons (entrée formation, examen blanc, certification). Page /financeur enrichie : KPIs + drill-down stagiaire + exports CSV/JSON. Respect RGPD (pas de messages stagiaire/formateur).",
+            done: true,
           },
           {
             title:
               "Programme d'affiliation (lien parrainage + commission auto)",
+            detail:
+              "50 € crédit parrain + -10 % filleul. 3 tables + 7 RPCs + Stripe étendu (referrer_code) + page /parrainage + /admin/referrals. Plafond 10 parrainages/an. Validation admin systématique en v1.",
+            done: true,
           },
           {
             title:
               "Marketplace de formateurs externes (les formateurs créent et vendent leurs propres parcours)",
+            detail:
+              "Scaffolding livré (tables modules.created_by, trainer_payouts, trainer_revenue_events + page placeholder /admin/marketplace). Bloqué par 3 pré-requis client : validation juridique CGU, Stripe Connect, 2-3 formateurs partenaires. Roadmap détaillée dans docs/p3-2-marketplace-roadmap.md.",
           },
         ],
       },
       {
         title: "P3 #3 — Marketing & data",
+        status: "done",
         steps: [
           {
             title:
               "Stats communication automatisées (Instagram/LinkedIn -> dashboard interne)",
+            detail:
+              "Reporté en P4. Bloqué par 3 pré-requis client : compte Instagram Business activé, page LinkedIn entreprise, applications Developer Meta + LinkedIn créées + reviewées (~1-2 sem. de validation).",
           },
           {
             title:
               "Funnel d'acquisition complet (UTM tracking + attribution multi-touch)",
+            detail:
+              "First-touch attribution. Cookie httpOnly mft_vid (90 j) + AcquisitionTracker global (filtre 30 préfixes auth). Table acquisition_events + 4 vues admin. Page /admin/analytics/acquisition avec funnel par source × medium × campagne + courbe 30 j + top campagnes.",
+            done: true,
           },
-          { title: "CRM léger intégré (suivi des prospects en pré-inscription)" },
+          {
+            title: "CRM léger intégré (suivi des prospects en pré-inscription)",
+            detail:
+              "Étend enrollment_requests + tables lead_notes + lead_activities (audit trail auto). Pages /admin/crm (KPIs + ma file + pool) et /admin/crm/[id] (drill-down + quick pickers relance/snooze + 5 types de notes). Cron quotidien /api/cron/crm-followup avec email récap aux admins.",
+            done: true,
+          },
           {
             title:
               "Programme de fidélité (réduction sur 2ᵉ formation, certificat doré)",
+            detail:
+              "Reporté en v2. Couvert partiellement par le système de crédit utilisateur du parrainage (réutilisable pour des bonus fidélité).",
           },
         ],
       },
