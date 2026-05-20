@@ -539,6 +539,9 @@
     "yourAnswer": "Your answer",
     "trainerCommentBadge": "Trainer comment",
     "ctaRestart": "Restart",
+    "remediationTitle": "Review before retrying",
+    "remediationDesc": "Go back over these lessons from the \"{module}\" module to consolidate, then retake the test.",
+    "remediationDone": "Done",
     "ctaMyResults": "View my results",
     "ctaDashboard": "Dashboard",
     "examBadge": "Mock exam"

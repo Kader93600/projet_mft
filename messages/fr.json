@@ -539,6 +539,9 @@
     "yourAnswer": "Votre réponse",
     "trainerCommentBadge": "Commentaire formateur",
     "ctaRestart": "Recommencer",
+    "remediationTitle": "Réviser avant de retenter",
+    "remediationDesc": "Reprenez ces leçons du module « {module} » pour consolider, puis relancez l'épreuve.",
+    "remediationDone": "Terminée",
     "ctaMyResults": "Voir mes résultats",
     "ctaDashboard": "Tableau de bord",
     "examBadge": "Examen blanc"

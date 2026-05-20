@@ -20,6 +20,8 @@ import {
   LayoutDashboard,
   HelpCircle,
   Info,
+  BookOpen,
+  ArrowRight,
 } from "lucide-react";
 import { cn, scoreColor } from "@/lib/utils";
 import { FormationBadge } from "@/components/formation/formation-badge";
@@ -87,7 +89,7 @@ export default async function QuizResultsPage({
        finished_at, started_at, duration_s, graded_at, graded_by,
        trainer_global_comment, mode, answers,
        quiz:quizzes(id, title, description, type, is_mock_exam, pass_threshold,
-                    requires_manual_grading)`
+                    requires_manual_grading, module_id, module:modules(slug, title))`
     )
     .eq("id", params.attemptId)
     .maybeSingle();
@@ -175,6 +177,45 @@ export default async function QuizResultsPage({
   const durationMin = attempt.duration_s
     ? Math.max(1, Math.round(attempt.duration_s / 60))
     : null;
+
+  // ─── Remédiation adaptative : en cas d'ÉCHEC, on propose de revoir les
+  // leçons du module rattaché au quiz (les non terminées en priorité).
+  // Quiz global (sans module) → pas de ciblage possible, on n'affiche rien.
+  type RemediationLesson = { slug: string; title: string; done: boolean };
+  let remediation:
+    | { moduleSlug: string; moduleTitle: string; lessons: RemediationLesson[] }
+    | null = null;
+  const quizModuleId: string | null = (quiz as any)?.module_id ?? null;
+  const quizModule = (quiz as any)?.module ?? null;
+  if (isGraded && !finalPassed && quizModuleId && quizModule?.slug) {
+    const [{ data: remLessons }, { data: remProgress }] = await Promise.all([
+      supabase
+        .from("lessons")
+        .select("id, slug, title, order")
+        .eq("module_id", quizModuleId)
+        .order("order"),
+      supabase
+        .from("lesson_progress")
+        .select("lesson_id, completed")
+        .eq("user_id", attempt.user_id)
+        .eq("completed", true),
+    ]);
+    const doneSet = new Set(
+      (remProgress ?? []).map((r: any) => r.lesson_id as string),
+    );
+    const lessons: RemediationLesson[] = (remLessons ?? []).map((l: any) => ({
+      slug: l.slug,
+      title: l.title,
+      done: doneSet.has(l.id),
+    }));
+    if (lessons.length > 0) {
+      remediation = {
+        moduleSlug: quizModule.slug,
+        moduleTitle: quizModule.title,
+        lessons,
+      };
+    }
+  }
 
   return (
     <div className="max-w-3xl mx-auto pb-20">
@@ -639,6 +680,64 @@ export default async function QuizResultsPage({
               </section>
             )}
           </>
+        )}
+
+        {/* === Remédiation : revoir les leçons du module (échec) === */}
+        {remediation && (
+          <section>
+            <Card variant="gold">
+              <CardBody>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <BookOpen className="h-4 w-4 text-gold-700" />
+                  <span className="eyebrow text-gold-800">
+                    {t("remediationTitle")}
+                  </span>
+                </div>
+                <p className="text-sm text-slate-600 mb-4">
+                  {t("remediationDesc", { module: remediation.moduleTitle })}
+                </p>
+                <ul className="space-y-2">
+                  {remediation.lessons.map((l) => (
+                    <li key={l.slug}>
+                      <Link
+                        href={`/modules/${remediation!.moduleSlug}/${l.slug}`}
+                        className={cn(
+                          "group flex items-center gap-3 rounded-xl border px-4 py-3 transition-colors",
+                          l.done
+                            ? "border-navy-100 bg-white hover:border-navy-200"
+                            : "border-gold-200 bg-gold-50/50 hover:border-gold-300",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "h-7 w-7 shrink-0 rounded-lg flex items-center justify-center",
+                            l.done
+                              ? "bg-emerald-50 text-emerald-600"
+                              : "bg-gold-100 text-gold-700",
+                          )}
+                        >
+                          {l.done ? (
+                            <CheckCircle2 className="h-4 w-4" />
+                          ) : (
+                            <BookOpen className="h-4 w-4" />
+                          )}
+                        </span>
+                        <span className="flex-1 min-w-0 text-[14px] font-medium text-navy-900 truncate">
+                          {l.title}
+                        </span>
+                        {l.done && (
+                          <span className="text-[11px] text-emerald-700 font-medium shrink-0">
+                            {t("remediationDone")}
+                          </span>
+                        )}
+                        <ArrowRight className="h-4 w-4 text-slate-400 shrink-0 transition-transform group-hover:translate-x-0.5" />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </CardBody>
+            </Card>
+          </section>
         )}
 
         {/* CTA — 3 boutons (recommencer / mes résultats / dashboard) */}
