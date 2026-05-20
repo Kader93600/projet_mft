@@ -227,6 +227,7 @@ export default async function InscriptionPage({
                 <div className="px-6 py-4 border-b border-navy-50">
                   <CardTitle className="text-base">Échéancier</CardTitle>
                 </div>
+                <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="bg-navy-50 text-[11px] uppercase tracking-wider text-slate-600">
                     <tr>
@@ -272,6 +273,7 @@ export default async function InscriptionPage({
                       ))}
                   </tbody>
                 </table>
+                </div>
               </CardBody>
             </Card>
           )}

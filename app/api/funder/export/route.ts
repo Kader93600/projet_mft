@@ -110,7 +110,9 @@ export async function GET(req: NextRequest) {
 
   const escape = (v: any): string => {
     if (v === null || v === undefined) return "";
-    const s = String(v);
+    let s = String(v);
+    // Protection anti formula-injection (OWASP)
+    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
     if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
     return s;
   };
@@ -142,7 +144,9 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  return new NextResponse(lines.join("\n"), {
+  // BOM UTF-8 (﻿) pour qu'Excel affiche correctement les accents,
+  // + séparateur de ligne RFC 4180 (\r\n).
+  return new NextResponse("﻿" + lines.join("\r\n"), {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
       "Content-Disposition": `attachment; filename="${filename}"`,

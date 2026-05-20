@@ -10,7 +10,15 @@ export type CsvRow = Record<string, string | number | boolean | null | undefined
 
 function escapeCell(v: unknown): string {
   if (v === null || v === undefined) return "";
-  const s = String(v);
+  let s = String(v);
+  // Protection anti formula-injection (OWASP) : une cellule qui commence
+  // par = + - @ | (ou tab/CR) est interprétée comme une formule par
+  // Excel/LibreOffice/Sheets. On la neutralise en la préfixant d'une
+  // apostrophe, ce qui force l'interprétation en texte. Indispensable
+  // car les champs viennent d'utilisateurs (nom, message de lead, etc.).
+  if (/^[=+\-@\t\r]/.test(s)) {
+    s = "'" + s;
+  }
   if (/[",\n\r]/.test(s)) {
     return `"${s.replace(/"/g, '""')}"`;
   }

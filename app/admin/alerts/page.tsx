@@ -51,6 +51,7 @@ export default async function AdminAlertsPage() {
               ✅ Tous les stagiaires actifs sont à jour.
             </div>
           ) : (
+            <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-navy-50 text-[11px] uppercase tracking-wider text-slate-600">
                 <tr>
@@ -114,6 +115,7 @@ export default async function AdminAlertsPage() {
                 })}
               </tbody>
             </table>
+            </div>
           )}
         </CardBody>
       </Card>

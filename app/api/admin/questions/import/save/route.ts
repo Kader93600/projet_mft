@@ -73,7 +73,26 @@ const payloadSchema = z.object({
   quiz_type: z.enum(["entrainement", "examen"]).optional(),
   /** Description optionnelle du quiz. */
   quiz_description: z.string().trim().max(2000).optional(),
-});
+}).refine(
+  (data) => {
+    // Si on active immédiatement les questions, chaque QCM DOIT avoir
+    // au moins une bonne réponse cochée (sinon question incorrigeable :
+    // score toujours 0). En mode brouillon (active=false par défaut),
+    // on tolère — la validation manuelle corrigera avant activation.
+    if (!data.activate_immediately) return true;
+    return data.questions.every(
+      (q) =>
+        q.type !== "qcm" ||
+        (Array.isArray(q.choices) &&
+          q.choices.some((c) => c.is_correct === true)),
+    );
+  },
+  {
+    message:
+      "Activation immédiate impossible : au moins un QCM n'a aucune bonne réponse cochée. Importez en brouillon pour valider d'abord.",
+    path: ["activate_immediately"],
+  },
+);
 
 export async function POST(req: NextRequest) {
   try {

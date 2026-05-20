@@ -47,6 +47,10 @@ export async function GET(req: Request) {
 
   try {
     // 1. Récupère tous les leads dont la relance est due, groupés par admin
+    // ⚠️ PostgREST n'évalue PAS now() dans une valeur de filtre (traité
+    // comme littéral texte). On calcule le timestamp côté JS pour que
+    // la branche "snooze expiré" fonctionne réellement.
+    const nowIso = new Date().toISOString();
     const { data: dueLeads, error: leadsErr } = await supabase
       .from("enrollment_requests")
       .select(`
@@ -54,8 +58,8 @@ export async function GET(req: Request) {
         admin:profiles!enrollment_requests_assigned_to_admin_id_fkey ( id, full_name, email )
       `)
       .not("assigned_to_admin_id", "is", null)
-      .lte("next_followup_at", new Date().toISOString())
-      .or("snoozed_until.is.null,snoozed_until.lte.now()")
+      .lte("next_followup_at", nowIso)
+      .or(`snoozed_until.is.null,snoozed_until.lte.${nowIso}`)
       .in("status", ["nouveau", "contacte", "devis_envoye"]);
 
     if (leadsErr) {

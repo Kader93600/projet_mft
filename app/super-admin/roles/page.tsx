@@ -40,7 +40,7 @@ export default async function RolesPage() {
       </header>
 
       <Card>
-        <CardBody className="p-0">
+        <CardBody className="p-0 overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-navy-50 text-[11px] uppercase tracking-wider text-slate-600">
               <tr>

@@ -8,6 +8,7 @@ import {
 } from "@react-pdf/renderer";
 import React from "react";
 import { createClient } from "@/lib/supabase/server";
+import { canAccessEnrollment } from "@/lib/enrollment-access";
 import { LEGAL } from "@/lib/legal-config";
 import { resolveEnrollmentFormation } from "@/lib/enrollment-formation";
 import {
@@ -165,6 +166,10 @@ export async function GET(
 
   if (!enrollment) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
+  }
+  // Défense en profondeur : owner OU staff uniquement
+  if (!(await canAccessEnrollment(user.id, (enrollment as any).user_id))) {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
   const stagiaire = (enrollment as any).user;
   if (!stagiaire) {
