@@ -121,7 +121,7 @@ export function AppShell({ children, profile }: AppShellProps) {
           </div>
           <div className="flex items-center gap-2">
             <div className="hidden lg:block">
-              <SearchPalette />
+              <SearchPalette role={profile.role} />
             </div>
             <ThemeToggle />
             <LocaleToggle />

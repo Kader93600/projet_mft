@@ -1,9 +1,20 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BookOpen, ClipboardCheck, FileText, Library, Search, X } from "lucide-react";
+import { useTranslations } from "next-intl";
+import {
+  ArrowRight,
+  BookOpen,
+  ClipboardCheck,
+  Command as CommandIcon,
+  FileText,
+  Library,
+  Search,
+  X,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { STUDENT_GROUPS, ADMIN_GROUPS } from "@/components/nav-groups";
 
 type Result = {
   kind: "module" | "lesson" | "quiz" | "glossary";
@@ -13,6 +24,14 @@ type Result = {
   url: string;
   bloc_code: string;
   rank: number;
+};
+
+// Commande de navigation (réutilise le registre nav-groups, role-aware).
+type Command = {
+  href: string;
+  label: string;
+  group: string;
+  icon: any;
 };
 
 const ICONS = {
@@ -29,7 +48,9 @@ const KIND_LABEL: Record<Result["kind"], string> = {
   glossary: "Glossaire",
 };
 
-export function SearchPalette() {
+type Role = "student" | "trainer" | "admin" | "super_admin";
+
+export function SearchPalette({ role = "student" }: { role?: Role }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [results, setResults] = useState<Result[]>([]);
@@ -37,14 +58,61 @@ export function SearchPalette() {
   const [cursor, setCursor] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const t = useTranslations();
 
-  // Raccourcis clavier
+  // ── Commandes de navigation, filtrées par rôle ──────────────────────
+  // Tout le monde voit la nav stagiaire ; admin/super_admin ajoutent la
+  // nav admin. (Cohérent avec ce que l'AppShell expose déjà.)
+  const commands = useMemo<Command[]>(() => {
+    const groups =
+      role === "admin" || role === "super_admin"
+        ? [...STUDENT_GROUPS, ...ADMIN_GROUPS]
+        : STUDENT_GROUPS;
+    return groups.flatMap((g) =>
+      g.items.map((it) => ({
+        href: it.href,
+        label: t(it.labelKey),
+        group: t(g.labelKey),
+        icon: it.icon,
+      })),
+    );
+  }, [role, t]);
+
+  // Commandes filtrées par la saisie (match libellé ou href).
+  const cmdMatches = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    if (!term) return commands; // requête vide → menu de navigation complet
+    return commands.filter(
+      (c) =>
+        c.label.toLowerCase().includes(term) ||
+        c.href.toLowerCase().includes(term),
+    );
+  }, [q, commands]);
+
+  // Quand on tape, on borne les commandes pour laisser de la place au
+  // contenu ; à vide, on montre tout (c'est le « menu »).
+  const shownCommands = q.trim() ? cmdMatches.slice(0, 6) : cmdMatches;
+
+  // Liste unifiée pour la navigation clavier : commandes puis contenu.
+  const navItems = useMemo(
+    () => [
+      ...shownCommands.map((c) => ({ type: "cmd" as const, cmd: c })),
+      ...results.map((r) => ({ type: "result" as const, result: r })),
+    ],
+    [shownCommands, results],
+  );
+
+  // Raccourcis clavier globaux (⌘K / Ctrl+K, "/", Esc)
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setOpen((v) => !v);
-      } else if (e.key === "/" && document.activeElement?.tagName !== "INPUT" && document.activeElement?.tagName !== "TEXTAREA") {
+      } else if (
+        e.key === "/" &&
+        document.activeElement?.tagName !== "INPUT" &&
+        document.activeElement?.tagName !== "TEXTAREA"
+      ) {
         e.preventDefault();
         setOpen(true);
       } else if (e.key === "Escape") {
@@ -65,14 +133,19 @@ export function SearchPalette() {
     }
   }, [open]);
 
-  // Debounced fetch
+  // Réinitialise le curseur quand la liste change.
+  useEffect(() => {
+    setCursor(0);
+  }, [q]);
+
+  // Recherche de contenu (debounce) — inchangée.
   useEffect(() => {
     if (q.trim().length < 2) {
       setResults([]);
       return;
     }
     const ctrl = new AbortController();
-    const t = setTimeout(async () => {
+    const timer = setTimeout(async () => {
       setLoading(true);
       try {
         const r = await fetch(`/api/search?q=${encodeURIComponent(q)}`, {
@@ -80,7 +153,6 @@ export function SearchPalette() {
         });
         const j = await r.json();
         setResults(j.results ?? []);
-        setCursor(0);
       } catch {
         /* noop */
       } finally {
@@ -89,29 +161,38 @@ export function SearchPalette() {
     }, 180);
     return () => {
       ctrl.abort();
-      clearTimeout(t);
+      clearTimeout(timer);
     };
   }, [q]);
 
-  const go = useCallback(
+  const goResult = useCallback(
     (r: Result) => {
       setOpen(false);
       router.push(r.url);
     },
-    [router]
+    [router],
+  );
+
+  const goCommand = useCallback(
+    (c: Command) => {
+      setOpen(false);
+      router.push(c.href);
+    },
+    [router],
   );
 
   function onKey(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setCursor((c) => Math.min(c + 1, results.length - 1));
+      setCursor((c) => Math.min(c + 1, navItems.length - 1));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setCursor((c) => Math.max(c - 1, 0));
     } else if (e.key === "Enter") {
       e.preventDefault();
-      const r = results[cursor];
-      if (r) go(r);
+      const sel = navItems[cursor];
+      if (sel?.type === "cmd") goCommand(sel.cmd);
+      else if (sel?.type === "result") goResult(sel.result);
       else if (q.trim().length >= 2) {
         setOpen(false);
         router.push(`/recherche?q=${encodeURIComponent(q)}`);
@@ -119,17 +200,19 @@ export function SearchPalette() {
     }
   }
 
+  const hasQuery = q.trim().length >= 2;
+
   return (
     <>
       {/* Trigger */}
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="Rechercher (Ctrl+K)"
+        aria-label="Rechercher ou naviguer (Ctrl+K)"
         className="inline-flex items-center gap-2 h-9 px-3 rounded-xl border border-navy-100 bg-ivory text-sm text-slate-500 hover:text-navy-900 hover:border-navy-200"
       >
         <Search className="h-4 w-4" />
-        <span className="hidden md:inline">Rechercher…</span>
+        <span className="hidden md:inline">Rechercher ou naviguer…</span>
         <kbd className="hidden md:inline ml-2 px-1.5 py-0.5 rounded bg-white border border-navy-100 text-[10px] font-mono text-slate-500">
           ⌘K
         </kbd>
@@ -138,7 +221,7 @@ export function SearchPalette() {
       {open && (
         <div
           role="dialog"
-          aria-label="Recherche globale"
+          aria-label="Recherche et navigation"
           className="fixed inset-0 z-[80] flex items-start justify-center pt-[10vh] px-4"
         >
           <div
@@ -153,7 +236,7 @@ export function SearchPalette() {
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 onKeyDown={onKey}
-                placeholder="Rechercher un module, une leçon, un quiz, un terme…"
+                placeholder="Aller à une page, ou rechercher un module, une leçon, un terme…"
                 className="flex-1 bg-transparent outline-none text-[15px] text-navy-900 placeholder:text-slate-400"
               />
               <button
@@ -166,31 +249,79 @@ export function SearchPalette() {
             </div>
 
             <div className="max-h-[50vh] overflow-y-auto">
-              {loading && (
-                <div className="px-4 py-6 text-sm text-slate-500">Recherche…</div>
-              )}
-              {!loading && q.trim().length < 2 && (
-                <div className="px-4 py-6 text-sm text-slate-500">
-                  Tapez au moins 2 caractères. Utilisez <kbd className="px-1 border rounded">↑</kbd>{" "}
-                  <kbd className="px-1 border rounded">↓</kbd> pour naviguer,{" "}
-                  <kbd className="px-1 border rounded">Entrée</kbd> pour ouvrir.
+              {/* ── Commandes (navigation) ── */}
+              {shownCommands.length > 0 && (
+                <div>
+                  <div className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                    <CommandIcon className="h-3 w-3" />
+                    {hasQuery ? "Commandes" : "Navigation"}
+                  </div>
+                  {shownCommands.map((c, i) => {
+                    const Icon = c.icon;
+                    const active = i === cursor;
+                    return (
+                      <button
+                        key={c.href}
+                        type="button"
+                        onClick={() => goCommand(c)}
+                        onMouseEnter={() => setCursor(i)}
+                        className={cn(
+                          "w-full text-left flex items-center gap-3 px-4 py-2.5",
+                          active ? "bg-gold-50" : "hover:bg-navy-50",
+                        )}
+                      >
+                        <div
+                          className={cn(
+                            "h-8 w-8 rounded-lg flex items-center justify-center shrink-0",
+                            active
+                              ? "bg-gold-500 text-navy-900"
+                              : "bg-navy-50 text-navy-700",
+                          )}
+                        >
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-navy-900 text-[14px] truncate">
+                            {c.label}
+                          </div>
+                          <div className="text-[11px] text-slate-400 truncate">
+                            {c.group}
+                          </div>
+                        </div>
+                        {active && (
+                          <ArrowRight className="h-3.5 w-3.5 text-gold-700 shrink-0" />
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
-              {!loading && q.trim().length >= 2 && results.length === 0 && (
-                <div className="px-4 py-6 text-sm text-slate-500">Aucun résultat.</div>
+
+              {/* ── Contenu (recherche) ── */}
+              {loading && (
+                <div className="px-4 py-4 text-sm text-slate-500">
+                  Recherche…
+                </div>
+              )}
+              {hasQuery && results.length > 0 && (
+                <div className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5 border-t border-navy-50">
+                  <Search className="h-3 w-3" />
+                  Contenu
+                </div>
               )}
               {results.map((r, i) => {
                 const Icon = ICONS[r.kind];
-                const active = i === cursor;
+                const idx = shownCommands.length + i;
+                const active = idx === cursor;
                 return (
                   <button
                     key={`${r.kind}-${r.id}`}
                     type="button"
-                    onClick={() => go(r)}
-                    onMouseEnter={() => setCursor(i)}
+                    onClick={() => goResult(r)}
+                    onMouseEnter={() => setCursor(idx)}
                     className={cn(
                       "w-full text-left flex items-start gap-3 px-4 py-3 border-b border-navy-50 last:border-0",
-                      active ? "bg-gold-50" : "hover:bg-navy-50"
+                      active ? "bg-gold-50" : "hover:bg-navy-50",
                     )}
                   >
                     <div
@@ -198,7 +329,7 @@ export function SearchPalette() {
                         "h-9 w-9 rounded-lg flex items-center justify-center shrink-0",
                         active
                           ? "bg-gold-500 text-navy-900"
-                          : "bg-navy-50 text-navy-700"
+                          : "bg-navy-50 text-navy-700",
                       )}
                     >
                       <Icon className="h-4 w-4" />
@@ -217,16 +348,37 @@ export function SearchPalette() {
                       <div className="font-medium text-navy-900 text-[15px] truncate">
                         {r.title}
                       </div>
-                      <div className="text-xs text-slate-500 truncate">{r.subtitle}</div>
+                      <div className="text-xs text-slate-500 truncate">
+                        {r.subtitle}
+                      </div>
                     </div>
                   </button>
                 );
               })}
+
+              {/* États vides */}
+              {hasQuery &&
+                !loading &&
+                results.length === 0 &&
+                cmdMatches.length === 0 && (
+                  <div className="px-4 py-6 text-sm text-slate-500">
+                    Aucun résultat.
+                  </div>
+                )}
             </div>
 
-            {q.trim().length >= 2 && (
-              <div className="border-t border-navy-100 px-4 py-2 flex items-center justify-between text-[11px] text-slate-500 bg-ivory">
-                <span>{results.length} résultat{results.length > 1 ? "s" : ""}</span>
+            {/* Pied : aide clavier + lien recherche complète */}
+            <div className="border-t border-navy-100 px-4 py-2 flex items-center justify-between text-[11px] text-slate-500 bg-ivory">
+              <span className="hidden sm:flex items-center gap-2">
+                <kbd className="px-1 border rounded">↑</kbd>
+                <kbd className="px-1 border rounded">↓</kbd>
+                naviguer
+                <kbd className="px-1 border rounded ml-1">↵</kbd>
+                ouvrir
+                <kbd className="px-1 border rounded ml-1">esc</kbd>
+                fermer
+              </span>
+              {hasQuery && (
                 <Link
                   href={`/recherche?q=${encodeURIComponent(q)}`}
                   onClick={() => setOpen(false)}
@@ -234,8 +386,8 @@ export function SearchPalette() {
                 >
                   Voir tous les résultats →
                 </Link>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       )}
