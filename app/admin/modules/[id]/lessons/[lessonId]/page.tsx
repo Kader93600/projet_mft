@@ -2,9 +2,10 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Paperclip, History } from "lucide-react";
+import { ArrowLeft, Paperclip, History, Sparkles } from "lucide-react";
 import { LessonForm } from "./lesson-form";
 import { ResourcesManager } from "./resources-manager";
+import { AiGenerateQuestions } from "./ai-generate-questions";
 import { Badge } from "@/components/ui/badge";
 
 export const dynamic = "force-dynamic";
@@ -55,6 +56,16 @@ export default async function EditLessonPage({
         </div>
         <CardBody>
           <LessonForm moduleId={module.id} lesson={lesson} />
+        </CardBody>
+      </Card>
+
+      <Card>
+        <div className="px-6 pt-5 pb-3 border-b border-navy-50 flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-gold-600" />
+          <CardTitle className="text-base">Génération de questions (IA)</CardTitle>
+        </div>
+        <CardBody>
+          <AiGenerateQuestions lessonId={lesson.id} />
         </CardBody>
       </Card>
 
