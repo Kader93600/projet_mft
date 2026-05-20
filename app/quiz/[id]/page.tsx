@@ -197,12 +197,17 @@ export default async function QuizPage({ params }: { params: { id: string } }) {
     (quiz as any).generation_mode === "random_from_bank"
   ) {
     const f = (quiz as any).bank_filters ?? {};
+    // Seed déterministe (user:quiz) → le tirage est STABLE d'un
+    // rechargement à l'autre pendant la passation (corrige le bug où
+    // recharger la page changeait les questions en cours d'épreuve).
+    const examSeed = user ? `${user.id}:${quiz.id}` : null;
     const { data: random } = await supabase.rpc("generate_random_exam", {
       p_formation_slug: f.formation_slug,
       p_qcm_count: f.qcm_count ?? 30,
       p_qr_count: f.qr_count ?? 0,
       p_difficulty: f.difficulties ?? null,
       p_module_ids: null,
+      p_seed: examSeed,
     });
 
     if (random) {
