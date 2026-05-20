@@ -5,6 +5,7 @@ import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress";
+import { computeRiskScore, RISK_LEVEL_LABEL } from "@/lib/risk-score";
 import {
   ArrowLeft,
   Mail,
@@ -151,6 +152,27 @@ export default async function StudentDetailPage({
       )
     : null;
 
+  // Score de risque de décrochage (heuristique transparente, lib/risk-score)
+  const totalLessonsAll = moduleProgress.reduce(
+    (s: number, m: any) => s + m.total,
+    0
+  );
+  const completionPct = totalLessonsAll
+    ? Math.round((totalLessonsDone / totalLessonsAll) * 100)
+    : 0;
+  const risk = computeRiskScore({
+    completionPct,
+    avgScorePct: avgScore,
+    daysSinceLastActivity,
+    attemptsCount: (quizAttempts ?? []).length,
+  });
+  const riskTone =
+    risk.level === "eleve"
+      ? "rose"
+      : risk.level === "moyen"
+        ? "gold"
+        : "success";
+
   return (
     <div className="space-y-8">
       <Link
@@ -210,6 +232,64 @@ export default async function StudentDetailPage({
           </Link>
         </div>
       </header>
+
+      {/* Risque de décrochage (heuristique) */}
+      <Card
+        className={
+          risk.level === "eleve"
+            ? "border-rose-200"
+            : risk.level === "moyen"
+              ? "border-gold-200"
+              : "border-emerald-200"
+        }
+      >
+        <CardBody>
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-3">
+              <div
+                className={
+                  "h-12 w-12 rounded-xl flex items-center justify-center font-display text-lg font-semibold tabular-nums shrink-0 " +
+                  (risk.level === "eleve"
+                    ? "bg-rose-100 text-rose-700"
+                    : risk.level === "moyen"
+                      ? "bg-gold-100 text-gold-800"
+                      : "bg-emerald-100 text-emerald-700")
+                }
+                aria-hidden
+              >
+                {risk.score}
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">
+                  Risque de décrochage
+                </div>
+                <Badge tone={riskTone as any} size="sm" className="mt-1">
+                  {RISK_LEVEL_LABEL[risk.level]}
+                </Badge>
+              </div>
+            </div>
+            <ul className="flex-1 min-w-[14rem] space-y-1 text-sm text-slate-700">
+              {risk.factors.map((f) => (
+                <li key={f} className="flex items-start gap-2">
+                  <span
+                    className={
+                      "mt-1.5 h-1.5 w-1.5 rounded-full shrink-0 " +
+                      (risk.level === "faible"
+                        ? "bg-emerald-500"
+                        : "bg-slate-400")
+                    }
+                  />
+                  {f}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <p className="mt-3 text-[11px] text-slate-400">
+            Score heuristique (inactivité, progression, score, engagement) — aide
+            à la priorisation, non contractuel.
+          </p>
+        </CardBody>
+      </Card>
 
       {/* KPIs */}
       <section className="grid sm:grid-cols-4 gap-4">
