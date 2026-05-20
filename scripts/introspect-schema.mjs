@@ -291,6 +291,8 @@ export type TablesInsert<T extends keyof PublicSchema["Tables"]> =
   PublicSchema["Tables"][T]["Insert"];
 export type TablesUpdate<T extends keyof PublicSchema["Tables"]> =
   PublicSchema["Tables"][T]["Update"];
+export type Views<T extends keyof PublicSchema["Views"]> =
+  PublicSchema["Views"][T]["Row"];
 `;
 
 writeFileSync(new URL("../lib/database.types.ts", import.meta.url), ts);

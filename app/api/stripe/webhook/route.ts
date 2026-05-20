@@ -9,6 +9,24 @@ import { trackServerEvent } from "@/lib/analytics-server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+// Types Stripe minimaux (le projet ne dépend pas du SDK `stripe` ; la
+// signature est vérifiée à la main dans lib/stripe). On modélise
+// uniquement les champs réellement consommés par ce webhook de paiement.
+interface StripeCheckoutSession {
+  id: string;
+  metadata?: Record<string, string | undefined> | null;
+  customer_email?: string | null;
+  customer_details?: { email?: string | null; name?: string | null } | null;
+  amount_total?: number | null;
+  currency?: string | null;
+  invoice?: string | null;
+}
+interface StripeWebhookEvent {
+  id: string;
+  type: string;
+  data: { object: StripeCheckoutSession };
+}
+
 export async function POST(req: Request) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!secret) {
@@ -22,7 +40,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "invalid_signature" }, { status: 400 });
   }
 
-  const event = JSON.parse(raw) as any;
+  const event = JSON.parse(raw) as StripeWebhookEvent;
 
   try {
     switch (event.type) {
@@ -55,7 +73,7 @@ export async function POST(req: Request) {
   return NextResponse.json({ received: true });
 }
 
-async function handlePaid(session: any) {
+async function handlePaid(session: StripeCheckoutSession) {
   // Service-role pour insérer côté admin (le webhook n'a pas de cookie user)
   const supabase = createClient();
 

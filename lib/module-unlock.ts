@@ -1,5 +1,13 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Tables } from "@/lib/database.types";
+
+// Formes typées (Pick sur le schéma réel — cf. lib/database.types.ts) des
+// lignes lues ici. Documente + vérifie les colonnes contre la DB.
+type ModuleRow = Pick<Tables<"modules">, "id" | "order">;
+type LessonRow = Pick<Tables<"lessons">, "id" | "module_id">;
+type LessonProgressRow = Pick<Tables<"lesson_progress">, "lesson_id" | "completed">;
+type LessonViewRow = Pick<Tables<"lesson_views">, "lesson_id" | "completed">;
 
 /**
  * Calcule l'ensemble des modules "débloqués" pour un stagiaire, selon
@@ -55,17 +63,17 @@ export async function computeUnlockedModuleIds(
 
   // Leçons par module
   const lessonsByModule = new Map<string, string[]>();
-  for (const l of (lessonsData ?? []) as any[]) {
+  for (const l of (lessonsData ?? []) as LessonRow[]) {
     const arr = lessonsByModule.get(l.module_id) ?? [];
     arr.push(l.id);
     lessonsByModule.set(l.module_id, arr);
   }
   const completedLessons = new Set<string>();
-  for (const p of (progressData ?? []) as any[]) {
-    if (p.completed) completedLessons.add(p.lesson_id as string);
+  for (const p of (progressData ?? []) as LessonProgressRow[]) {
+    if (p.completed) completedLessons.add(p.lesson_id);
   }
-  for (const v of (viewsData ?? []) as any[]) {
-    if (v.completed) completedLessons.add(v.lesson_id as string);
+  for (const v of (viewsData ?? []) as LessonViewRow[]) {
+    if (v.completed) completedLessons.add(v.lesson_id);
   }
   const moduleComplete = (mid: string): boolean => {
     const ls = lessonsByModule.get(mid) ?? [];
@@ -75,7 +83,7 @@ export async function computeUnlockedModuleIds(
 
   // Regroupe les modules par formation, trie par "order"
   const byFormation = new Map<string, Array<{ id: string; order: number }>>();
-  for (const m of (modulesData ?? []) as any[]) {
+  for (const m of (modulesData ?? []) as ModuleRow[]) {
     const fslug = moduleToFormation.get(m.id);
     if (!fslug) continue;
     const arr = byFormation.get(fslug) ?? [];

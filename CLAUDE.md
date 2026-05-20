@@ -10,7 +10,9 @@ Plateforme e-learning Next.js 14 + Supabase pour la préparation au titre pro GO
 
 ## Architecture clé
 - **Auth & DB** : Supabase. **`supabase/schema.sql` = baseline consolidé** (90 tables, source de vérité du modèle de données, généré par introspection). Historique des 151 migrations dans **`supabase/MIGRATIONS_INDEX.md`**. Contenu/seed dans `supabase/seed.sql` + fichiers `capa_*.sql`.
-- **Types DB** : `lib/database.types.ts` (type `Database`, helpers `Tables<"...">`). Régénérer avec `node scripts/introspect-schema.mjs` après tout changement de schéma.
+- **Types DB** : `lib/database.types.ts` (type `Database`, helpers `Tables<"...">`, `Views<"...">`). Régénérer avec `node scripts/introspect-schema.mjs` après tout changement de schéma.
+  - **Usage opt-in** (recommandé sur chemins critiques) : typer explicitement les lignes lues, ex. `const rows = (data ?? []) as Pick<Tables<"enrollments">, "user_id" | "status">[]`. Documente + vérifie les colonnes contre la DB réelle.
+  - **Câblage global** `createClient<Database>()` non activé : l'introspection REST ne fournit pas les `Relationships`, donc les `select` avec embeds (`modules(...)`) ne s'infèrent pas (≈1100 erreurs). Follow-up : installer la CLI Supabase + `supabase gen types` (nécessite le mot de passe DB) pour des types complets, puis câbler globalement.
 - **Middleware** (`middleware.ts`) : redirige non-auth vers `/login`, gate admin sur `/admin`
 - **AuthLayout** (`components/auth-layout.tsx`) : utilisé par dashboard/modules/quiz/stats/admin
 - **RLS** activé sur toutes les tables. Helper `public.is_admin()` côté Postgres

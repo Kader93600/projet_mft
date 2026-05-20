@@ -9,6 +9,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getFunderAccess } from "@/lib/funder/access";
+import type { Views } from "@/lib/database.types";
+
+type FunderStudentRow = Views<"funder_student_details">;
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -49,7 +52,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const rows = (data ?? []) as any[];
+  const rows = (data ?? []) as FunderStudentRow[];
   const today = new Date().toISOString().slice(0, 10);
   const filename = `mft-financeur-${today}.${format}`;
 
@@ -70,8 +73,8 @@ export async function GET(req: NextRequest) {
         lessons_done: r.lessons_done,
         lessons_total: r.lessons_total,
         progress_pct:
-          r.lessons_total > 0
-            ? Math.round((r.lessons_done / r.lessons_total) * 100)
+          (r.lessons_total ?? 0) > 0
+            ? Math.round(((r.lessons_done ?? 0) / (r.lessons_total as number)) * 100)
             : 0,
         avg_score: r.avg_score,
         mock_exam_attempted: r.mock_exam_attempted,
@@ -108,7 +111,7 @@ export async function GET(req: NextRequest) {
     "montant_total_cts",
   ];
 
-  const escape = (v: any): string => {
+  const escape = (v: unknown): string => {
     if (v === null || v === undefined) return "";
     let s = String(v);
     // Protection anti formula-injection (OWASP)
@@ -120,8 +123,8 @@ export async function GET(req: NextRequest) {
   const lines = [headers.join(",")];
   for (const r of rows) {
     const progress =
-      r.lessons_total > 0
-        ? Math.round((r.lessons_done / r.lessons_total) * 100)
+      (r.lessons_total ?? 0) > 0
+        ? Math.round(((r.lessons_done ?? 0) / (r.lessons_total as number)) * 100)
         : 0;
     lines.push(
       [
