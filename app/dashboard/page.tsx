@@ -33,6 +33,7 @@ import {
   computeModulePercent,
   getModuleKind,
   getUnlockMode,
+  pickNextModule,
   type ModuleProgress,
 } from "@/lib/module-progress";
 
@@ -266,6 +267,17 @@ export default async function DashboardPage() {
   const lockedList = applyLinearLocking(moduleProgressList);
   const stateById = new Map(lockedList.map((p) => [p.id, p.state]));
 
+  // "Next best action" : le module exact à reprendre (in-progress récent,
+  // sinon 1er non démarré accessible). Sert à pointer la CTA héro vers la
+  // bonne page plutôt que vers /modules en général.
+  const nextModule = pickNextModule(lockedList);
+  const nextModuleMeta = nextModule
+    ? (modules ?? []).find((m: any) => m.id === nextModule.id)
+    : null;
+  const resumeHref = nextModuleMeta
+    ? `/modules/${nextModuleMeta.slug}`
+    : "/modules";
+
   // Modules à afficher dans "Continuer la formation" : on garde l'ordre
   // d'origine (par bloc + display_order), tous états confondus, top 6.
   const sortedModules = [...(modules ?? [])].sort((a: any, b: any) => {
@@ -341,8 +353,19 @@ export default async function DashboardPage() {
               </span>{" "}
               {t("heroIntroAfter")}
             </p>
+            {nextModuleMeta && (
+              <div className="mt-4 inline-flex items-center gap-2 rounded-lg bg-white/10 border border-white/15 px-3 py-1.5 text-[13px] text-white/85">
+                <ArrowRight className="h-3.5 w-3.5 text-signal-300 shrink-0" />
+                <span className="text-white/55">
+                  {completedLessons === 0 ? t("startHere") : t("nextStep")}
+                </span>
+                <span className="font-semibold text-white truncate max-w-[18rem]">
+                  {nextModuleMeta.title}
+                </span>
+              </div>
+            )}
             <div className="mt-6 flex flex-col sm:flex-row gap-2.5 sm:gap-3">
-              <Link href="/modules" className="contents">
+              <Link href={resumeHref} className="contents">
                 <Button
                   variant="gold"
                   size="lg"
