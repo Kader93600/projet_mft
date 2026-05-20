@@ -19,10 +19,12 @@ export function ContactForm() {
 
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     const fd = new FormData(e.currentTarget);
     const payload = Object.fromEntries(fd.entries());
     try {
@@ -34,7 +36,11 @@ export function ContactForm() {
       if (!res.ok) throw new Error();
       setSubmitted(true);
     } catch {
-      alert("Une erreur est survenue. Réessayez ou écrivez-nous directement.");
+      // Erreur affichée en inline (au lieu d'un alert() natif) pour
+      // rester dans la charte et ne pas casser le flux.
+      setError(
+        "Une erreur est survenue. Réessayez, ou écrivez-nous directement à contact@maformationtransport.fr.",
+      );
     } finally {
       setLoading(false);
     }
@@ -179,6 +185,15 @@ export function ContactForm() {
           .
         </span>
       </label>
+
+      {error && (
+        <div
+          role="alert"
+          className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200"
+        >
+          {error}
+        </div>
+      )}
 
       <button
         type="submit"

@@ -231,7 +231,7 @@ export default async function AdminTutorPage() {
 
       {/* Tokens consommés (info technique) */}
       <Card>
-        <CardBody className="grid grid-cols-3 gap-4 text-center">
+        <CardBody className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
           <Stat
             label="Tokens entrée"
             value={totalTokensIn.toLocaleString("fr-FR")}

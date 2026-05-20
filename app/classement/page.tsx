@@ -88,7 +88,7 @@ export default async function ClassementPage({
 
       {/* Récap perso */}
       <Card variant="gold">
-        <CardBody className="grid grid-cols-3 gap-6">
+        <CardBody className="grid grid-cols-3 gap-3 sm:gap-6">
           <Stat label="Mon niveau" value={(mine as any)?.level ?? 1} />
           <Stat
             label={`XP — ${periodLabel.toLowerCase()}`}
