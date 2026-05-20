@@ -51,8 +51,8 @@ export default async function LessonPage({
       meRole?.role === "super_admin" ||
       meRole?.role === "trainer";
   }
-  const { createAdminClient } = await import("@/lib/supabase/admin");
-  const reader = isStaff || !user ? supabase : createAdminClient();
+  // Client session : RLS scopées réparées (bug récursion corrigé).
+  const reader = supabase;
 
   const { data: module } = await reader
     .from("modules")

@@ -67,16 +67,10 @@ export async function MyFormationsSection() {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  // On utilise systématiquement le client service_role pour lire
-  // les enrollments — les RLS bloquent silencieusement à la fois les
-  // staff (is_admin() false dans certains contextes) et les students
-  // (cas BOUCHOUCHA : enrollment GOTRM valide mais invisible).
-  // Sécurité : on filtre par user_id côté code, le user ne voit
-  // QUE ses propres enrollments.
-  const { createAdminClient } = await import("@/lib/supabase/admin");
-  const enrollmentsClient = createAdminClient() as any;
-
-  const { data: enrollments } = await enrollmentsClient
+  // Client session : la RLS enrollments_self (auth.uid()=user_id)
+  // suffit, le user ne lit que ses propres enrollments. Le bug de
+  // récursion qui imposait le service_role est corrigé.
+  const { data: enrollments } = await supabase
     .from("enrollments")
     .select(
       "id, formation_slug, session_label, status, start_date, end_date, total_amount_cents, paid_amount_cents, created_at"

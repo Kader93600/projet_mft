@@ -92,12 +92,8 @@ export default async function ModulesPage() {
       enrolledFormationIds = (allFormations ?? []).map((f: any) => f.id as string);
       activeFormationSlug = (allFormations?.[0] as any)?.slug ?? null;
     } else {
-      // service_role : bypass RLS sur enrollments pour les students
-      // (cf. cas BOUCHOUCHA, RLS bloque silencieusement). Sécurité OK
-      // car filtre .eq("user_id", user.id).
-      const { createAdminClient: ac1 } = await import("@/lib/supabase/admin");
-      const adminEnr = ac1();
-      const { data: enrollments } = await adminEnr
+      // Client session : RLS enrollments_self suffit (bug récursion corrigé).
+      const { data: enrollments } = await supabase
         .from("enrollments")
         .select("formation_id, formation_slug, status, created_at")
         .eq("user_id", user.id)
@@ -121,10 +117,9 @@ export default async function ModulesPage() {
     }
   }
 
-  // Reader = service_role pour les students (bypass RLS sur
-  // modules/lessons/quizzes), session pour staff.
-  const { createAdminClient: ac2 } = await import("@/lib/supabase/admin");
-  const reader = isStaff ? supabase : ac2();
+  // Lectures via le client session : RLS scopées par formation
+  // réparées (bug récursion corrigé).
+  const reader = supabase;
 
   // Filtrage par formation : on récupère uniquement les modules rattachés
   // aux formations où le stagiaire est inscrit.

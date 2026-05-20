@@ -46,11 +46,9 @@ export default async function ExercicesPage({
     firstName = extractFirstName(profile?.full_name ?? null);
   }
 
-  // Inscriptions actives → formations accessibles
-  // Staff (admin/super_admin/trainer) : bypass — voit toutes les
-  // formations actives sans dépendre des enrollments.
-  // Student : bypass RLS via service_role (filtre user_id côté code).
-  const { createAdminClient: ac } = await import("@/lib/supabase/admin");
+  // Inscriptions actives → formations accessibles. Staff voit toutes
+  // les formations actives ; student via ses enrollments (client
+  // session, RLS réparées).
   let enrolledFormationIds: string[] = [];
   let isStaffUser = false;
   if (user) {
@@ -71,8 +69,7 @@ export default async function ExercicesPage({
         .eq("active", true);
       enrolledFormationIds = (allFormations ?? []).map((f: any) => f.id);
     } else {
-      const admin = ac();
-      const { data: enrollments } = await admin
+      const { data: enrollments } = await supabase
         .from("enrollments")
         .select("formation_id, status")
         .eq("user_id", user.id)
@@ -84,8 +81,8 @@ export default async function ExercicesPage({
     }
   }
 
-  // Reader pour les fetches catalogue
-  const reader = isStaffUser ? supabase : ac();
+  // Lectures catalogue via client session (RLS scopées réparées)
+  const reader = supabase;
 
   // Mapping formation → modules (pour scoping des quizzes)
   let allowedModuleIds: string[] = [];

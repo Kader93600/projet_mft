@@ -67,8 +67,8 @@ export default async function QuizPage({ params }: { params: { id: string } }) {
       meRole?.role === "super_admin" ||
       meRole?.role === "trainer";
   }
-  const { createAdminClient } = await import("@/lib/supabase/admin");
-  const reader = isStaff || !user ? supabase : createAdminClient();
+  // Client session : RLS scopées réparées (bug récursion corrigé).
+  const reader = supabase;
 
   const { data: quiz } = await reader
     .from("quizzes")
