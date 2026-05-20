@@ -15,6 +15,7 @@ import {
   GraduationCap,
 } from "lucide-react";
 import { isStaff } from "@/lib/permissions";
+import { BrandingForm } from "./branding-form";
 
 export const dynamic = "force-dynamic";
 
@@ -209,6 +210,23 @@ export default async function AdminOrgDetailPage({
                 ))}
               </ul>
             )}
+          </CardBody>
+        </Card>
+      </section>
+
+      {/* Branding multi-centre */}
+      <section>
+        <h2 className="font-display text-xl font-semibold text-navy-900 mb-4 inline-flex items-center gap-2">
+          <Building2 className="h-5 w-5 text-gold-700" />
+          Branding (espace personnalisé)
+        </h2>
+        <Card>
+          <CardBody>
+            <BrandingForm
+              orgId={org.id}
+              initialLogoUrl={org.logo_url ?? null}
+              initialPrimaryColor={org.primary_color ?? null}
+            />
           </CardBody>
         </Card>
       </section>
