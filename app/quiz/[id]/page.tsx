@@ -140,15 +140,21 @@ export default async function QuizPage({ params }: { params: { id: string } }) {
   );
 
   // Source 2 : banque de questions (lien via quiz_question_bank)
+  // On récupère `active` pour filtrer les questions désactivées : le
+  // reader student est en service_role (bypass RLS), donc la policy
+  // qbank_student_read (active=true) ne s'applique pas — sans ce filtre
+  // explicite, une question désactivée mais toujours liée serait servie.
   const { data: bankLinks } = await reader
     .from("quiz_question_bank")
     .select(
-      "display_order, question:question_bank(id, type, statement, choices, max_score, explanation, annex_pages, annex_labels, import_id)"
+      "display_order, question:question_bank(id, type, statement, choices, max_score, explanation, annex_pages, annex_labels, import_id, active)"
     )
     .eq("quiz_id", quiz.id)
     .order("display_order");
 
-  const fromBank: UnifiedQuestion[] = (bankLinks || []).map((link: any) => {
+  const fromBank: UnifiedQuestion[] = (bankLinks || [])
+    .filter((link: any) => link.question && link.question.active !== false)
+    .map((link: any) => {
     const q = link.question;
     if (q.type === "qr") {
       return {

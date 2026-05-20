@@ -110,6 +110,11 @@ export function QuizRunner({
   const [focusLoss, setFocusLoss] = useState(0);
   const [showFocusWarning, setShowFocusWarning] = useState(false);
   const focusRef = useRef(0);
+  // Mémorise l'attemptId déjà créé en base : si l'INSERT a réussi mais
+  // que l'enregistrement des réponses QR a échoué, un nouveau clic sur
+  // "Terminer" réutilise la MÊME tentative au lieu d'en créer une 2e
+  // (évite le double-submit + les copies orphelines).
+  const submittedAttemptIdRef = useRef<string | null>(null);
   const [flagged, setFlagged] = useState<Set<string>>(new Set());
 
   // ───── Sauvegarde auto + reprise après crash ────────────────────
@@ -436,11 +441,21 @@ export function QuizRunner({
       }
     }
 
-    const { data: inserted, error: insertErr } = await supabase
-      .from("quiz_attempts")
-      .insert(insertPayload)
-      .select("id")
-      .single();
+    // Si une tentative a déjà été créée lors d'un submit précédent dont
+    // seules les RPC QR ont échoué, on la réutilise (pas de 2e INSERT).
+    let inserted: { id: string } | null = null;
+    let insertErr: any = null;
+    if (submittedAttemptIdRef.current) {
+      inserted = { id: submittedAttemptIdRef.current };
+    } else {
+      const res = await supabase
+        .from("quiz_attempts")
+        .insert(insertPayload)
+        .select("id")
+        .single();
+      inserted = res.data;
+      insertErr = res.error;
+    }
 
     if (insertErr || !inserted) {
       // Diagnostic complet côté serveur ET côté UI — avant ce fix, l'échec
@@ -475,6 +490,9 @@ export function QuizRunner({
       return;
     }
     const attemptId = inserted.id;
+    // Mémorise l'attempt pour qu'un retry (échec QR) ne recrée pas de
+    // tentative.
+    submittedAttemptIdRef.current = attemptId;
     // ✅ INSERT réussi — on bascule en état "fini" (le faux écran de
     // succès local ne peut plus apparaître sans tentative en BD).
     setFinished(true);
@@ -501,28 +519,54 @@ export function QuizRunner({
       }
     );
 
-    // Soumettre chaque réponse rédigée via la RPC sécurisée
+    // Soumettre chaque réponse rédigée via la RPC sécurisée.
+    // ⚠️ Auparavant les échecs étaient avalés silencieusement (console
+    // only) puis le stagiaire était redirigé comme si tout allait bien
+    // → copies QR perdues en cas de coupure réseau. Désormais : retry
+    // (2 tentatives) par réponse, et si un échec persiste, on AFFICHE
+    // l'erreur et on NE redirige PAS (le stagiaire peut réessayer sans
+    // perdre sa copie).
     if (hasQr) {
+      const rpcWithRetry = async (
+        fn: string,
+        args: Record<string, unknown>,
+      ): Promise<boolean> => {
+        for (let attempt = 0; attempt < 2; attempt++) {
+          const { error } = await supabase.rpc(fn as any, args as any);
+          if (!error) return true;
+          console.error(`[${fn}] try ${attempt + 1}`, error);
+          if (attempt === 0) await new Promise((r) => setTimeout(r, 600));
+        }
+        return false;
+      };
+
+      const failedQr: string[] = [];
       for (const q of qrList) {
         const text = (qrAnswers[q.id] ?? "").trim();
-        try {
-          await supabase.rpc("submit_qr_response", {
-            p_attempt: attemptId,
-            p_question: q.id,
-            p_answer: text,
-          });
-        } catch (e) {
-          console.error("[submit_qr_response]", q.id, e);
-        }
-      }
-      // Marque la tentative en attente de correction (notif formateurs)
-      try {
-        await supabase.rpc("mark_attempt_awaiting_review", {
+        const ok = await rpcWithRetry("submit_qr_response", {
           p_attempt: attemptId,
-          p_qcm_score: qcmPercentage,
+          p_question: q.id,
+          p_answer: text,
         });
-      } catch (e) {
-        console.error("[mark_attempt_awaiting_review]", e);
+        if (!ok) failedQr.push(q.id);
+      }
+
+      const markOk = await rpcWithRetry("mark_attempt_awaiting_review", {
+        p_attempt: attemptId,
+        p_qcm_score: qcmPercentage,
+      });
+
+      if (failedQr.length > 0 || !markOk) {
+        // On garde le quiz en état "fini" mais on montre l'erreur et on
+        // ne redirige pas : les réponses sont encore en mémoire (state),
+        // l'utilisateur peut re-cliquer "Terminer" pour relancer l'envoi.
+        setSubmitError(
+          failedQr.length > 0
+            ? `Échec d'enregistrement de ${failedQr.length} réponse(s) rédigée(s). Vérifiez votre connexion et cliquez à nouveau sur Terminer — vos réponses sont conservées.`
+            : "Votre copie a été enregistrée mais la mise en file de correction a échoué. Cliquez à nouveau sur Terminer pour réessayer.",
+        );
+        setFinished(false); // ré-autorise un nouveau submit
+        return;
       }
     }
 

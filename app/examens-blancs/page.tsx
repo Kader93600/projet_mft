@@ -204,22 +204,32 @@ export default async function ExamensBlancsPage({
     const { data: attempts } = await reader
       .from("quiz_attempts")
       .select(
-        "id, quiz_id, percentage, completed_at, finished_at, passed, duration_s, quizzes(title)",
+        "id, quiz_id, percentage, completed_at, finished_at, passed, duration_s, status, quizzes(title)",
       )
       .eq("user_id", user.id)
       .in("quiz_id", allQuizIds)
       .order("finished_at", { ascending: false });
     for (const a of attempts ?? []) {
       const prev = userAttempts.get(a.quiz_id);
-      const p = a.percentage ?? 0;
+      // Une copie en attente de correction (awaiting_review) a
+      // percentage = null : on ne la compte PAS comme 0 % dans le best
+      // score / passed (sinon affichage trompeur "échec" alors qu'elle
+      // n'est juste pas encore corrigée). Seules les tentatives notées
+      // (percentage non-null) entrent dans bestPercent/passed.
+      const isGraded =
+        typeof a.percentage === "number" && a.status !== "awaiting_review";
+      const p = isGraded ? a.percentage : null;
       userAttempts.set(a.quiz_id, {
-        bestPercent: Math.max(prev?.bestPercent ?? 0, p),
+        bestPercent:
+          p !== null
+            ? Math.max(prev?.bestPercent ?? 0, p)
+            : prev?.bestPercent ?? 0,
         lastAt:
           !prev || (a.completed_at && a.completed_at > prev.lastAt)
             ? a.completed_at ?? prev?.lastAt ?? ""
             : prev.lastAt,
         count: (prev?.count ?? 0) + 1,
-        passed: prev?.passed || !!a.passed,
+        passed: prev?.passed || (isGraded && !!a.passed),
       });
     }
     attemptHistory = (attempts ?? [])
