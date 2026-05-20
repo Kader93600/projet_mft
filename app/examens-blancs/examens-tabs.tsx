@@ -12,6 +12,7 @@ import {
   ChevronRight,
   CheckCircle2,
   AlertTriangle,
+  Lock,
 } from "lucide-react";
 import { FormationBadge } from "@/components/formation/formation-badge";
 
@@ -37,6 +38,7 @@ interface ExamData {
     count: number;
     passed: boolean;
   } | null;
+  locked: boolean;
 }
 
 /**
@@ -178,6 +180,54 @@ function ExamenCard({ exam: q }: { exam: ExamData }) {
   const timerMinutes = q.timer_enabled && q.time_limit_s
     ? Math.round(q.time_limit_s / 60)
     : null;
+
+  // État verrouillé : module précédent non terminé. Card grisée,
+  // non cliquable (aligné sur /modules et /exercices).
+  if (q.locked) {
+    return (
+      <div
+        aria-disabled
+        className="relative flex flex-col rounded-2xl border border-navy-100 bg-slate-50/60 p-4 cursor-not-allowed select-none overflow-hidden"
+      >
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {q.formation_slug && (
+              <FormationBadge slug={q.formation_slug} size="sm" />
+            )}
+          </div>
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9.5px] font-bold uppercase tracking-[0.12em] bg-slate-200 text-slate-600 shrink-0">
+            <Lock className="h-2.5 w-2.5" />
+            Verrouillé
+          </span>
+        </div>
+
+        <h3 className="font-display text-[15px] font-semibold text-slate-500 leading-snug">
+          {q.title}
+        </h3>
+        {q.module_title && q.scope === "module" && (
+          <div className="mt-0.5 text-[11.5px] text-slate-400">
+            {q.module_title}
+          </div>
+        )}
+
+        <div className="mt-3 flex items-center gap-3 text-[11.5px] text-slate-400 flex-wrap">
+          <span className="inline-flex items-center gap-1">
+            <HelpCircle className="h-3 w-3" />
+            {q.question_count} questions
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <Target className="h-3 w-3" />
+            seuil {q.pass_threshold}%
+          </span>
+        </div>
+
+        <div className="mt-auto pt-3 inline-flex items-center gap-1.5 text-[12px] font-medium text-slate-500">
+          <Lock className="h-3 w-3" />
+          Terminez d&apos;abord les leçons du module précédent
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Link

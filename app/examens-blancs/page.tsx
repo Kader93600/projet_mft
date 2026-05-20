@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { ExamensTabs } from "./examens-tabs";
 import { AttemptsHistory } from "./attempts-history";
+import { computeUnlockedModuleIds } from "@/lib/module-unlock";
 
 export const dynamic = "force-dynamic";
 
@@ -244,6 +245,25 @@ export default async function ExamensBlancsPage({
       }));
   }
 
+  // Verrouillage linéaire (aligné sur /modules) : un examen blanc DE
+  // MODULE est verrouillé tant que les leçons du module précédent ne
+  // sont pas terminées. Les examens GLOBAUX (finaux) ne sont jamais
+  // verrouillés par ce mécanisme. Staff = accès libre.
+  let unlockedModuleIds = new Set<string>();
+  if (user && !isStaffUser && allowedModuleIds.length > 0) {
+    unlockedModuleIds = await computeUnlockedModuleIds(
+      reader,
+      user.id,
+      allowedModuleIds,
+      moduleToFormation,
+    );
+  }
+  const isModuleLocked = (moduleId: string | null): boolean => {
+    if (isStaffUser || !user) return false;
+    if (!moduleId) return false;
+    return !unlockedModuleIds.has(moduleId);
+  };
+
   const enrichExam = (q: any, scope: "module" | "global") => {
     const formationSlug =
       scope === "module"
@@ -266,6 +286,7 @@ export default async function ExamensBlancsPage({
       is_mock_exam: q.is_mock_exam,
       question_count: questionCount.get(q.id) ?? 0,
       user_stats: userAttempts.get(q.id) ?? null,
+      locked: scope === "module" ? isModuleLocked(q.module_id) : false,
     };
   };
 

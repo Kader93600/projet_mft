@@ -9,6 +9,7 @@ import {
   HelpCircle,
   Target,
   Play,
+  Lock,
 } from "lucide-react";
 import { FormationBadge } from "@/components/formation/formation-badge";
 
@@ -27,6 +28,7 @@ interface EnrichedQuiz {
   pass_threshold: number;
   question_count: number;
   user_stats: { bestPercent: number; lastAt: string; count: number } | null;
+  locked: boolean;
 }
 
 /**
@@ -110,6 +112,8 @@ export function ExercicesCatalog({
                 const doneCount = mods.filter(
                   (q) => (q.user_stats?.bestPercent ?? 0) >= q.pass_threshold,
                 ).length;
+                const moduleLocked =
+                  mods.length > 0 && mods.every((q) => q.locked);
 
                 return (
                   <div
@@ -143,6 +147,9 @@ export function ExercicesCatalog({
                         </h3>
                       </div>
                       <div className="text-[11.5px] text-slate-500 flex items-center gap-1 shrink-0">
+                        {moduleLocked && (
+                          <Lock className="h-3 w-3 text-slate-400 mr-0.5" />
+                        )}
                         <strong className="text-navy-900">{totalCount}</strong>
                         <span>exercice{totalCount > 1 ? "s" : ""}</span>
                         {doneCount > 0 && (
@@ -193,6 +200,42 @@ function ExerciceCard({ quiz: q }: { quiz: EnrichedQuiz }) {
     q.user_stats && q.user_stats.bestPercent >= q.pass_threshold;
   const triedNotPassed =
     q.user_stats && q.user_stats.bestPercent < q.pass_threshold;
+
+  // État verrouillé : module précédent non terminé. Card grisée,
+  // non cliquable, badge cadenas + consigne (aligné sur /modules).
+  if (q.locked) {
+    return (
+      <div
+        aria-disabled
+        className="group relative flex flex-col rounded-xl border border-navy-100 bg-slate-50/60 p-3.5 cursor-not-allowed select-none"
+      >
+        <div className="absolute top-2 right-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-[0.1em] bg-slate-200 text-slate-600">
+          <Lock className="h-2.5 w-2.5" />
+          Verrouillé
+        </div>
+
+        <h4 className="font-display text-[14.5px] font-semibold text-slate-500 leading-snug pr-12">
+          {q.title}
+        </h4>
+
+        <div className="mt-3 flex items-center gap-2 text-[11px] text-slate-400 flex-wrap">
+          <span className="inline-flex items-center gap-1">
+            <HelpCircle className="h-3 w-3" />
+            {q.question_count} Q
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <Target className="h-3 w-3" />
+            {q.pass_threshold}%
+          </span>
+        </div>
+
+        <div className="mt-auto pt-3 inline-flex items-center gap-1.5 text-[11.5px] font-medium text-slate-500">
+          <Lock className="h-3 w-3" />
+          Terminez d&apos;abord les leçons du module précédent
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Link

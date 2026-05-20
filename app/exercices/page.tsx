@@ -19,6 +19,7 @@ import { FormationBadge } from "@/components/formation/formation-badge";
 import { findFormation, FORMATIONS } from "@/lib/formations-config";
 import { Dumbbell, BookOpen, Sparkles, Filter } from "lucide-react";
 import { ExercicesCatalog } from "./exercices-catalog";
+import { computeUnlockedModuleIds } from "@/lib/module-unlock";
 
 export const dynamic = "force-dynamic";
 
@@ -166,6 +167,24 @@ export default async function ExercicesPage({
     }
   }
 
+  // Verrouillage linéaire (aligné sur /modules) : un exercice est
+  // verrouillé tant que les leçons du module précédent ne sont pas
+  // terminées. Staff = accès libre (jamais verrouillé).
+  let unlockedModuleIds = new Set<string>();
+  if (user && !isStaffUser && allowedModuleIds.length > 0) {
+    unlockedModuleIds = await computeUnlockedModuleIds(
+      reader,
+      user.id,
+      allowedModuleIds,
+      moduleToFormation,
+    );
+  }
+  const isLocked = (moduleId: string | null): boolean => {
+    if (isStaffUser || !user) return false;
+    if (!moduleId) return false;
+    return !unlockedModuleIds.has(moduleId);
+  };
+
   // Enrichir + filtrer par formation si demandé
   let enrichedQuizzes = quizzes
     .map((q) => {
@@ -187,6 +206,7 @@ export default async function ExercicesPage({
         pass_threshold: q.pass_threshold,
         question_count: questionCount.get(q.id) ?? 0,
         user_stats: userAttempts.get(q.id) ?? null,
+        locked: isLocked(q.module_id),
       };
     })
     .filter((q) => !!q.formation_slug);
