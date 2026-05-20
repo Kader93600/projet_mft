@@ -77,9 +77,16 @@ export default async function QuizPage({ params }: { params: { id: string } }) {
     .single();
   if (!quiz) notFound();
 
-  // Gate par formation : le module de ce quiz est-il rattaché à une
-  // formation où l'utilisateur est inscrit ? Sinon, 404. Staff = libre.
-  if (user && !isStaff && quiz.module_id) {
+  // Gate par formation : ce quiz appartient-il à une formation où
+  // l'utilisateur est inscrit ? Sinon, 404. Staff = accès libre.
+  //
+  // ⚠️ Deux types de rattachement à couvrir (sinon faille d'isolation) :
+  //   - quiz lié à un MODULE (quiz.module_id) → via formation_modules
+  //   - quiz GLOBAL (examen blanc final, module_id NULL) → via
+  //     formation_quizzes. Avant ce fix, les quiz globaux n'étaient
+  //     PAS gatés : un stagiaire capacite-3-5t pouvait ouvrir un
+  //     examen global GOTRM en devinant son UUID.
+  if (user && !isStaff) {
     const { data: enrollments } = await reader
       .from("enrollments")
       .select("formation_id")
@@ -92,12 +99,24 @@ export default async function QuizPage({ params }: { params: { id: string } }) {
       .filter(Boolean);
     if (enrolledIds.length === 0) notFound();
 
-    const { count } = await reader
-      .from("formation_modules")
-      .select("module_id", { count: "exact", head: true })
-      .eq("module_id", quiz.module_id)
-      .in("formation_id", enrolledIds);
-    if (!count) notFound();
+    if (quiz.module_id) {
+      // Quiz rattaché à un module
+      const { count } = await reader
+        .from("formation_modules")
+        .select("module_id", { count: "exact", head: true })
+        .eq("module_id", quiz.module_id)
+        .in("formation_id", enrolledIds);
+      if (!count) notFound();
+    } else {
+      // Quiz global (examen blanc final) — rattachement direct via
+      // formation_quizzes
+      const { count } = await reader
+        .from("formation_quizzes")
+        .select("quiz_id", { count: "exact", head: true })
+        .eq("quiz_id", quiz.id)
+        .in("formation_id", enrolledIds);
+      if (!count) notFound();
+    }
   }
 
   // Source 1 : table historique "questions" (rattachée au quiz)
