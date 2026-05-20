@@ -29,4 +29,12 @@ export const E2E_ENV = {
    * d'un module GOTRM (ex: "planification-tournees").
    */
   forbiddenModuleSlug: () => required("E2E_FORBIDDEN_MODULE_SLUG"),
+  /**
+   * ID UUID d'un quiz (idéalement un EXAMEN GLOBAL, module_id NULL,
+   * rattaché via formation_quizzes) appartenant à une formation OÙ
+   * E2E_STUDENT_* n'est PAS inscrit. Régression : avant le fix, un
+   * stagiaire pouvait ouvrir un examen global d'une autre formation en
+   * devinant son UUID (quiz globaux non gatés). Doit répondre 404.
+   */
+  forbiddenQuizId: () => required("E2E_FORBIDDEN_QUIZ_ID"),
 };

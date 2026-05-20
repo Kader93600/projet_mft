@@ -32,6 +32,9 @@ E2E_STUDENT_PASSWORD=changeme
 E2E_TRAINER_EMAIL=formateur-e2e@example.com
 E2E_TRAINER_PASSWORD=changeme
 E2E_QUIZ_ID=00000000-0000-0000-0000-000000000000
+# Cloisonnement : module + quiz (examen global) d'une formation NON suivie
+E2E_FORBIDDEN_MODULE_SLUG=planification-tournees
+E2E_FORBIDDEN_QUIZ_ID=00000000-0000-0000-0000-000000000000
 ```
 
 Puis exporter avant la commande :

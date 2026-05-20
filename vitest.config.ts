@@ -57,6 +57,10 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./"),
+      // "server-only" lève une erreur hors contexte serveur : on le
+      // neutralise en test pour pouvoir tester la logique pure des
+      // modules server-only (ex. lib/module-unlock.ts).
+      "server-only": path.resolve(__dirname, "./test/empty-module.ts"),
     },
   },
 });

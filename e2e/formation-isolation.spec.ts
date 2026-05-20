@@ -82,4 +82,36 @@ test.describe("Cloisonnement multi-formations", () => {
       page.getByText(/n'existe pas|introuvable|not found/i).first()
     ).toBeVisible({ timeout: 5_000 });
   });
+
+  test("accès direct à un EXAMEN GLOBAL d'une autre formation (via UUID) → 404", async ({
+    page,
+  }) => {
+    // Régression du fix d'isolation des quiz globaux : un quiz global
+    // (module_id NULL, rattaché via formation_quizzes) d'une formation
+    // non suivie ne doit PAS être ouvrable en devinant son UUID.
+    await login(page, E2E_ENV.studentEmail(), E2E_ENV.studentPassword());
+    const forbiddenQuiz = E2E_ENV.forbiddenQuizId();
+
+    await page.goto(`/quiz/${forbiddenQuiz}`);
+
+    // Le runner du quiz ne doit jamais apparaître (pas d'énoncé, pas de
+    // bouton "Commencer/Valider"). On vérifie l'absence de contenu + un
+    // signal de 404.
+    const runnerSignal = page.getByRole("button", {
+      name: /commencer|valider|question suivante|terminer/i,
+    });
+    await expect(runnerSignal).toHaveCount(0);
+
+    const fourOhFour = page.getByText("404", { exact: false }).first();
+    const homeLink = page
+      .getByRole("link", { name: /retour|accueil|home/i })
+      .first();
+    const isFourOhFour = await fourOhFour.isVisible().catch(() => false);
+    const hasHomeLink = await homeLink.isVisible().catch(() => false);
+
+    expect(
+      isFourOhFour || hasHomeLink,
+      "Un quiz global d'une autre formation a été servi (faille d'isolation)"
+    ).toBeTruthy();
+  });
 });
