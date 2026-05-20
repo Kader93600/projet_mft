@@ -245,12 +245,14 @@ export default async function ExamensBlancsPage({
       }));
   }
 
-  // Verrouillage linéaire (aligné sur /modules) : un examen blanc DE
-  // MODULE est verrouillé tant que les leçons du module précédent ne
-  // sont pas terminées. Les examens GLOBAUX (finaux) ne sont jamais
-  // verrouillés par ce mécanisme. Staff = accès libre.
+  // Verrouillage linéaire — STRICTEMENT aligné sur /modules : un examen
+  // blanc DE MODULE est verrouillé tant que les leçons du module
+  // précédent ne sont pas terminées. Les examens GLOBAUX (finaux) ne
+  // sont jamais verrouillés par ce mécanisme. Comme sur /modules, le
+  // verrouillage s'applique à TOUS les comptes (staff compris) selon
+  // leur propre progression — pas d'exemption.
   let unlockedModuleIds = new Set<string>();
-  if (user && !isStaffUser && allowedModuleIds.length > 0) {
+  if (user && allowedModuleIds.length > 0) {
     unlockedModuleIds = await computeUnlockedModuleIds(
       reader,
       user.id,
@@ -259,7 +261,7 @@ export default async function ExamensBlancsPage({
     );
   }
   const isModuleLocked = (moduleId: string | null): boolean => {
-    if (isStaffUser || !user) return false;
+    if (!user) return false;
     if (!moduleId) return false;
     return !unlockedModuleIds.has(moduleId);
   };

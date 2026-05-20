@@ -28,15 +28,30 @@ export async function computeUnlockedModuleIds(
   const unlocked = new Set<string>();
   if (moduleIds.length === 0) return unlocked;
 
-  const [{ data: modulesData }, { data: lessonsData }, { data: progressData }] =
-    await Promise.all([
-      reader.from("modules").select('id, "order"').in("id", moduleIds),
-      reader.from("lessons").select("id, module_id").in("module_id", moduleIds),
-      reader
-        .from("lesson_progress")
-        .select("lesson_id, completed")
-        .eq("user_id", userId),
-    ]);
+  // Une leçon est "terminée" si elle est marquée completed dans
+  // lesson_progress (bouton "Marquer terminé") OU dans lesson_views
+  // (tracking implicite). On fait l'UNION pour être STRICTEMENT aligné
+  // sur le calcul de /modules (sinon décalage : verrouillé ici mais
+  // débloqué là-bas, ou l'inverse).
+  const [
+    { data: modulesData },
+    { data: lessonsData },
+    { data: progressData },
+    { data: viewsData },
+  ] = await Promise.all([
+    reader.from("modules").select('id, "order"').in("id", moduleIds),
+    reader.from("lessons").select("id, module_id").in("module_id", moduleIds),
+    reader
+      .from("lesson_progress")
+      .select("lesson_id, completed")
+      .eq("user_id", userId)
+      .eq("completed", true),
+    reader
+      .from("lesson_views")
+      .select("lesson_id, completed")
+      .eq("user_id", userId)
+      .eq("completed", true),
+  ]);
 
   // Leçons par module
   const lessonsByModule = new Map<string, string[]>();
@@ -45,11 +60,13 @@ export async function computeUnlockedModuleIds(
     arr.push(l.id);
     lessonsByModule.set(l.module_id, arr);
   }
-  const completedLessons = new Set(
-    ((progressData ?? []) as any[])
-      .filter((p) => p.completed)
-      .map((p) => p.lesson_id as string),
-  );
+  const completedLessons = new Set<string>();
+  for (const p of (progressData ?? []) as any[]) {
+    if (p.completed) completedLessons.add(p.lesson_id as string);
+  }
+  for (const v of (viewsData ?? []) as any[]) {
+    if (v.completed) completedLessons.add(v.lesson_id as string);
+  }
   const moduleComplete = (mid: string): boolean => {
     const ls = lessonsByModule.get(mid) ?? [];
     if (ls.length === 0) return true; // module sans leçon → ne bloque pas

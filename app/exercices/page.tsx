@@ -167,11 +167,13 @@ export default async function ExercicesPage({
     }
   }
 
-  // Verrouillage linéaire (aligné sur /modules) : un exercice est
-  // verrouillé tant que les leçons du module précédent ne sont pas
-  // terminées. Staff = accès libre (jamais verrouillé).
+  // Verrouillage linéaire — STRICTEMENT aligné sur /modules : un
+  // exercice est verrouillé tant que les leçons du module précédent ne
+  // sont pas terminées. Comme sur /modules, le verrouillage s'applique
+  // à TOUS les comptes (y compris staff/admin) en fonction de leur
+  // propre progression — pas d'exemption, sinon décalage avec /modules.
   let unlockedModuleIds = new Set<string>();
-  if (user && !isStaffUser && allowedModuleIds.length > 0) {
+  if (user && allowedModuleIds.length > 0) {
     unlockedModuleIds = await computeUnlockedModuleIds(
       reader,
       user.id,
@@ -180,7 +182,7 @@ export default async function ExercicesPage({
     );
   }
   const isLocked = (moduleId: string | null): boolean => {
-    if (isStaffUser || !user) return false;
+    if (!user) return false;
     if (!moduleId) return false;
     return !unlockedModuleIds.has(moduleId);
   };
