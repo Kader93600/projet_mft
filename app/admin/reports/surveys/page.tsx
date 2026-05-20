@@ -20,7 +20,7 @@ function StatTile({
       <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">
         {label}
       </div>
-      <div className="mt-1 font-display text-2xl font-bold text-navy-900">
+      <div className="mt-1 font-display text-2xl font-semibold text-navy-900">
         {value}
       </div>
       {hint && <div className="text-xs text-slate-500 mt-0.5">{hint}</div>}

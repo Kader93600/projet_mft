@@ -92,7 +92,6 @@ export async function createStudent(raw: unknown): Promise<CreateStudentResult> 
     return { ok: false, error, step };
   };
 
-  console.log("[createStudent] 0/ start");
   let admin: { id: string };
   try {
     const r = await requireAdmin();
@@ -107,11 +106,6 @@ export async function createStudent(raw: unknown): Promise<CreateStudentResult> 
   } catch (e: any) {
     return fail("validate", e?.message ?? "Données invalides");
   }
-  console.log("[createStudent] 2/ validate OK", {
-    email: data.email,
-    formation: data.formation_slug,
-    access_mode: data.access_mode,
-  });
 
   // Validation conditionnelle : si mode 'password', le mot de passe est requis
   if (data.access_mode === "password" && !data.initial_password) {
@@ -185,7 +179,6 @@ export async function createStudent(raw: unknown): Promise<CreateStudentResult> 
     }
     userId = created.user.id;
   }
-  console.log("[createStudent] 4/ auth user created", { userId });
 
   // 2) Profil stagiaire complet (le trigger handle_new_user a peut-être déjà
   //    créé une ligne minimale ; on fait un upsert pour compléter)
@@ -217,7 +210,6 @@ export async function createStudent(raw: unknown): Promise<CreateStudentResult> 
       `Création du profil impossible : ${pErr.message}`
     );
   }
-  console.log("[createStudent] 5/ profile upserted");
 
   // 3) Création de l'enrollment.
   // Pour Capacité ≤ 3,5t : seul le pack 'initial' est autorisé par le
@@ -243,8 +235,6 @@ export async function createStudent(raw: unknown): Promise<CreateStudentResult> 
   const { error: eErr } = await sb.from("enrollments").insert(enrollmentPayload);
   if (eErr) {
     console.error("[createStudent] enrollment insert failed (non-fatal)", eErr);
-  } else {
-    console.log("[createStudent] 6/ enrollment inserted");
   }
 
   // 4) Auto-marquage des leads correspondants en "inscrit". Si l'admin
@@ -254,18 +244,11 @@ export async function createStudent(raw: unknown): Promise<CreateStudentResult> 
   //    apparaissent dans la section "Convertis & refusés" sans rester
   //    bloqués en attente dans le pipeline.
   try {
-    const { data: updated } = await sb
+    await sb
       .from("enrollment_requests")
       .update({ status: "inscrit" })
       .ilike("email", data.email)
-      .not("status", "eq", "refuse")
-      .select("id");
-    if (updated && updated.length > 0) {
-      console.log(
-        "[createStudent] 7/ leads CRM auto-marqués inscrit",
-        updated.length
-      );
-    }
+      .not("status", "eq", "refuse");
   } catch (e: any) {
     console.error(
       "[createStudent] auto-mark lead failed (non-fatal)",
@@ -290,7 +273,6 @@ export async function createStudent(raw: unknown): Promise<CreateStudentResult> 
   revalidatePath("/admin/users");
   revalidatePath("/admin/enrollments");
   revalidatePath("/admin/crm");
-  console.log("[createStudent] 8/ done", { userId });
 
   return { ok: true, userId, email: data.email, accessMode: data.access_mode };
 }

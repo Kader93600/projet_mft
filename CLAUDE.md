@@ -30,6 +30,15 @@ node scripts/gen-migrations-index.mjs # → supabase/MIGRATIONS_INDEX.md
 - UI dans `components/ui/` (Button, Card, Input, ProgressBar)
 - Markdown pédagogique rendu via `lib/markdown.ts` (minimaliste, suffisant pour seed)
 
+### Conventions UI back-office (admin)
+Pour rester cohérent d'une page admin à l'autre :
+- **Titre de page** : `font-display text-3xl md:text-4xl font-semibold text-navy-950 tracking-tight`.
+- **Titre de section/carte** : `font-display text-xl font-semibold` (via `CardTitle`).
+- **Valeur de KPI (stat tile)** : `font-display text-2xl/3xl font-semibold` (jamais `font-bold` — réservé nulle part dans l'admin).
+- **Labels/eyebrows** : `text-[10-11px] uppercase tracking-wider text-slate-500 font-semibold`.
+- **Perf** : batcher les URL signées avec `storage.createSignedUrls` (jamais en boucle), paralléliser les lectures indépendantes (`Promise.all`).
+- **Logs** : pas de `console.log` (debug) en prod ; utiliser `captureException`/`captureMessage` de `lib/observability.ts`.
+
 ## Quand étendre
 - Nouveau bloc/module → éditer `supabase/seed.sql` ou créer UI admin
 - Nouvelle route protégée → créer `app/<route>/layout.tsx` qui renvoie `<AuthLayout>`
