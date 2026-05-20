@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
@@ -15,9 +15,8 @@ export default async function FunderEditorPage({
   params: { id: string };
 }) {
   const isNew = params.id === "new";
-  // service_role : bypass RLS pour cohérence avec le listing parent
-  // (qui passe déjà par admin client depuis le commit précédent).
-  const supabase = createAdminClient();
+  // Client session : RLS réparées, is_admin() autorise le staff.
+  const supabase = createClient();
   const [{ data: funder }, { data: users }] = await Promise.all([
     isNew
       ? Promise.resolve({ data: null })

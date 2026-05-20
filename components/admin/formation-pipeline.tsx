@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -38,9 +38,9 @@ const ICONS: Record<string, any> = {
  * avec un lien direct vers la liste filtrée.
  */
 export async function FormationPipeline() {
-  // service_role pour bypass des RLS — le composant est rendu
-  // sous /admin/* déjà protégé par le middleware.
-  const supabase = createAdminClient();
+  // Client session : les RLS sont réparées (cf. migration
+  // fix_rls_org_recursion), is_admin() autorise le staff à tout voir.
+  const supabase = createClient();
 
   const [
     { data: demand },
