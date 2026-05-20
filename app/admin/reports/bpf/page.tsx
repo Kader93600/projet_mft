@@ -258,6 +258,11 @@ export default async function BpfPage({
             title="Recettes par financeur (CSV)"
             desc="Détail des encaissements par dispositif et par organisme financeur."
           />
+          <ExportCard
+            href={`/api/admin/accounting/export?year=${year}`}
+            title="Journal des ventes (CSV)"
+            desc="Inscriptions de l'année avec montants total / payé / reste dû, par financeur — pour l'expert-comptable."
+          />
         </div>
       </section>
 
