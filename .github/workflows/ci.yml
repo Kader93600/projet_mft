@@ -82,9 +82,45 @@ jobs:
         run: npm run build
 
   # =====================================================================
-  # Job 3 — Lighthouse CI : audit perf/a11y/SEO sur les pages publiques
+  # Job 3 — Accessibilité : audit a11y BLOQUANT sur les pages publiques.
+  # Tourne sur PR + push main (gate avant merge). Seuil dans
+  # .lighthouserc.a11y.cjs (accessibility >= 0.9, niveau "error").
+  # PAS de continue-on-error → un score insuffisant casse la CI.
+  # =====================================================================
+  a11y:
+    name: Accessibilité (bloquant)
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build Next.js
+        run: npm run build
+
+      - name: Audit accessibilité (Lighthouse, bloquant)
+        run: npm run a11y:ci
+
+  # =====================================================================
+  # Job 4 — Lighthouse CI : audit perf/SEO complet sur les pages publiques
   # Tourne UNIQUEMENT sur push main (pas sur chaque PR pour éviter le bruit).
   # Audit 3 pages : /, /tarifs, /login. Seuils dans .lighthouserc.cjs.
+  # Informatif (continue-on-error) — l'a11y est gérée par le job dédié.
   # =====================================================================
   lighthouse:
     name: Lighthouse CI

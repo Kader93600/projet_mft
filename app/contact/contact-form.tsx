@@ -106,8 +106,9 @@ export function ContactForm() {
       </div>
 
       <div>
-        <Label>Formation qui vous intéresse</Label>
+        <Label htmlFor="contact-formation">Formation qui vous intéresse</Label>
         <select
+          id="contact-formation"
           name="formation"
           defaultValue={presetFormation}
           className="w-full bg-night-50 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-signal-500 focus:outline-none focus:ring-2 focus:ring-signal-500/30"
@@ -122,8 +123,9 @@ export function ContactForm() {
       </div>
 
       <div>
-        <Label>Mode de financement envisagé</Label>
+        <Label htmlFor="contact-financeur">Mode de financement envisagé</Label>
         <select
+          id="contact-financeur"
           name="financeur"
           defaultValue={presetFinanceur}
           className="w-full bg-night-50 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-signal-500 focus:outline-none focus:ring-2 focus:ring-signal-500/30"
@@ -139,8 +141,9 @@ export function ContactForm() {
       </div>
 
       <div>
-        <Label>Pack envisagé (modifiable)</Label>
+        <Label htmlFor="contact-pack">Pack envisagé (modifiable)</Label>
         <select
+          id="contact-pack"
           name="pack"
           defaultValue={presetPack}
           className="w-full bg-night-50 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-signal-500 focus:outline-none focus:ring-2 focus:ring-signal-500/30"
@@ -160,8 +163,9 @@ export function ContactForm() {
       </div>
 
       <div>
-        <Label>Votre message (optionnel)</Label>
+        <Label htmlFor="contact-message">Votre message (optionnel)</Label>
         <textarea
+          id="contact-message"
           name="message"
           rows={5}
           placeholder="Parlez-nous de votre projet, vos disponibilités…"
@@ -222,13 +226,15 @@ function Field({
   autoComplete?: string;
   placeholder?: string;
 }) {
+  const fieldId = `contact-${name}`;
   return (
     <div>
-      <Label>
+      <Label htmlFor={fieldId}>
         {label}
         {required && <span className="text-signal-400 ml-1">*</span>}
       </Label>
       <input
+        id={fieldId}
         name={name}
         type={type}
         required={required}
@@ -240,10 +246,19 @@ function Field({
   );
 }
 
-function Label({ children }: { children: React.ReactNode }) {
+function Label({
+  children,
+  htmlFor,
+}: {
+  children: React.ReactNode;
+  htmlFor?: string;
+}) {
   return (
-    <span className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-white/55 mb-2">
+    <label
+      htmlFor={htmlFor}
+      className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-white/55 mb-2"
+    >
       {children}
-    </span>
+    </label>
   );
 }

@@ -18,6 +18,7 @@
     "typecheck": "tsc --noEmit",
     "lighthouse": "lhci autorun --config=./.lighthouserc.cjs",
     "a11y": "lhci autorun --config=./.lighthouserc.cjs --collect.settings.onlyCategories=accessibility",
+    "a11y:ci": "lhci autorun --config=./.lighthouserc.a11y.cjs",
     "storybook": "storybook dev -p 6006",
     "storybook:build": "storybook build",
     "test:e2e": "playwright test",
