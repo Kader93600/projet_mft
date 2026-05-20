@@ -76,21 +76,31 @@ export default async function ValidationQrPage({
       )
       .order("display_order");
 
-    for (const a of attRows ?? []) {
-      const { data: signed } = await supabase.storage
+    const rows = attRows ?? [];
+    if (rows.length > 0) {
+      // Batch : 1 appel storage au lieu de N (createSignedUrls pluriel)
+      const { data: signedList } = await supabase.storage
         .from("question-attachments")
-        .createSignedUrl(a.storage_path, 60 * 60);
-      const arr = attachmentsByQuestion[a.question_id] ?? [];
-      arr.push({
-        id: a.id,
-        file_name: a.file_name,
-        mime_type: a.mime_type,
-        kind: a.kind,
-        label: a.label,
-        size_bytes: a.size_bytes,
-        signedUrl: signed?.signedUrl ?? null,
-      });
-      attachmentsByQuestion[a.question_id] = arr;
+        .createSignedUrls(
+          rows.map((a: any) => a.storage_path as string),
+          60 * 60,
+        );
+      const urlByPath = new Map(
+        (signedList ?? []).map((s: any) => [s.path, s.signedUrl]),
+      );
+      for (const a of rows) {
+        const arr = attachmentsByQuestion[a.question_id] ?? [];
+        arr.push({
+          id: a.id,
+          file_name: a.file_name,
+          mime_type: a.mime_type,
+          kind: a.kind,
+          label: a.label,
+          size_bytes: a.size_bytes,
+          signedUrl: urlByPath.get(a.storage_path) ?? null,
+        });
+        attachmentsByQuestion[a.question_id] = arr;
+      }
     }
   }
 
@@ -138,13 +148,22 @@ export default async function ValidationQrPage({
       .from("question_imports")
       .select("id, pdf_storage_path")
       .in("id", [...importIds]);
-    for (const ir of importRows ?? []) {
-      if (!ir.pdf_storage_path) continue;
-      const { data: signed } = await supabase.storage
+    const withPath = (importRows ?? []).filter(
+      (ir: any) => ir.pdf_storage_path,
+    );
+    if (withPath.length > 0) {
+      const { data: signedList } = await supabase.storage
         .from("question-imports")
-        .createSignedUrl(ir.pdf_storage_path, 60 * 60);
-      if (signed?.signedUrl) {
-        pdfUrlByImport.set(ir.id, signed.signedUrl);
+        .createSignedUrls(
+          withPath.map((ir: any) => ir.pdf_storage_path as string),
+          60 * 60,
+        );
+      const urlByPath = new Map(
+        (signedList ?? []).map((s: any) => [s.path, s.signedUrl]),
+      );
+      for (const ir of withPath) {
+        const u = urlByPath.get(ir.pdf_storage_path);
+        if (u) pdfUrlByImport.set(ir.id, u);
       }
     }
   }

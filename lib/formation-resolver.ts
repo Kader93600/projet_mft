@@ -9,10 +9,16 @@
 //   - Composants en-tête / breadcrumb
 // =====================================================================
 
+import { cache } from "react";
 import { createClient } from "./supabase/server";
 
+// Tous les résolveurs sont enveloppés dans `cache()` (React) : la
+// mémoïsation est SCOPÉE À LA REQUÊTE (aucun risque de données périmées
+// entre requêtes). Cela dédoublonne les appels répétés au sein d'un même
+// rendu (ex. en-tête + breadcrumb + page résolvant le même module/quiz).
+
 /** Résout la formation principale liée à un quiz (via formation_quizzes). */
-export async function resolveFormationFromQuiz(
+export const resolveFormationFromQuiz = cache(async function (
   quizId: string
 ): Promise<string | null> {
   const supabase = createClient();
@@ -23,10 +29,10 @@ export async function resolveFormationFromQuiz(
     .limit(1)
     .maybeSingle();
   return (data as any)?.formation?.slug ?? null;
-}
+});
 
 /** Résout la formation d'un module (via formation_modules). */
-export async function resolveFormationFromModule(
+export const resolveFormationFromModule = cache(async function (
   moduleId: string
 ): Promise<string | null> {
   const supabase = createClient();
@@ -37,10 +43,10 @@ export async function resolveFormationFromModule(
     .limit(1)
     .maybeSingle();
   return (data as any)?.formation?.slug ?? null;
-}
+});
 
 /** Résout la formation depuis une leçon (via le module parent). */
-export async function resolveFormationFromLesson(
+export const resolveFormationFromLesson = cache(async function (
   lessonId: string
 ): Promise<string | null> {
   const supabase = createClient();
@@ -51,10 +57,10 @@ export async function resolveFormationFromLesson(
     .maybeSingle();
   if (!lesson?.module_id) return null;
   return resolveFormationFromModule(lesson.module_id);
-}
+});
 
 /** Résout la formation d'une tentative (via le quiz). */
-export async function resolveFormationFromAttempt(
+export const resolveFormationFromAttempt = cache(async function (
   attemptId: string
 ): Promise<string | null> {
   const supabase = createClient();
@@ -65,7 +71,7 @@ export async function resolveFormationFromAttempt(
     .maybeSingle();
   if (!attempt?.quiz_id) return null;
   return resolveFormationFromQuiz(attempt.quiz_id);
-}
+});
 
 /**
  * Résout l'ID UUID de la formation pour un quiz donné.
@@ -76,7 +82,7 @@ export async function resolveFormationFromAttempt(
  * Utilisé pour pré-remplir quiz_attempts.formation_id côté client
  * (le trigger BD ne suffit pas si profiles.current_formation_id est NULL).
  */
-export async function resolveFormationIdFromQuiz(
+export const resolveFormationIdFromQuiz = cache(async function (
   quizId: string
 ): Promise<string | null> {
   const supabase = createClient();
@@ -104,4 +110,4 @@ export async function resolveFormationIdFromQuiz(
     .limit(1)
     .maybeSingle();
   return (fm as any)?.formation_id ?? null;
-}
+});

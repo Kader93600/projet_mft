@@ -119,14 +119,25 @@ export default async function QuizPage({ params }: { params: { id: string } }) {
     }
   }
 
-  // Source 1 : table historique "questions" (rattachée au quiz)
-  const { data: legacyQuestions } = await reader
-    .from("questions")
-    .select(
-      "id, statement, explanation, order, choices(id, label, is_correct, order)"
-    )
-    .eq("quiz_id", quiz.id)
-    .order("order");
+  // Sources 1 & 2 récupérées en parallèle (indépendantes) :
+  //   1. table historique "questions" (rattachée au quiz)
+  //   2. banque de questions (lien via quiz_question_bank)
+  const [{ data: legacyQuestions }, { data: bankLinks }] = await Promise.all([
+    reader
+      .from("questions")
+      .select(
+        "id, statement, explanation, order, choices(id, label, is_correct, order)"
+      )
+      .eq("quiz_id", quiz.id)
+      .order("order"),
+    reader
+      .from("quiz_question_bank")
+      .select(
+        "display_order, question:question_bank(id, type, statement, choices, max_score, explanation, annex_pages, annex_labels, import_id, active)"
+      )
+      .eq("quiz_id", quiz.id)
+      .order("display_order"),
+  ]);
 
   const fromLegacy: UnifiedQuestion[] = (legacyQuestions || []).map(
     (q: any) => ({
@@ -139,19 +150,10 @@ export default async function QuizPage({ params }: { params: { id: string } }) {
     })
   );
 
-  // Source 2 : banque de questions (lien via quiz_question_bank)
-  // On récupère `active` pour filtrer les questions désactivées : le
-  // reader student est en service_role (bypass RLS), donc la policy
-  // qbank_student_read (active=true) ne s'applique pas — sans ce filtre
+  // Note : on récupère `active` pour filtrer les questions désactivées —
+  // le reader student est en service_role (bypass RLS), donc la policy
+  // qbank_student_read (active=true) ne s'applique pas ; sans ce filtre
   // explicite, une question désactivée mais toujours liée serait servie.
-  const { data: bankLinks } = await reader
-    .from("quiz_question_bank")
-    .select(
-      "display_order, question:question_bank(id, type, statement, choices, max_score, explanation, annex_pages, annex_labels, import_id, active)"
-    )
-    .eq("quiz_id", quiz.id)
-    .order("display_order");
-
   const fromBank: UnifiedQuestion[] = (bankLinks || [])
     .filter((link: any) => link.question && link.question.active !== false)
     .map((link: any) => {
@@ -269,13 +271,23 @@ export default async function QuizPage({ params }: { params: { id: string } }) {
       .from("question_imports")
       .select("id, pdf_storage_path")
       .in("id", [...importIds]);
-    for (const ir of importRows ?? []) {
-      if (!ir.pdf_storage_path) continue;
-      const { data: signed } = await supabase.storage
+    const withPath = (importRows ?? []).filter(
+      (ir: any) => ir.pdf_storage_path,
+    );
+    if (withPath.length > 0) {
+      // Batch : 1 seul appel storage au lieu de N (createSignedUrls pluriel)
+      const { data: signedList } = await supabase.storage
         .from("question-imports")
-        .createSignedUrl(ir.pdf_storage_path, 60 * 60); // 1h
-      if (signed?.signedUrl) {
-        signedByImport.set(ir.id, signed.signedUrl);
+        .createSignedUrls(
+          withPath.map((ir: any) => ir.pdf_storage_path as string),
+          60 * 60, // 1h
+        );
+      const urlByPath = new Map(
+        (signedList ?? []).map((s: any) => [s.path, s.signedUrl]),
+      );
+      for (const ir of withPath) {
+        const u = urlByPath.get(ir.pdf_storage_path);
+        if (u) signedByImport.set(ir.id, u);
       }
     }
   }
@@ -321,34 +333,44 @@ export default async function QuizPage({ params }: { params: { id: string } }) {
       .in("question_id", bankQuestionIds)
       .order("display_order");
 
-    for (const a of attRows ?? []) {
-      const { data: signed } = await supabase.storage
+    const rows = attRows ?? [];
+    if (rows.length > 0) {
+      // Batch : 1 seul appel storage au lieu de N (createSignedUrls pluriel)
+      const { data: signedList } = await supabase.storage
         .from("question-attachments")
-        .createSignedUrl(a.storage_path, 60 * 60);
-      if (!signed?.signedUrl) continue;
-      const q = (list as any[]).find((x) => x.id === a.question_id);
-      if (!q) continue;
-      if (!q.attachments) q.attachments = [];
-      q.attachments.push({
-        id: a.id,
-        kind: a.kind,
-        fileName: a.file_name,
-        mimeType: a.mime_type,
-        label: a.label,
-        signedUrl: signed.signedUrl,
-      });
+        .createSignedUrls(
+          rows.map((a: any) => a.storage_path as string),
+          60 * 60,
+        );
+      const urlByPath = new Map(
+        (signedList ?? []).map((s: any) => [s.path, s.signedUrl]),
+      );
+      for (const a of rows) {
+        const signedUrl = urlByPath.get(a.storage_path);
+        if (!signedUrl) continue;
+        const q = (list as any[]).find((x) => x.id === a.question_id);
+        if (!q) continue;
+        if (!q.attachments) q.attachments = [];
+        q.attachments.push({
+          id: a.id,
+          kind: a.kind,
+          fileName: a.file_name,
+          mimeType: a.mime_type,
+          label: a.label,
+          signedUrl,
+        });
+      }
     }
   }
 
-  const { data: attemptState } = await supabase.rpc("quiz_attempt_state", {
-    p_quiz_id: quiz.id,
-  });
-
-  // Résolution de la formation associée — slug pour l'UI, ID pour le payload INSERT
-  const [formationSlug, formationId] = await Promise.all([
-    resolveFormationFromQuiz(quiz.id),
-    resolveFormationIdFromQuiz(quiz.id),
-  ]);
+  // attemptState + résolution formation (slug pour l'UI, ID pour le
+  // payload INSERT) : 3 lectures indépendantes lancées en parallèle.
+  const [{ data: attemptState }, formationSlug, formationId] =
+    await Promise.all([
+      supabase.rpc("quiz_attempt_state", { p_quiz_id: quiz.id }),
+      resolveFormationFromQuiz(quiz.id),
+      resolveFormationIdFromQuiz(quiz.id),
+    ]);
 
   return (
     <QuizRunner
