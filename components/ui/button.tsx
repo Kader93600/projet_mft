@@ -35,7 +35,10 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       ref={ref}
       className={cn(
         "inline-flex items-center justify-center font-medium cursor-pointer whitespace-nowrap",
-        "transition-all duration-200 ease-out",
+        // Motion : propriétés explicites + courbe premium ; press feedback
+        // (scale) site-wide. Neutralisés sous prefers-reduced-motion.
+        "transition-[transform,background-color,border-color,box-shadow,color] duration-200 ease-premium",
+        "active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-600 focus-visible:ring-offset-2 focus-visible:ring-offset-ivory dark:focus-visible:ring-signal-500 dark:focus-visible:ring-offset-[hsl(var(--bg))]",
         "disabled:opacity-40 disabled:pointer-events-none disabled:cursor-not-allowed",
         variants[variant],
