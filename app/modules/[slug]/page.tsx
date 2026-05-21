@@ -310,7 +310,7 @@ export default async function ModuleDetail({
           <div className="pt-2">
             <Link
               href={`/modules/${module.slug}/${nextLesson.slug}`}
-              className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-[14px] font-semibold text-night-900 shadow-soft transition-all hover:scale-[1.01] hover:shadow-raised"
+              className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-[14px] font-semibold text-night-900 shadow-soft transition-[transform,background-color,border-color,box-shadow,color] duration-200 ease-premium hover:scale-[1.01] hover:shadow-raised"
               style={{
                 background: accent,
                 color: "#0E1240",
@@ -404,7 +404,7 @@ export default async function ModuleDetail({
             </div>
             <Link
               href={`/modules/${nextModuleData.slug}`}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-navy-900 px-5 py-3 text-sm font-semibold text-white hover:bg-navy-800 transition-all hover:translate-x-0.5 motion-reduce:hover:translate-x-0 shrink-0"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-navy-900 px-5 py-3 text-sm font-semibold text-white hover:bg-navy-800 transition-[transform,background-color,border-color,box-shadow,color] duration-200 ease-premium hover:translate-x-0.5 motion-reduce:hover:translate-x-0 shrink-0"
             >
               Démarrer le module suivant
               <ArrowRight className="h-4 w-4" />
@@ -454,7 +454,7 @@ export default async function ModuleDetail({
                 >
                   <Link
                     href={`/modules/${module.slug}/${l.slug}`}
-                    className="group relative flex items-center gap-4 rounded-2xl border border-navy-100 bg-white p-4 md:p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-raised hover:border-navy-200 motion-reduce:hover:translate-y-0"
+                    className="group relative flex items-center gap-4 rounded-2xl border border-navy-100 bg-white p-4 md:p-5 shadow-soft transition-[transform,background-color,border-color,box-shadow,color] duration-200 ease-premium hover:-translate-y-0.5 hover:shadow-raised hover:border-navy-200 motion-reduce:hover:translate-y-0"
                   >
                     {/* Pastille statut */}
                     <span
@@ -567,7 +567,7 @@ export default async function ModuleDetail({
                 <Link
                   key={q.id}
                   href={`/quiz/${q.id}`}
-                  className="group relative overflow-hidden rounded-2xl border bg-white p-5 md:p-6 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-raised motion-reduce:hover:translate-y-0"
+                  className="group relative overflow-hidden rounded-2xl border bg-white p-5 md:p-6 shadow-soft transition-[transform,background-color,border-color,box-shadow,color] duration-200 ease-premium hover:-translate-y-0.5 hover:shadow-raised motion-reduce:hover:translate-y-0"
                   style={{
                     borderColor: `${accent}66`,
                   }}
@@ -634,7 +634,7 @@ export default async function ModuleDetail({
                 <Link
                   key={q.id}
                   href={`/quiz/${q.id}`}
-                  className="group rounded-2xl border border-navy-100 bg-white p-5 md:p-6 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-raised hover:border-navy-200 motion-reduce:hover:translate-y-0"
+                  className="group rounded-2xl border border-navy-100 bg-white p-5 md:p-6 shadow-soft transition-[transform,background-color,border-color,box-shadow,color] duration-200 ease-premium hover:-translate-y-0.5 hover:shadow-raised hover:border-navy-200 motion-reduce:hover:translate-y-0"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <span className="inline-flex items-center gap-1.5 rounded-md bg-navy-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-navy-700 border border-navy-100">

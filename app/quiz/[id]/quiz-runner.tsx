@@ -961,14 +961,14 @@ export function QuizRunner({
                 <button
                   type="button"
                   onClick={submit}
-                  className="inline-flex items-center gap-1 h-8 px-3 rounded-lg bg-rose-600 text-white text-xs font-semibold hover:bg-rose-700 transition"
+                  className="inline-flex items-center gap-1 h-8 px-3 rounded-lg bg-rose-600 text-white text-xs font-semibold hover:bg-rose-700 transition-colors duration-200"
                 >
                   {t("retrySubmit")}
                 </button>
                 <button
                   type="button"
                   onClick={() => setSubmitError(null)}
-                  className="text-rose-700 hover:text-rose-900 text-xs font-medium px-2 h-8 rounded hover:bg-rose-100 transition"
+                  className="text-rose-700 hover:text-rose-900 text-xs font-medium px-2 h-8 rounded hover:bg-rose-100 transition-colors duration-200"
                 >
                   {t("hide")}
                 </button>
@@ -1022,7 +1022,7 @@ export function QuizRunner({
                       setShowReview(false);
                     }}
                     className={cn(
-                      "h-10 rounded-lg text-xs font-semibold border relative transition-all",
+                      "h-10 rounded-lg text-xs font-semibold border relative transition-[background-color,border-color,color] duration-200 ease-premium",
                       answered
                         ? "bg-navy-900 text-white border-navy-900"
                         : "bg-white text-slate-500 border-rose-300"
@@ -1110,7 +1110,7 @@ export function QuizRunner({
           <button
             type="button"
             onClick={() => setSubmitError(null)}
-            className="text-rose-700 hover:text-rose-900 text-xs font-medium px-2 py-1 rounded hover:bg-rose-100 transition"
+            className="text-rose-700 hover:text-rose-900 text-xs font-medium px-2 py-1 rounded hover:bg-rose-100 transition-colors duration-200"
             aria-label={t("close")}
           >
             ✕
@@ -1181,7 +1181,7 @@ export function QuizRunner({
             type="button"
             onClick={toggleFlag}
             className={cn(
-              "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border transition",
+              "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors duration-200",
               isFlagged
                 ? "bg-gold-100 text-gold-800 border-gold-300"
                 : "text-slate-600 hover:bg-navy-50 border-navy-100"
@@ -1236,7 +1236,7 @@ export function QuizRunner({
                       setShowPalette(false);
                     }}
                     className={cn(
-                      "h-9 rounded-md text-xs font-semibold border relative transition-all",
+                      "h-9 rounded-md text-xs font-semibold border relative transition-[background-color,border-color,color] duration-200 ease-premium",
                       isCurrent
                         ? "ring-2 ring-gold-500"
                         : "",
@@ -1426,7 +1426,7 @@ function AnnexPanel({ annexes }: { annexes: QuestionAnnex[] }) {
                 type="button"
                 onClick={() => setActiveIdx(i)}
                 className={cn(
-                  "px-2 py-0.5 rounded text-[11px] font-semibold transition",
+                  "px-2 py-0.5 rounded text-[11px] font-semibold transition-colors duration-200",
                   i === activeIdx
                     ? "bg-amber-500 text-night-900"
                     : "text-amber-900 hover:bg-amber-100"

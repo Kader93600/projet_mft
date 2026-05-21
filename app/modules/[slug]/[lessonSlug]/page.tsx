@@ -228,13 +228,13 @@ export default async function LessonPage({
           {prev ? (
             <Link
               href={`/modules/${module.slug}/${prev.slug}`}
-              className="group relative overflow-hidden rounded-2xl border border-navy-100 bg-white px-5 py-4 md:px-6 md:py-5 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-raised hover:border-brand-200 motion-reduce:hover:translate-y-0"
+              className="group relative overflow-hidden rounded-2xl border border-navy-100 bg-white px-5 py-4 md:px-6 md:py-5 shadow-soft transition-[transform,background-color,border-color,box-shadow,color] duration-200 ease-premium duration-200 hover:-translate-y-0.5 hover:shadow-raised hover:border-brand-200 motion-reduce:hover:translate-y-0"
               style={{
                 transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
               }}
             >
               <div className="flex items-center gap-3 md:gap-4">
-                <span className="inline-flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-xl bg-navy-50 text-navy-700 shrink-0 transition-all group-hover:bg-brand-100 group-hover:text-brand-700 group-hover:-translate-x-0.5 motion-reduce:group-hover:translate-x-0">
+                <span className="inline-flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-xl bg-navy-50 text-navy-700 shrink-0 transition-[transform,background-color,border-color,box-shadow,color] duration-200 ease-premium group-hover:bg-brand-100 group-hover:text-brand-700 group-hover:-translate-x-0.5 motion-reduce:group-hover:translate-x-0">
                   <ArrowLeft className="h-5 w-5" />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -255,7 +255,7 @@ export default async function LessonPage({
           {next ? (
             <Link
               href={`/modules/${module.slug}/${next.slug}`}
-              className="group relative overflow-hidden rounded-2xl border border-signal-200 bg-gradient-to-br from-white to-signal-50/40 px-5 py-4 md:px-6 md:py-5 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-raised hover:border-signal-400 motion-reduce:hover:translate-y-0"
+              className="group relative overflow-hidden rounded-2xl border border-signal-200 bg-gradient-to-br from-white to-signal-50/40 px-5 py-4 md:px-6 md:py-5 shadow-soft transition-[transform,background-color,border-color,box-shadow,color] duration-200 ease-premium duration-200 hover:-translate-y-0.5 hover:shadow-raised hover:border-signal-400 motion-reduce:hover:translate-y-0"
               style={{
                 transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
               }}
@@ -270,7 +270,7 @@ export default async function LessonPage({
                 }}
               />
               <div className="relative flex items-center gap-3 md:gap-4 md:flex-row-reverse md:text-right">
-                <span className="inline-flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-xl bg-signal-100 text-signal-800 shrink-0 transition-all group-hover:bg-signal-300 group-hover:text-navy-900 group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0">
+                <span className="inline-flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-xl bg-signal-100 text-signal-800 shrink-0 transition-[transform,background-color,border-color,box-shadow,color] duration-200 ease-premium group-hover:bg-signal-300 group-hover:text-navy-900 group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0">
                   <ArrowRight className="h-5 w-5" />
                 </span>
                 <div className="min-w-0 flex-1">

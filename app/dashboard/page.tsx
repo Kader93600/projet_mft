@@ -489,8 +489,8 @@ export default async function DashboardPage() {
               : t("ctaStart");
 
             const cardClasses = isLocked
-              ? "h-full transition-all bg-slate-50 border-slate-200 opacity-70"
-              : "h-full transition-all group-hover:-translate-y-0.5 group-hover:shadow-raised";
+              ? "h-full transition-[transform,background-color,border-color,box-shadow,color,opacity] duration-200 ease-premium bg-slate-50 border-slate-200 opacity-70"
+              : "h-full transition-[transform,background-color,border-color,box-shadow,color,opacity] duration-200 ease-premium group-hover:-translate-y-0.5 group-hover:shadow-raised";
 
             const ctaClasses = isLocked
               ? "inline-flex items-center gap-1 text-slate-400"

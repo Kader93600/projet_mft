@@ -504,7 +504,7 @@ export default async function StatsPage() {
       {/* Graphiques évolution + activité quotidienne */}
       <ScrollReveal delay={120}>
         <section className="grid lg:grid-cols-2 gap-4">
-          <Card className="transition-all hover:shadow-raised">
+          <Card className="transition-[transform,box-shadow,border-color] duration-200 ease-premium hover:shadow-raised">
             <CardBody>
               <div className="flex items-center gap-2 mb-4">
                 <TrendingUp className="h-4 w-4 text-brand-600" />
@@ -518,7 +518,7 @@ export default async function StatsPage() {
               />
             </CardBody>
           </Card>
-          <Card className="transition-all hover:shadow-raised">
+          <Card className="transition-[transform,box-shadow,border-color] duration-200 ease-premium hover:shadow-raised">
             <CardBody>
               <div className="flex items-center gap-2 mb-4">
                 <BarChart3 className="h-4 w-4 text-brand-600" />
@@ -541,7 +541,7 @@ export default async function StatsPage() {
               Activité sur 90 jours
             </h2>
           </div>
-          <Card className="transition-all hover:shadow-raised">
+          <Card className="transition-[transform,box-shadow,border-color] duration-200 ease-premium hover:shadow-raised">
             <CardBody>
               <ActivityHeatmap days={heatDays} max={heatMax || 1} />
               <div className="mt-3 flex items-center justify-between text-[11px] text-slate-500">
@@ -586,7 +586,7 @@ export default async function StatsPage() {
                   ? Math.round((b.lessonsDone / b.lessonsTotal) * 100)
                   : 0;
               return (
-                <Card key={b.id} className="transition-all hover:shadow-raised">
+                <Card key={b.id} className="transition-[transform,box-shadow,border-color] duration-200 ease-premium hover:shadow-raised">
                   <CardBody className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
@@ -653,7 +653,7 @@ export default async function StatsPage() {
               return (
                 <Card
                   key={f.id}
-                  className="transition-all hover:shadow-raised hover:-translate-y-0.5"
+                  className="transition-[transform,box-shadow,border-color] duration-200 ease-premium hover:shadow-raised hover:-translate-y-0.5"
                   style={{
                     transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
                   }}
@@ -914,7 +914,7 @@ function KpiTile({
 }) {
   return (
     <div
-      className={`group relative rounded-2xl border p-4 transition-all hover:shadow-raised hover:-translate-y-0.5 ${
+      className={`group relative rounded-2xl border p-4 transition-[transform,box-shadow,border-color] duration-200 ease-premium hover:shadow-raised hover:-translate-y-0.5 ${
         accent
           ? "bg-gradient-to-br from-gold-50 to-white border-gold-200/80"
           : "bg-white border-navy-100"

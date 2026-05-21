@@ -220,7 +220,7 @@ export async function MyFormationsSection() {
                 <div className="mt-5 flex items-center gap-2 flex-wrap">
                   <Link
                     href="/modules"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-navy-900 text-white text-xs font-semibold hover:bg-navy-800 transition"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-navy-900 text-white text-xs font-semibold transition-[transform,background-color] duration-200 ease-premium hover:bg-navy-800 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-600/40 motion-reduce:transition-none motion-reduce:active:scale-100"
                   >
                     Mes modules
                     <ArrowRight className="h-3 w-3" />

@@ -305,7 +305,7 @@ function ExerciceCard({ quiz: q }: { quiz: EnrichedQuiz }) {
         </div>
       )}
 
-      <div className="mt-auto pt-3 inline-flex items-center gap-1 text-[12px] font-semibold text-signal-700 group-hover:text-signal-800 transition">
+      <div className="mt-auto pt-3 inline-flex items-center gap-1 text-[12px] font-semibold text-signal-700 group-hover:text-signal-800 transition-colors duration-200">
         <Play className="h-3 w-3 fill-current" />
         {q.user_stats ? "Refaire" : "Démarrer l'entraînement"}
       </div>
