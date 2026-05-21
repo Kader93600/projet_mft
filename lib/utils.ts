@@ -13,6 +13,22 @@ export function formatDate(date: string | Date) {
   });
 }
 
+/**
+ * Date + heure (HH:mm), fuseau Europe/Paris.
+ * Utilisé là où l'horodatage précis compte (journal d'audit). Le fuseau est figé
+ * car la page est rendue côté serveur (UTC en prod) : sans cela l'heure serait décalée.
+ */
+export function formatDateTime(date: string | Date) {
+  return new Date(date).toLocaleString("fr-FR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Paris",
+  });
+}
+
 export function scoreColor(pct: number) {
   if (pct >= 80) return "text-emerald-600";
   if (pct >= 60) return "text-gold-600";

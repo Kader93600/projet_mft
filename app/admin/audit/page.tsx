@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { formatDate } from "@/lib/utils";
+import { formatDateTime } from "@/lib/utils";
 import { Shield } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -76,7 +76,7 @@ export default async function AuditLogPage() {
                 return (
                   <tr key={log.id} className="border-t border-navy-50">
                     <td className="px-5 py-3 text-xs text-slate-500 whitespace-nowrap">
-                      {formatDate(log.created_at)}
+                      {formatDateTime(log.created_at)}
                     </td>
                     <td className="px-5 py-3">
                       <div className="text-sm font-medium text-navy-900">
