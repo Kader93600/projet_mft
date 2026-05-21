@@ -10,6 +10,8 @@ const LINKS = [
   { href: "/retractation", label: "Rétractation" },
   { href: "/reglement-interieur", label: "Règlement intérieur" },
   { href: "/accessibilite", label: "Accessibilité" },
+  { href: "/resultats", label: "Indicateurs de résultats" },
+  { href: "/reclamations", label: "Réclamations & médiation" },
 ];
 
 export function LegalFooter({ variant = "light" }: { variant?: "light" | "dark" }) {

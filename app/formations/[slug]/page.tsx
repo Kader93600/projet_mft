@@ -17,6 +17,8 @@ import {
   Package,
   Award,
   ShieldCheck,
+  ClipboardCheck,
+  TrendingUp,
 } from "lucide-react";
 import { SiteShell } from "@/components/site/site-shell";
 import { JsonLd, courseSchema, breadcrumbSchema } from "@/components/seo/json-ld";
@@ -281,6 +283,40 @@ export default function FormationPage({ params }: { params: { slug: string } }) 
                 </span>
               ))}
             </div>
+          </section>
+
+          {/* Modalités d'évaluation (Qualiopi — critère 1) */}
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <ClipboardCheck className="h-5 w-5 text-signal-400" />
+              <h2 className="font-display text-2xl md:text-3xl font-semibold">
+                Modalités d'évaluation
+              </h2>
+            </div>
+            <p className="text-white/80 leading-relaxed rounded-xl border border-white/10 bg-night-100 p-5">
+              {f.assessment}
+            </p>
+          </section>
+
+          {/* Débouchés & suites de parcours (Qualiopi — critère 1) */}
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <TrendingUp className="h-5 w-5 text-signal-400" />
+              <h2 className="font-display text-2xl md:text-3xl font-semibold">
+                Débouchés &amp; suites de parcours
+              </h2>
+            </div>
+            <ul className="space-y-3">
+              {f.outcomes.map((o) => (
+                <li
+                  key={o}
+                  className="flex items-start gap-3 rounded-xl border border-white/10 bg-night-100 p-4"
+                >
+                  <ArrowRight className="h-5 w-5 text-signal-400 shrink-0 mt-0.5" />
+                  <span className="text-white/85 text-[15px]">{o}</span>
+                </li>
+              ))}
+            </ul>
           </section>
         </div>
 

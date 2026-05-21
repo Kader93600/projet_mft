@@ -43,6 +43,10 @@ export interface Formation {
   program: { title: string; details: string[] }[];
   /** Compétences visées. */
   skills: string[];
+  /** Modalités d'évaluation (Qualiopi — critère 1, indicateur 1). */
+  assessment: string;
+  /** Débouchés, suites de parcours et passerelles (Qualiopi — critère 1). */
+  outcomes: string[];
   /** Modes de financement applicables. */
   funding: FundingKey[];
   /** Mis en avant sur la home. */
@@ -73,6 +77,14 @@ export const FUNDING_LABELS: Record<FundingKey, string> = {
 export const FORMATIONS: Formation[] = [
   {
     slug: "gotrm",
+    assessment:
+      "Évaluation continue (QCM et études de cas), examens blancs en conditions réelles, puis épreuves du titre devant un jury (dossier professionnel et mises en situation). Titre RNCP 40990 de niveau 5 délivré par le Ministère du Travail.",
+    outcomes: [
+      "Responsable ou gestionnaire d'exploitation transport",
+      "Affréteur, dispatcher, chef de quai",
+      "Accès à la capacité de transport de marchandises (selon équivalences)",
+      "Poursuite possible vers une licence pro logistique / transport",
+    ],
     code: "GOTRM",
     title: "Gestionnaire des Opérations de Transport Routier de Marchandises",
     tagline:
@@ -136,6 +148,13 @@ export const FORMATIONS: Formation[] = [
   },
   {
     slug: "ertv",
+    assessment:
+      "Contrôle continu (QCM, études de cas), examens blancs et épreuves de certification du titre devant jury.",
+    outcomes: [
+      "Régulateur ou agent d'exploitation transport de voyageurs",
+      "Responsable de ligne, de dépôt ou d'exploitation",
+      "Poursuite possible vers le titre GOTRM ou une licence transport",
+    ],
     code: "ERTV",
     title: "Exploitant en Régulation du Transport de Voyageurs",
     tagline:
@@ -194,6 +213,13 @@ export const FORMATIONS: Formation[] = [
   },
   {
     slug: "ecsr",
+    assessment:
+      "Contrôle continu, mises en situation pédagogiques évaluées et épreuves de certification du titre d'enseignant de la conduite.",
+    outcomes: [
+      "Enseignant de la conduite et de la sécurité routière (auto-école)",
+      "Évolution vers responsable pédagogique d'établissement",
+      "Création ou direction d'une auto-école (qualifications complémentaires requises)",
+    ],
     code: "ECSR",
     title: "Enseignant de la Conduite et de la Sécurité Routière",
     tagline:
@@ -252,6 +278,13 @@ export const FORMATIONS: Formation[] = [
   },
   {
     slug: "fimo-fco",
+    assessment:
+      "Évaluation continue des acquis tout au long du stage ; attestation de formation délivrée à l'issue (formations obligatoires validées par l'assiduité et les tests réglementaires).",
+    outcomes: [
+      "Conducteur routier de marchandises (porteur, ensemble articulé)",
+      "Maintien des droits à conduire via la FCO (tous les 5 ans)",
+      "Passerelle vers le titre GOTRM pour évoluer vers l'exploitation",
+    ],
     code: "FIMO / FCO",
     title: "FIMO Marchandises & FCO obligatoire",
     tagline:
@@ -305,6 +338,13 @@ export const FORMATIONS: Formation[] = [
   },
   {
     slug: "taxi-vtc",
+    assessment:
+      "QCM blancs et mises en situation en conditions d'examen ; préparation à l'examen officiel (épreuve d'admissibilité puis d'admission).",
+    outcomes: [
+      "Chauffeur de taxi ou VTC, indépendant ou salarié",
+      "Création de sa propre activité de transport de personnes",
+      "Évolution vers la gestion d'une flotte VTC",
+    ],
     code: "Taxi & VTC",
     title: "Préparation aux examens Taxi et VTC",
     tagline:
@@ -362,6 +402,13 @@ export const FORMATIONS: Formation[] = [
   },
   {
     slug: "commissionnaire",
+    assessment:
+      "Contrôle continu et examen blanc en conditions réelles ; préparation à l'examen national écrit de commissionnaire de transport.",
+    outcomes: [
+      "Commissionnaire ou organisateur de transport",
+      "Affréteur national et international",
+      "Création d'une entreprise de commission de transport",
+    ],
     code: "Commissionnaire",
     title: "Préparation à l'examen national Commissionnaire de transport",
     tagline:
@@ -419,6 +466,13 @@ export const FORMATIONS: Formation[] = [
   },
   {
     slug: "capacite-3-5t",
+    assessment:
+      "QCM blancs en conditions d'examen ; préparation à l'examen national écrit (attestation de capacité professionnelle, transport léger).",
+    outcomes: [
+      "Création d'une entreprise de transport léger de marchandises (≤ 3,5 t)",
+      "Inscription au registre des transporteurs",
+      "Passerelle vers la capacité de transport > 3,5 t",
+    ],
     code: "Capacité ≤ 3,5 t",
     title: "Attestation de capacité professionnelle — véhicules ≤ 3,5 t",
     tagline:
@@ -476,6 +530,13 @@ export const FORMATIONS: Formation[] = [
   },
   {
     slug: "capacite-plus-3-5t",
+    assessment:
+      "Études de cas et examens blancs ; préparation à l'examen national (épreuve écrite et étude de cas) de capacité de transport lourd.",
+    outcomes: [
+      "Création ou direction d'une entreprise de transport routier lourd",
+      "Gestionnaire de transport inscrit au registre national",
+      "Accès à la profession de transporteur public routier de marchandises",
+    ],
     code: "Capacité > 3,5 t",
     title: "Capacité de transport > 3,5 t — Préparation à l'examen national",
     tagline:

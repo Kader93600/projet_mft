@@ -15,6 +15,7 @@ import {
   BellRing,
   ShieldCheck,
   Gift,
+  MessageSquareWarning,
 } from "lucide-react";
 
 /**
@@ -257,6 +258,14 @@ export function UserMenu({
           >
             <ShieldCheck className="w-4 h-4 text-slate-500" />
             Confidentialité
+          </Link>
+          <Link
+            href="/reclamations"
+            onClick={close}
+            className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium text-navy-800 hover:bg-navy-50 transition-colors"
+          >
+            <MessageSquareWarning className="w-4 h-4 text-slate-500" />
+            Réclamation
           </Link>
           <button
             type="button"
