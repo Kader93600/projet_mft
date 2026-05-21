@@ -27,7 +27,7 @@ const MODALITY_LABEL: Record<string, string> = {
 };
 
 interface Props {
-  ref: string;
+  refLabel: string;
   stagiaire: { fullName: string; email: string };
   e: any;
   hoursDone: number;
@@ -35,11 +35,11 @@ interface Props {
   successRate: number; // 0..1 (quiz passés / total)
 }
 
-function Doc({ ref, stagiaire, e, hoursDone, attendanceRate, successRate }: Props) {
+function Doc({ refLabel, stagiaire, e, hoursDone, attendanceRate, successRate }: Props) {
   return (
     <Document>
       <Page size="A4" style={pdfStyles.page}>
-        <PdfHeader refLabel={ref} type="Attestation" />
+        <PdfHeader refLabel={refLabel} type="Attestation" />
         <Text style={pdfStyles.title}>Attestation de fin de formation</Text>
         <Text style={pdfStyles.subtitle}>
           Article L. 6353-1 du Code du travail
@@ -238,7 +238,7 @@ export async function GET(
   const ref = String(params.id).slice(0, 8).toUpperCase();
   const buffer = await renderToBuffer(
     <Doc
-      ref={ref}
+      refLabel={ref}
       stagiaire={{
         fullName: stagiaire.full_name ?? stagiaire.email,
         email: stagiaire.email,

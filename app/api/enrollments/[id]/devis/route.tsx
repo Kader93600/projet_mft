@@ -39,20 +39,20 @@ const MODALITY_LABEL: Record<string, string> = {
 };
 
 interface Props {
-  ref: string;
+  refLabel: string;
   stagiaire: { fullName: string; email: string; phone?: string | null };
   funder?: { name: string; kind: string } | null;
   e: any;
   validityDate: string;
 }
 
-function Doc({ ref, stagiaire, funder, e, validityDate }: Props) {
+function Doc({ refLabel, stagiaire, funder, e, validityDate }: Props) {
   const ht = e.total_amount_cents ?? 0;
   const f = resolveEnrollmentFormation(e);
   return (
     <Document>
       <Page size="A4" style={pdfStyles.page}>
-        <PdfHeader refLabel={ref} type="Devis" />
+        <PdfHeader refLabel={refLabel} type="Devis" />
         <Text style={pdfStyles.title}>Devis de formation</Text>
         <Text style={pdfStyles.subtitle}>
           Valable jusqu'au {validityDate} — non engageant
@@ -187,7 +187,7 @@ export async function GET(
 
   const buffer = await renderToBuffer(
     <Doc
-      ref={ref}
+      refLabel={ref}
       stagiaire={{
         fullName: stagiaire.full_name ?? stagiaire.email,
         email: stagiaire.email,

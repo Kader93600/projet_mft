@@ -28,7 +28,7 @@ const MODALITY_LABEL: Record<string, string> = {
 };
 
 interface Props {
-  ref: string;
+  refLabel: string;
   stagiaire: {
     fullName: string;
     email: string;
@@ -37,12 +37,12 @@ interface Props {
   e: any;
 }
 
-function Doc({ ref, stagiaire, e }: Props) {
+function Doc({ refLabel, stagiaire, e }: Props) {
   const f = resolveEnrollmentFormation(e);
   return (
     <Document>
       <Page size="A4" style={pdfStyles.page}>
-        <PdfHeader refLabel={ref} type="Convocation" />
+        <PdfHeader refLabel={refLabel} type="Convocation" />
         <Text style={pdfStyles.title}>Convocation à formation</Text>
         <Text style={pdfStyles.subtitle}>
           Indicateur Qualiopi 4 — information préalable du stagiaire
@@ -203,7 +203,7 @@ export async function GET(
   const ref = String(params.id).slice(0, 8).toUpperCase();
   const buffer = await renderToBuffer(
     <Doc
-      ref={ref}
+      refLabel={ref}
       stagiaire={{
         fullName: stagiaire.full_name ?? stagiaire.email,
         email: stagiaire.email,

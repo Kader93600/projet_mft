@@ -190,7 +190,7 @@ const MODALITY_LABEL: Record<string, string> = {
 };
 
 interface DocProps {
-  ref: string;
+  refLabel: string;
   stagiaire: {
     fullName: string;
     email: string;
@@ -201,7 +201,7 @@ interface DocProps {
   e: any;
 }
 
-function Doc({ ref, stagiaire, funder, e }: DocProps) {
+function Doc({ refLabel, stagiaire, funder, e }: DocProps) {
   const isB2B = e.funding_kind !== "auto" && e.funding_kind !== "cpf";
   const f = resolveEnrollmentFormation(e);
 
@@ -217,7 +217,7 @@ function Doc({ ref, stagiaire, funder, e }: DocProps) {
             </Text>
           </View>
           <View>
-            <Text style={styles.ref}>Convention n° {ref}</Text>
+            <Text style={styles.ref}>Convention n° {refLabel}</Text>
             <Text style={styles.ref}>Émise le {fmtDate(new Date().toISOString())}</Text>
           </View>
         </View>
@@ -458,7 +458,7 @@ function Doc({ ref, stagiaire, funder, e }: DocProps) {
 
         <View style={styles.footer} fixed>
           <Text>
-            {LEGAL.legalName} · Convention n° {ref} · Page 2 / 2
+            {LEGAL.legalName} · Convention n° {refLabel} · Page 2 / 2
           </Text>
         </View>
       </Page>
@@ -500,7 +500,7 @@ export async function GET(
   const ref = String(params.id).slice(0, 8).toUpperCase();
   const buffer = await renderToBuffer(
     <Doc
-      ref={ref}
+      refLabel={ref}
       stagiaire={{
         fullName: stagiaire.full_name ?? stagiaire.email,
         email: stagiaire.email,
