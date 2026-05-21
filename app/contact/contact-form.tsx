@@ -169,7 +169,7 @@ export function ContactForm() {
           name="message"
           rows={5}
           placeholder="Parlez-nous de votre projet, vos disponibilités…"
-          className="w-full bg-night-50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:border-signal-500 focus:outline-none focus:ring-2 focus:ring-signal-500/30"
+          className="w-full bg-night-50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/60 focus:border-signal-500 focus:outline-none focus:ring-2 focus:ring-signal-500/30"
         />
       </div>
 
@@ -240,7 +240,7 @@ function Field({
         required={required}
         autoComplete={autoComplete}
         placeholder={placeholder}
-        className="w-full bg-night-50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:border-signal-500 focus:outline-none focus:ring-2 focus:ring-signal-500/30"
+        className="w-full bg-night-50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/60 focus:border-signal-500 focus:outline-none focus:ring-2 focus:ring-signal-500/30"
       />
     </div>
   );
