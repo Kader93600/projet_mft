@@ -1,6 +1,6 @@
 // =====================================================================
 // lib/database.types.ts — Types du schéma public Supabase
-// Généré le 2026-05-20 par scripts/introspect-schema.mjs (introspection live).
+// Généré le 2026-05-21 par scripts/introspect-schema.mjs (introspection live).
 // NE PAS éditer à la main — régénérer avec : node scripts/introspect-schema.mjs
 // =====================================================================
 
@@ -55,7 +55,22 @@ export interface Database {
           updated_at?: string;
           resolved_at?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "accessibility_requests_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "accessibility_requests_referent_id_fkey";
+            columns: ["referent_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       acquisition_events: {
         Row: {
@@ -106,7 +121,15 @@ export interface Database {
           kind?: string;
           occurred_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "acquisition_events_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       announcements: {
         Row: {
@@ -142,7 +165,15 @@ export interface Database {
           created_by?: string | null;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "announcements_group_id_fkey";
+            columns: ["group_id"];
+            isOneToOne: false;
+            referencedRelation: "groups";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       at_risk_students: {
         Row: {
@@ -178,7 +209,22 @@ export interface Database {
           avg_score?: number | null;
           risk_flag?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "at_risk_students_referent_id_fkey";
+            columns: ["referent_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "at_risk_students_group_id_fkey";
+            columns: ["group_id"];
+            isOneToOne: false;
+            referencedRelation: "groups";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       attendance_attendees: {
         Row: {
@@ -193,7 +239,22 @@ export interface Database {
           session_id?: string;
           user_id?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "attendance_attendees_session_id_fkey";
+            columns: ["session_id"];
+            isOneToOne: false;
+            referencedRelation: "attendance_sessions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "attendance_attendees_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       attendance_sessions: {
         Row: {
@@ -238,7 +299,15 @@ export interface Database {
           topic?: string | null;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "attendance_sessions_trainer_id_fkey";
+            columns: ["trainer_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       attendance_signatures: {
         Row: {
@@ -271,7 +340,22 @@ export interface Database {
           signature_ua?: string | null;
           signature_hash?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "attendance_signatures_session_id_fkey";
+            columns: ["session_id"];
+            isOneToOne: false;
+            referencedRelation: "attendance_sessions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "attendance_signatures_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       attendance_summary: {
         Row: {
@@ -343,7 +427,15 @@ export interface Database {
           user_agent?: string | null;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "audit_log_actor_id_fkey";
+            columns: ["actor_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       audit_logs: {
         Row: {
@@ -379,7 +471,15 @@ export interface Database {
           user_agent?: string | null;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_actor_id_fkey";
+            columns: ["actor_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       badges: {
         Row: {
@@ -487,7 +587,22 @@ export interface Database {
           score_snapshot?: Json | null;
           is_loyalty?: boolean;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "certificates_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "certificates_bloc_id_fkey";
+            columns: ["bloc_id"];
+            isOneToOne: false;
+            referencedRelation: "blocs";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       choices: {
         Row: {
@@ -511,7 +626,15 @@ export interface Database {
           is_correct?: boolean;
           order?: number;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "choices_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "questions";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       coaching_notes: {
         Row: {
@@ -544,7 +667,22 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "coaching_notes_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "coaching_notes_trainer_id_fkey";
+            columns: ["trainer_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       coaching_sessions: {
         Row: {
@@ -592,7 +730,22 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "coaching_sessions_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "coaching_sessions_trainer_id_fkey";
+            columns: ["trainer_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       conversation_participants: {
         Row: {
@@ -625,7 +778,15 @@ export interface Database {
           muted?: boolean;
           archived_at?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "conversation_participants_conversation_id_fkey";
+            columns: ["conversation_id"];
+            isOneToOne: false;
+            referencedRelation: "conversations";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       conversations: {
         Row: {
@@ -673,7 +834,15 @@ export interface Database {
           archived_at?: string | null;
           class_writable?: boolean;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "conversations_group_id_fkey";
+            columns: ["group_id"];
+            isOneToOne: false;
+            referencedRelation: "groups";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       crm_my_queue: {
         Row: {
@@ -742,7 +911,22 @@ export interface Database {
           followup_due?: boolean | null;
           notes_count?: number | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "crm_my_queue_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "crm_my_queue_assigned_to_admin_id_fkey";
+            columns: ["assigned_to_admin_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       document_acceptances: {
         Row: {
@@ -775,7 +959,15 @@ export interface Database {
           ip_address?: string | null;
           user_agent?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "document_acceptances_document_id_fkey";
+            columns: ["document_id"];
+            isOneToOne: false;
+            referencedRelation: "onboarding_documents";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       enrollment_requests: {
         Row: {
@@ -844,7 +1036,22 @@ export interface Database {
           code_postal?: string | null;
           ville?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "enrollment_requests_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "enrollment_requests_assigned_to_admin_id_fkey";
+            columns: ["assigned_to_admin_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       enrollments: {
         Row: {
@@ -943,7 +1150,36 @@ export interface Database {
           organization_id?: string | null;
           seats_reserved?: boolean;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "enrollments_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "enrollments_funder_id_fkey";
+            columns: ["funder_id"];
+            isOneToOne: false;
+            referencedRelation: "funders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "enrollments_formation_id_fkey";
+            columns: ["formation_id"];
+            isOneToOne: false;
+            referencedRelation: "formations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "enrollments_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       formation_modules: {
         Row: {
@@ -964,7 +1200,22 @@ export interface Database {
           display_order?: number;
           required?: boolean;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "formation_modules_formation_id_fkey";
+            columns: ["formation_id"];
+            isOneToOne: false;
+            referencedRelation: "formations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "formation_modules_module_id_fkey";
+            columns: ["module_id"];
+            isOneToOne: false;
+            referencedRelation: "modules";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       formation_pack_prices: {
         Row: {
@@ -1003,7 +1254,22 @@ export interface Database {
           updated_at?: string;
           updated_by?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "formation_pack_prices_formation_id_fkey";
+            columns: ["formation_id"];
+            isOneToOne: false;
+            referencedRelation: "formations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "formation_pack_prices_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       formation_quizzes: {
         Row: {
@@ -1024,7 +1290,22 @@ export interface Database {
           is_mock_exam?: boolean;
           display_order?: number;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "formation_quizzes_formation_id_fkey";
+            columns: ["formation_id"];
+            isOneToOne: false;
+            referencedRelation: "formations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "formation_quizzes_quiz_id_fkey";
+            columns: ["quiz_id"];
+            isOneToOne: false;
+            referencedRelation: "quizzes";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       formation_settings: {
         Row: {
@@ -1108,7 +1389,15 @@ export interface Database {
           updated_by?: string | null;
           formation_id?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "formation_settings_formation_id_fkey";
+            columns: ["formation_id"];
+            isOneToOne: false;
+            referencedRelation: "formations";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       formations: {
         Row: {
@@ -1201,7 +1490,15 @@ export interface Database {
           notes?: string | null;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "funders_portal_user_id_fkey";
+            columns: ["portal_user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       glossary_terms: {
         Row: {
@@ -1237,7 +1534,22 @@ export interface Database {
           updated_at?: string;
           formation_id?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "glossary_terms_bloc_id_fkey";
+            columns: ["bloc_id"];
+            isOneToOne: false;
+            referencedRelation: "blocs";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "glossary_terms_formation_id_fkey";
+            columns: ["formation_id"];
+            isOneToOne: false;
+            referencedRelation: "formations";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       groups: {
         Row: {
@@ -1309,7 +1621,15 @@ export interface Database {
           last_pinged_at?: string;
           ping_count?: number;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "inactivity_pings_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       lead_activities: {
         Row: {
@@ -1336,7 +1656,22 @@ export interface Database {
           details?: Json | null;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "lead_activities_enrollment_request_id_fkey";
+            columns: ["enrollment_request_id"];
+            isOneToOne: false;
+            referencedRelation: "enrollment_requests";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lead_activities_author_id_fkey";
+            columns: ["author_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       lead_notes: {
         Row: {
@@ -1366,7 +1701,22 @@ export interface Database {
           occurred_at?: string;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "lead_notes_enrollment_request_id_fkey";
+            columns: ["enrollment_request_id"];
+            isOneToOne: false;
+            referencedRelation: "enrollment_requests";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lead_notes_author_id_fkey";
+            columns: ["author_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       lesson_chunks: {
         Row: {
@@ -1396,7 +1746,15 @@ export interface Database {
           embedding?: string | null;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "lesson_chunks_lesson_id_fkey";
+            columns: ["lesson_id"];
+            isOneToOne: false;
+            referencedRelation: "lessons";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       lesson_progress: {
         Row: {
@@ -1423,7 +1781,29 @@ export interface Database {
           completed_at?: string | null;
           lesson_version_id?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "lesson_progress_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lesson_progress_lesson_id_fkey";
+            columns: ["lesson_id"];
+            isOneToOne: false;
+            referencedRelation: "lessons";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lesson_progress_lesson_version_id_fkey";
+            columns: ["lesson_version_id"];
+            isOneToOne: false;
+            referencedRelation: "lesson_versions";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       lesson_resources: {
         Row: {
@@ -1459,7 +1839,15 @@ export interface Database {
           order?: number;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "lesson_resources_lesson_id_fkey";
+            columns: ["lesson_id"];
+            isOneToOne: false;
+            referencedRelation: "lessons";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       lesson_versions: {
         Row: {
@@ -1498,7 +1886,22 @@ export interface Database {
           edited_at?: string;
           change_note?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "lesson_versions_lesson_id_fkey";
+            columns: ["lesson_id"];
+            isOneToOne: false;
+            referencedRelation: "lessons";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lesson_versions_edited_by_fkey";
+            columns: ["edited_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       lesson_views: {
         Row: {
@@ -1531,7 +1934,29 @@ export interface Database {
           completed?: boolean;
           formation_id?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "lesson_views_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lesson_views_lesson_id_fkey";
+            columns: ["lesson_id"];
+            isOneToOne: false;
+            referencedRelation: "lessons";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lesson_views_formation_id_fkey";
+            columns: ["formation_id"];
+            isOneToOne: false;
+            referencedRelation: "formations";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       lessons: {
         Row: {
@@ -1576,7 +2001,15 @@ export interface Database {
           current_version?: number;
           duration_min?: number;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "lessons_module_id_fkey";
+            columns: ["module_id"];
+            isOneToOne: false;
+            referencedRelation: "modules";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       live_sessions: {
         Row: {
@@ -1642,7 +2075,36 @@ export interface Database {
           updated_at?: string;
           created_by?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "live_sessions_formation_id_fkey";
+            columns: ["formation_id"];
+            isOneToOne: false;
+            referencedRelation: "formations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "live_sessions_module_id_fkey";
+            columns: ["module_id"];
+            isOneToOne: false;
+            referencedRelation: "modules";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "live_sessions_trainer_id_fkey";
+            columns: ["trainer_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "live_sessions_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       loyalty_events: {
         Row: {
@@ -1666,7 +2128,15 @@ export interface Database {
           details?: Json | null;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_events_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       message_attachments: {
         Row: {
@@ -1702,7 +2172,15 @@ export interface Database {
           height?: number | null;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "message_attachments_message_id_fkey";
+            columns: ["message_id"];
+            isOneToOne: false;
+            referencedRelation: "messages";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       message_reactions: {
         Row: {
@@ -1723,7 +2201,15 @@ export interface Database {
           emoji?: string;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "message_reactions_message_id_fkey";
+            columns: ["message_id"];
+            isOneToOne: false;
+            referencedRelation: "messages";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       messages: {
         Row: {
@@ -1762,7 +2248,22 @@ export interface Database {
           edited_at?: string | null;
           deleted_at?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey";
+            columns: ["conversation_id"];
+            isOneToOne: false;
+            referencedRelation: "conversations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "messages_reply_to_id_fkey";
+            columns: ["reply_to_id"];
+            isOneToOne: false;
+            referencedRelation: "messages";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       modules: {
         Row: {
@@ -1831,7 +2332,29 @@ export interface Database {
           marketplace_reviewer_id?: string | null;
           marketplace_review_notes?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "modules_bloc_id_fkey";
+            columns: ["bloc_id"];
+            isOneToOne: false;
+            referencedRelation: "blocs";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "modules_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "modules_marketplace_reviewer_id_fkey";
+            columns: ["marketplace_reviewer_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       notification_preferences: {
         Row: {
@@ -1891,7 +2414,15 @@ export interface Database {
           link_url?: string | null;
           read_at?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       onboarding_documents: {
         Row: {
@@ -1999,7 +2530,29 @@ export interface Database {
           invited_by?: string | null;
           joined_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "organization_members_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "organization_members_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "organization_members_invited_by_fkey";
+            columns: ["invited_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       organizations: {
         Row: {
@@ -2098,7 +2651,15 @@ export interface Database {
           notes?: string | null;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "payment_schedule_enrollment_id_fkey";
+            columns: ["enrollment_id"];
+            isOneToOne: false;
+            referencedRelation: "enrollments";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       payments_log: {
         Row: {
@@ -2134,7 +2695,15 @@ export interface Database {
           payload?: Json | null;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "payments_log_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       pinned_messages: {
         Row: {
@@ -2155,7 +2724,22 @@ export interface Database {
           pinned_by?: string;
           pinned_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "pinned_messages_conversation_id_fkey";
+            columns: ["conversation_id"];
+            isOneToOne: false;
+            referencedRelation: "conversations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "pinned_messages_message_id_fkey";
+            columns: ["message_id"];
+            isOneToOne: false;
+            referencedRelation: "messages";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       placement_questions: {
         Row: {
@@ -2203,7 +2787,22 @@ export interface Database {
           expected_answer?: string | null;
           formation_id?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "placement_questions_bloc_id_fkey";
+            columns: ["bloc_id"];
+            isOneToOne: false;
+            referencedRelation: "blocs";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "placement_questions_formation_id_fkey";
+            columns: ["formation_id"];
+            isOneToOne: false;
+            referencedRelation: "formations";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       placement_results: {
         Row: {
@@ -2233,7 +2832,15 @@ export interface Database {
           duration_s?: number | null;
           taken_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "placement_results_recommended_bloc_id_fkey";
+            columns: ["recommended_bloc_id"];
+            isOneToOne: false;
+            referencedRelation: "blocs";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       profiles: {
         Row: {
@@ -2347,7 +2954,36 @@ export interface Database {
           current_formation_id?: string | null;
           leaderboard_opt_out?: boolean;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "profiles_group_id_fkey";
+            columns: ["group_id"];
+            isOneToOne: false;
+            referencedRelation: "groups";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "profiles_referent_id_fkey";
+            columns: ["referent_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "profiles_trainer_id_fkey";
+            columns: ["trainer_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "profiles_current_formation_id_fkey";
+            columns: ["current_formation_id"];
+            isOneToOne: false;
+            referencedRelation: "formations";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       push_subscriptions: {
         Row: {
@@ -2449,7 +3085,29 @@ export interface Database {
           ai_cost_cents?: number | null;
           ai_graded_at?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "qr_responses_attempt_id_fkey";
+            columns: ["attempt_id"];
+            isOneToOne: false;
+            referencedRelation: "quiz_attempts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "qr_responses_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "question_bank";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "qr_responses_graded_by_fkey";
+            columns: ["graded_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       question_attachments: {
         Row: {
@@ -2491,7 +3149,22 @@ export interface Database {
           created_at?: string;
           created_by?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "question_attachments_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "question_bank";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "question_attachments_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       question_bank: {
         Row: {
@@ -2569,7 +3242,50 @@ export interface Database {
           annex_pages?: number[];
           annex_labels?: string[];
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "question_bank_formation_id_fkey";
+            columns: ["formation_id"];
+            isOneToOne: false;
+            referencedRelation: "formations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "question_bank_module_id_fkey";
+            columns: ["module_id"];
+            isOneToOne: false;
+            referencedRelation: "modules";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "question_bank_reformulated_by_fkey";
+            columns: ["reformulated_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "question_bank_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "question_bank_import_id_fkey";
+            columns: ["import_id"];
+            isOneToOne: false;
+            referencedRelation: "question_imports";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "question_bank_lesson_id_fkey";
+            columns: ["lesson_id"];
+            isOneToOne: false;
+            referencedRelation: "lessons";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       question_imports: {
         Row: {
@@ -2632,7 +3348,29 @@ export interface Database {
           annex_pages?: number[];
           annex_labels?: string[];
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "question_imports_formation_id_fkey";
+            columns: ["formation_id"];
+            isOneToOne: false;
+            referencedRelation: "formations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "question_imports_module_id_fkey";
+            columns: ["module_id"];
+            isOneToOne: false;
+            referencedRelation: "modules";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "question_imports_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       questions: {
         Row: {
@@ -2659,7 +3397,15 @@ export interface Database {
           order?: number;
           image_url?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "questions_quiz_id_fkey";
+            columns: ["quiz_id"];
+            isOneToOne: false;
+            referencedRelation: "quizzes";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       quiz_attempts: {
         Row: {
@@ -2740,7 +3486,36 @@ export interface Database {
           formation_id?: string;
           client_attempt_id?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "quiz_attempts_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "quiz_attempts_quiz_id_fkey";
+            columns: ["quiz_id"];
+            isOneToOne: false;
+            referencedRelation: "quizzes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "quiz_attempts_graded_by_fkey";
+            columns: ["graded_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "quiz_attempts_formation_id_fkey";
+            columns: ["formation_id"];
+            isOneToOne: false;
+            referencedRelation: "formations";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       quiz_question_bank: {
         Row: {
@@ -2758,7 +3533,22 @@ export interface Database {
           question_id?: string;
           display_order?: number;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "quiz_question_bank_quiz_id_fkey";
+            columns: ["quiz_id"];
+            isOneToOne: false;
+            referencedRelation: "quizzes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "quiz_question_bank_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "question_bank";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       quizzes: {
         Row: {
@@ -2824,7 +3614,15 @@ export interface Database {
           bank_filters?: Json | null;
           requires_manual_grading?: boolean;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "quizzes_module_id_fkey";
+            columns: ["module_id"];
+            isOneToOne: false;
+            referencedRelation: "modules";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       referral_codes: {
         Row: {
@@ -2845,7 +3643,15 @@ export interface Database {
           created_at?: string;
           active?: boolean;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "referral_codes_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       referrals: {
         Row: {
@@ -2887,7 +3693,36 @@ export interface Database {
           rejection_reason?: string | null;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "referrals_referrer_id_fkey";
+            columns: ["referrer_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "referrals_referred_user_id_fkey";
+            columns: ["referred_user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "referrals_enrollment_id_fkey";
+            columns: ["enrollment_id"];
+            isOneToOne: false;
+            referencedRelation: "enrollments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "referrals_rewarded_by_fkey";
+            columns: ["rewarded_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       satisfaction_surveys: {
         Row: {
@@ -2968,7 +3803,15 @@ export interface Database {
           kind_filter?: string | null;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "search_logs_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       session_attendance: {
         Row: {
@@ -3007,7 +3850,29 @@ export interface Database {
           validated_at?: string | null;
           notes?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "session_attendance_session_id_fkey";
+            columns: ["session_id"];
+            isOneToOne: false;
+            referencedRelation: "live_sessions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "session_attendance_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "session_attendance_validated_by_fkey";
+            columns: ["validated_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       session_enrollments: {
         Row: {
@@ -3034,7 +3899,22 @@ export interface Database {
           cancelled_at?: string | null;
           cancellation_reason?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "session_enrollments_session_id_fkey";
+            columns: ["session_id"];
+            isOneToOne: false;
+            referencedRelation: "live_sessions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "session_enrollments_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       trainer_assignments: {
         Row: {
@@ -3061,7 +3941,22 @@ export interface Database {
           formation_slug?: string | null;
           assigned_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "trainer_assignments_trainer_id_fkey";
+            columns: ["trainer_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "trainer_assignments_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       trainer_formations: {
         Row: {
@@ -3094,7 +3989,29 @@ export interface Database {
           granted_at?: string;
           granted_by?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "trainer_formations_trainer_id_fkey";
+            columns: ["trainer_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "trainer_formations_formation_id_fkey";
+            columns: ["formation_id"];
+            isOneToOne: false;
+            referencedRelation: "formations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "trainer_formations_granted_by_fkey";
+            columns: ["granted_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       trainer_payouts: {
         Row: {
@@ -3142,7 +4059,15 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "trainer_payouts_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       trainer_revenue_events: {
         Row: {
@@ -3190,7 +4115,29 @@ export interface Database {
           notes?: string | null;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "trainer_revenue_events_trainer_user_id_fkey";
+            columns: ["trainer_user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "trainer_revenue_events_module_id_fkey";
+            columns: ["module_id"];
+            isOneToOne: false;
+            referencedRelation: "modules";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "trainer_revenue_events_enrollment_id_fkey";
+            columns: ["enrollment_id"];
+            isOneToOne: false;
+            referencedRelation: "enrollments";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       tutor_conversations: {
         Row: {
@@ -3220,7 +4167,22 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "tutor_conversations_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tutor_conversations_context_module_id_fkey";
+            columns: ["context_module_id"];
+            isOneToOne: false;
+            referencedRelation: "modules";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       tutor_messages: {
         Row: {
@@ -3259,7 +4221,15 @@ export interface Database {
           moderation_passed?: boolean | null;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "tutor_messages_conversation_id_fkey";
+            columns: ["conversation_id"];
+            isOneToOne: false;
+            referencedRelation: "tutor_conversations";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       tutor_quotas: {
         Row: {
@@ -3283,7 +4253,15 @@ export interface Database {
           cost_cents?: number;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "tutor_quotas_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       user_activity_summary: {
         Row: {
@@ -3325,7 +4303,15 @@ export interface Database {
           lessons_completed_count?: number | null;
           avg_score?: number | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "user_activity_summary_group_id_fkey";
+            columns: ["group_id"];
+            isOneToOne: false;
+            referencedRelation: "groups";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       user_badges: {
         Row: {
@@ -3349,7 +4335,22 @@ export interface Database {
           earned_at?: string;
           context?: Json | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "user_badges_badge_id_fkey";
+            columns: ["badge_id"];
+            isOneToOne: false;
+            referencedRelation: "badges";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       user_credits: {
         Row: {
@@ -3382,7 +4383,22 @@ export interface Database {
           created_at?: string;
           created_by?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "user_credits_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "user_credits_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       user_gamification: {
         Row: {
@@ -3526,7 +4542,15 @@ export interface Database {
           path?: string | null;
           user_agent?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "user_sessions_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       user_training_summary: {
         Row: {
@@ -3607,7 +4631,15 @@ export interface Database {
           ref_id?: string | null;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "xp_events_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
     Views: {

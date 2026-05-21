@@ -1,6 +1,6 @@
 -- =====================================================================
 -- supabase/schema.sql — BASELINE CONSOLIDÉ (source de vérité des tables)
--- Généré le 2026-05-20 par scripts/introspect-schema.mjs
+-- Généré le 2026-05-21 par scripts/introspect-schema.mjs
 -- via introspection du schéma public déployé (PostgREST OpenAPI).
 --
 -- ⚠️  Régénérer avec :  node scripts/introspect-schema.mjs

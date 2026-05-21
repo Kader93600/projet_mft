@@ -263,7 +263,24 @@ for (const t of tables) {
     ts += `          ${tsKey(c.name)}?: ${c.tsType}${nul};\n`;
   }
   ts += `        };\n`;
-  ts += `        Relationships: [];\n`;
+  // Relationships : générées depuis les FK (annotation <fk> de l'OpenAPI).
+  // Permettent l'inférence des `select` avec embeds (ex. modules(...)).
+  const rels = t.cols.filter((c) => c.fk);
+  if (rels.length === 0) {
+    ts += `        Relationships: [];\n`;
+  } else {
+    ts += `        Relationships: [\n`;
+    for (const c of rels) {
+      ts += `          {\n`;
+      ts += `            foreignKeyName: "${t.name}_${c.name}_fkey";\n`;
+      ts += `            columns: ["${c.name}"];\n`;
+      ts += `            isOneToOne: false;\n`;
+      ts += `            referencedRelation: "${c.fk.table}";\n`;
+      ts += `            referencedColumns: ["${c.fk.column}"];\n`;
+      ts += `          },\n`;
+    }
+    ts += `        ];\n`;
+  }
   ts += `      };\n`;
 }
 
