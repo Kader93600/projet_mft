@@ -193,7 +193,7 @@ export default async function CorrectionsListPage({
                           </Badge>
                         )}
                       </div>
-                      <ArrowRight className="h-4 w-4 text-slate-400 group-hover:text-brand-700 group-hover:translate-x-1 transition" />
+                      <ArrowRight className="h-4 w-4 text-slate-400 group-hover:text-brand-700 group-hover:translate-x-1 transition-[transform,color] duration-200 ease-premium motion-reduce:transition-none" />
                     </Link>
                   </li>
                 );

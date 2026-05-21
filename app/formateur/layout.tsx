@@ -137,7 +137,7 @@ function NavLink({
   return (
     <Link
       href={href}
-      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-brand-50 hover:text-brand-900 transition"
+      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-brand-50 hover:text-brand-900 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-600/30"
     >
       <Icon className="w-4 h-4" />
       {label}

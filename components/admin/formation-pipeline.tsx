@@ -169,7 +169,7 @@ export async function FormationPipeline() {
             <Link
               key={r.formation.slug}
               href={`/admin/enrollments?formation=${r.formation.slug}`}
-              className="group relative overflow-hidden rounded-2xl border border-navy-100 bg-white p-5 hover:border-brand-300 hover:shadow-soft transition"
+              className="group relative overflow-hidden rounded-2xl border border-navy-100 bg-white p-5 transition-[border-color,box-shadow] duration-200 ease-premium hover:border-brand-300 hover:shadow-soft"
             >
               <div
                 aria-hidden="true"

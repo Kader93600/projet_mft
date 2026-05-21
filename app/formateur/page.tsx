@@ -185,7 +185,7 @@ export default async function FormateurDashboard({
                         )}
                       </div>
                     </div>
-                    <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-navy-700 group-hover:translate-x-1 transition" />
+                    <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-navy-700 group-hover:translate-x-1 transition-[transform,color] duration-200 ease-premium motion-reduce:transition-none" />
                   </Link>
                 </li>
               );
@@ -216,7 +216,7 @@ export default async function FormateurDashboard({
                 Les stagiaires reçoivent leur note dès que vous finalisez.
               </div>
             </div>
-            <ArrowRight className="h-5 w-5 text-rose-700 group-hover:translate-x-1 transition" />
+            <ArrowRight className="h-5 w-5 text-rose-700 group-hover:translate-x-1 transition-[transform,color] duration-200 ease-premium motion-reduce:transition-none" />
           </div>
         </Link>
       ) : null}
@@ -460,7 +460,7 @@ export default async function FormateurDashboard({
           <p className="text-sm text-slate-600 mt-1">
             Planning live + feuilles d'émargement à signer.
           </p>
-          <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-signal-700 group-hover:gap-3 transition-all">
+          <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-signal-700 transition-colors duration-200">
             Ouvrir <ArrowRight className="h-3.5 w-3.5" />
           </span>
         </Link>
@@ -476,7 +476,7 @@ export default async function FormateurDashboard({
           <p className="text-sm text-slate-600 mt-1">
             Échanges directs (questions, feedback, conseils).
           </p>
-          <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-brand-700 group-hover:gap-3 transition-all">
+          <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-brand-700 transition-colors duration-200">
             Ouvrir <ArrowRight className="h-3.5 w-3.5" />
           </span>
         </Link>
