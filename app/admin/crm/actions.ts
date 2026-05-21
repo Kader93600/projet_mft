@@ -2,6 +2,8 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { sendEmail, quoteEmail } from "@/lib/email";
+import { renderQuotePdf } from "@/lib/quote-pdf";
 
 async function ensureAdmin() {
   const supabase = createClient();
@@ -196,4 +198,122 @@ export async function removeTag(leadId: string, tag: string) {
   if (error) return { ok: false, error: error.message };
   bust(leadId);
   return { ok: true };
+}
+
+// ─── Devis ──────────────────────────────────────────────────────────
+
+interface QuoteInput {
+  formationTitle: string;
+  amountEuros: number;
+  fundingLabel?: string;
+  durationLabel?: string;
+  hours?: string;
+  modalityLabel?: string;
+  startDate?: string; // ISO ("" si non précisé)
+  validityDays: number;
+  notes?: string;
+}
+
+/**
+ * Génère un devis PDF pré-rempli et l'envoie par email (Resend) au prospect,
+ * journalise l'envoi dans les notes et bascule le lead en "devis_envoye".
+ */
+export async function sendQuote(leadId: string, input: QuoteInput) {
+  const { supabase, userId } = await ensureAdmin();
+
+  const title = (input.formationTitle ?? "").trim();
+  if (!title) return { ok: false, error: "Intitulé de la formation requis" };
+  const amount = Number(input.amountEuros);
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return { ok: false, error: "Montant invalide" };
+  }
+  const validityDays =
+    Number.isFinite(input.validityDays) && input.validityDays > 0
+      ? Math.min(Math.round(input.validityDays), 180)
+      : 30;
+
+  const { data: lead } = await supabase
+    .from("enrollment_requests")
+    .select("id, full_name, email, phone")
+    .eq("id", leadId)
+    .maybeSingle();
+  if (!lead) return { ok: false, error: "Lead introuvable" };
+  if (!lead.email) {
+    return { ok: false, error: "Ce prospect n'a pas d'adresse email" };
+  }
+
+  const ref = `DEVIS-${new Date().getFullYear()}-${leadId
+    .replace(/-/g, "")
+    .slice(0, 6)
+    .toUpperCase()}`;
+
+  // 1) PDF
+  let base64: string;
+  try {
+    const pdf = await renderQuotePdf({
+      ref,
+      client: {
+        fullName: lead.full_name ?? "",
+        email: lead.email,
+        phone: lead.phone,
+      },
+      formationTitle: title,
+      durationLabel: input.durationLabel ?? "",
+      modalityLabel: input.modalityLabel ?? "",
+      fundingLabel: input.fundingLabel ?? "",
+      hours: input.hours ?? null,
+      startDate: input.startDate || null,
+      amountEuros: amount,
+      validityDays,
+      notes: input.notes ?? null,
+    });
+    base64 = pdf.toString("base64");
+  } catch (e) {
+    return {
+      ok: false,
+      error: `Échec de génération du PDF : ${
+        e instanceof Error ? e.message : "inconnu"
+      }`,
+    };
+  }
+
+  // 2) Email + pièce jointe
+  const amountFormatted = new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+  }).format(amount);
+  const tpl = quoteEmail({
+    fullName: lead.full_name ?? "",
+    formationTitle: title,
+    amountFormatted,
+    validityDays,
+    ref,
+  });
+  const sent = await sendEmail({
+    to: lead.email,
+    subject: tpl.subject,
+    html: tpl.html,
+    attachments: [{ filename: `${ref}.pdf`, content: base64 }],
+  });
+  if (!sent.ok) {
+    return {
+      ok: false,
+      error: `Échec de l'envoi de l'email : ${sent.error ?? "inconnu"}`,
+    };
+  }
+
+  // 3) Journalisation + bascule de statut (non bloquant)
+  await supabase.from("lead_notes").insert({
+    enrollment_request_id: leadId,
+    author_id: userId,
+    kind: "email",
+    body: `Devis ${ref} envoyé par email à ${lead.email} — ${amountFormatted} (${title}).`,
+  });
+  await supabase
+    .from("enrollment_requests")
+    .update({ status: "devis_envoye" })
+    .eq("id", leadId);
+
+  bust(leadId);
+  return { ok: true, sentTo: lead.email };
 }

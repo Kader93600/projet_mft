@@ -21,6 +21,7 @@ import {
   unsnoozeLead,
   updateStatus,
 } from "../actions";
+import { QuoteDialog, type QuoteDefaults } from "./quote-dialog";
 
 export function LeadActionsBar({
   leadId,
@@ -29,6 +30,7 @@ export function LeadActionsBar({
   isAssigned,
   isSnoozed,
   hasFollowup,
+  quoteDefaults,
 }: {
   leadId: string;
   currentStatus: string;
@@ -36,6 +38,7 @@ export function LeadActionsBar({
   isAssigned: boolean;
   isSnoozed: boolean;
   hasFollowup: boolean;
+  quoteDefaults: QuoteDefaults;
 }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -82,7 +85,9 @@ export function LeadActionsBar({
         )}
 
         {isMine && (
-          <div className="flex items-center gap-1.5 ml-auto">
+          <div className="flex items-center gap-1.5 ml-auto flex-wrap justify-end">
+            <QuoteDialog leadId={leadId} defaults={quoteDefaults} />
+            <span className="hidden sm:block w-px h-5 bg-navy-100 mx-1" />
             <span className="text-xs text-slate-500 mr-1">Statut :</span>
             <StatusButton
               currentStatus={currentStatus}

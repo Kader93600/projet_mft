@@ -15,6 +15,7 @@ import {
   Building2,
 } from "lucide-react";
 import { isStaff } from "@/lib/permissions";
+import { findFormation, FUNDING_LABELS } from "@/lib/formations-config";
 import { LeadActionsBar } from "./actions-bar";
 import { NoteForm } from "./note-form";
 import { LeadTimeline } from "./timeline";
@@ -36,6 +37,12 @@ const STATUS_TONE: Record<string, "gold" | "navy" | "success" | "slate" | "rose"
   devis_envoye: "navy",
   inscrit: "success",
   refuse: "rose",
+};
+
+const MODALITY_LABEL: Record<string, string> = {
+  presentiel: "Présentiel",
+  distanciel: "À distance (FOAD)",
+  mixte: "Mixte (présentiel + distanciel)",
 };
 
 export default async function CrmLeadDetailPage({
@@ -95,6 +102,23 @@ export default async function CrmLeadDetailPage({
 
   const l = lead as any;
   const isMine = l.assigned_to_admin_id === user.id;
+
+  // Valeurs pré-remplies du devis (depuis la formation du lead si connue).
+  const leadFormation = l.formation_slug
+    ? findFormation(l.formation_slug)
+    : undefined;
+  const quoteDefaults = {
+    clientEmail: l.email ?? "",
+    formationTitle: leadFormation?.title ?? "",
+    durationLabel: leadFormation?.duration ?? "",
+    modalityLabel: leadFormation
+      ? MODALITY_LABEL[leadFormation.modality] ?? ""
+      : "",
+    fundingLabel: l.funding_kind
+      ? FUNDING_LABELS[l.funding_kind as keyof typeof FUNDING_LABELS] ??
+        String(l.funding_kind).toUpperCase()
+      : "",
+  };
   const followupDue =
     l.next_followup_at && new Date(l.next_followup_at) <= new Date();
   const isSnoozed = l.snoozed_until && new Date(l.snoozed_until) > new Date();
@@ -184,6 +208,7 @@ export default async function CrmLeadDetailPage({
         isAssigned={!!l.assigned_to_admin_id}
         isSnoozed={!!isSnoozed}
         hasFollowup={!!l.next_followup_at}
+        quoteDefaults={quoteDefaults}
       />
 
       <div className="grid lg:grid-cols-3 gap-6">

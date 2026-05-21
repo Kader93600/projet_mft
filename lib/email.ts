@@ -20,6 +20,8 @@ export interface SendEmailInput {
   text?: string;
   replyTo?: string;
   tags?: { name: string; value: string }[];
+  /** Pièces jointes Resend : `content` = contenu encodé en base64. */
+  attachments?: { filename: string; content: string }[];
 }
 
 export async function sendEmail(input: SendEmailInput): Promise<{
@@ -53,6 +55,7 @@ export async function sendEmail(input: SendEmailInput): Promise<{
         text: input.text ?? stripHtml(input.html),
         reply_to: replyTo,
         tags: input.tags,
+        attachments: input.attachments,
       }),
     });
     if (!res.ok) {
@@ -803,6 +806,53 @@ export function paymentReceivedEmail(input: {
       `,
       {
         preheader: `Paiement de ${amountFormatted} reçu. Bienvenue à bord.`,
+      }
+    ),
+  };
+}
+
+/**
+ * Devis de formation envoyé au prospect (avec PDF en pièce jointe).
+ * Déclencheur : action CRM sendQuote (fiche lead).
+ */
+export function quoteEmail(input: {
+  fullName: string;
+  formationTitle: string;
+  amountFormatted: string;
+  validityDays: number;
+  ref: string;
+}) {
+  const firstName = (input.fullName ?? "").split(" ")[0];
+  const greeting = firstName ? `, ${escapeHtml(firstName)}` : "";
+  return {
+    subject: `Votre devis de formation — ${input.formationTitle}`,
+    html: emailLayout(
+      `Votre devis est prêt${greeting}`,
+      `
+      <p>Comme convenu, vous trouverez en <strong>pièce jointe (PDF)</strong> votre devis pour la formation <strong>${escapeHtml(input.formationTitle)}</strong> (réf. ${escapeHtml(input.ref)}).</p>
+      ${infoCard(
+        `<div style="font-size: 22px; font-weight: 600; color: ${COLORS.navy};">${escapeHtml(input.amountFormatted)}</div><div style="margin-top: 4px; color: ${COLORS.slate500}; font-size: 13.5px;">net de TVA · devis valable ${input.validityDays} jours</div>`,
+        "info"
+      )}
+      <p>Cette formation peut faire l'objet d'une <strong>prise en charge</strong> (CPF, OPCO, France Travail, employeur). Notre équipe vous accompagne dans vos démarches de financement.</p>
+      ${nextSteps([
+        {
+          title: "Vérifiez le devis",
+          description: "Toutes les informations figurent dans le PDF joint (intitulé, durée, montant, conditions).",
+        },
+        {
+          title: "Donnez votre accord",
+          description: "Retournez-nous le devis signé avec la mention « bon pour accord », ou répondez simplement à cet email.",
+        },
+        {
+          title: "Démarrage du dossier",
+          description: "Nous préparons la convention de formation et vos accès dès réception de votre accord.",
+        },
+      ])}
+      <p class="mft-muted" style="font-size: 13px; color: ${COLORS.slate500};">Une question sur ce devis ? Répondez à cet email — réponse sous 4 h ouvrées.</p>
+      `,
+      {
+        preheader: `Votre devis ${input.formationTitle} — ${input.amountFormatted}.`,
       }
     ),
   };
