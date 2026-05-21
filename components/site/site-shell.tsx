@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { LegalFooter } from "@/components/legal/legal-footer";
+import { SiteMobileMenu } from "@/components/site/site-mobile-menu";
 import { LEGAL } from "@/lib/legal-config";
 
 export function SiteShell({ children }: { children: React.ReactNode }) {
@@ -57,6 +58,7 @@ export function SiteHeader() {
             Espace stagiaire
             <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 ease-premium group-hover:translate-x-0.5 motion-reduce:transition-none" />
           </Link>
+          <SiteMobileMenu />
         </div>
       </div>
     </header>

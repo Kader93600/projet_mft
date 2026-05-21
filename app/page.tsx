@@ -20,6 +20,7 @@ import {
   Package,
 } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
+import { SiteMobileMenu } from "@/components/site/site-mobile-menu";
 import { Crossroads } from "@/components/home/crossroads";
 import { FaqSection } from "@/components/home/faq";
 import { FormationsCarousel } from "@/components/home/formations-carousel";
@@ -110,6 +111,7 @@ function Header({ t }: { t: HomeT }) {
             {t("studentSpace")}
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
+          <SiteMobileMenu />
         </div>
       </div>
     </header>
