@@ -42,6 +42,9 @@ export function SidebarNav({ groups, variant = "light" }: Props) {
   }
 
   const dark = variant === "dark";
+  const ringFocus = dark
+    ? "focus-visible:ring-white/30"
+    : "focus-visible:ring-navy-600/30";
 
   return (
     <nav className="flex-1 px-3 py-4 space-y-3 overflow-y-auto">
@@ -57,6 +60,8 @@ export function SidebarNav({ groups, variant = "light" }: Props) {
               onClick={() => toggle(g.labelKey)}
               className={cn(
                 "w-full flex items-center justify-between px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] rounded-lg transition-colors",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset",
+                ringFocus,
                 dark
                   ? "text-white/45 hover:text-white/70"
                   : "text-slate-400 hover:text-slate-600"
@@ -65,7 +70,7 @@ export function SidebarNav({ groups, variant = "light" }: Props) {
               <span>{groupLabel}</span>
               <ChevronDown
                 className={cn(
-                  "h-3 w-3 transition-transform",
+                  "h-3 w-3 transition-transform duration-200 ease-premium motion-reduce:transition-none",
                   !isOpen && "-rotate-90"
                 )}
               />
@@ -80,6 +85,8 @@ export function SidebarNav({ groups, variant = "light" }: Props) {
                       href={item.href}
                       className={cn(
                         "relative flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset",
+                        ringFocus,
                         dark
                           ? active
                             ? "bg-white/10 text-white shadow-soft"
