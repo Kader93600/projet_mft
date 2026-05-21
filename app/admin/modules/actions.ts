@@ -2,6 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import {
   requireAdmin,
   requireStaffOrFormationTrainer,
@@ -147,8 +148,29 @@ export async function deleteModule(id: string) {
   // Gating trainer : doit être habilité sur la formation actuelle
   const sbRead = createClient();
   const currentSlug = await getModuleFormationSlug(sbRead, id);
-  const { supabase } = await requireStaffOrFormationTrainer(currentSlug || "");
-  const { error } = await supabase.from("modules").delete().eq("id", id);
+  await requireStaffOrFormationTrainer(currentSlug || "");
+
+  // ⚠️ Supprimer un module CASCADE vers ses quizzes (quizzes.module_id ON
+  // DELETE CASCADE), mais quiz_attempts.quiz_id est en RESTRICT (audit #15).
+  // Sans nettoyage, la suppression d'un module dont les quiz ont des
+  // tentatives échoue. On retire donc d'abord les tentatives des quiz du
+  // module (qr_responses cascade dessus). Service_role : tentatives d'autres
+  // utilisateurs (RLS sinon bloquante).
+  const service = createAdminClient();
+  const { data: quizzes } = await service
+    .from("quizzes")
+    .select("id")
+    .eq("module_id", id);
+  const quizIds = (quizzes ?? []).map((q: { id: string }) => q.id);
+  if (quizIds.length > 0) {
+    const { error: attErr } = await service
+      .from("quiz_attempts")
+      .delete()
+      .in("quiz_id", quizIds);
+    if (attErr) throw new Error(attErr.message);
+  }
+
+  const { error } = await service.from("modules").delete().eq("id", id);
   if (error) throw new Error(error.message);
   await auditLog("delete_module", "module", id);
   revalidatePath("/admin/modules");

@@ -2,6 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import {
   requireAdmin,
   requireStaffOrFormationTrainer,
@@ -130,9 +131,27 @@ export async function deleteQuiz(id: string) {
   validate(uuid, id);
   const sbRead = createClient();
   const currentSlug = await getQuizFormationSlug(sbRead, id);
-  const { supabase } = await requireStaffOrFormationTrainer(currentSlug || "");
-  const { error } = await supabase.from("quizzes").delete().eq("id", id);
+  // Gate de permission (staff OU formateur de la formation du quiz)
+  await requireStaffOrFormationTrainer(currentSlug || "");
+
+  // ⚠️ quiz_attempts.quiz_id est en ON DELETE RESTRICT (préservation des
+  // preuves d'examen — audit #15) : un DELETE direct du quiz échoue s'il a
+  // des tentatives. La suppression depuis l'admin est une action EXPLICITE
+  // et confirmée ("supprime aussi toutes les tentatives") → on retire donc
+  // d'abord les tentatives (qr_responses cascade dessus), puis le quiz
+  // (questions + quiz_question_bank en CASCADE). Service_role car ces
+  // tentatives appartiennent à d'autres utilisateurs (RLS sinon bloquante).
+  const service = createAdminClient();
+
+  const { error: attErr } = await service
+    .from("quiz_attempts")
+    .delete()
+    .eq("quiz_id", id);
+  if (attErr) throw new Error(attErr.message);
+
+  const { error } = await service.from("quizzes").delete().eq("id", id);
   if (error) throw new Error(error.message);
+
   await auditLog("delete_quiz", "quiz", id);
   revalidatePath("/admin/quizzes");
   return { ok: true };
