@@ -111,7 +111,8 @@ export function PricingSection({ prices, defaultFormationSlug }: Props) {
                       onClick={() => setSelectedSlug(f.slug)}
                       className={
                         "inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap " +
-                        "transition-all duration-300 motion-reduce:transition-none " +
+                        "transition-[transform,background-color,border-color,color,box-shadow] duration-200 motion-reduce:transition-none " +
+                        "active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 " +
                         (isActive
                           ? "bg-white text-night-900 scale-[1.03]"
                           : "bg-white/[0.06] text-white/70 border border-white/10 hover:bg-white/[0.10] hover:text-white hover:-translate-y-0.5 motion-reduce:transform-none")
@@ -130,7 +131,7 @@ export function PricingSection({ prices, defaultFormationSlug }: Props) {
                       }
                     >
                       <span
-                        className="inline-block w-2 h-2 rounded-full transition-all duration-300"
+                        className="inline-block w-2 h-2 rounded-full transition-[box-shadow] duration-200"
                         style={{
                           backgroundColor: f.accent,
                           boxShadow: isActive
@@ -238,7 +239,7 @@ function InitialCard({
     <article
       className={
         "relative flex flex-col rounded-3xl bg-white/[0.03] border border-white/10 p-7 md:p-8 backdrop-blur-sm h-full " +
-        "transition-all duration-500 motion-reduce:transition-none " +
+        "transition-[transform,background-color,border-color] duration-[250ms] motion-reduce:transition-none " +
         "hover:bg-white/[0.05] hover:border-white/20 hover:-translate-y-1 motion-reduce:hover:transform-none"
       }
       style={{ transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)" }}
@@ -301,7 +302,7 @@ function MediumCard({
     <article
       className={
         "relative flex flex-col rounded-3xl bg-white/[0.05] border border-signal-500/20 p-7 md:p-8 backdrop-blur-sm h-full " +
-        "transition-all duration-500 motion-reduce:transition-none " +
+        "transition-[transform,background-color,border-color] duration-[250ms] motion-reduce:transition-none " +
         "hover:bg-white/[0.07] hover:border-signal-500/40 hover:-translate-y-1 motion-reduce:hover:transform-none"
       }
       style={{
@@ -380,7 +381,7 @@ function PremiumCard({
     <article
       className={
         "relative flex flex-col rounded-3xl p-7 md:p-9 overflow-hidden h-full group " +
-        "transition-all duration-500 motion-reduce:transition-none " +
+        "transition-[transform,background-color,border-color] duration-[250ms] motion-reduce:transition-none " +
         "hover:-translate-y-1.5 motion-reduce:hover:transform-none"
       }
       aria-labelledby="pack-premium-title"
@@ -533,7 +534,7 @@ function CapaciteOnlyLayout({
         <InitialCard formationSlug={formationSlug} />
       </ScrollReveal>
       <ScrollReveal delay={150} distance={32} className="lg:col-span-5">
-        <div className="rounded-3xl bg-white/[0.03] border border-white/10 p-7 md:p-8 flex flex-col justify-center h-full transition-all duration-500 motion-reduce:transition-none hover:bg-white/[0.05] hover:border-white/20">
+        <div className="rounded-3xl bg-white/[0.03] border border-white/10 p-7 md:p-8 flex flex-col justify-center h-full transition-[background-color,border-color] duration-[250ms] motion-reduce:transition-none hover:bg-white/[0.05] hover:border-white/20">
           <Lock className="h-5 w-5 text-white/40 mb-3" />
           <h3 className="font-display text-xl font-semibold text-white">
             Pourquoi un seul pack ?
@@ -552,10 +553,10 @@ function CapaciteOnlyLayout({
           </p>
           <Link
             href="/formations/capacite-3-5t"
-            className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-white/80 hover:text-white transition group"
+            className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-white/80 hover:text-white transition-colors duration-200 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 group"
           >
             Voir le programme détaillé
-            <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition" />
+            <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
           </Link>
         </div>
       </ScrollReveal>
@@ -619,14 +620,15 @@ function CTAButton({
       href={`/contact?formation=${formationSlug}&pack=${pack}`}
       className={
         "group inline-flex items-center justify-center gap-2 w-full px-5 py-3 rounded-xl text-sm font-semibold " +
-        "transition-all duration-300 motion-reduce:transition-none " +
+        "transition-[transform,background-color,box-shadow,border-color] duration-200 motion-reduce:transition-none " +
+        "active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-night " +
         styles
       }
       style={{ transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)" }}
     >
       {label}
       <ArrowRight
-        className="h-4 w-4 transition-transform duration-300 motion-reduce:transition-none group-hover:translate-x-1"
+        className="h-4 w-4 transition-transform duration-200 motion-reduce:transition-none group-hover:translate-x-1"
         style={{ transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)" }}
       />
     </Link>

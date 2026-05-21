@@ -84,14 +84,14 @@ export default async function TarifsPage({ searchParams }: PageProps) {
             <div className="mt-10 flex flex-wrap items-center gap-3">
               <a
                 href="#pricing-heading"
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold bg-signal-500 text-night-900 hover:bg-signal-400 transition-colors"
+                className="group inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold bg-signal-500 text-night-900 transition-[transform,background-color] duration-200 ease-out hover:bg-signal-400 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-night motion-reduce:transition-none"
               >
                 {t("ctaSeePacks")}
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5 motion-reduce:transition-none" />
               </a>
               <Link
                 href="/financements"
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold bg-white/[0.06] text-white border border-white/10 hover:bg-white/[0.10] hover:border-white/20 transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold bg-white/[0.06] text-white border border-white/10 transition-[transform,background-color,border-color] duration-200 ease-out hover:bg-white/[0.10] hover:border-white/20 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-night motion-reduce:transition-none"
               >
                 {t("ctaFinancing")}
               </Link>
@@ -159,10 +159,10 @@ export default async function TarifsPage({ searchParams }: PageProps) {
               </p>
               <Link
                 href="/financements"
-                className="inline-flex items-center gap-1 text-[13px] font-semibold text-signal-400 hover:text-signal-300 transition"
+                className="group inline-flex items-center gap-1 text-[13px] font-semibold text-signal-400 hover:text-signal-300 transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-500/70"
               >
                 {t("guarantee2Cta")}
-                <ArrowRight className="h-3 w-3" />
+                <ArrowRight className="h-3 w-3 transition-transform duration-200 ease-out group-hover:translate-x-0.5 motion-reduce:transition-none" />
               </Link>
             </article>
 
@@ -233,14 +233,14 @@ export default async function TarifsPage({ searchParams }: PageProps) {
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/formations"
-              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold bg-signal-500 text-night-900 hover:bg-signal-400 transition-colors"
+              className="group inline-flex items-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold bg-signal-500 text-night-900 transition-[transform,background-color] duration-200 ease-out hover:bg-signal-400 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-night motion-reduce:transition-none"
             >
               {t("finalCtaChoose")}
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5 motion-reduce:transition-none" />
             </Link>
             <Link
               href="/contact"
-              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold bg-white/[0.06] text-white border border-white/10 hover:bg-white/[0.10] hover:border-white/20 transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold bg-white/[0.06] text-white border border-white/10 transition-[transform,background-color,border-color] duration-200 ease-out hover:bg-white/[0.10] hover:border-white/20 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-night motion-reduce:transition-none"
             >
               {t("finalCtaAdvisor")}
             </Link>
@@ -342,10 +342,10 @@ function TestimonialsSection({
         <div className="mt-10 text-center">
           <Link
             href="/temoignages"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-white/70 hover:text-white transition group"
+            className="group inline-flex items-center gap-1.5 text-sm font-semibold text-white/70 hover:text-white transition-colors duration-200 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
           >
             {t("seeAllTestimonials")}
-            <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition" />
+            <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 ease-out group-hover:translate-x-0.5 motion-reduce:transition-none" />
           </Link>
         </div>
       </div>
