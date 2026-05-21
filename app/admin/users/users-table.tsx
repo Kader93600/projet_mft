@@ -51,11 +51,13 @@ const ROLE_LABEL: Record<Role, string> = {
   super_admin: "Super admin",
 };
 
-const ROLE_TONE: Record<Role, "slate" | "gold" | "navy" | "success"> = {
-  student: "slate",
-  trainer: "navy",
-  admin: "gold",
-  super_admin: "success",
+// Couleur unique par rôle, cohérente avec les boutons "créer" en haut de page.
+// Dégradé sémantique du privilège : vert → bleu → ambre → rouge.
+const ROLE_TONE: Record<Role, "gold" | "navy" | "amber" | "rose"> = {
+  student: "gold", // vert (= bouton Stagiaire)
+  trainer: "navy", // bleu (= bouton Formateur)
+  admin: "amber", // ambre (= bouton Admin)
+  super_admin: "rose", // rouge — privilège le plus élevé
 };
 
 interface Group {

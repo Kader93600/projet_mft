@@ -95,12 +95,20 @@ export default async function AdminUsers({
             <Download className="h-4 w-4" /> CSV
           </a>
           <Link href="/admin/users/new-admin">
-            <Button variant="secondary" size="sm">
+            <Button
+              variant="secondary"
+              size="sm"
+              className="bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 hover:border-amber-300 hover:text-amber-800 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/30 dark:hover:bg-amber-500/20 dark:hover:text-amber-200"
+            >
               <Crown className="h-3.5 w-3.5" /> Admin
             </Button>
           </Link>
           <Link href="/admin/users/new-trainer">
-            <Button variant="secondary" size="sm">
+            <Button
+              variant="secondary"
+              size="sm"
+              className="bg-brand-50 text-brand-700 border-brand-200 hover:bg-brand-100 hover:border-brand-300 hover:text-brand-800 dark:bg-brand-500/10 dark:text-brand-300 dark:border-brand-500/30 dark:hover:bg-brand-500/20 dark:hover:text-brand-200"
+            >
               <GraduationCap className="h-3.5 w-3.5" /> Formateur
             </Button>
           </Link>
