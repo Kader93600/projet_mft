@@ -58,7 +58,7 @@ export function FaqSection() {
               className="group rounded-2xl border border-white/10 bg-night-100 overflow-hidden"
               open={i === 0}
             >
-              <summary className="cursor-pointer list-none px-6 py-5 flex items-center justify-between gap-3 hover:bg-white/[0.03] transition">
+              <summary className="cursor-pointer list-none px-6 py-5 flex items-center justify-between gap-3 hover:bg-white/[0.03] transition-colors duration-200 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/30">
                 <span className="font-medium text-white pr-4">{it.q}</span>
                 <span className="text-signal-400 shrink-0 transition-transform group-open:rotate-90">
                   <ArrowRight className="h-4 w-4" />

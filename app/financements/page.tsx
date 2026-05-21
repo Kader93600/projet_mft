@@ -129,7 +129,7 @@ export default function FinancementsPage() {
                 href={f.href}
                 target={f.external ? "_blank" : undefined}
                 rel={f.external ? "noopener noreferrer" : undefined}
-                className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-signal-400 hover:text-signal-300 group-hover:gap-3 transition-all"
+                className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-signal-400 hover:text-signal-300 transition-colors duration-200"
               >
                 {f.cta}
                 <ArrowRight className="h-3.5 w-3.5" />

@@ -153,7 +153,7 @@ export function FormationsCarousel() {
             type="button"
             onClick={() => handleArrow("bwd")}
             aria-label="Revenir en arrière dans le carrousel"
-            className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 h-11 w-11 rounded-full bg-night-300/90 border border-white/15 text-white backdrop-blur-md shadow-float flex items-center justify-center transition-all duration-200 hover:bg-night-200 hover:border-signal-400/60 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-night"
+            className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 h-11 w-11 rounded-full bg-night-300/90 border border-white/15 text-white backdrop-blur-md shadow-float flex items-center justify-center transition-[transform,background-color,border-color] duration-200 ease-premium hover:bg-night-200 hover:border-signal-400/60 hover:scale-110 active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-night motion-reduce:transition-none motion-reduce:hover:scale-100"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
@@ -163,7 +163,7 @@ export function FormationsCarousel() {
             type="button"
             onClick={() => handleArrow("fwd")}
             aria-label="Avancer rapidement dans le carrousel"
-            className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 h-11 w-11 rounded-full bg-night-300/90 border border-white/15 text-white backdrop-blur-md shadow-float flex items-center justify-center transition-all duration-200 hover:bg-night-200 hover:border-signal-400/60 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-night"
+            className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 h-11 w-11 rounded-full bg-night-300/90 border border-white/15 text-white backdrop-blur-md shadow-float flex items-center justify-center transition-[transform,background-color,border-color] duration-200 ease-premium hover:bg-night-200 hover:border-signal-400/60 hover:scale-110 active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-night motion-reduce:transition-none motion-reduce:hover:scale-100"
           >
             <ArrowRight className="h-5 w-5" />
           </button>

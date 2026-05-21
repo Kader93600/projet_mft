@@ -77,35 +77,35 @@ function Header({ t }: { t: HomeT }) {
           <Logo variant="light" size="sm" />
         </Link>
         <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-white/70">
-          <Link href="/formations" className="hover:text-white transition">
+          <Link href="/formations" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
             {t("navFormations")}
           </Link>
-          <Link href="/ecole" className="hover:text-white transition">
+          <Link href="/ecole" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
             {t("navSchool")}
           </Link>
-          <Link href="/financements" className="hover:text-white transition">
+          <Link href="/financements" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
             {t("navFunding")}
           </Link>
-          <Link href="/tarifs" className="hover:text-white transition">
+          <Link href="/tarifs" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
             {t("navPricing")}
           </Link>
-          <Link href="/temoignages" className="hover:text-white transition">
+          <Link href="/temoignages" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
             {t("navTestimonials")}
           </Link>
-          <Link href="/contact" className="hover:text-white transition">
+          <Link href="/contact" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
             {t("navContact")}
           </Link>
         </nav>
         <div className="flex items-center gap-3">
           <Link
             href="/contact"
-            className="hidden md:inline text-sm text-white/70 hover:text-white transition"
+            className="hidden md:inline text-sm text-white/70 hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
           >
             {t("requestQuote")}
           </Link>
           <Link
             href="/login"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-signal-500 text-night-900 px-4 py-2 text-sm font-semibold hover:bg-signal-400 transition shadow-glow-signal"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-signal-500 text-night-900 px-4 py-2 text-sm font-semibold shadow-glow-signal transition-[transform,background-color] duration-200 ease-premium hover:bg-signal-400 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-night motion-reduce:transition-none"
           >
             {t("studentSpace")}
             <ArrowRight className="h-3.5 w-3.5" />
@@ -194,14 +194,14 @@ function Hero({ t }: { t: HomeT }) {
           >
             <Link
               href="/formations"
-              className="group relative inline-flex items-center gap-2 rounded-2xl bg-signal-500 text-night-900 px-6 py-3.5 text-[15px] font-semibold transition hover:bg-signal-400 hover:-translate-y-0.5 shadow-glow-signal motion-reduce:hover:translate-y-0"
+              className="group relative inline-flex items-center gap-2 rounded-2xl bg-signal-500 text-night-900 px-6 py-3.5 text-[15px] font-semibold shadow-glow-signal transition-[transform,background-color] duration-200 ease-premium hover:bg-signal-400 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-night motion-reduce:transition-none motion-reduce:hover:translate-y-0"
             >
               {t("ctaDiscover")}
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0" />
+              <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-premium group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0" />
             </Link>
             <Link
               href="#experience"
-              className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/[0.03] backdrop-blur px-6 py-3.5 text-[15px] font-semibold text-white/90 hover:bg-white/[0.07] hover:border-white/25 transition"
+              className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/[0.03] backdrop-blur px-6 py-3.5 text-[15px] font-semibold text-white/90 transition-[transform,background-color,border-color] duration-200 ease-premium hover:bg-white/[0.07] hover:border-white/25 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-night motion-reduce:transition-none"
             >
               {t("ctaHow")}
             </Link>
@@ -267,7 +267,7 @@ function Pillars({ t }: { t: HomeT }) {
           {items.map(({ icon: Icon, title, desc }) => (
             <div
               key={title}
-              className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm p-6 hover:border-signal-500/40 hover:bg-white/[0.05] transition"
+              className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm p-6 transition-[background-color,border-color] duration-200 ease-premium hover:border-signal-500/40 hover:bg-white/[0.05]"
             >
               <div className="h-11 w-11 rounded-xl bg-brand-600/20 border border-brand-500/30 text-signal-400 flex items-center justify-center">
                 <Icon className="h-5 w-5" />
@@ -326,7 +326,7 @@ function FormationsCatalog() {
                     <Link
                       key={f.slug}
                       href={`/formations/${f.slug}`}
-                      className="group rounded-2xl border border-white/10 bg-night-100 p-6 hover:border-signal-500/40 hover:-translate-y-1 transition-all relative overflow-hidden"
+                      className="group rounded-2xl border border-white/10 bg-night-100 p-6 relative overflow-hidden transition-[transform,border-color] duration-200 ease-premium hover:border-signal-500/40 hover:-translate-y-1 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-night motion-reduce:transition-none motion-reduce:hover:translate-y-0"
                     >
                       {/* Glow accent */}
                       <div
@@ -367,9 +367,9 @@ function FormationsCatalog() {
                             </span>
                           ))}
                         </div>
-                        <div className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-signal-400 group-hover:gap-3 transition-all">
+                        <div className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-signal-400">
                           Découvrir
-                          <ArrowRight className="h-3.5 w-3.5" />
+                          <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 ease-premium group-hover:translate-x-1 motion-reduce:transition-none" />
                         </div>
                       </div>
                     </Link>
@@ -602,14 +602,14 @@ function FinalCTA({ t }: { t: HomeT }) {
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <Link
                 href="/contact"
-                className="inline-flex items-center gap-2 rounded-2xl bg-signal-500 text-night px-6 py-3.5 text-sm font-semibold hover:bg-signal-400 shadow-glow-signal transition"
+                className="group inline-flex items-center gap-2 rounded-2xl bg-signal-500 text-night px-6 py-3.5 text-sm font-semibold shadow-glow-signal transition-[transform,background-color] duration-200 ease-premium hover:bg-signal-400 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-night motion-reduce:transition-none"
               >
                 {t("ctaBeCalled")}
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-premium group-hover:translate-x-0.5 motion-reduce:transition-none" />
               </Link>
               <Link
                 href="/formations"
-                className="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-white/5 backdrop-blur px-6 py-3.5 text-sm font-semibold hover:bg-white/10 transition"
+                className="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-white/5 backdrop-blur px-6 py-3.5 text-sm font-semibold transition-[transform,background-color] duration-200 ease-premium hover:bg-white/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-night motion-reduce:transition-none"
               >
                 {t("ctaSeeFormations")}
               </Link>
@@ -667,37 +667,37 @@ function FooterContact({ t }: { t: HomeT }) {
           </div>
           <ul className="space-y-1.5 text-sm text-white/70">
             <li>
-              <Link href="/formations" className="hover:text-white">
+              <Link href="/formations" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
                 {t("footerAllFormations")}
               </Link>
             </li>
             <li>
-              <Link href="/ecole" className="hover:text-white">
+              <Link href="/ecole" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
                 {t("navSchool")}
               </Link>
             </li>
             <li>
-              <Link href="/financements" className="hover:text-white">
+              <Link href="/financements" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
                 {t("navFunding")}
               </Link>
             </li>
             <li>
-              <Link href="/tarifs" className="hover:text-white">
+              <Link href="/tarifs" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
                 {t("navPricing")}
               </Link>
             </li>
             <li>
-              <Link href="/temoignages" className="hover:text-white">
+              <Link href="/temoignages" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
                 {t("navTestimonials")}
               </Link>
             </li>
             <li>
-              <Link href="/contact" className="hover:text-white">
+              <Link href="/contact" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
                 {t("footerContact")}
               </Link>
             </li>
             <li>
-              <Link href="/login" className="hover:text-white">
+              <Link href="/login" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
                 {t("studentSpace")}
               </Link>
             </li>

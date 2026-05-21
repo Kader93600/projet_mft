@@ -184,7 +184,7 @@ export default function FormationsPage({
                   return (
                     <article
                       key={f.slug}
-                      className="group relative overflow-hidden rounded-2xl border border-white/10 bg-night-100 hover:border-signal-500/40 hover:-translate-y-1 transition-all flex flex-col"
+                      className="group relative overflow-hidden rounded-2xl border border-white/10 bg-night-100 flex flex-col transition-[transform,border-color] duration-200 ease-premium hover:border-signal-500/40 hover:-translate-y-1 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
                     >
                       <div
                         aria-hidden="true"
@@ -254,7 +254,7 @@ export default function FormationsPage({
                         <div className="mt-auto pt-6">
                           <Link
                             href={`/formations/${f.slug}`}
-                            className="inline-flex items-center gap-1.5 text-sm font-medium text-signal-400 hover:text-signal-300 group-hover:gap-3 transition-all"
+                            className="inline-flex items-center gap-1.5 text-sm font-medium text-signal-400 hover:text-signal-300 transition-colors duration-200"
                           >
                             Voir la formation
                             <ArrowRight className="h-3.5 w-3.5" />

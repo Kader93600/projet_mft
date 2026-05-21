@@ -84,7 +84,7 @@ function Card({ org }: { org: Org }) {
   const { name, short, Icon, accent, category } = org;
   return (
     <div
-      className="group relative flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-md px-4 py-3 min-w-[16rem] transition-all duration-300 hover:bg-white/[0.08] hover:border-white/25 hover:-translate-y-0.5"
+      className="group relative flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-md px-4 py-3 min-w-[16rem] transition-[transform,background-color,border-color] duration-200 ease-premium hover:bg-white/[0.08] hover:border-white/25 hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
       style={
         {
           // Glow accent au hover via CSS variable

@@ -24,38 +24,38 @@ export function SiteHeader() {
           <Logo variant="light" size="sm" />
         </Link>
         <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-white/70">
-          <Link href="/formations" className="hover:text-white transition">
+          <Link href="/formations" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
             Formations
           </Link>
-          <Link href="/ecole" className="hover:text-white transition">
+          <Link href="/ecole" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
             L'école
           </Link>
-          <Link href="/financements" className="hover:text-white transition">
+          <Link href="/financements" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
             Financements
           </Link>
-          <Link href="/tarifs" className="hover:text-white transition">
+          <Link href="/tarifs" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
             Tarifs
           </Link>
-          <Link href="/temoignages" className="hover:text-white transition">
+          <Link href="/temoignages" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
             Témoignages
           </Link>
-          <Link href="/contact" className="hover:text-white transition">
+          <Link href="/contact" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
             Contact
           </Link>
         </nav>
         <div className="flex items-center gap-3">
           <Link
             href="/contact"
-            className="hidden md:inline text-sm text-white/70 hover:text-white transition"
+            className="hidden md:inline text-sm text-white/70 hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
           >
             Demander un devis
           </Link>
           <Link
             href="/login"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-signal-500 text-night-900 px-4 py-2 text-sm font-semibold hover:bg-signal-400 transition shadow-glow-signal"
+            className="group inline-flex items-center gap-1.5 rounded-xl bg-signal-500 text-night-900 px-4 py-2 text-sm font-semibold shadow-glow-signal transition-[transform,background-color] duration-200 ease-premium hover:bg-signal-400 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-night motion-reduce:transition-none"
           >
             Espace stagiaire
-            <ArrowRight className="h-3.5 w-3.5" />
+            <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 ease-premium group-hover:translate-x-0.5 motion-reduce:transition-none" />
           </Link>
         </div>
       </div>
@@ -79,32 +79,32 @@ function SiteFooterContact() {
           </div>
           <ul className="space-y-1.5 text-sm text-white/70">
             <li>
-              <Link href="/formations" className="hover:text-white">
+              <Link href="/formations" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
                 Toutes les formations
               </Link>
             </li>
             <li>
-              <Link href="/ecole" className="hover:text-white">
+              <Link href="/ecole" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
                 L'école
               </Link>
             </li>
             <li>
-              <Link href="/financements" className="hover:text-white">
+              <Link href="/financements" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
                 Financements
               </Link>
             </li>
             <li>
-              <Link href="/tarifs" className="hover:text-white">
+              <Link href="/tarifs" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
                 Tarifs
               </Link>
             </li>
             <li>
-              <Link href="/contact" className="hover:text-white">
+              <Link href="/contact" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
                 Contact
               </Link>
             </li>
             <li>
-              <Link href="/login" className="hover:text-white">
+              <Link href="/login" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
                 Espace stagiaire
               </Link>
             </li>
@@ -121,13 +121,13 @@ function SiteFooterContact() {
             </div>
             <a
               href={`mailto:${LEGAL.email}`}
-              className="block hover:text-white"
+              className="block hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
             >
               {LEGAL.email}
             </a>
             <a
               href={`tel:${LEGAL.phone.replace(/\s/g, "")}`}
-              className="block hover:text-white"
+              className="block hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
             >
               {LEGAL.phone}
             </a>

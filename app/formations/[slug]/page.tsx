@@ -146,14 +146,14 @@ export default function FormationPage({ params }: { params: { slug: string } }) 
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href={`/contact?formation=${f.slug}`}
-                className="inline-flex items-center gap-2 rounded-2xl bg-signal-500 text-night px-6 py-3 text-sm font-semibold hover:bg-signal-400 shadow-glow-signal transition"
+                className="group inline-flex items-center gap-2 rounded-2xl bg-signal-500 text-night px-6 py-3 text-sm font-semibold shadow-glow-signal transition-[transform,background-color] duration-200 ease-premium hover:bg-signal-400 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-night motion-reduce:transition-none"
               >
                 Demander un devis
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-premium group-hover:translate-x-0.5 motion-reduce:transition-none" />
               </Link>
               <Link
                 href="/contact"
-                className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/5 backdrop-blur px-6 py-3 text-sm font-semibold hover:bg-white/10 transition"
+                className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/5 backdrop-blur px-6 py-3 text-sm font-semibold transition-[transform,background-color] duration-200 ease-premium hover:bg-white/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-night motion-reduce:transition-none"
               >
                 Demander un devis
               </Link>
