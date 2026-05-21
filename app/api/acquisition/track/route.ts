@@ -23,6 +23,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createBrowserClient } from "@/lib/supabase/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -60,6 +61,17 @@ export async function POST(req: NextRequest) {
   // Anti-bot : refuse les requêtes des crawlers (pas d'erreur, juste no-op)
   const ua = req.headers.get("user-agent") ?? "";
   if (BOT_UA_PATTERN.test(ua)) {
+    return new NextResponse(null, { status: 204 });
+  }
+
+  // Anti-flood : beacon public → on plafonne par IP et on droppe
+  // silencieusement (204) au-delà, pour ne pas polluer acquisition_events.
+  const rl = await rateLimit({
+    key: `track:${clientIp(req.headers)}`,
+    limit: 100,
+    windowSec: 60,
+  });
+  if (!rl.ok) {
     return new NextResponse(null, { status: 204 });
   }
 

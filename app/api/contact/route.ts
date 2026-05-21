@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
+import { rateLimit, rateLimitHeaders, clientIp } from "@/lib/rate-limit";
 import {
   sendEmail,
   newLeadEmail,
@@ -21,6 +22,17 @@ export const dynamic = "force-dynamic";
  *   - prospect → accusé de réception (sous 48h)
  */
 export async function POST(req: Request) {
+  // Anti-spam : endpoint public non authentifié → on limite par IP
+  // (un prospect légitime ne soumet pas 5 fois en 10 min).
+  const ip = clientIp(req.headers);
+  const rl = await rateLimit({ key: `contact:${ip}`, limit: 5, windowSec: 600 });
+  if (!rl.ok) {
+    return NextResponse.json(
+      { ok: false, error: "rate_limited" },
+      { status: 429, headers: rateLimitHeaders(rl, 5) },
+    );
+  }
+
   let body: any;
   try {
     body = await req.json();

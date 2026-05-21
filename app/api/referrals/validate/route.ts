@@ -12,6 +12,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { rateLimit, rateLimitHeaders } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -34,6 +35,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { valid: false, reason: "unauthenticated", message: REASON_LABELS.unauthenticated },
       { status: 401 }
+    );
+  }
+
+  // Anti-énumération : on plafonne les tentatives de validation de code
+  // par utilisateur (defense-in-depth — empêche de sonder les codes).
+  const rl = await rateLimit({
+    key: `referral-validate:${user.id}`,
+    limit: 20,
+    windowSec: 60,
+  });
+  if (!rl.ok) {
+    return NextResponse.json(
+      { valid: false, reason: "rate_limited", message: "Trop de tentatives, réessayez dans une minute." },
+      { status: 429, headers: rateLimitHeaders(rl, 20) },
     );
   }
 
