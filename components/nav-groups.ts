@@ -33,6 +33,7 @@ import {
   Briefcase,
   Inbox,
   Crown,
+  Landmark,
 } from "lucide-react";
 
 /**
@@ -145,6 +146,7 @@ export const ADMIN_GROUPS: NavGroup[] = [
       { href: "/admin/enrollments", labelKey: "nav.adminEnrollments", icon: Wallet },
       { href: "/admin/organizations", labelKey: "nav.adminOrganizations", icon: Briefcase },
       { href: "/admin/pricing", labelKey: "nav.adminPricing", icon: Tags },
+      { href: "/admin/edof", labelKey: "nav.adminEdof", icon: Landmark },
       { href: "/admin/settings", labelKey: "nav.adminSettingsIndex", icon: Settings, exact: true },
       { href: "/admin/settings/formation", labelKey: "nav.adminSettingsFormation", icon: Settings },
       { href: "/admin/settings/documents", labelKey: "nav.adminSettingsDocuments", icon: FileSignature },
