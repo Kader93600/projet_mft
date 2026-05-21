@@ -125,7 +125,7 @@ export function QuizContinueCard({ progress, quiz }: QuizContinueCardProps) {
         {/* CTA primary — exclusif */}
         <Link
           href={`/quiz/${quiz.id}`}
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-signal-500 px-6 text-[14px] font-semibold text-night-900 shadow-soft transition-all hover:bg-signal-400 hover:shadow-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-signal-500/40 focus-visible:ring-offset-2 motion-reduce:transition-none"
+          className="group inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-signal-500 px-6 text-[14px] font-semibold text-night-900 shadow-soft transition-[transform,background-color,box-shadow] duration-200 ease-premium hover:bg-signal-400 hover:shadow-raised active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-signal-500/40 focus-visible:ring-offset-2 motion-reduce:transition-none motion-reduce:active:scale-100"
         >
           <CtaIcon className="h-4 w-4" />
           {cta}

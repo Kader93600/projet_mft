@@ -1317,7 +1317,12 @@ export function QuizRunner({
                     data-testid="quiz-choice"
                     onClick={() => setAnswers({ ...answers, [q.id]: c.id })}
                     className={cn(
-                      "w-full text-left px-4 py-3.5 rounded-xl border flex items-center gap-3 transition-all",
+                      // Élément très cliqué → transition courte (150ms) sur les
+                      // couleurs uniquement + press subtil + focus clavier net.
+                      "w-full text-left px-4 py-3.5 rounded-xl border flex items-center gap-3",
+                      "transition-[background-color,border-color,box-shadow,color] duration-150 ease-premium",
+                      "active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-600/45",
+                      "motion-reduce:transition-none motion-reduce:active:scale-100",
                       isSel
                         ? "border-navy-900 bg-navy-50 ring-2 ring-navy-900/10"
                         : "border-navy-100 bg-white hover:border-navy-300 hover:bg-navy-50/50"
