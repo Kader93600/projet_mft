@@ -116,6 +116,7 @@ export async function middleware(request: NextRequest) {
         "/admin/quizzes",
         "/admin/banque-questions",
         "/admin/placement",
+        "/admin/emargement",
       ];
       const trainerAllowed =
         isTrainer && TRAINER_ALLOWED.some((p) => pathname.startsWith(p));
