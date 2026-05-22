@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { renderMarkdown } from "@/lib/markdown";
+import { getPendingDocuments } from "@/lib/onboarding-docs";
+import { PendingDocs } from "./pending-docs";
 import {
   FileSignature,
   Gavel,
@@ -55,6 +57,14 @@ export default async function MesDocumentsPage() {
 
   const placementTakenAt = placement?.taken_at as string | undefined;
 
+  // Documents publiés non encore signés (présentés hors onboarding).
+  const pending = await getPendingDocuments(supabase, user.id);
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name")
+    .eq("id", user.id)
+    .maybeSingle();
+
   return (
     <div className="space-y-8">
       <header>
@@ -67,6 +77,10 @@ export default async function MesDocumentsPage() {
           en formation, avec la date et l'heure de signature électronique.
         </p>
       </header>
+
+      {pending.length > 0 && (
+        <PendingDocs docs={pending} fullName={profile?.full_name ?? ""} />
+      )}
 
       <div className="grid md:grid-cols-2 gap-4">
         <a

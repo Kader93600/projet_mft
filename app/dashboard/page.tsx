@@ -14,6 +14,7 @@ import { PlacementSummary } from "@/components/placement-summary";
 import { RecentAchievements } from "@/components/recent-achievements";
 import { NextSessionCard } from "@/components/next-session-card";
 import { XpWidget } from "@/components/xp-widget";
+import { getPendingDocuments } from "@/lib/onboarding-docs";
 import {
   BookOpen,
   ClipboardCheck,
@@ -26,6 +27,7 @@ import {
   TrendingUp,
   Lock,
   CheckCircle2,
+  FileSignature,
 } from "lucide-react";
 import {
   applyLinearLocking,
@@ -313,10 +315,36 @@ export default async function DashboardPage() {
   const firstName =
     profile?.full_name?.split(" ")[0] || t("studentFallback");
 
+  // Documents publiés non encore signés (Qualiopi) → bannière d'incitation.
+  const pendingDocsCount = (await getPendingDocuments(supabase, user.id)).length;
+
   return (
     <div className="space-y-10">
       {/* Annonces publiées (épinglées d'abord) */}
       <AnnouncementBanner />
+
+      {/* Documents administratifs à signer (hors onboarding) */}
+      {pendingDocsCount > 0 && (
+        <Link
+          href="/mes-documents"
+          className="group flex items-center gap-3 rounded-2xl border border-gold-200 bg-gold-50/70 px-5 py-4 transition-colors hover:bg-gold-50"
+        >
+          <span className="h-10 w-10 rounded-xl bg-gold-100 text-gold-700 flex items-center justify-center shrink-0">
+            <FileSignature className="h-5 w-5" />
+          </span>
+          <span className="flex-1 min-w-0">
+            <span className="block font-semibold text-navy-900">
+              {pendingDocsCount === 1
+                ? "Un document à signer"
+                : `${pendingDocsCount} documents à signer`}
+            </span>
+            <span className="block text-sm text-slate-600">
+              Lisez et signez vos documents d'entrée en formation.
+            </span>
+          </span>
+          <ArrowRight className="h-4 w-4 text-gold-700 shrink-0 transition-transform group-hover:translate-x-0.5" />
+        </Link>
+      )}
 
       {/* Bannière enquête satisfaction (conditionnelle) */}
       <SurveyBanner progressPct={progressPct} />

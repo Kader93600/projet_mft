@@ -36,6 +36,7 @@ export async function acceptDocument(raw: unknown) {
   if (error) throw new Error(error.message);
   revalidatePath("/onboarding");
   revalidatePath("/dashboard");
+  revalidatePath("/mes-documents");
   return { ok: true };
 }
 
