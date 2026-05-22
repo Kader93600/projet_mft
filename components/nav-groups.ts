@@ -127,6 +127,7 @@ export const ADMIN_GROUPS: NavGroup[] = [
       { href: "/admin/modules", labelKey: "nav.adminModules", icon: BookOpen },
       { href: "/admin/quizzes", labelKey: "nav.adminQuizzes", icon: ClipboardList },
       { href: "/admin/sessions", labelKey: "nav.adminSessions", icon: Video },
+      { href: "/admin/emargement", labelKey: "nav.adminAttendance", icon: ScrollText },
       { href: "/admin/placement", labelKey: "nav.adminPlacement", icon: Target },
       { href: "/admin/glossary", labelKey: "nav.adminGlossary", icon: Library },
       { href: "/admin/badges", labelKey: "nav.adminBadges", icon: Award },
