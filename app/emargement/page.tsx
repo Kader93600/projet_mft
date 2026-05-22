@@ -2,7 +2,6 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input, Label } from "@/components/ui/input";
 import {
   CalendarClock,
   CheckCircle2,
@@ -52,6 +51,15 @@ export default async function EmargementPage() {
       "session:attendance_sessions(*), signed:attendance_signatures!attendance_signatures_session_id_fkey(id, signed_at, signature_name, signature_hash)"
     )
     .eq("user_id", user.id);
+
+  // Signature de référence (dessinée lors de la signature obligatoire),
+  // réutilisée pour l'émargement.
+  const { data: sigRow } = await supabase
+    .from("user_signatures")
+    .select("signature_data")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  const refSignature = (sigRow as any)?.signature_data ?? null;
 
   const now = Date.now();
   const sessions = (rows ?? [])
@@ -147,25 +155,33 @@ export default async function EmargementPage() {
                         "use server";
                         await signAttendance(s.id, fd);
                       }}
-                      className="mt-5 grid sm:grid-cols-[1fr_auto] gap-3 items-end"
+                      className="mt-5 space-y-3"
                     >
-                      <div>
-                        <Label htmlFor={`name-${s.id}`}>
-                          Nom complet (signature)
-                        </Label>
-                        <Input
-                          id={`name-${s.id}`}
-                          name="name"
-                          required
-                          minLength={2}
-                          placeholder="Prénom Nom"
-                          autoComplete="name"
-                        />
-                      </div>
-                      <Button type="submit" variant="gold">
-                        <PenLine className="h-4 w-4" /> Signer
-                      </Button>
-                      <label className="sm:col-span-2 flex items-start gap-2 text-xs text-slate-600">
+                      {refSignature ? (
+                        <div className="inline-block rounded-xl border border-navy-100 bg-slate-50/60 p-3">
+                          <div className="text-[11px] uppercase tracking-wider text-slate-500 mb-1.5">
+                            Votre signature
+                          </div>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={refSignature}
+                            alt="Votre signature"
+                            className="h-12 w-auto max-w-[200px]"
+                          />
+                        </div>
+                      ) : (
+                        <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+                          Vous n'avez pas encore de signature de référence.{" "}
+                          <a
+                            href="/signature-obligatoire"
+                            className="underline font-medium"
+                          >
+                            Signez d'abord vos documents
+                          </a>
+                          .
+                        </div>
+                      )}
+                      <label className="flex items-start gap-2 text-xs text-slate-600">
                         <input
                           type="checkbox"
                           name="ack"
@@ -173,11 +189,19 @@ export default async function EmargementPage() {
                           className="mt-0.5 h-4 w-4 rounded border-navy-300"
                         />
                         <span>
-                          Je certifie ma présence effective à cette session.
-                          Cette signature est horodatée, IP-traçée, et tient
-                          lieu de feuille d'émargement officielle.
+                          Je certifie ma présence effective à cette session. Ma
+                          signature de référence est apposée, horodatée et
+                          IP-tracée, et tient lieu de feuille d'émargement
+                          officielle.
                         </span>
                       </label>
+                      <Button
+                        type="submit"
+                        variant="gold"
+                        disabled={!refSignature}
+                      >
+                        <PenLine className="h-4 w-4" /> Signer ma présence
+                      </Button>
                     </form>
                   )}
 
