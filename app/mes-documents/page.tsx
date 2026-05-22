@@ -123,9 +123,20 @@ export default async function MesDocumentsPage() {
       </div>
 
       <div className="space-y-4">
-        <h2 className="font-display text-xl font-semibold text-navy-900">
-          Documents signés
-        </h2>
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <h2 className="font-display text-xl font-semibold text-navy-900">
+            Documents signés
+          </h2>
+          {(rows ?? []).length > 0 && (
+            <a
+              href="/api/me/attestation-signatures"
+              target="_blank"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-navy-200 bg-white px-3 py-1.5 text-sm font-medium text-navy-800 hover:bg-navy-50 transition-colors"
+            >
+              <Download className="h-4 w-4" /> Attestation d'acceptation (PDF)
+            </a>
+          )}
+        </div>
         {(rows ?? []).length === 0 && (
           <Card>
             <CardBody className="text-center py-10 text-slate-500 text-sm">
