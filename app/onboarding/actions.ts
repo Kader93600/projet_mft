@@ -6,6 +6,7 @@ import { z } from "zod";
 
 const acceptSchema = z.object({
   document_id: z.string().uuid(),
+  signature_name: z.string().trim().min(2).max(120).optional(),
 });
 
 export async function acceptDocument(raw: unknown) {
@@ -18,10 +19,19 @@ export async function acceptDocument(raw: unknown) {
   const res = acceptSchema.safeParse(raw);
   if (!res.success) throw new Error("Données invalides");
 
-  const ua = headers().get("user-agent") ?? null;
+  const h = headers();
+  const ua = h.get("user-agent") ?? null;
+  // IP client : 1er maillon de x-forwarded-for (Vercel), sinon x-real-ip.
+  const ip =
+    h.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    h.get("x-real-ip") ||
+    null;
+
   const { error } = await supabase.rpc("accept_document", {
     p_document_id: res.data.document_id,
     p_user_agent: ua,
+    p_ip: ip,
+    p_signature_name: res.data.signature_name ?? null,
   });
   if (error) throw new Error(error.message);
   revalidatePath("/onboarding");

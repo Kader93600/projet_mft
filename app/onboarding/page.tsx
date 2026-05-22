@@ -65,6 +65,7 @@ export default async function OnboardingPage() {
   return (
     <OnboardingWizard
       firstName={profile?.full_name?.split(" ")[0] ?? "stagiaire"}
+      fullName={profile?.full_name ?? ""}
       steps={steps}
       catalog={catalog}
       selectedSlug={selectedSlug}

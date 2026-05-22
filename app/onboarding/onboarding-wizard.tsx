@@ -76,11 +76,13 @@ type CatalogItem = {
 
 export function OnboardingWizard({
   firstName,
+  fullName,
   steps,
   catalog,
   selectedSlug,
 }: {
   firstName: string;
+  fullName: string;
   steps: DocStep[];
   catalog: CatalogItem[];
   selectedSlug: string | null;
@@ -92,6 +94,7 @@ export function OnboardingWizard({
     () => Object.fromEntries(steps.map((s) => [s.id, s.accepted]))
   );
   const [checked, setChecked] = useState(false);
+  const [signatureName, setSignatureName] = useState(fullName);
   const [chosenSlug, setChosenSlug] = useState<string | null>(selectedSlug);
   const [filter, setFilter] = useState<string>("all");
 
@@ -148,7 +151,10 @@ export function OnboardingWizard({
     setErr(null);
     start(async () => {
       try {
-        await acceptDocument({ document_id: currentDoc.id });
+        await acceptDocument({
+          document_id: currentDoc.id,
+          signature_name: signatureName.trim(),
+        });
         setLocalAccepted((s) => ({ ...s, [currentDoc.id]: true }));
         setChecked(false);
       } catch (e: any) {
@@ -439,6 +445,21 @@ export function OnboardingWizard({
             </div>
 
             <div className="px-6 py-4 bg-white border-t border-navy-50">
+              <label
+                htmlFor="sig-name"
+                className="block text-sm font-medium text-navy-900 mb-1.5"
+              >
+                Signez en confirmant votre nom complet
+              </label>
+              <input
+                id="sig-name"
+                type="text"
+                value={signatureName}
+                onChange={(e) => setSignatureName(e.target.value)}
+                placeholder="Prénom NOM"
+                autoComplete="name"
+                className="w-full rounded-lg border border-navy-200 bg-white px-3 py-2 text-sm text-navy-900 outline-none transition-colors focus:border-gold-400 focus:ring-2 focus:ring-gold-100 mb-3"
+              />
               <label className="flex items-start gap-3 cursor-pointer select-none">
                 <input
                   type="checkbox"
@@ -449,8 +470,9 @@ export function OnboardingWizard({
                 <span className="text-sm text-navy-900">
                   J'ai lu et j'accepte le document{" "}
                   <span className="font-semibold">{currentDoc.title}</span>{" "}
-                  (version {currentDoc.version}). Je reconnais que mon
-                  acceptation vaut signature électronique et sera horodatée.
+                  (version {currentDoc.version}). Je reconnais que ma signature
+                  électronique (nom, date et heure) sera enregistrée comme
+                  preuve.
                 </span>
               </label>
 
@@ -462,7 +484,7 @@ export function OnboardingWizard({
                 </div>
                 <Button
                   onClick={acceptCurrent}
-                  disabled={!checked || pending}
+                  disabled={!checked || signatureName.trim().length < 2 || pending}
                   variant="gold"
                 >
                   {pending ? (

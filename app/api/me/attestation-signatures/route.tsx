@@ -20,6 +20,7 @@ interface AccRow {
   title: string;
   version: number;
   acceptedAt: string;
+  ip?: string | null;
 }
 
 function frDateTime(iso: string) {
@@ -79,9 +80,14 @@ function Doc({
               <Text style={[pdfStyles.td, { width: "15%" }]}>
                 v{r.version}
               </Text>
-              <Text style={[pdfStyles.td, { width: "30%", fontSize: 9 }]}>
-                {frDateTime(r.acceptedAt)}
-              </Text>
+              <View style={[pdfStyles.td, { width: "30%" }]}>
+                <Text style={{ fontSize: 9 }}>{frDateTime(r.acceptedAt)}</Text>
+                {r.ip ? (
+                  <Text style={{ fontSize: 7, color: "#94a3b8" }}>
+                    IP {r.ip}
+                  </Text>
+                ) : null}
+              </View>
             </View>
           ))}
         </View>
@@ -122,7 +128,7 @@ export async function GET() {
     supabase
       .from("document_acceptances")
       .select(
-        "accepted_at, document_version, onboarding_documents(title)"
+        "accepted_at, document_version, ip_address, onboarding_documents(title)"
       )
       .eq("user_id", user.id)
       .order("accepted_at", { ascending: true }),
@@ -132,6 +138,7 @@ export async function GET() {
     title: a.onboarding_documents?.title ?? "Document",
     version: a.document_version,
     acceptedAt: a.accepted_at,
+    ip: a.ip_address ?? null,
   }));
 
   if (rows.length === 0) {
