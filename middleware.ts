@@ -38,6 +38,7 @@ export async function middleware(request: NextRequest) {
   const isMfaSetup = pathname.startsWith("/admin/security");
   const isOnboarding = pathname.startsWith("/onboarding");
   const isPlacement = pathname.startsWith("/positionnement");
+  const isSignature = pathname.startsWith("/signature-obligatoire");
   const isProtected =
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/modules") ||
@@ -78,7 +79,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (!user && (isProtected || isOnboarding)) {
+  if (!user && (isProtected || isOnboarding || isSignature)) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
   if (user && isAuthPage) {
@@ -86,10 +87,12 @@ export async function middleware(request: NextRequest) {
   }
 
   // Admin gate + onboarding gate (stagiaire uniquement, jamais admin)
-  if (user && (isProtected || isOnboarding)) {
+  if (user && (isProtected || isOnboarding || isSignature)) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("role, onboarding_completed_at, placement_completed_at")
+      .select(
+        "role, onboarding_completed_at, placement_completed_at, mandatory_signature_at"
+      )
       .eq("id", user.id)
       .single();
 
@@ -167,14 +170,38 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
 
-    // Stagiaire onboardé mais sans positionnement : forcer /positionnement
+    // Stagiaire onboardé mais documents non signés : forcer la signature
+    // obligatoire (blocage total de l'accès stagiaire tant que non signé).
+    if (
+      profile?.role === "student" &&
+      profile?.onboarding_completed_at &&
+      !profile?.mandatory_signature_at &&
+      !isSignature
+    ) {
+      return NextResponse.redirect(
+        new URL("/signature-obligatoire", request.url)
+      );
+    }
+
+    // Stagiaire ayant déjà signé : pas de raison de rester sur la page de signature
+    if (
+      profile?.role === "student" &&
+      profile?.mandatory_signature_at &&
+      isSignature
+    ) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+
+    // Stagiaire onboardé + signé mais sans positionnement : forcer /positionnement
     // (accessible aussi volontairement après coup ; gate seulement si non fait)
     if (
       profile?.role === "student" &&
       profile?.onboarding_completed_at &&
+      profile?.mandatory_signature_at &&
       !profile?.placement_completed_at &&
       !isPlacement &&
-      !isOnboarding
+      !isOnboarding &&
+      !isSignature
     ) {
       return NextResponse.redirect(new URL("/positionnement", request.url));
     }

@@ -22,28 +22,13 @@ export default async function OnboardingPage() {
     redirect("/dashboard");
   }
 
-  const [{ data: docs }, { data: acceptances }, { data: enrollments }] =
-    await Promise.all([
-      supabase
-        .from("onboarding_documents")
-        .select("id, type, title, version, content_md")
-        .eq("published", true)
-        .order("type"),
-      supabase
-        .from("document_acceptances")
-        .select("document_id, accepted_at")
-        .eq("user_id", user.id),
-      supabase
-        .from("enrollments")
-        .select("formation_slug")
-        .eq("user_id", user.id),
-    ]);
-
-  const accepted = new Set((acceptances ?? []).map((a) => a.document_id));
-  const steps = (docs ?? []).map((d) => ({
-    ...d,
-    accepted: accepted.has(d.id),
-  }));
+  // Les documents sont désormais lus et signés sur /signature-obligatoire
+  // (signature manuscrite). L'onboarding ne gère plus que le choix de la
+  // formation ; le middleware enchaîne ensuite sur la signature obligatoire.
+  const { data: enrollments } = await supabase
+    .from("enrollments")
+    .select("formation_slug")
+    .eq("user_id", user.id);
 
   // Sélection de formation déjà effectuée ?
   const selectedSlug =
@@ -66,7 +51,7 @@ export default async function OnboardingPage() {
     <OnboardingWizard
       firstName={profile?.full_name?.split(" ")[0] ?? "stagiaire"}
       fullName={profile?.full_name ?? ""}
-      steps={steps}
+      steps={[]}
       catalog={catalog}
       selectedSlug={selectedSlug}
     />
