@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DocumentEditor } from "./document-editor";
+import { AddDocument } from "./add-document";
 import { FileSignature, Gavel, BookOpen } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -37,17 +38,22 @@ export default async function DocumentsPage() {
 
   return (
     <div className="space-y-8">
-      <header>
-        <span className="eyebrow text-gold-700">Qualiopi · Entrée en formation</span>
-        <h1 className="mt-2 font-display text-3xl font-semibold text-navy-950 tracking-tight">
-          Documents d'accueil stagiaire
-        </h1>
-        <p className="mt-2 text-slate-600 max-w-2xl">
-          Convention, règlement intérieur et livret d'accueil présentés au
-          stagiaire lors de son entrée en formation. Chaque document doit être
-          publié pour être opposable ; les acceptations sont horodatées et
-          immuables.
-        </p>
+      <header className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <span className="eyebrow text-gold-700">Qualiopi · Entrée en formation</span>
+          <h1 className="mt-2 font-display text-3xl font-semibold text-navy-950 tracking-tight">
+            Documents d'accueil stagiaire
+          </h1>
+          <p className="mt-2 text-slate-600 max-w-2xl">
+            Documents présentés au stagiaire lors de son entrée en formation
+            (convention, règlement intérieur, livret d'accueil, et tout document
+            que vous ajoutez). Chaque document doit être publié pour être
+            opposable ; les acceptations sont horodatées et immuables.
+          </p>
+        </div>
+        <div className="shrink-0 pt-1">
+          <AddDocument />
+        </div>
       </header>
 
       <div className="space-y-6">
