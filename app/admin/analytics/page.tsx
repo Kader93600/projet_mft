@@ -16,6 +16,8 @@ import {
   CircleDot,
   ListChecks,
   UserPlus,
+  Globe,
+  GraduationCap,
 } from "lucide-react";
 import { AnalyticsToolbar } from "./analytics-toolbar";
 import { DeleteAttemptButton } from "./analytics-row-actions";
@@ -140,6 +142,7 @@ export default async function AdminAnalytics({
     { data: trendsByFormation },
     { data: upcomingSessions },
     { data: periodKpis },
+    { data: utmFunnel },
   ] = await Promise.all([
     supabase.from("vw_admin_funnel_conversion").select("*").single(),
     supabase.from("vw_admin_activity_heatmap").select("*"),
@@ -148,7 +151,31 @@ export default async function AdminAnalytics({
     supabase
       .rpc("get_admin_kpis_for_period", { p_days: periodDays })
       .single(),
+    // Site vitrine : trafic par source (vue pré-agrégée, perf-friendly).
+    supabase
+      .from("vw_admin_funnel_by_utm")
+      .select("source, visitors, signups, enrollments")
+      .limit(50),
   ]);
+
+  // Agrégats Vitrine (acquisition).
+  const utm = (utmFunnel ?? []) as any[];
+  const vitrine = {
+    visitors: utm.reduce((s, r) => s + (Number(r.visitors) || 0), 0),
+    signups: utm.reduce((s, r) => s + (Number(r.signups) || 0), 0),
+    sources: new Set(utm.map((r) => r.source).filter(Boolean)).size,
+    topSources: [...utm]
+      .sort((a, b) => (Number(b.visitors) || 0) - (Number(a.visitors) || 0))
+      .slice(0, 4),
+  };
+  const vitrineConv =
+    vitrine.visitors > 0
+      ? Math.round((vitrine.signups / vitrine.visitors) * 100)
+      : 0;
+  const maxSourceVisitors = Math.max(
+    1,
+    ...vitrine.topSources.map((r) => Number(r.visitors) || 0)
+  );
 
   const pk = (periodKpis as any) ?? {
     signups: 0,
@@ -167,12 +194,12 @@ export default async function AdminAnalytics({
       <header className="flex items-end justify-between gap-4 flex-wrap">
         <div>
           <span className="eyebrow text-gold-700">Administration</span>
-          <h1 className="mt-2 font-display text-3xl font-semibold text-navy-950 tracking-tight">
-            Performances globales
+          <h1 className="mt-2 font-display text-3xl font-semibold text-navy-950 dark:text-white tracking-tight">
+            Pilotage &amp; analytics
           </h1>
-          <p className="mt-2 text-slate-600 max-w-2xl">
-            Vue temps réel de l'engagement stagiaire, des indicateurs business et
-            de la dernière activité. Les données sont actualisées automatiquement.
+          <p className="mt-2 text-slate-600 dark:text-white/60 max-w-2xl">
+            Pilotez votre activité en un seul tableau de bord : site vitrine,
+            pédagogie et business. Données actualisées en temps réel.
           </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap print:hidden">
@@ -232,11 +259,91 @@ export default async function AdminAnalytics({
         </div>
       </section>
 
-      {/* ─────────── Section ENGAGEMENT ─────────── */}
+      {/* ─────────── Section SITE VITRINE ─────────── */}
       <section>
-        <h2 className="font-display text-lg font-semibold text-navy-900 mb-3 inline-flex items-center gap-2">
-          <CircleDot className="h-4 w-4 text-signal-700" />
-          Engagement pédagogique
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <h2 className="font-display text-lg font-semibold text-navy-900 dark:text-white inline-flex items-center gap-2">
+            <Globe className="h-4 w-4 text-brand-700" />
+            Site vitrine
+          </h2>
+          <Link
+            href="/admin/analytics/acquisition"
+            className="text-xs font-medium text-brand-700 hover:underline"
+          >
+            Détail acquisition →
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Kpi
+            icon={Globe}
+            label="Visiteurs uniques"
+            value={vitrine.visitors.toLocaleString("fr-FR")}
+            hint={`${vitrine.sources} source${vitrine.sources > 1 ? "s" : ""}`}
+            tone="navy"
+          />
+          <Kpi
+            icon={UserPlus}
+            label="Inscriptions (trafic)"
+            value={vitrine.signups.toLocaleString("fr-FR")}
+            hint="Issues du tracking"
+            tone="signal"
+          />
+          <Kpi
+            icon={TrendingUp}
+            label="Conversion visiteurs"
+            value={`${vitrineConv}%`}
+            hint="Visiteurs → inscrits"
+            tone={vitrineConv >= 3 ? "signal" : "gold"}
+          />
+          <Kpi
+            icon={Sparkles}
+            label="Sources actives"
+            value={String(vitrine.sources)}
+            hint="Canaux d'acquisition"
+            tone="navy"
+          />
+        </div>
+        {vitrine.topSources.length > 0 && (
+          <Card className="mt-3">
+            <CardBody>
+              <div className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold mb-3">
+                Top provenances
+              </div>
+              <div className="space-y-2.5">
+                {vitrine.topSources.map((srcRow: any) => {
+                  const v = Number(srcRow.visitors) || 0;
+                  const pct = Math.round((v / maxSourceVisitors) * 100);
+                  return (
+                    <div
+                      key={srcRow.source ?? "direct"}
+                      className="flex items-center gap-3"
+                    >
+                      <div className="w-28 shrink-0 text-sm text-navy-900 dark:text-white/90 truncate capitalize">
+                        {srcRow.source || "Accès direct"}
+                      </div>
+                      <div className="flex-1 h-2.5 rounded-full bg-navy-50 dark:bg-white/10 overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-brand-500 transition-[width] duration-700 ease-premium"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <div className="w-12 text-right text-sm font-medium text-navy-900 dark:text-white tabular-nums">
+                        {v.toLocaleString("fr-FR")}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardBody>
+          </Card>
+        )}
+      </section>
+
+      {/* ─────────── Section ENGAGEMENT (Pédagogie) ─────────── */}
+      <section>
+        <h2 className="font-display text-lg font-semibold text-navy-900 dark:text-white mb-3 inline-flex items-center gap-2">
+          <GraduationCap className="h-4 w-4 text-signal-700" />
+          Pédagogie
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           <Kpi
@@ -563,42 +670,42 @@ function Kpi({
 }) {
   const styles: Record<string, { bg: string; iconBg: string; iconColor: string; valueColor: string }> = {
     navy: {
-      bg: "bg-white border-navy-100",
-      iconBg: "bg-navy-50",
-      iconColor: "text-navy-900",
-      valueColor: "text-navy-950",
+      bg: "bg-white border-navy-100 dark:bg-white/[0.04] dark:border-white/10",
+      iconBg: "bg-navy-50 dark:bg-white/10",
+      iconColor: "text-navy-900 dark:text-white",
+      valueColor: "text-navy-950 dark:text-white",
     },
     signal: {
-      bg: "bg-white border-signal-500/30",
+      bg: "bg-white border-signal-500/30 dark:bg-signal-500/[0.06] dark:border-signal-500/25",
       iconBg: "bg-signal-500/15",
-      iconColor: "text-signal-800",
-      valueColor: "text-navy-950",
+      iconColor: "text-signal-800 dark:text-signal-300",
+      valueColor: "text-navy-950 dark:text-white",
     },
     gold: {
-      bg: "bg-gradient-to-br from-gold-50 to-white border-gold-200",
-      iconBg: "bg-gold-100",
-      iconColor: "text-gold-800",
-      valueColor: "text-navy-950",
+      bg: "bg-gradient-to-br from-gold-50 to-white border-gold-200 dark:from-gold-500/[0.08] dark:to-transparent dark:border-gold-500/25",
+      iconBg: "bg-gold-100 dark:bg-gold-500/15",
+      iconColor: "text-gold-800 dark:text-gold-300",
+      valueColor: "text-navy-950 dark:text-white",
     },
     rose: {
-      bg: "bg-rose-50/40 border-rose-200",
-      iconBg: "bg-rose-100",
-      iconColor: "text-rose-700",
-      valueColor: "text-rose-900",
+      bg: "bg-rose-50/40 border-rose-200 dark:bg-rose-500/[0.08] dark:border-rose-500/25",
+      iconBg: "bg-rose-100 dark:bg-rose-500/15",
+      iconColor: "text-rose-700 dark:text-rose-300",
+      valueColor: "text-rose-900 dark:text-rose-200",
     },
     slate: {
-      bg: "bg-white border-navy-100",
-      iconBg: "bg-slate-100",
-      iconColor: "text-slate-500",
-      valueColor: "text-slate-700",
+      bg: "bg-white border-navy-100 dark:bg-white/[0.03] dark:border-white/10",
+      iconBg: "bg-slate-100 dark:bg-white/10",
+      iconColor: "text-slate-500 dark:text-white/60",
+      valueColor: "text-slate-700 dark:text-white/80",
     },
   };
   const s = styles[tone ?? "navy"];
 
   const inner = (
     <div
-      className={`rounded-2xl border p-4 transition ${s.bg} ${
-        href ? "hover:shadow-soft cursor-pointer" : ""
+      className={`rounded-2xl border p-4 transition-[transform,box-shadow,border-color] duration-200 ease-premium hover:-translate-y-0.5 hover:shadow-raised motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${s.bg} ${
+        href ? "cursor-pointer" : ""
       }`}
     >
       <div className="flex items-start gap-3">
@@ -608,7 +715,7 @@ function Kpi({
           <Icon className="h-4 w-4" />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold truncate">
+          <div className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-white/50 font-semibold truncate">
             {label}
           </div>
           <div
@@ -617,7 +724,7 @@ function Kpi({
             {value}
           </div>
           {hint && (
-            <div className="text-[11px] text-slate-500 mt-0.5 truncate">
+            <div className="text-[11px] text-slate-500 dark:text-white/40 mt-0.5 truncate">
               {hint}
             </div>
           )}
