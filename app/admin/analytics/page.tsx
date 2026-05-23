@@ -253,6 +253,97 @@ export default async function AdminAnalytics({
     revenue_cents_prev: 0,
   };
 
+  // ── Synthèse intelligente & alertes (heuristique, sans IA externe) ──
+  const pctDelta = (cur: number, prev: number): number | null =>
+    !prev || prev === 0 ? null : Math.round(((cur - prev) / prev) * 100);
+  const signupsDelta = pctDelta(Number(pk.signups), Number(pk.signups_prev));
+  const quizDelta = pctDelta(
+    Number(pk.quiz_attempts),
+    Number(pk.quiz_attempts_prev)
+  );
+  const revenueDelta = pctDelta(
+    Number(pk.revenue_cents),
+    Number(pk.revenue_cents_prev)
+  );
+
+  type Insight = {
+    tone: "warning" | "info" | "success";
+    title: string;
+    detail: string;
+  };
+  const insights: Insight[] = [];
+  if (signupsDelta !== null && signupsDelta <= -20)
+    insights.push({
+      tone: "warning",
+      title: `Inscriptions en baisse (${signupsDelta}%)`,
+      detail:
+        "Vs période précédente. Relancez l'acquisition (campagnes, contenus, parrainage).",
+    });
+  if (quizDelta !== null && quizDelta <= -25)
+    insights.push({
+      tone: "warning",
+      title: `Activité quiz en baisse (${quizDelta}%)`,
+      detail:
+        "L'engagement chute. Vérifiez les modules récents et relancez les stagiaires inactifs.",
+    });
+  if (Number(k.at_risk_students) > 0)
+    insights.push({
+      tone: "warning",
+      title: `${k.at_risk_students} stagiaire(s) à risque d'abandon`,
+      detail:
+        "Inactifs depuis plus de 14 jours. Une relance personnalisée améliore nettement la rétention.",
+    });
+  if (Number(k.pass_rate_30d) > 0 && Number(k.pass_rate_30d) < 60)
+    insights.push({
+      tone: "warning",
+      title: `Taux de réussite faible (${k.pass_rate_30d}%)`,
+      detail:
+        "Sur 30 jours. Identifiez les examens les plus ratés (section ci-dessous).",
+    });
+  if (Number(pk.payments) === 0 && periodDays >= 7)
+    insights.push({
+      tone: "warning",
+      title: "Aucune vente sur la période",
+      detail:
+        "Aucun paiement enregistré. Vérifiez le tunnel de conversion et les devis en attente.",
+    });
+  if (Number(k.pending_corrections) > 0)
+    insights.push({
+      tone: "info",
+      title: `${k.pending_corrections} copie(s) à corriger`,
+      detail:
+        "Des stagiaires attendent leur note — un délai long pénalise la satisfaction.",
+    });
+  if ((leadsTotal ?? 0) > 5 && leadsConvPct < 15)
+    insights.push({
+      tone: "info",
+      title: `Conversion leads faible (${leadsConvPct}%)`,
+      detail:
+        "Beaucoup de leads non convertis. Renforcez le suivi CRM et les relances.",
+    });
+  if (signupsDelta !== null && signupsDelta >= 20)
+    insights.push({
+      tone: "success",
+      title: `Inscriptions en hausse (+${signupsDelta}%)`,
+      detail:
+        "Bonne dynamique d'acquisition — capitalisez sur les canaux performants.",
+    });
+  if (revenueDelta !== null && revenueDelta >= 20)
+    insights.push({
+      tone: "success",
+      title: `Chiffre d'affaires en hausse (+${revenueDelta}%)`,
+      detail: "Le CA progresse vs période précédente. Maintenez l'effort.",
+    });
+
+  const summary =
+    `Sur les ${periodDays} derniers jours : ${pk.signups} inscription(s), ` +
+    `${pk.quiz_attempts} tentative(s) de quiz, ${pk.payments} vente(s) pour ` +
+    `${fmtEuro(Number(pk.revenue_cents))}. ${k.active_students_7d} stagiaire(s) ` +
+    `actif(s) (7j), taux de réussite ${k.pass_rate_30d}%` +
+    (vitrine.visitors
+      ? `, ${vitrine.visitors.toLocaleString("fr-FR")} visiteur(s) sur la vitrine.`
+      : ".");
+
   return (
     <div className="space-y-10">
       {/* En-tête */}
@@ -270,6 +361,14 @@ export default async function AdminAnalytics({
         <div className="flex items-center gap-3 flex-wrap print:hidden">
           <RealtimeIndicator />
           <PrintButton />
+          <a
+            href="/admin/analytics/export/csv"
+            className="inline-flex items-center gap-1.5 px-3 h-9 rounded-lg text-xs font-semibold border border-navy-200 bg-white text-navy-800 hover:bg-navy-50 dark:border-white/15 dark:bg-white/5 dark:text-white/80 dark:hover:bg-white/10 transition"
+            title="Exporter les tendances 30 jours au format CSV (Excel)"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Export CSV
+          </a>
           <Link
             href="/admin/analytics/tv"
             className="inline-flex items-center gap-1.5 px-3 h-9 rounded-lg text-xs font-semibold bg-navy-900 text-white hover:bg-navy-800 transition"
@@ -282,14 +381,14 @@ export default async function AdminAnalytics({
       </header>
 
       {/* ─────────── Section KPIs avec comparaison période (Lot 2) ─────────── */}
-      <section className="rounded-2xl border border-navy-100 bg-white p-4">
+      <section className="rounded-2xl border border-navy-100 bg-white dark:bg-white/[0.04] dark:border-white/10 p-4">
         <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
           <div>
-            <h2 className="font-display text-base font-semibold text-navy-900 inline-flex items-center gap-2">
+            <h2 className="font-display text-base font-semibold text-navy-900 dark:text-white inline-flex items-center gap-2">
               <BarChart3 className="h-4 w-4 text-brand-700" />
               Vue d'ensemble
             </h2>
-            <p className="text-[11px] text-slate-500 mt-0.5">
+            <p className="text-[11px] text-slate-500 dark:text-white/50 mt-0.5">
               KPIs sur la période sélectionnée + comparaison vs période précédente
             </p>
           </div>
@@ -322,6 +421,64 @@ export default async function AdminAnalytics({
             hint={`${periodDays} derniers jours`}
           />
         </div>
+      </section>
+
+      {/* ─────────── Synthèse intelligente & alertes ─────────── */}
+      <section className="rounded-2xl border border-navy-100 dark:border-white/10 bg-gradient-to-br from-brand-50/60 to-white dark:from-white/[0.05] dark:to-transparent p-5">
+        <div className="flex items-center gap-2 mb-2">
+          <Sparkles className="h-4 w-4 text-brand-700 dark:text-brand-300" />
+          <h2 className="font-display text-base font-semibold text-navy-900 dark:text-white">
+            Synthèse intelligente
+          </h2>
+        </div>
+        <p className="text-sm text-slate-600 dark:text-white/70 leading-relaxed max-w-3xl">
+          {summary}
+        </p>
+        {insights.length > 0 ? (
+          <div className="mt-4 grid sm:grid-cols-2 gap-2.5">
+            {insights.map((ins, i) => {
+              const t = {
+                warning: {
+                  box: "border-gold-200 bg-gold-50/70 dark:border-gold-500/30 dark:bg-gold-500/[0.08]",
+                  icon: "text-gold-700 dark:text-gold-300",
+                  Icon: AlertTriangle,
+                },
+                info: {
+                  box: "border-brand-200 bg-brand-50/60 dark:border-brand-500/30 dark:bg-brand-500/[0.08]",
+                  icon: "text-brand-700 dark:text-brand-300",
+                  Icon: Sparkles,
+                },
+                success: {
+                  box: "border-emerald-200 bg-emerald-50/70 dark:border-emerald-500/30 dark:bg-emerald-500/[0.08]",
+                  icon: "text-emerald-700 dark:text-emerald-300",
+                  Icon: CheckCircle2,
+                },
+              }[ins.tone];
+              const I = t.Icon;
+              return (
+                <div
+                  key={i}
+                  className={`flex items-start gap-2.5 rounded-xl border p-3 ${t.box}`}
+                >
+                  <I className={`h-4 w-4 shrink-0 mt-0.5 ${t.icon}`} />
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-navy-900 dark:text-white">
+                      {ins.title}
+                    </div>
+                    <div className="text-[12.5px] text-slate-600 dark:text-white/60 leading-snug mt-0.5">
+                      {ins.detail}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="mt-4 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50/70 dark:border-emerald-500/30 dark:bg-emerald-500/[0.08] p-3 text-sm text-emerald-800 dark:text-emerald-200">
+            <CheckCircle2 className="h-4 w-4" /> Aucune alerte : les indicateurs
+            sont au vert.
+          </div>
+        )}
       </section>
 
       {/* ─────────── Section SITE VITRINE ─────────── */}
@@ -538,7 +695,7 @@ export default async function AdminAnalytics({
 
       {/* ─────────── Section BUSINESS ─────────── */}
       <section>
-        <h2 className="font-display text-lg font-semibold text-navy-900 mb-3 inline-flex items-center gap-2">
+        <h2 className="font-display text-lg font-semibold text-navy-900 dark:text-white mb-3 inline-flex items-center gap-2">
           <Banknote className="h-4 w-4 text-gold-700" />
           Business
         </h2>
@@ -645,10 +802,10 @@ export default async function AdminAnalytics({
           <CardBody>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="font-display text-base font-semibold text-navy-900">
+                <h3 className="font-display text-base font-semibold text-navy-900 dark:text-white">
                   Activité — 30 derniers jours
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-white/50 mt-0.5">
                   Inscriptions, tentatives de quiz, paiements (par jour)
                 </p>
               </div>
@@ -661,10 +818,10 @@ export default async function AdminAnalytics({
           <CardBody>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="font-display text-base font-semibold text-navy-900">
+                <h3 className="font-display text-base font-semibold text-navy-900 dark:text-white">
                   Taux de complétion par formation
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-white/50 mt-0.5">
                   Leçons complétées / total leçons (inscriptions actives)
                 </p>
               </div>
@@ -695,11 +852,11 @@ export default async function AdminAnalytics({
           <CardBody>
             <div className="flex items-center gap-2 mb-3">
               <TrendingUp className="h-4 w-4 text-signal-700" />
-              <h3 className="font-display text-base font-semibold text-navy-900">
+              <h3 className="font-display text-base font-semibold text-navy-900 dark:text-white">
                 Funnel de conversion stagiaire
               </h3>
             </div>
-            <p className="text-[11px] text-slate-500 mb-4">
+            <p className="text-[11px] text-slate-500 dark:text-white/50 mb-4">
               Signup → 1ère leçon → 1er quiz tenté → 1er quiz réussi → 1er paiement
             </p>
             <FunnelChart data={(funnel as any) ?? null} />
@@ -714,11 +871,11 @@ export default async function AdminAnalytics({
         <CardBody>
           <div className="flex items-center gap-2 mb-3">
             <Calendar className="h-4 w-4 text-brand-700" />
-            <h3 className="font-display text-base font-semibold text-navy-900">
+            <h3 className="font-display text-base font-semibold text-navy-900 dark:text-white">
               Heatmap d'activité hebdomadaire
             </h3>
           </div>
-          <p className="text-[11px] text-slate-500 mb-4">
+          <p className="text-[11px] text-slate-500 dark:text-white/50 mb-4">
             Quand vos stagiaires sont-ils le plus actifs ? Tentatives de quiz par jour × heure (90 derniers jours)
           </p>
           <HeatmapGrid cells={(heatmap ?? []) as any[]} />
@@ -729,10 +886,10 @@ export default async function AdminAnalytics({
       <section>
         <div className="flex items-center gap-2 mb-3">
           <BarChart3 className="h-4 w-4 text-brand-700" />
-          <h2 className="font-display text-base font-semibold text-navy-900">
+          <h2 className="font-display text-base font-semibold text-navy-900 dark:text-white">
             Évolution par formation
           </h2>
-          <span className="text-[11px] text-slate-500">
+          <span className="text-[11px] text-slate-500 dark:text-white/50">
             30 derniers jours · top 6 formations
           </span>
         </div>
@@ -742,11 +899,11 @@ export default async function AdminAnalytics({
       {/* ─────────── Tableau dernières tentatives ─────────── */}
       <section>
         <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-          <h2 className="font-display text-lg font-semibold text-navy-900 inline-flex items-center gap-2">
+          <h2 className="font-display text-lg font-semibold text-navy-900 dark:text-white inline-flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-brand-700" />
             Dernières tentatives
           </h2>
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-slate-500 dark:text-white/50">
             50 plus récentes ·{" "}
             <span className="text-signal-700 font-medium">
               {attempts?.length ?? 0}
@@ -760,7 +917,7 @@ export default async function AdminAnalytics({
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-navy-50/60 text-[11px] uppercase tracking-wider text-slate-600">
+                <tr className="bg-navy-50/60 dark:bg-white/[0.06] text-[11px] uppercase tracking-wider text-slate-600 dark:text-white/50">
                   <th className="text-left px-5 py-3 font-semibold">Stagiaire</th>
                   <th className="text-left px-5 py-3 font-semibold">Exercice</th>
                   <th className="text-left px-5 py-3 font-semibold">Score</th>
@@ -773,7 +930,7 @@ export default async function AdminAnalytics({
                 {attempts?.map((a: any) => (
                   <tr
                     key={a.id}
-                    className="border-t border-navy-50 hover:bg-navy-50/30"
+                    className="border-t border-navy-50 dark:border-white/10 hover:bg-navy-50/30 dark:hover:bg-white/[0.04]"
                   >
                     <td className="px-5 py-3.5">
                       <Link
@@ -784,16 +941,16 @@ export default async function AdminAnalytics({
                           {initials(a.profiles?.full_name || a.profiles?.email)}
                         </div>
                         <div>
-                          <div className="font-medium text-navy-900 group-hover:text-gold-700">
+                          <div className="font-medium text-navy-900 dark:text-white group-hover:text-gold-700">
                             {a.profiles?.full_name || a.profiles?.email}
                           </div>
-                          <div className="text-xs text-slate-500">
+                          <div className="text-xs text-slate-500 dark:text-white/40">
                             {a.profiles?.email}
                           </div>
                         </div>
                       </Link>
                     </td>
-                    <td className="px-5 py-3.5 text-slate-700">
+                    <td className="px-5 py-3.5 text-slate-700 dark:text-white/70">
                       {a.quizzes?.title}
                     </td>
                     <td
@@ -822,7 +979,7 @@ export default async function AdminAnalytics({
                         </Badge>
                       )}
                     </td>
-                    <td className="px-5 py-3.5 text-slate-500 text-xs">
+                    <td className="px-5 py-3.5 text-slate-500 dark:text-white/40 text-xs">
                       {a.finished_at && formatDate(a.finished_at)}
                     </td>
                     <td className="px-5 py-3.5 text-right">
@@ -831,7 +988,7 @@ export default async function AdminAnalytics({
                           href={`/admin/analytics/export/pdf?attempt=${a.id}`}
                           target="_blank"
                           title="Télécharger la copie corrigée"
-                          className="h-7 w-7 rounded-md text-slate-400 hover:text-navy-900 hover:bg-navy-50 inline-flex items-center justify-center"
+                          className="h-7 w-7 rounded-md text-slate-400 hover:text-navy-900 hover:bg-navy-50 dark:text-white/40 dark:hover:text-white dark:hover:bg-white/10 inline-flex items-center justify-center"
                         >
                           <Download className="h-3.5 w-3.5" />
                         </a>
