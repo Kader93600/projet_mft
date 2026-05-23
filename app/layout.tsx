@@ -8,6 +8,7 @@ import { CookieBanner } from "@/components/cookie-banner";
 import { JsonLd, organizationSchema } from "@/components/seo/json-ld";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { AcquisitionTracker } from "@/components/acquisition-tracker";
+import { FormValidationTooltip } from "@/components/form-validation-tooltip";
 import { LEGAL } from "@/lib/legal-config";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
@@ -153,6 +154,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           {/* AcquisitionTracker : monté globalement, filtre les routes
               publiques uniquement côté client (cf. AUTH_ROUTE_PREFIXES). */}
           <AcquisitionTracker />
+          {/* Restyle global des bulles de validation natives (tous les forms). */}
+          <FormValidationTooltip />
           {children}
           {/* CookieBanner doit rester DANS le provider car il appelle
               useTranslations("cookies") côté client. */}
