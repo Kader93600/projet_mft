@@ -18,6 +18,9 @@ import {
   UserPlus,
   Globe,
   GraduationCap,
+  Smartphone,
+  MapPin,
+  Mail,
 } from "lucide-react";
 import { AnalyticsToolbar } from "./analytics-toolbar";
 import { DeleteAttemptButton } from "./analytics-row-actions";
@@ -185,6 +188,40 @@ export default async function AdminAnalytics({
     (leadsTotal ?? 0) > 0
       ? Math.round(((leadsConverted ?? 0) / (leadsTotal ?? 1)) * 100)
       : 0;
+
+  // Vitrine approfondie : appareils + pays + demandes de contact.
+  // Agrégation JS bornée sur la période (acquisition_events n'a pas de vue
+  // dédiée ; volume vitrine raisonnable). Un index/vue pourra être ajouté si
+  // le trafic explose.
+  const sinceIso = new Date(
+    Date.now() - periodDays * 86_400_000
+  ).toISOString();
+  const { data: rawEvents } = await supabase
+    .from("acquisition_events")
+    .select("user_agent, ip_country, kind")
+    .gte("occurred_at", sinceIso)
+    .order("occurred_at", { ascending: false })
+    .limit(10000);
+  const devices = { mobile: 0, desktop: 0, tablet: 0 };
+  const countries: Record<string, number> = {};
+  let contactForms = 0;
+  for (const e of (rawEvents ?? []) as any[]) {
+    const ua = String(e.user_agent ?? "").toLowerCase();
+    const d = /ipad|tablet|playbook|silk/.test(ua)
+      ? "tablet"
+      : /mobi|iphone|ipod|android/.test(ua)
+        ? "mobile"
+        : "desktop";
+    devices[d as keyof typeof devices]++;
+    if (e.ip_country) countries[e.ip_country] = (countries[e.ip_country] ?? 0) + 1;
+    if (e.kind === "contact_form") contactForms++;
+  }
+  const deviceTotal =
+    devices.mobile + devices.desktop + devices.tablet || 1;
+  const topCountries = Object.entries(countries)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+  const maxCountry = Math.max(1, ...topCountries.map(([, c]) => c));
 
   // Agrégats Vitrine (acquisition).
   const utm = (utmFunnel ?? []) as any[];
@@ -365,6 +402,93 @@ export default async function AdminAnalytics({
             </CardBody>
           </Card>
         )}
+
+        {/* Appareils · Pays · Demandes de contact */}
+        <div className="mt-3 grid grid-cols-1 lg:grid-cols-3 gap-3">
+          <Card>
+            <CardBody>
+              <div className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-white/50 font-semibold mb-3 inline-flex items-center gap-1.5">
+                <Smartphone className="h-3.5 w-3.5" /> Appareils
+              </div>
+              <div className="space-y-2.5">
+                {(
+                  [
+                    ["Mobile", devices.mobile, "bg-brand-500"],
+                    ["Ordinateur", devices.desktop, "bg-signal-500"],
+                    ["Tablette", devices.tablet, "bg-gold-500"],
+                  ] as const
+                ).map(([label, val, color]) => {
+                  const pct = Math.round((val / deviceTotal) * 100);
+                  return (
+                    <div key={label} className="flex items-center gap-3">
+                      <div className="w-24 shrink-0 text-sm text-navy-900 dark:text-white/90">
+                        {label}
+                      </div>
+                      <div className="flex-1 h-2.5 rounded-full bg-navy-50 dark:bg-white/10 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${color} transition-[width] duration-700 ease-premium`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <div className="w-10 text-right text-sm font-medium text-navy-900 dark:text-white tabular-nums">
+                        {pct}%
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardBody>
+          </Card>
+
+          <Card>
+            <CardBody>
+              <div className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-white/50 font-semibold mb-3 inline-flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5" /> Top pays
+              </div>
+              {topCountries.length === 0 ? (
+                <p className="text-sm text-slate-400">
+                  Aucune donnée de géolocalisation sur la période.
+                </p>
+              ) : (
+                <div className="space-y-2.5">
+                  {topCountries.map(([country, count]) => {
+                    const pct = Math.round((count / maxCountry) * 100);
+                    return (
+                      <div key={country} className="flex items-center gap-3">
+                        <div className="w-16 shrink-0 text-sm text-navy-900 dark:text-white/90 uppercase">
+                          {country}
+                        </div>
+                        <div className="flex-1 h-2.5 rounded-full bg-navy-50 dark:bg-white/10 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-navy-400 transition-[width] duration-700 ease-premium"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        <div className="w-12 text-right text-sm font-medium text-navy-900 dark:text-white tabular-nums">
+                          {count.toLocaleString("fr-FR")}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardBody>
+          </Card>
+
+          <Card>
+            <CardBody className="flex h-full flex-col justify-center">
+              <div className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-white/50 font-semibold mb-2 inline-flex items-center gap-1.5">
+                <Mail className="h-3.5 w-3.5" /> Demandes de contact
+              </div>
+              <div className="font-display text-4xl font-semibold text-navy-950 dark:text-white">
+                {contactForms.toLocaleString("fr-FR")}
+              </div>
+              <div className="text-[11px] text-slate-500 dark:text-white/40 mt-1">
+                Formulaires « Nous contacter » · {periodDays} derniers jours
+              </div>
+            </CardBody>
+          </Card>
+        </div>
       </section>
 
       {/* ─────────── Section ENGAGEMENT (Pédagogie) ─────────── */}
