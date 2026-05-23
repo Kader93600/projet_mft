@@ -1,6 +1,6 @@
 -- =====================================================================
 -- supabase/schema.sql — BASELINE CONSOLIDÉ (source de vérité des tables)
--- Généré le 2026-05-21 par scripts/introspect-schema.mjs
+-- Généré le 2026-05-23 par scripts/introspect-schema.mjs
 -- via introspection du schéma public déployé (PostgREST OpenAPI).
 --
 -- ⚠️  Régénérer avec :  node scripts/introspect-schema.mjs
@@ -13,7 +13,7 @@
 --   • FONCTIONS / TRIGGERS / RLS / INDEX / CHECK : voir les migrations
 --     horodatées dans supabase/*.sql (index : supabase/MIGRATIONS_INDEX.md).
 --
--- Tables : 90
+-- Tables : 94
 -- =====================================================================
 
 create extension if not exists "uuid-ossp";
@@ -116,6 +116,7 @@ create table if not exists public.attendance_signatures (
   signature_ip inet,
   signature_ua text,
   signature_hash text,
+  signature_data text,
   primary key (id)
 );
 
@@ -301,6 +302,29 @@ create table if not exists public.crm_my_queue (
 );
 
 -- ─────────────────────────────────────────────────────────────────────
+create table if not exists public.data_access_log (
+  id uuid default gen_random_uuid(),
+  user_id uuid not null,  -- FK → profiles.id
+  actor_id uuid,  -- FK → profiles.id
+  action text not null,
+  scope text,
+  created_at timestamp with time zone default now() not null,
+  primary key (id)
+);
+
+-- ─────────────────────────────────────────────────────────────────────
+create table if not exists public.deletion_requests (
+  id uuid default gen_random_uuid(),
+  user_id uuid not null,  -- FK → profiles.id
+  reason text,
+  status text default 'pending' not null,
+  requested_at timestamp with time zone default now() not null,
+  resolved_at timestamp with time zone,
+  admin_note text,
+  primary key (id)
+);
+
+-- ─────────────────────────────────────────────────────────────────────
 create table if not exists public.document_acceptances (
   id uuid default gen_random_uuid(),
   user_id uuid not null,
@@ -310,6 +334,7 @@ create table if not exists public.document_acceptances (
   accepted_at timestamp with time zone default now() not null,
   ip_address inet,
   user_agent text,
+  signature_name text,
   primary key (id)
 );
 
@@ -919,6 +944,8 @@ create table if not exists public.profiles (
   dossier_status text,
   current_formation_id uuid,  -- FK → formations.id
   leaderboard_opt_out boolean default false not null,
+  mandatory_signature_at timestamp with time zone,
+  locale text default 'fr' not null,
   primary key (id)
 );
 
@@ -1305,6 +1332,18 @@ create table if not exists public.user_badges (
 );
 
 -- ─────────────────────────────────────────────────────────────────────
+create table if not exists public.user_consents (
+  id uuid default gen_random_uuid(),
+  user_id uuid not null,  -- FK → profiles.id
+  kind text not null,
+  granted boolean not null,
+  granted_at timestamp with time zone default now() not null,
+  ip_address inet,
+  user_agent text,
+  primary key (id)
+);
+
+-- ─────────────────────────────────────────────────────────────────────
 create table if not exists public.user_credits (
   id uuid default gen_random_uuid(),
   user_id uuid not null,  -- FK → profiles.id
@@ -1371,6 +1410,18 @@ create table if not exists public.user_sessions (
   last_ping_at timestamp with time zone default now() not null,
   duration_s integer default 0 not null,
   path text,
+  user_agent text,
+  primary key (id)
+);
+
+-- ─────────────────────────────────────────────────────────────────────
+create table if not exists public.user_signatures (
+  id uuid default gen_random_uuid(),
+  user_id uuid not null,
+  signature_data text not null,
+  hash text,
+  signed_at timestamp with time zone default now() not null,
+  ip_address inet,
   user_agent text,
   primary key (id)
 );

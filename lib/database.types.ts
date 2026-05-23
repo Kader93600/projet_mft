@@ -1,6 +1,6 @@
 // =====================================================================
 // lib/database.types.ts — Types du schéma public Supabase
-// Généré le 2026-05-21 par scripts/introspect-schema.mjs (introspection live).
+// Généré le 2026-05-23 par scripts/introspect-schema.mjs (introspection live).
 // NE PAS éditer à la main — régénérer avec : node scripts/introspect-schema.mjs
 // =====================================================================
 
@@ -319,6 +319,7 @@ export interface Database {
           signature_ip: string | null;
           signature_ua: string | null;
           signature_hash: string | null;
+          signature_data: string | null;
         };
         Insert: {
           id?: string;
@@ -329,6 +330,7 @@ export interface Database {
           signature_ip?: string | null;
           signature_ua?: string | null;
           signature_hash?: string | null;
+          signature_data?: string | null;
         };
         Update: {
           id?: string;
@@ -339,6 +341,7 @@ export interface Database {
           signature_ip?: string | null;
           signature_ua?: string | null;
           signature_hash?: string | null;
+          signature_data?: string | null;
         };
         Relationships: [
           {
@@ -928,6 +931,86 @@ export interface Database {
           },
         ];
       };
+      data_access_log: {
+        Row: {
+          id: string;
+          user_id: string;
+          actor_id: string | null;
+          action: string;
+          scope: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          actor_id?: string | null;
+          action: string;
+          scope?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          actor_id?: string | null;
+          action?: string;
+          scope?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "data_access_log_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "data_access_log_actor_id_fkey";
+            columns: ["actor_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      deletion_requests: {
+        Row: {
+          id: string;
+          user_id: string;
+          reason: string | null;
+          status: string;
+          requested_at: string;
+          resolved_at: string | null;
+          admin_note: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          reason?: string | null;
+          status?: string;
+          requested_at?: string;
+          resolved_at?: string | null;
+          admin_note?: string | null;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          reason?: string | null;
+          status?: string;
+          requested_at?: string;
+          resolved_at?: string | null;
+          admin_note?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "deletion_requests_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       document_acceptances: {
         Row: {
           id: string;
@@ -938,6 +1021,7 @@ export interface Database {
           accepted_at: string;
           ip_address: string | null;
           user_agent: string | null;
+          signature_name: string | null;
         };
         Insert: {
           id?: string;
@@ -948,6 +1032,7 @@ export interface Database {
           accepted_at?: string;
           ip_address?: string | null;
           user_agent?: string | null;
+          signature_name?: string | null;
         };
         Update: {
           id?: string;
@@ -958,6 +1043,7 @@ export interface Database {
           accepted_at?: string;
           ip_address?: string | null;
           user_agent?: string | null;
+          signature_name?: string | null;
         };
         Relationships: [
           {
@@ -2879,6 +2965,8 @@ export interface Database {
           dossier_status: string | null;
           current_formation_id: string | null;
           leaderboard_opt_out: boolean;
+          mandatory_signature_at: string | null;
+          locale: string;
         };
         Insert: {
           id?: string;
@@ -2916,6 +3004,8 @@ export interface Database {
           dossier_status?: string | null;
           current_formation_id?: string | null;
           leaderboard_opt_out?: boolean;
+          mandatory_signature_at?: string | null;
+          locale?: string;
         };
         Update: {
           id?: string;
@@ -2953,6 +3043,8 @@ export interface Database {
           dossier_status?: string | null;
           current_formation_id?: string | null;
           leaderboard_opt_out?: boolean;
+          mandatory_signature_at?: string | null;
+          locale?: string;
         };
         Relationships: [
           {
@@ -4352,6 +4444,44 @@ export interface Database {
           },
         ];
       };
+      user_consents: {
+        Row: {
+          id: string;
+          user_id: string;
+          kind: string;
+          granted: boolean;
+          granted_at: string;
+          ip_address: string | null;
+          user_agent: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          kind: string;
+          granted: boolean;
+          granted_at?: string;
+          ip_address?: string | null;
+          user_agent?: string | null;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          kind?: string;
+          granted?: boolean;
+          granted_at?: string;
+          ip_address?: string | null;
+          user_agent?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_consents_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       user_credits: {
         Row: {
           id: string;
@@ -4551,6 +4681,36 @@ export interface Database {
             referencedColumns: ["id"];
           },
         ];
+      };
+      user_signatures: {
+        Row: {
+          id: string;
+          user_id: string;
+          signature_data: string;
+          hash: string | null;
+          signed_at: string;
+          ip_address: string | null;
+          user_agent: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          signature_data: string;
+          hash?: string | null;
+          signed_at?: string;
+          ip_address?: string | null;
+          user_agent?: string | null;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          signature_data?: string;
+          hash?: string | null;
+          signed_at?: string;
+          ip_address?: string | null;
+          user_agent?: string | null;
+        };
+        Relationships: [];
       };
       user_training_summary: {
         Row: {
