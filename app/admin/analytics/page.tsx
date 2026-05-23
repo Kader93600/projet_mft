@@ -143,6 +143,8 @@ export default async function AdminAnalytics({
     { data: upcomingSessions },
     { data: periodKpis },
     { data: utmFunnel },
+    { count: leadsTotal },
+    { count: leadsConverted },
   ] = await Promise.all([
     supabase.from("vw_admin_funnel_conversion").select("*").single(),
     supabase.from("vw_admin_activity_heatmap").select("*"),
@@ -156,7 +158,33 @@ export default async function AdminAnalytics({
       .from("vw_admin_funnel_by_utm")
       .select("source, visitors, signups, enrollments")
       .limit(50),
+    // Leads (CRM) : total + convertis (counts seuls, head:true).
+    supabase
+      .from("enrollment_requests")
+      .select("id", { count: "exact", head: true }),
+    supabase
+      .from("enrollment_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "inscrit"),
   ]);
+
+  // Agrégat Business : packs achetés (depuis vw_admin_revenue_by_formation_pack).
+  const packAgg: Record<string, { count: number; revenue: number }> = {
+    initial: { count: 0, revenue: 0 },
+    medium: { count: 0, revenue: 0 },
+    premium: { count: 0, revenue: 0 },
+  };
+  for (const r of (revenueMatrix ?? []) as any[]) {
+    const p = packAgg[r.pack as string];
+    if (p) {
+      p.count += Number(r.enrollments_count) || 0;
+      p.revenue += Number(r.revenue_cents) || 0;
+    }
+  }
+  const leadsConvPct =
+    (leadsTotal ?? 0) > 0
+      ? Math.round(((leadsConverted ?? 0) / (leadsTotal ?? 1)) * 100)
+      : 0;
 
   // Agrégats Vitrine (acquisition).
   const utm = (utmFunnel ?? []) as any[];
@@ -426,6 +454,63 @@ export default async function AdminAnalytics({
             hint="Formateurs"
             tone={k.pending_corrections > 0 ? "gold" : "slate"}
             href="/formateur/corrections"
+          />
+        </div>
+
+        {/* Packs achetés (Initial / Medium / Premium) */}
+        <div className="mt-4">
+          <div className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-white/50 font-semibold mb-2">
+            Packs achetés
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {(["initial", "medium", "premium"] as const).map((p) => {
+              const agg = packAgg[p];
+              const label =
+                p === "initial" ? "Initial" : p === "medium" ? "Medium" : "Premium";
+              return (
+                <div
+                  key={p}
+                  className="rounded-2xl border border-navy-100 bg-white dark:bg-white/[0.04] dark:border-white/10 p-4 transition-[transform,box-shadow] duration-200 ease-premium hover:-translate-y-0.5 hover:shadow-raised motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-semibold text-navy-900 dark:text-white">
+                      Pack {label}
+                    </span>
+                    <Badge
+                      tone={p === "premium" ? "gold" : p === "medium" ? "navy" : "slate"}
+                      size="sm"
+                    >
+                      {agg.count} vente{agg.count > 1 ? "s" : ""}
+                    </Badge>
+                  </div>
+                  <div className="mt-2 font-display text-2xl font-semibold text-navy-950 dark:text-white">
+                    {fmtEuro(agg.revenue)}
+                  </div>
+                  <div className="text-[11px] text-slate-500 dark:text-white/40">
+                    CA cumulé
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Leads (CRM) */}
+        <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Kpi
+            icon={UserPlus}
+            label="Leads générés"
+            value={String(leadsTotal ?? 0)}
+            hint="Total CRM"
+            tone="navy"
+            href="/admin/crm"
+          />
+          <Kpi
+            icon={TrendingUp}
+            label="Conversion leads"
+            value={`${leadsConvPct}%`}
+            hint="Leads → inscrits"
+            tone={leadsConvPct >= 20 ? "signal" : "gold"}
           />
         </div>
       </section>
