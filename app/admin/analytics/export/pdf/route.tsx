@@ -364,13 +364,15 @@ function Report({
 function AttemptReport({
   attempt,
   questions,
+  qrByQuestion,
   now,
 }: {
   attempt: any;
   questions: any[];
+  qrByQuestion: Record<string, any>;
   now: string;
 }) {
-  const answers: Record<string, string[]> = attempt.answers ?? {};
+  const answers: Record<string, string | string[]> = attempt.answers ?? {};
   const student = attempt.profiles;
   const quiz = attempt.quizzes;
 
@@ -423,13 +425,77 @@ function AttemptReport({
       React.createElement(Text, { style: styles.h1 }, "Détail des réponses"),
 
       ...questions.map((q: any, i: number) => {
-        const selected = new Set(answers[q.id] ?? []);
+        const raw = answers[q.id];
+        const picked = Array.isArray(raw)
+          ? raw
+          : raw != null && raw !== ""
+            ? [raw]
+            : [];
+        const pickedSet = new Set(picked);
+        const choices: any[] = q.choices ?? [];
+
+        // ── Question rédigée (QR) : réponse libre + note formateur ──────────
+        if (q.type === "qr" || choices.length === 0) {
+          const r = qrByQuestion[q.id];
+          const graded = r && r.trainer_score != null;
+          return React.createElement(
+            View,
+            { key: q.id, style: styles.qBlock, wrap: false },
+            React.createElement(
+              View,
+              { style: styles.qHeader },
+              React.createElement(Text, { style: styles.qNum }, String(i + 1)),
+              React.createElement(Text, { style: styles.qStatement }, q.statement),
+              React.createElement(
+                Text,
+                {
+                  style: [
+                    styles.qBadge,
+                    {
+                      backgroundColor: graded ? "#d1fae5" : "#fef3c7",
+                      color: graded ? "#065f46" : "#78350f",
+                    },
+                  ],
+                },
+                graded
+                  ? `${r.trainer_score}/${r.max_score ?? q.max_score ?? 1}`
+                  : "À corriger"
+              )
+            ),
+            React.createElement(
+              View,
+              { style: [styles.choice, { borderColor: "#e2e8f0" }] },
+              React.createElement(
+                Text,
+                { style: styles.choiceLabel },
+                r?.student_answer ? String(r.student_answer) : "(Aucune réponse)"
+              )
+            ),
+            r?.trainer_comment
+              ? React.createElement(
+                  Text,
+                  { style: styles.explanation },
+                  `Commentaire formateur : ${r.trainer_comment}`
+                )
+              : null,
+            q.explanation
+              ? React.createElement(
+                  Text,
+                  { style: styles.explanation },
+                  `Explication : ${q.explanation}`
+                )
+              : null
+          );
+        }
+
+        // ── QCM ─────────────────────────────────────────────────────────────
         const correctIds = new Set(
-          q.choices.filter((c: any) => c.is_correct).map((c: any) => c.id)
+          choices.filter((c: any) => c.is_correct).map((c: any) => c.id)
         );
         const isCorrect =
-          selected.size === correctIds.size &&
-          [...selected].every((id) => correctIds.has(id));
+          pickedSet.size > 0 &&
+          pickedSet.size === correctIds.size &&
+          [...pickedSet].every((id) => correctIds.has(id));
 
         return React.createElement(
           View,
@@ -455,57 +521,54 @@ function AttemptReport({
             )
           ),
           // Choices
-          ...q.choices
-            .slice()
-            .sort((a: any, b: any) => a.order - b.order)
-            .map((c: any) => {
-              const isSel = selected.has(c.id);
-              const isOk = c.is_correct;
-              // Color logic
-              let bg = "#ffffff";
-              let border = "#e2e8f0";
-              let note = "";
-              let noteColor = "#64748b";
-              if (isSel && isOk) {
-                bg = "#d1fae5";
-                border = "#10b981";
-                note = "✓ Sélection correcte";
-                noteColor = "#065f46";
-              } else if (isSel && !isOk) {
-                bg = "#fee2e2";
-                border = "#ef4444";
-                note = "✗ Mauvaise réponse";
-                noteColor = "#991b1b";
-              } else if (!isSel && isOk) {
-                bg = "#fef3c7";
-                border = "#9FE220";
-                note = "Bonne réponse (non choisie)";
-                noteColor = "#78350f";
-              }
-              return React.createElement(
-                View,
-                {
-                  key: c.id,
-                  style: [
-                    styles.choice,
-                    { backgroundColor: bg, borderColor: border },
-                  ],
-                },
-                React.createElement(
-                  Text,
-                  { style: [styles.choiceMarker, { color: noteColor }] },
-                  isSel ? "■" : "□"
-                ),
-                React.createElement(Text, { style: styles.choiceLabel }, c.label),
-                note
-                  ? React.createElement(
-                      Text,
-                      { style: [styles.choiceNote, { color: noteColor }] },
-                      note
-                    )
-                  : null
-              );
-            }),
+          ...choices.map((c: any) => {
+            const isSel = pickedSet.has(c.id);
+            const isOk = !!c.is_correct;
+            // Color logic
+            let bg = "#ffffff";
+            let border = "#e2e8f0";
+            let note = "";
+            let noteColor = "#64748b";
+            if (isSel && isOk) {
+              bg = "#d1fae5";
+              border = "#10b981";
+              note = "✓ Sélection correcte";
+              noteColor = "#065f46";
+            } else if (isSel && !isOk) {
+              bg = "#fee2e2";
+              border = "#ef4444";
+              note = "✗ Mauvaise réponse";
+              noteColor = "#991b1b";
+            } else if (!isSel && isOk) {
+              bg = "#fef3c7";
+              border = "#9FE220";
+              note = "Bonne réponse (non choisie)";
+              noteColor = "#78350f";
+            }
+            return React.createElement(
+              View,
+              {
+                key: c.id,
+                style: [
+                  styles.choice,
+                  { backgroundColor: bg, borderColor: border },
+                ],
+              },
+              React.createElement(
+                Text,
+                { style: [styles.choiceMarker, { color: noteColor }] },
+                isSel ? "■" : "□"
+              ),
+              React.createElement(Text, { style: styles.choiceLabel }, c.label),
+              note
+                ? React.createElement(
+                    Text,
+                    { style: [styles.choiceNote, { color: noteColor }] },
+                    note
+                  )
+                : null
+            );
+          }),
           // Explanation
           q.explanation
             ? React.createElement(
@@ -583,14 +646,57 @@ export async function GET(req: NextRequest) {
       );
     if (!attempt)
       return NextResponse.json({ error: "Tentative introuvable" }, { status: 404 });
-    const { data: questions } = await supabase
-      .from("questions")
-      .select("*, choices(*)")
-      .eq("quiz_id", attempt.quiz_id)
-      .order("order");
+    // Détail des questions : modèle moderne quiz_question_bank → question_bank
+    // (le quiz_runner stocke la réponse dans attempt.answers indexée par id de
+    // question). Fallback legacy `questions`/`choices` pour les anciens quiz.
+    const [{ data: bankLinks }, { data: qrRows }] = await Promise.all([
+      supabase
+        .from("quiz_question_bank")
+        .select(
+          "display_order, question:question_bank(id, type, statement, choices, explanation, max_score)"
+        )
+        .eq("quiz_id", attempt.quiz_id)
+        .order("display_order"),
+      supabase
+        .from("qr_responses")
+        .select(
+          "question_id, student_answer, trainer_score, max_score, trainer_comment"
+        )
+        .eq("attempt_id", attemptId),
+    ]);
+    let resolvedQuestions: any[] = (bankLinks ?? [])
+      .map((l: any) =>
+        l.question ? { ...l.question, display_order: l.display_order ?? 0 } : null
+      )
+      .filter(Boolean);
+    if (resolvedQuestions.length === 0) {
+      const { data: legacy } = await supabase
+        .from("questions")
+        .select("id, statement, explanation, order, choices(*)")
+        .eq("quiz_id", attempt.quiz_id)
+        .order("order");
+      resolvedQuestions = (legacy ?? []).map((q: any) => ({
+        id: q.id,
+        type: "qcm",
+        statement: q.statement,
+        explanation: q.explanation,
+        display_order: q.order ?? 0,
+        choices: (q.choices ?? [])
+          .slice()
+          .sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0))
+          .map((c: any) => ({
+            id: c.id,
+            label: c.label,
+            is_correct: c.is_correct,
+          })),
+      }));
+    }
+    const qrByQuestion: Record<string, any> = {};
+    for (const r of (qrRows ?? []) as any[]) qrByQuestion[r.question_id] = r;
     element = AttemptReport({
       attempt,
-      questions: (questions ?? []) as any[],
+      questions: resolvedQuestions,
+      qrByQuestion,
       now,
     });
     const safe = (attempt.profiles?.full_name || attempt.profiles?.email || "etudiant")
