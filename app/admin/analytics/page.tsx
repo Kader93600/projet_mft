@@ -136,7 +136,9 @@ export default async function AdminAnalytics({
       .limit(10),
     supabase
       .from("quiz_attempts")
-      .select("*, profiles(id, full_name, email), quizzes(title)")
+      .select(
+        "*, profiles!quiz_attempts_user_id_fkey(id, full_name, email), quizzes(title)"
+      )
       .order("finished_at", { ascending: false })
       .limit(50),
     supabase.from("quizzes").select("id, title").order("title"),

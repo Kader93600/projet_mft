@@ -44,7 +44,7 @@ export default async function AdminHome() {
       .limit(5),
     supabase
       .from("quiz_attempts")
-      .select("id, percentage, passed, started_at, user_id, quiz_id, quizzes(title), profiles(full_name, email)")
+      .select("id, percentage, passed, started_at, user_id, quiz_id, quizzes(title), profiles!quiz_attempts_user_id_fkey(full_name, email)")
       .order("started_at", { ascending: false })
       .limit(6),
     supabase.from("quiz_attempts").select("percentage, started_at"),

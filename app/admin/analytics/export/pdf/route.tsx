@@ -566,11 +566,21 @@ export async function GET(req: NextRequest) {
   let filename = "rapport-gotrm.pdf";
 
   if (attemptId) {
-    const { data: attempt } = await supabase
+    // NB : quiz_attempts a 2 FK vers profiles (user_id + graded_by) → l'embed
+    // doit être désambiguïsé via le nom de contrainte, sinon PostgREST renvoie
+    // une erreur (masquée auparavant en « Tentative introuvable »).
+    const { data: attempt, error: attemptErr } = await supabase
       .from("quiz_attempts")
-      .select("*, profiles(id, full_name, email), quizzes(id, title, type, pass_threshold)")
+      .select(
+        "*, profiles!quiz_attempts_user_id_fkey(id, full_name, email), quizzes(id, title, type, pass_threshold)"
+      )
       .eq("id", attemptId)
       .single();
+    if (attemptErr)
+      return NextResponse.json(
+        { error: `Erreur lecture tentative: ${attemptErr.message}` },
+        { status: 500 }
+      );
     if (!attempt)
       return NextResponse.json({ error: "Tentative introuvable" }, { status: 404 });
     const { data: questions } = await supabase
@@ -610,7 +620,9 @@ export async function GET(req: NextRequest) {
   } else {
     const { data: attempts } = await supabase
       .from("quiz_attempts")
-      .select("*, profiles(full_name, email), quizzes(title, type)")
+      .select(
+        "*, profiles!quiz_attempts_user_id_fkey(full_name, email), quizzes(title, type)"
+      )
       .order("finished_at", { ascending: false })
       .limit(200);
     const list = (attempts ?? []) as any[];
