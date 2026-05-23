@@ -9,7 +9,7 @@ ALTER TABLE public.profiles
 
 -- 2. Consentements (cookies, analytics, etc.) -------------------------
 CREATE TABLE IF NOT EXISTS public.user_consents (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   kind text NOT NULL CHECK (kind IN (
     'essential','analytics','communications','newsletter'
@@ -30,7 +30,7 @@ CREATE POLICY consents_self ON public.user_consents
 
 -- 3. Demandes de suppression de compte -------------------------------
 CREATE TABLE IF NOT EXISTS public.deletion_requests (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   reason text,
   status text NOT NULL DEFAULT 'pending'
@@ -69,7 +69,7 @@ RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE a record;
 BEGIN
   FOR a IN SELECT id FROM public.profiles WHERE role = 'admin' LOOP
-    INSERT INTO public.notifications (user_id, kind, title, body, link_url)
+    INSERT INTO public.notifications (user_id, "type", title, body, link_url)
     VALUES (
       a.id,
       'deletion_request',
@@ -89,7 +89,7 @@ CREATE TRIGGER tg_deletion_notify
 
 -- 4. Journal d'accès aux données personnelles ------------------------
 CREATE TABLE IF NOT EXISTS public.data_access_log (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   actor_id uuid REFERENCES public.profiles(id) ON DELETE SET NULL,
   action text NOT NULL CHECK (action IN ('export','view','update','delete')),
