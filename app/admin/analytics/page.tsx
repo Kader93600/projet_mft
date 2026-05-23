@@ -39,6 +39,7 @@ import { HeatmapGrid } from "./heatmap-grid";
 import { FormationTrendsGrid } from "./formation-trends";
 import { UpcomingSessionsSection } from "./upcoming-sessions";
 import { PeriodFilter, KpiWithDelta } from "./period-filter";
+import { AnalyticsTabs } from "./analytics-tabs";
 import { PrintButton } from "./print-button";
 import Link from "next/link";
 import { Tv } from "lucide-react";
@@ -66,6 +67,17 @@ function fmtEuro(cents: number): string {
     currency: "EUR",
     maximumFractionDigits: 0,
   }).format((cents ?? 0) / 100);
+}
+
+// Code pays ISO 3166-1 alpha-2 → emoji drapeau (indicateurs régionaux).
+function flagEmoji(code: string): string {
+  const cc = (code ?? "").trim().toUpperCase();
+  if (!/^[A-Z]{2}$/.test(cc)) return "🏳️";
+  const A = 0x1f1e6; // 🇦
+  return String.fromCodePoint(
+    A + (cc.charCodeAt(0) - 65),
+    A + (cc.charCodeAt(1) - 65)
+  );
 }
 
 export default async function AdminAnalytics({
@@ -380,48 +392,50 @@ export default async function AdminAnalytics({
         </div>
       </header>
 
-      {/* ─────────── Section KPIs avec comparaison période (Lot 2) ─────────── */}
-      <section className="rounded-2xl border border-navy-100 bg-white dark:bg-white/[0.04] dark:border-white/10 p-4">
-        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-          <div>
-            <h2 className="font-display text-base font-semibold text-navy-900 dark:text-white inline-flex items-center gap-2">
-              <BarChart3 className="h-4 w-4 text-brand-700" />
-              Vue d'ensemble
-            </h2>
-            <p className="text-[11px] text-slate-500 dark:text-white/50 mt-0.5">
-              KPIs sur la période sélectionnée + comparaison vs période précédente
-            </p>
-          </div>
-          <PeriodFilter />
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <KpiWithDelta
-            label="Inscriptions stagiaire"
-            value={Number(pk.signups)}
-            previous={Number(pk.signups_prev)}
-            hint={`${periodDays} derniers jours`}
-          />
-          <KpiWithDelta
-            label="Tentatives quiz"
-            value={Number(pk.quiz_attempts)}
-            previous={Number(pk.quiz_attempts_prev)}
-            hint={`${periodDays} derniers jours`}
-          />
-          <KpiWithDelta
-            label="Paiements"
-            value={Number(pk.payments)}
-            previous={Number(pk.payments_prev)}
-            hint={`${periodDays} derniers jours`}
-          />
-          <KpiWithDelta
-            label="CA encaissé"
-            value={Number(pk.revenue_cents)}
-            previous={Number(pk.revenue_cents_prev)}
-            format="euro"
-            hint={`${periodDays} derniers jours`}
-          />
-        </div>
-      </section>
+      {/* ─────────── Onglets thématiques (page allégée) ─────────── */}
+      <AnalyticsTabs
+        filter={<PeriodFilter />}
+        overview={
+          <>
+            {/* Indicateurs clés sur la période */}
+            <section className="rounded-2xl border border-navy-100 bg-white dark:bg-white/[0.04] dark:border-white/10 p-4">
+              <div className="mb-3">
+                <h2 className="font-display text-base font-semibold text-navy-900 dark:text-white inline-flex items-center gap-2">
+                  <BarChart3 className="h-4 w-4 text-brand-700" />
+                  Indicateurs clés
+                </h2>
+                <p className="text-[11px] text-slate-500 dark:text-white/50 mt-0.5">
+                  KPIs sur la période sélectionnée + comparaison vs période précédente
+                </p>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <KpiWithDelta
+                  label="Inscriptions stagiaire"
+                  value={Number(pk.signups)}
+                  previous={Number(pk.signups_prev)}
+                  hint={`${periodDays} derniers jours`}
+                />
+                <KpiWithDelta
+                  label="Tentatives quiz"
+                  value={Number(pk.quiz_attempts)}
+                  previous={Number(pk.quiz_attempts_prev)}
+                  hint={`${periodDays} derniers jours`}
+                />
+                <KpiWithDelta
+                  label="Paiements"
+                  value={Number(pk.payments)}
+                  previous={Number(pk.payments_prev)}
+                  hint={`${periodDays} derniers jours`}
+                />
+                <KpiWithDelta
+                  label="CA encaissé"
+                  value={Number(pk.revenue_cents)}
+                  previous={Number(pk.revenue_cents_prev)}
+                  format="euro"
+                  hint={`${periodDays} derniers jours`}
+                />
+              </div>
+            </section>
 
       {/* ─────────── Synthèse intelligente & alertes ─────────── */}
       <section className="rounded-2xl border border-navy-100 dark:border-white/10 bg-gradient-to-br from-brand-50/60 to-white dark:from-white/[0.05] dark:to-transparent p-5">
@@ -481,8 +495,46 @@ export default async function AdminAnalytics({
         )}
       </section>
 
-      {/* ─────────── Section SITE VITRINE ─────────── */}
-      <section>
+            {/* Activité 30j + taux de complétion par formation */}
+            <section className="grid lg:grid-cols-2 gap-5">
+              <Card>
+                <CardBody>
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="font-display text-base font-semibold text-navy-900 dark:text-white">
+                        Activité — 30 derniers jours
+                      </h3>
+                      <p className="text-xs text-slate-500 dark:text-white/50 mt-0.5">
+                        Inscriptions, tentatives de quiz, paiements (par jour)
+                      </p>
+                    </div>
+                  </div>
+                  <TrendsChart data={(trends ?? []) as any[]} />
+                </CardBody>
+              </Card>
+
+              <Card>
+                <CardBody>
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="font-display text-base font-semibold text-navy-900 dark:text-white">
+                        Taux de complétion par formation
+                      </h3>
+                      <p className="text-xs text-slate-500 dark:text-white/50 mt-0.5">
+                        Leçons complétées / total leçons (inscriptions actives)
+                      </p>
+                    </div>
+                  </div>
+                  <CompletionBars data={(completion ?? []) as any[]} />
+                </CardBody>
+              </Card>
+            </section>
+          </>
+        }
+        vitrine={
+          <>
+            {/* Site vitrine */}
+            <section>
         <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
           <h2 className="font-display text-lg font-semibold text-navy-900 dark:text-white inline-flex items-center gap-2">
             <Globe className="h-4 w-4 text-brand-700" />
@@ -612,8 +664,11 @@ export default async function AdminAnalytics({
                     const pct = Math.round((count / maxCountry) * 100);
                     return (
                       <div key={country} className="flex items-center gap-3">
-                        <div className="w-16 shrink-0 text-sm text-navy-900 dark:text-white/90 uppercase">
-                          {country}
+                        <div className="w-20 shrink-0 text-sm text-navy-900 dark:text-white/90 inline-flex items-center gap-1.5">
+                          <span className="text-base leading-none" aria-hidden>
+                            {flagEmoji(country)}
+                          </span>
+                          <span className="uppercase">{country}</span>
                         </div>
                         <div className="flex-1 h-2.5 rounded-full bg-navy-50 dark:bg-white/10 overflow-hidden">
                           <div
@@ -647,9 +702,12 @@ export default async function AdminAnalytics({
           </Card>
         </div>
       </section>
-
-      {/* ─────────── Section ENGAGEMENT (Pédagogie) ─────────── */}
-      <section>
+          </>
+        }
+        pedagogie={
+          <>
+            {/* Pédagogie */}
+            <section>
         <h2 className="font-display text-lg font-semibold text-navy-900 dark:text-white mb-3 inline-flex items-center gap-2">
           <GraduationCap className="h-4 w-4 text-signal-700" />
           Pédagogie
@@ -693,144 +751,6 @@ export default async function AdminAnalytics({
         </div>
       </section>
 
-      {/* ─────────── Section BUSINESS ─────────── */}
-      <section>
-        <h2 className="font-display text-lg font-semibold text-navy-900 dark:text-white mb-3 inline-flex items-center gap-2">
-          <Banknote className="h-4 w-4 text-gold-700" />
-          Business
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-          <Kpi
-            icon={Banknote}
-            label="CA 30 jours"
-            value={fmtEuro(k.revenue_30d_cents)}
-            hint="Encaissements"
-            tone="gold"
-          />
-          <Kpi
-            icon={UserPlus}
-            label="Nouveaux stagiaires"
-            value={String(k.new_users_7d)}
-            hint="7 derniers jours"
-            tone="signal"
-          />
-          <Kpi
-            icon={BarChart3}
-            label="Inscriptions actives"
-            value={String(k.active_enrollments)}
-            hint="En cours"
-            tone="navy"
-          />
-          <Kpi
-            icon={Calendar}
-            label="Sessions live"
-            value={String(k.live_sessions_scheduled)}
-            hint={`${k.live_sessions_completed_30d} clôturées 30j`}
-            tone="navy"
-          />
-          <Kpi
-            icon={Sparkles}
-            label="Copies à corriger"
-            value={String(k.pending_corrections)}
-            hint="Formateurs"
-            tone={k.pending_corrections > 0 ? "gold" : "slate"}
-            href="/formateur/corrections"
-          />
-        </div>
-
-        {/* Packs achetés (Initial / Medium / Premium) */}
-        <div className="mt-4">
-          <div className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-white/50 font-semibold mb-2">
-            Packs achetés
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {(["initial", "medium", "premium"] as const).map((p) => {
-              const agg = packAgg[p];
-              const label =
-                p === "initial" ? "Initial" : p === "medium" ? "Medium" : "Premium";
-              return (
-                <div
-                  key={p}
-                  className="rounded-2xl border border-navy-100 bg-white dark:bg-white/[0.04] dark:border-white/10 p-4 transition-[transform,box-shadow] duration-200 ease-premium hover:-translate-y-0.5 hover:shadow-raised motion-reduce:transition-none motion-reduce:hover:translate-y-0"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-sm font-semibold text-navy-900 dark:text-white">
-                      Pack {label}
-                    </span>
-                    <Badge
-                      tone={p === "premium" ? "gold" : p === "medium" ? "navy" : "slate"}
-                      size="sm"
-                    >
-                      {agg.count} vente{agg.count > 1 ? "s" : ""}
-                    </Badge>
-                  </div>
-                  <div className="mt-2 font-display text-2xl font-semibold text-navy-950 dark:text-white">
-                    {fmtEuro(agg.revenue)}
-                  </div>
-                  <div className="text-[11px] text-slate-500 dark:text-white/40">
-                    CA cumulé
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Leads (CRM) */}
-        <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3">
-          <Kpi
-            icon={UserPlus}
-            label="Leads générés"
-            value={String(leadsTotal ?? 0)}
-            hint="Total CRM"
-            tone="navy"
-            href="/admin/crm"
-          />
-          <Kpi
-            icon={TrendingUp}
-            label="Conversion leads"
-            value={`${leadsConvPct}%`}
-            hint="Leads → inscrits"
-            tone={leadsConvPct >= 20 ? "signal" : "gold"}
-          />
-        </div>
-      </section>
-
-      {/* ─────────── Graphique trends 30j ─────────── */}
-      <section className="grid lg:grid-cols-2 gap-5">
-        <Card>
-          <CardBody>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="font-display text-base font-semibold text-navy-900 dark:text-white">
-                  Activité — 30 derniers jours
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-white/50 mt-0.5">
-                  Inscriptions, tentatives de quiz, paiements (par jour)
-                </p>
-              </div>
-            </div>
-            <TrendsChart data={(trends ?? []) as any[]} />
-          </CardBody>
-        </Card>
-
-        <Card>
-          <CardBody>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="font-display text-base font-semibold text-navy-900 dark:text-white">
-                  Taux de complétion par formation
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-white/50 mt-0.5">
-                  Leçons complétées / total leçons (inscriptions actives)
-                </p>
-              </div>
-            </div>
-            <CompletionBars data={(completion ?? []) as any[]} />
-          </CardBody>
-        </Card>
-      </section>
-
       {/* ─────────── Section Qualiopi / RNCP ─────────── */}
       <QualiopiSection data={(qualiopi as any) ?? null} />
 
@@ -839,9 +759,6 @@ export default async function AdminAnalytics({
         <AtRiskSection rows={(atRisk ?? []) as any[]} />
         <TopStudentsSection rows={(topStudents ?? []) as any[]} />
       </section>
-
-      {/* ─────────── CA par formation × pack ─────────── */}
-      <RevenueMatrixSection rows={(revenueMatrix ?? []) as any[]} />
 
       {/* ─────────── Quiz à difficulté anormale ─────────── */}
       <QuizOutliersSection rows={(quizOutliers ?? []) as any[]} />
@@ -1012,6 +929,117 @@ export default async function AdminAnalytics({
           </div>
         </Card>
       </section>
+          </>
+        }
+        business={
+          <>
+            {/* Business */}
+            <section>
+        <h2 className="font-display text-lg font-semibold text-navy-900 dark:text-white mb-3 inline-flex items-center gap-2">
+          <Banknote className="h-4 w-4 text-gold-700" />
+          Business
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          <Kpi
+            icon={Banknote}
+            label="CA 30 jours"
+            value={fmtEuro(k.revenue_30d_cents)}
+            hint="Encaissements"
+            tone="gold"
+          />
+          <Kpi
+            icon={UserPlus}
+            label="Nouveaux stagiaires"
+            value={String(k.new_users_7d)}
+            hint="7 derniers jours"
+            tone="signal"
+          />
+          <Kpi
+            icon={BarChart3}
+            label="Inscriptions actives"
+            value={String(k.active_enrollments)}
+            hint="En cours"
+            tone="navy"
+          />
+          <Kpi
+            icon={Calendar}
+            label="Sessions live"
+            value={String(k.live_sessions_scheduled)}
+            hint={`${k.live_sessions_completed_30d} clôturées 30j`}
+            tone="navy"
+          />
+          <Kpi
+            icon={Sparkles}
+            label="Copies à corriger"
+            value={String(k.pending_corrections)}
+            hint="Formateurs"
+            tone={k.pending_corrections > 0 ? "gold" : "slate"}
+            href="/formateur/corrections"
+          />
+        </div>
+
+        {/* Packs achetés (Initial / Medium / Premium) */}
+        <div className="mt-4">
+          <div className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-white/50 font-semibold mb-2">
+            Packs achetés
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {(["initial", "medium", "premium"] as const).map((p) => {
+              const agg = packAgg[p];
+              const label =
+                p === "initial" ? "Initial" : p === "medium" ? "Medium" : "Premium";
+              return (
+                <div
+                  key={p}
+                  className="rounded-2xl border border-navy-100 bg-white dark:bg-white/[0.04] dark:border-white/10 p-4 transition-[transform,box-shadow] duration-200 ease-premium hover:-translate-y-0.5 hover:shadow-raised motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-semibold text-navy-900 dark:text-white">
+                      Pack {label}
+                    </span>
+                    <Badge
+                      tone={p === "premium" ? "gold" : p === "medium" ? "navy" : "slate"}
+                      size="sm"
+                    >
+                      {agg.count} vente{agg.count > 1 ? "s" : ""}
+                    </Badge>
+                  </div>
+                  <div className="mt-2 font-display text-2xl font-semibold text-navy-950 dark:text-white">
+                    {fmtEuro(agg.revenue)}
+                  </div>
+                  <div className="text-[11px] text-slate-500 dark:text-white/40">
+                    CA cumulé
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Leads (CRM) */}
+        <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Kpi
+            icon={UserPlus}
+            label="Leads générés"
+            value={String(leadsTotal ?? 0)}
+            hint="Total CRM"
+            tone="navy"
+            href="/admin/crm"
+          />
+          <Kpi
+            icon={TrendingUp}
+            label="Conversion leads"
+            value={`${leadsConvPct}%`}
+            hint="Leads → inscrits"
+            tone={leadsConvPct >= 20 ? "signal" : "gold"}
+          />
+        </div>
+      </section>
+            {/* CA par formation × pack */}
+            <RevenueMatrixSection rows={(revenueMatrix ?? []) as any[]} />
+          </>
+        }
+      />
     </div>
   );
 }
