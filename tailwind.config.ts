@@ -215,6 +215,24 @@ const config: Config = {
           "0%": { transform: "scaleX(0)" },
           "100%": { transform: "scaleX(var(--p, 1))" },
         },
+        // Secousse 3D « non » (rotateY) — feedback d'échec de connexion.
+        "flip-shake": {
+          "0%, 100%": { transform: "rotateY(0deg)" },
+          "22%": { transform: "rotateY(-13deg)" },
+          "44%": { transform: "rotateY(10deg)" },
+          "66%": { transform: "rotateY(-6deg)" },
+          "88%": { transform: "rotateY(3deg)" },
+        },
+        // Tracé progressif d'une coche SVG (succès).
+        "check-draw": {
+          from: { strokeDashoffset: "40" },
+          to: { strokeDashoffset: "0" },
+        },
+        // Onde unique autour de la coche.
+        "ping-once": {
+          "0%": { transform: "scale(0.85)", opacity: "0.45" },
+          "100%": { transform: "scale(1.9)", opacity: "0" },
+        },
       },
       animation: {
         "fade-up": "fade-up 0.5s ease-out",
@@ -231,6 +249,10 @@ const config: Config = {
           "badge-unlock 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both",
         "progress-fill":
           "progress-fill 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both",
+        "flip-shake": "flip-shake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97)",
+        "check-draw":
+          "check-draw 0.45s cubic-bezier(0.65, 0, 0.35, 1) 0.5s forwards",
+        "ping-once": "ping-once 0.8s ease-out 0.55s forwards",
       },
       // Courbes d'easing nommées (cohérence motion site-wide, cf. DESIGN.md).
       // `ease-premium` est la courbe de référence pour transitions UI/premium.
