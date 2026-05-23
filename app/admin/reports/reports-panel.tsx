@@ -2,6 +2,7 @@
 import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { DateField } from "@/components/ui/date-field";
 import { Button } from "@/components/ui/button";
 import { initials } from "@/lib/utils";
 import { FileText, Award, Search, ClipboardCheck, BadgeCheck } from "lucide-react";
@@ -60,19 +61,11 @@ export function ReportsPanel({ users }: { users: User[] }) {
         </div>
         <label className="block">
           <span className="block text-xs font-medium text-slate-600 mb-1">Du</span>
-          <Input
-            type="date"
-            value={from}
-            onChange={(e) => setFrom(e.target.value)}
-          />
+          <DateField value={from} onChange={setFrom} />
         </label>
         <label className="block">
           <span className="block text-xs font-medium text-slate-600 mb-1">Au</span>
-          <Input
-            type="date"
-            value={to}
-            onChange={(e) => setTo(e.target.value)}
-          />
+          <DateField value={to} onChange={setTo} />
         </label>
       </div>
 

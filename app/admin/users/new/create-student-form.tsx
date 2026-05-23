@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
+import { DateField } from "@/components/ui/date-field";
 import { Select } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toast";
 import { createStudent } from "../actions";
@@ -458,10 +459,9 @@ export function CreateStudentForm({
             />
           </Field>
           <Field label="Date de naissance">
-            <Input
-              type="date"
+            <DateField
               value={f.date_naissance}
-              onChange={up("date_naissance")}
+              onChange={(v) => setF((s) => ({ ...s, date_naissance: v }))}
             />
           </Field>
           <Field label="Adresse" className="md:col-span-2">
@@ -552,10 +552,9 @@ export function CreateStudentForm({
             />
           </Field>
           <Field label="Date d'entrée">
-            <Input
-              type="date"
+            <DateField
               value={f.entry_date}
-              onChange={up("entry_date")}
+              onChange={(v) => setF((s) => ({ ...s, entry_date: v }))}
             />
           </Field>
           <Field label="Référent pédagogique" hint="Admin chargé du suivi">

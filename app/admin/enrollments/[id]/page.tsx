@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
+import { DateField } from "@/components/ui/date-field";
 import { Textarea } from "@/components/ui/textarea";
 import {
   upsertEnrollment,
@@ -188,11 +189,11 @@ export default async function EnrollmentEditorPage({
             />
             <div>
               <Label htmlFor="start_date">Début</Label>
-              <Input id="start_date" name="start_date" type="date" defaultValue={e.start_date ?? ""} />
+              <DateField id="start_date" name="start_date" defaultValue={e.start_date ?? ""} />
             </div>
             <div>
               <Label htmlFor="end_date">Fin</Label>
-              <Input id="end_date" name="end_date" type="date" defaultValue={e.end_date ?? ""} />
+              <DateField id="end_date" name="end_date" defaultValue={e.end_date ?? ""} />
             </div>
             <div className="md:col-span-2">
               <Label htmlFor="contract_url">URL contrat</Label>
@@ -241,7 +242,7 @@ export default async function EnrollmentEditorPage({
                   <input type="hidden" name="enrollment_id" value={e.id} />
                   <div>
                     <label className="text-[11px] font-semibold text-slate-500">Échéance</label>
-                    <Input type="date" name="due_date" defaultValue={p.due_date} />
+                    <DateField name="due_date" defaultValue={p.due_date} />
                   </div>
                   <div>
                     <label className="text-[11px] font-semibold text-slate-500">Montant €</label>
@@ -254,7 +255,7 @@ export default async function EnrollmentEditorPage({
                   </div>
                   <div>
                     <label className="text-[11px] font-semibold text-slate-500">Payé le</label>
-                    <Input type="date" name="paid_at" defaultValue={p.paid_at ? String(p.paid_at).slice(0,10) : ""} />
+                    <DateField name="paid_at" defaultValue={p.paid_at ? String(p.paid_at).slice(0,10) : ""} />
                   </div>
                   <div>
                     <label className="text-[11px] font-semibold text-slate-500">Payé €</label>
@@ -298,7 +299,7 @@ export default async function EnrollmentEditorPage({
                 <input type="hidden" name="enrollment_id" value={e.id} />
                 <div>
                   <label className="text-[11px] font-semibold text-slate-500">Échéance</label>
-                  <Input type="date" name="due_date" required />
+                  <DateField name="due_date" required />
                 </div>
                 <div>
                   <label className="text-[11px] font-semibold text-slate-500">Montant €</label>
@@ -306,7 +307,7 @@ export default async function EnrollmentEditorPage({
                 </div>
                 <div>
                   <label className="text-[11px] font-semibold text-slate-500">Payé le</label>
-                  <Input type="date" name="paid_at" />
+                  <DateField name="paid_at" />
                 </div>
                 <div>
                   <label className="text-[11px] font-semibold text-slate-500">Payé €</label>

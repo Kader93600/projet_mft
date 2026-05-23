@@ -10,6 +10,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { sendQuote } from "../actions";
+import { DateField } from "@/components/ui/date-field";
 
 export interface QuoteDefaults {
   clientEmail: string;
@@ -264,11 +265,9 @@ export function QuoteDialog({
 
                 <div>
                   <label className={labelCls}>Début prévu (optionnel)</label>
-                  <input
-                    type="date"
-                    className={inputCls}
+                  <DateField
                     value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
+                    onChange={setStartDate}
                     disabled={pending}
                   />
                 </div>
