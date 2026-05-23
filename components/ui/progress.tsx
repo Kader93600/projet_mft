@@ -88,11 +88,15 @@ export function RadialProgress({
   size = 96,
   strokeWidth = 8,
   label,
+  progressClassName = "stroke-navy-900",
+  trackClassName = "stroke-navy-100",
 }: {
   value: number;
   size?: number;
   strokeWidth?: number;
   label?: React.ReactNode;
+  progressClassName?: string;
+  trackClassName?: string;
 }) {
   const v = Math.min(100, Math.max(0, value));
   const radius = (size - strokeWidth) / 2;
@@ -169,14 +173,14 @@ export function RadialProgress({
           cy={size / 2}
           r={radius}
           strokeWidth={strokeWidth}
-          className="stroke-navy-100 fill-none"
+          className={`${trackClassName} fill-none`}
         />
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           strokeWidth={strokeWidth}
-          className="stroke-navy-900 fill-none"
+          className={`${progressClassName} fill-none`}
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={offset}

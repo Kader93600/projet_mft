@@ -4,13 +4,13 @@ import { getTranslations, getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ProgressBar, RadialProgress } from "@/components/ui/progress";
+import { ProgressBar } from "@/components/ui/progress";
+import { ResultCelebration } from "@/components/celebration/result-celebration";
 import {
   ArrowLeft,
   Clock,
   CheckCircle2,
   XCircle,
-  AlertTriangle,
   Sparkles,
   Hourglass,
   MessageSquare,
@@ -23,7 +23,7 @@ import {
   BookOpen,
   ArrowRight,
 } from "lucide-react";
-import { cn, scoreColor } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { FormationBadge } from "@/components/formation/formation-badge";
 import { FormationStripe } from "@/components/formation/formation-stripe";
 import { resolveFormationFromQuiz } from "@/lib/formation-resolver";
@@ -312,57 +312,12 @@ export default async function QuizResultsPage({
         {/* === Cas 2 : SCORE PRÊT (graded ou completed sans QR) === */}
         {isGraded && (
           <>
-            {/* Hero score animé */}
-            <Card className="overflow-hidden relative">
-              <div
-                className="absolute inset-0 pointer-events-none opacity-40"
-                style={{
-                  background: finalPassed
-                    ? "radial-gradient(circle at 50% 0%, rgba(159,226,32,0.18) 0%, transparent 60%)"
-                    : "radial-gradient(circle at 50% 0%, rgba(244,114,182,0.12) 0%, transparent 60%)",
-                }}
-                aria-hidden
-              />
-              <CardBody className="text-center py-10 relative">
-                <div className="flex justify-center animate-in zoom-in duration-700">
-                  <RadialProgress
-                    value={finalScore}
-                    size={160}
-                    strokeWidth={14}
-                    label={
-                      <div className="text-center">
-                        <div
-                          className={cn(
-                            "font-display text-5xl font-semibold",
-                            scoreColor(finalScore)
-                          )}
-                        >
-                          {Math.round(finalScore)}
-                          <span className="text-2xl">%</span>
-                        </div>
-                      </div>
-                    }
-                  />
-                </div>
-                <div className="mt-6 font-display text-2xl font-semibold text-navy-950">
-                  {finalPassed
-                    ? quiz?.is_mock_exam
-                      ? t("passedMockExam")
-                      : t("passedExercise")
-                    : t("keepGoing")}
-                </div>
-                <div className="mt-3">
-                  {finalPassed ? (
-                    <Badge tone="success" size="md" className="mx-auto">
-                      <CheckCircle2 className="h-3 w-3" /> {t("thresholdReached")}
-                    </Badge>
-                  ) : (
-                    <Badge tone="rose" size="md" className="mx-auto">
-                      <AlertTriangle className="h-3 w-3" />{" "}
-                      {t("threshold", { pct: passThreshold })}
-                    </Badge>
-                  )}
-                </div>
+            {/* Hero — célébration émotionnelle selon le palier de score */}
+            <ResultCelebration score={finalScore} passed={finalPassed} />
+
+            {/* Récapitulatif détaillé */}
+            <Card>
+              <CardBody>
 
                 {/* Stats rapides */}
                 <div className="mt-7 grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-2xl mx-auto">
