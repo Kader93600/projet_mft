@@ -1,9 +1,19 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { renderMarkdown } from "@/lib/markdown";
 import { getPendingDocuments } from "@/lib/onboarding-docs";
 import { PendingDocs } from "./pending-docs";
+import { DocumentUploader } from "./document-uploader";
+import { DeleteDocButton } from "./delete-doc-button";
+import {
+  reasonLabel,
+  fileKind,
+  formatBytes,
+  DOC_STATUS,
+  type FileKind,
+} from "@/lib/student-documents";
 import {
   FileSignature,
   Gavel,
@@ -12,7 +22,20 @@ import {
   Download,
   Target,
   ArrowRight,
+  FileText,
+  FileSpreadsheet,
+  Image as ImageIcon,
+  File as FileIcon,
+  Eye,
 } from "lucide-react";
+
+const KIND_ICON: Record<FileKind, { Icon: any; cls: string }> = {
+  pdf: { Icon: FileText, cls: "bg-rose-100 text-rose-600" },
+  word: { Icon: FileText, cls: "bg-sky-100 text-sky-700" },
+  excel: { Icon: FileSpreadsheet, cls: "bg-emerald-100 text-emerald-700" },
+  image: { Icon: ImageIcon, cls: "bg-violet-100 text-violet-700" },
+  other: { Icon: FileIcon, cls: "bg-slate-100 text-slate-600" },
+};
 
 export const dynamic = "force-dynamic";
 
@@ -40,20 +63,44 @@ export default async function MesDocumentsPage() {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const [{ data: rows }, { data: placement }] = await Promise.all([
-    supabase
-      .from("document_acceptances")
-      .select(
-        "id, accepted_at, document_version, document_type, onboarding_documents(id, title, content_md, type)"
-      )
-      .eq("user_id", user.id)
-      .order("accepted_at", { ascending: false }),
-    supabase
-      .from("placement_results")
-      .select("taken_at")
-      .eq("user_id", user.id)
-      .maybeSingle(),
-  ]);
+  const [{ data: rows }, { data: placement }, { data: myDocs }] =
+    await Promise.all([
+      supabase
+        .from("document_acceptances")
+        .select(
+          "id, accepted_at, document_version, document_type, onboarding_documents(id, title, content_md, type)"
+        )
+        .eq("user_id", user.id)
+        .order("accepted_at", { ascending: false }),
+      supabase
+        .from("placement_results")
+        .select("taken_at")
+        .eq("user_id", user.id)
+        .maybeSingle(),
+      supabase
+        .from("student_documents")
+        .select(
+          "id, title, reason, custom_reason, storage_path, file_name, mime_type, size_bytes, status, created_at"
+        )
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false }),
+    ]);
+
+  // URLs signées (1 h) pour consulter / télécharger les documents importés.
+  const docs = (myDocs ?? []) as any[];
+  const signedMap: Record<string, string> = {};
+  if (docs.length) {
+    const admin = createAdminClient();
+    const { data: signed } = await admin.storage
+      .from("student-documents")
+      .createSignedUrls(
+        docs.map((d) => d.storage_path),
+        60 * 60
+      );
+    (signed ?? []).forEach((s: any, i: number) => {
+      if (s?.signedUrl) signedMap[docs[i].storage_path] = s.signedUrl;
+    });
+  }
 
   const placementTakenAt = placement?.taken_at as string | undefined;
 
@@ -81,6 +128,94 @@ export default async function MesDocumentsPage() {
       {pending.length > 0 && (
         <PendingDocs docs={pending} fullName={profile?.full_name ?? ""} />
       )}
+
+      {/* ─── Documents importés par le stagiaire ─────────────────────── */}
+      <section className="space-y-4">
+        <div>
+          <h2 className="font-display text-xl font-semibold text-navy-900">
+            Mes documents importés
+          </h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Ajoutez vos justificatifs, attestations, rapports… Ils sont
+            transmis automatiquement à l'administration.
+          </p>
+        </div>
+
+        <DocumentUploader />
+
+        {docs.length > 0 ? (
+          <div className="grid gap-4 sm:grid-cols-2">
+            {docs.map((d) => {
+              const k = fileKind(d.file_name);
+              const KI = KIND_ICON[k];
+              const st =
+                DOC_STATUS[d.status as keyof typeof DOC_STATUS] ??
+                DOC_STATUS.recu;
+              const url = signedMap[d.storage_path];
+              return (
+                <Card
+                  key={d.id}
+                  className="transition-[transform,box-shadow] duration-200 ease-premium hover:-translate-y-0.5 hover:shadow-raised motion-reduce:hover:translate-y-0"
+                >
+                  <CardBody className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <span
+                        className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${KI.cls}`}
+                      >
+                        <KI.Icon className="h-5 w-5" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <h3 className="truncate font-semibold text-navy-900">
+                            {d.title}
+                          </h3>
+                          <Badge tone={st.tone as any} size="sm">
+                            {st.label}
+                          </Badge>
+                        </div>
+                        <p className="mt-0.5 text-xs text-slate-500">
+                          {reasonLabel(d.reason, d.custom_reason)} ·{" "}
+                          {k.toUpperCase()} · {formatBytes(d.size_bytes ?? 0)}
+                        </p>
+                        <p className="mt-0.5 text-xs text-slate-400">
+                          Importé le {fmt(d.created_at)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {url && (
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 rounded-lg border border-navy-200 bg-white px-2.5 py-1.5 text-xs font-medium text-navy-800 transition-colors hover:bg-navy-50"
+                        >
+                          <Eye className="h-3.5 w-3.5" /> Voir
+                        </a>
+                      )}
+                      {url && (
+                        <a
+                          href={`${url}&download=${encodeURIComponent(d.file_name)}`}
+                          className="inline-flex items-center gap-1 rounded-lg border border-navy-200 bg-white px-2.5 py-1.5 text-xs font-medium text-navy-800 transition-colors hover:bg-navy-50"
+                        >
+                          <Download className="h-3.5 w-3.5" /> Télécharger
+                        </a>
+                      )}
+                      <DeleteDocButton id={d.id} />
+                    </div>
+                  </CardBody>
+                </Card>
+              );
+            })}
+          </div>
+        ) : (
+          <Card>
+            <CardBody className="py-8 text-center text-sm text-slate-500">
+              Aucun document importé pour le moment.
+            </CardBody>
+          </Card>
+        )}
+      </section>
 
       <div className="grid md:grid-cols-2 gap-4">
         <a

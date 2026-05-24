@@ -649,6 +649,59 @@ export function newLeadEmail(input: {
 }
 
 /**
+ * Notification admin : un stagiaire a importé un document dans son espace.
+ */
+export function newStudentDocumentEmail(input: {
+  studentName: string;
+  formation?: string | null;
+  docType: string;
+  title: string;
+  dateTime: string;
+  fileName: string;
+  link?: string | null;
+  adminUrl: string;
+}) {
+  const row = (label: string, value: string) =>
+    `<tr><td style="padding: 8px 14px 8px 0; color: ${COLORS.slate500}; font-size: 13.5px; vertical-align: top; width: 110px;">${label}</td><td style="padding: 8px 0; font-size: 14.5px; color: ${COLORS.slate900}; font-weight: 600;">${value}</td></tr>`;
+  const rows = [
+    row("Stagiaire", escapeHtml(input.studentName)),
+    input.formation ? row("Formation", escapeHtml(input.formation)) : "",
+    row("Motif", escapeHtml(input.docType)),
+    row("Titre", escapeHtml(input.title)),
+    row("Fichier", escapeHtml(input.fileName)),
+    row("Reçu le", escapeHtml(input.dateTime)),
+  ].join("");
+  const tableBlock = `
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="mft-card" style="margin: 20px 0; background-color: ${COLORS.slate100}; border: 1px solid ${COLORS.border}; border-radius: 12px;">
+    <tr><td style="padding: 14px 18px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">${rows}</table>
+    </td></tr>
+  </table>`;
+  const subject = `Nouveau document reçu - ${input.studentName}${
+    input.formation ? ` - ${input.formation}` : ""
+  } - ${input.docType} - ${input.title}`;
+  return {
+    subject,
+    html: emailLayout(
+      "Nouveau document reçu",
+      `
+      <p><strong>${escapeHtml(
+        input.studentName
+      )}</strong> vient d'importer un document dans son espace personnel.</p>
+      ${tableBlock}
+      ${ctaButton("Gérer les documents", input.adminUrl, "primary")}
+      ${
+        input.link
+          ? `<p style="font-size: 13px; color: ${COLORS.slate500};">Accès direct (lien temporaire) : <a href="${input.link}" style="color: ${COLORS.navy}; font-weight: 600;">ouvrir le document</a></p>`
+          : ""
+      }
+      `,
+      { preheader: subject }
+    ),
+  };
+}
+
+/**
  * Rappel d'échéance de paiement (B2C / paiement en plusieurs fois).
  */
 export function paymentReminderEmail(input: {
