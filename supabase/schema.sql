@@ -1,6 +1,6 @@
 -- =====================================================================
 -- supabase/schema.sql — BASELINE CONSOLIDÉ (source de vérité des tables)
--- Généré le 2026-05-23 par scripts/introspect-schema.mjs
+-- Généré le 2026-05-24 par scripts/introspect-schema.mjs
 -- via introspection du schéma public déployé (PostgREST OpenAPI).
 --
 -- ⚠️  Régénérer avec :  node scripts/introspect-schema.mjs
@@ -13,7 +13,7 @@
 --   • FONCTIONS / TRIGGERS / RLS / INDEX / CHECK : voir les migrations
 --     horodatées dans supabase/*.sql (index : supabase/MIGRATIONS_INDEX.md).
 --
--- Tables : 94
+-- Tables : 95
 -- =====================================================================
 
 create extension if not exists "uuid-ossp";
@@ -1206,6 +1206,25 @@ create table if not exists public.session_enrollments (
   cancelled_at timestamp with time zone,
   cancellation_reason text,
   primary key (session_id, user_id)
+);
+
+-- ─────────────────────────────────────────────────────────────────────
+create table if not exists public.student_documents (
+  id uuid default gen_random_uuid(),
+  user_id uuid not null,  -- FK → profiles.id
+  formation_id uuid,  -- FK → formations.id
+  title text not null,
+  reason text not null,
+  custom_reason text,
+  storage_path text not null,
+  file_name text not null,
+  mime_type text,
+  size_bytes integer,
+  status text default 'recu' not null,
+  admin_note text,
+  created_at timestamp with time zone default now() not null,
+  updated_at timestamp with time zone default now() not null,
+  primary key (id)
 );
 
 -- ─────────────────────────────────────────────────────────────────────

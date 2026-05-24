@@ -1,6 +1,6 @@
 // =====================================================================
 // lib/database.types.ts — Types du schéma public Supabase
-// Généré le 2026-05-23 par scripts/introspect-schema.mjs (introspection live).
+// Généré le 2026-05-24 par scripts/introspect-schema.mjs (introspection live).
 // NE PAS éditer à la main — régénérer avec : node scripts/introspect-schema.mjs
 // =====================================================================
 
@@ -4004,6 +4004,72 @@ export interface Database {
             columns: ["user_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      student_documents: {
+        Row: {
+          id: string;
+          user_id: string;
+          formation_id: string | null;
+          title: string;
+          reason: string;
+          custom_reason: string | null;
+          storage_path: string;
+          file_name: string;
+          mime_type: string | null;
+          size_bytes: number | null;
+          status: string;
+          admin_note: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          formation_id?: string | null;
+          title: string;
+          reason: string;
+          custom_reason?: string | null;
+          storage_path: string;
+          file_name: string;
+          mime_type?: string | null;
+          size_bytes?: number | null;
+          status?: string;
+          admin_note?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          formation_id?: string | null;
+          title?: string;
+          reason?: string;
+          custom_reason?: string | null;
+          storage_path?: string;
+          file_name?: string;
+          mime_type?: string | null;
+          size_bytes?: number | null;
+          status?: string;
+          admin_note?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "student_documents_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "student_documents_formation_id_fkey";
+            columns: ["formation_id"];
+            isOneToOne: false;
+            referencedRelation: "formations";
             referencedColumns: ["id"];
           },
         ];
