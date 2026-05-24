@@ -11,7 +11,7 @@ import { ProgressBar, RadialProgress } from "@/components/ui/progress";
 import {
   Check, X, Clock, Target, Lightbulb, ArrowRight, ArrowLeft,
   AlertTriangle, Maximize, ShieldAlert, Lock, Flag, Grid3X3,
-  CheckCircle2, Paperclip, ExternalLink, FileText, CloudOff,
+  CheckCircle2, Paperclip, ExternalLink, FileText, CloudOff, Loader2,
 } from "lucide-react";
 import { cn, scoreColor } from "@/lib/utils";
 import { FormationBadge } from "@/components/formation/formation-badge";
@@ -804,7 +804,29 @@ export function QuizRunner({
     );
   }
 
-  // ----- Résultats -----
+  // ----- Redirection vers la page de résultats (cas online) -----
+  // La page /quiz/results/[id] affiche la célébration animée par palier de
+  // score. On évite donc de flasher ici un écran de résultat statique avant
+  // la redirection : un simple état « copie enregistrée » suffit.
+  if (finished && submittedAttemptIdRef.current) {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <Card>
+          <CardBody className="text-center py-16">
+            <Loader2 className="mx-auto h-8 w-8 animate-spin text-brand-600 motion-reduce:animate-none" />
+            <p className="mt-4 font-display text-lg font-semibold text-navy-900">
+              Copie enregistrée
+            </p>
+            <p className="mt-1 text-sm text-slate-500">
+              Affichage de tes résultats…
+            </p>
+          </CardBody>
+        </Card>
+      </div>
+    );
+  }
+
+  // ----- Résultats (fallback sans redirection : cas sans attemptId) -----
   if (finished && result) {
     const mode = quiz.show_explanations_mode ?? "always";
     const canShow = mode === "always" || (mode === "after_pass" && result.passed);
