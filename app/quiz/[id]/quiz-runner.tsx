@@ -575,7 +575,8 @@ export function QuizRunner({
       try { await document.exitFullscreen(); } catch {}
     }
     // Redirige vers la page résultats (gère les 3 états : completed/awaiting/graded)
-    router.push(`/quiz/results/${attemptId}`);
+    // ?celebrate=1 → la page affiche une fois les récompenses (badges/rang).
+    router.push(`/quiz/results/${attemptId}?celebrate=1`);
   }
 
   // ----- Landing -----

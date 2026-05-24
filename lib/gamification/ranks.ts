@@ -98,3 +98,14 @@ export function getRank(level: number): RankInfo {
 }
 
 export const RANKS_LIST = RANKS;
+
+/**
+ * Niveau à partir d'un total d'XP — miroir JS de la fonction SQL
+ * `public.xp_level()` (barème triangulaire : niveau N requiert T(N-1)*100 XP).
+ * Sert à reconstituer le niveau « avant » une tentative pour détecter un
+ * passage de rang.
+ */
+export function xpLevelFromTotal(total: number): number {
+  const t = Math.max(0, total || 0);
+  return Math.max(1, Math.floor((Math.sqrt(1 + (8 * t) / 100) - 1) / 2) + 1);
+}

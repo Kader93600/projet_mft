@@ -1,5 +1,19 @@
 import { describe, it, expect } from "vitest";
-import { getRank, RANKS_LIST } from "./ranks";
+import { getRank, RANKS_LIST, xpLevelFromTotal } from "./ranks";
+
+describe("xpLevelFromTotal", () => {
+  it("reproduit le barème triangulaire (T(N-1)*100)", () => {
+    expect(xpLevelFromTotal(0)).toBe(1);
+    expect(xpLevelFromTotal(99)).toBe(1);
+    expect(xpLevelFromTotal(100)).toBe(2);
+    expect(xpLevelFromTotal(299)).toBe(2);
+    expect(xpLevelFromTotal(300)).toBe(3);
+    expect(xpLevelFromTotal(600)).toBe(4);
+  });
+  it("borne les totaux négatifs", () => {
+    expect(xpLevelFromTotal(-50)).toBe(1);
+  });
+});
 
 describe("getRank", () => {
   it("mappe le niveau sur le bon rang", () => {

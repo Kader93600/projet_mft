@@ -6,6 +6,8 @@ import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ProgressBar } from "@/components/ui/progress";
 import { ResultCelebration } from "@/components/celebration/result-celebration";
+import { getRank, xpLevelFromTotal } from "@/lib/gamification/ranks";
+import { QuizRewards } from "./quiz-rewards";
 import {
   ArrowLeft,
   Clock,
@@ -68,8 +70,10 @@ interface ResolvedQuestion extends BankQuestion {
 
 export default async function QuizResultsPage({
   params,
+  searchParams,
 }: {
   params: { attemptId: string };
+  searchParams?: { celebrate?: string };
 }) {
   const t = await getTranslations("quizResults");
   const locale = await getLocale();
@@ -120,6 +124,64 @@ export default async function QuizResultsPage({
   const status = attempt.status ?? "completed";
   const isGraded = status === "graded" || status === "completed";
   const isAwaiting = status === "awaiting_review";
+
+  // ─── Récompenses « live » (badges débloqués + passage de rang) ──────
+  // Uniquement au retour direct de soumission (?celebrate=1) sur un quiz noté.
+  // Affichées une fois via <QuizRewards> (qui retire le param de l'URL).
+  // L'XP/les badges sont attribués en synchrone par les triggers à l'INSERT
+  // de la tentative ; on déduit le « avant » sans snapshot client.
+  let quizRewards:
+    | {
+        xpGained: number;
+        rankUp: { label: string; emoji: string } | null;
+        badges: any[];
+      }
+    | null = null;
+  if (isGraded && searchParams?.celebrate === "1" && attempt.finished_at) {
+    // Fenêtre tolérante au décalage d'horloge client/serveur.
+    const sinceIso = new Date(
+      Date.parse(attempt.finished_at) - 60_000
+    ).toISOString();
+    const [{ data: xpRows }, { data: gami }, { data: freshBadges }] =
+      await Promise.all([
+        supabase
+          .from("xp_events")
+          .select("points")
+          .eq("user_id", attempt.user_id)
+          .eq("ref_id", params.attemptId),
+        supabase
+          .from("user_gamification")
+          .select("total_xp, level")
+          .eq("user_id", attempt.user_id)
+          .maybeSingle(),
+        supabase
+          .from("user_badges")
+          .select("earned_at, badges(name, description, icon, tier)")
+          .eq("user_id", attempt.user_id)
+          .gte("earned_at", sinceIso)
+          .order("earned_at", { ascending: false })
+          .limit(5),
+      ]);
+    const xpGained = (xpRows ?? []).reduce(
+      (s: number, r: any) => s + (r.points ?? 0),
+      0
+    );
+    const totalXp = (gami as any)?.total_xp ?? 0;
+    const levelAfter = (gami as any)?.level ?? 1;
+    const levelBefore = xpLevelFromTotal(totalXp - xpGained);
+    const ra = getRank(levelAfter);
+    const rb = getRank(levelBefore);
+    const rankUp =
+      ra.index > rb.index
+        ? { label: ra.rank.label, emoji: ra.rank.emoji }
+        : null;
+    const badges = (freshBadges ?? [])
+      .map((r: any) => r.badges)
+      .filter(Boolean);
+    if (rankUp || badges.length > 0) {
+      quizRewards = { xpGained, rankUp, badges };
+    }
+  }
 
   // Résolution formation pour identification visuelle
   const formationSlug = await resolveFormationFromQuiz(attempt.quiz_id);
@@ -219,6 +281,14 @@ export default async function QuizResultsPage({
 
   return (
     <div className="max-w-3xl mx-auto pb-20">
+      {/* Récompenses débloquées par cette tentative (badge / rang) */}
+      {quizRewards && (
+        <QuizRewards
+          xpGained={quizRewards.xpGained}
+          rankUp={quizRewards.rankUp}
+          badges={quizRewards.badges}
+        />
+      )}
       {/* Stripe couleur formation en haut de page */}
       {formationSlug && <FormationStripe slug={formationSlug} />}
 
