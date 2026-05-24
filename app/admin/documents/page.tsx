@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isStaff } from "@/lib/permissions";
 import { redirect } from "next/navigation";
-import { FolderOpen } from "lucide-react";
+import { FolderOpen, Download } from "lucide-react";
 import {
   reasonLabel,
   fileKind,
@@ -98,6 +98,14 @@ export default async function AdminDocumentsPage({
     {} as Record<string, number>
   );
 
+  // Lien d'export CSV honorant les filtres courants.
+  const exportQs = new URLSearchParams(
+    Object.entries(searchParams ?? {}).filter(
+      ([, v]) => typeof v === "string" && v
+    ) as [string, string][]
+  ).toString();
+  const exportHref = `/admin/documents/export/csv${exportQs ? `?${exportQs}` : ""}`;
+
   return (
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
@@ -131,8 +139,18 @@ export default async function AdminDocumentsPage({
 
       <DocumentsFilters formations={(formations ?? []) as any[]} />
 
-      <div className="text-sm text-slate-500">
-        {docs.length} document{docs.length > 1 ? "s" : ""}
+      <div className="flex items-center justify-between gap-3">
+        <div className="text-sm text-slate-500">
+          {docs.length} document{docs.length > 1 ? "s" : ""}
+        </div>
+        {docs.length > 0 && (
+          <a
+            href={exportHref}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-navy-200 bg-white px-3 py-1.5 text-xs font-semibold text-navy-800 transition-colors hover:bg-navy-50"
+          >
+            <Download className="h-3.5 w-3.5" /> Export CSV
+          </a>
+        )}
       </div>
 
       {docs.length === 0 ? (

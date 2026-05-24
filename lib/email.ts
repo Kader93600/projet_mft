@@ -702,6 +702,54 @@ export function newStudentDocumentEmail(input: {
 }
 
 /**
+ * Notification stagiaire : statut de son document mis à jour (validé / refusé).
+ */
+export function documentStatusEmail(input: {
+  studentName: string;
+  title: string;
+  status: "valide" | "refuse";
+  adminNote?: string | null;
+  link: string;
+}) {
+  const validated = input.status === "valide";
+  const subject = validated
+    ? `Document validé — ${input.title}`
+    : `Document refusé — ${input.title}`;
+  return {
+    subject,
+    html: emailLayout(
+      validated ? "Document validé" : "Document refusé",
+      `
+      <p>Bonjour ${escapeHtml(input.studentName || "")},</p>
+      <p>Votre document <strong>« ${escapeHtml(
+        input.title
+      )} »</strong> a été <strong>${
+        validated ? "validé" : "refusé"
+      }</strong> par l'équipe pédagogique.</p>
+      ${
+        input.adminNote
+          ? infoCard(
+              `Remarque de l'équipe : ${escapeHtml(input.adminNote)}`,
+              validated ? "info" : "warning"
+            )
+          : ""
+      }
+      ${ctaButton("Voir mes documents", input.link, "primary")}
+      ${
+        validated
+          ? ""
+          : infoCard(
+              "Vous pouvez réimporter un document conforme depuis votre espace.",
+              "warning"
+            )
+      }
+      `,
+      { preheader: subject }
+    ),
+  };
+}
+
+/**
  * Rappel d'échéance de paiement (B2C / paiement en plusieurs fois).
  */
 export function paymentReminderEmail(input: {
