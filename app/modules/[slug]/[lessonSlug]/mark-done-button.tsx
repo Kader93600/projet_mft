@@ -4,16 +4,30 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { ModuleCompleteCelebration } from "@/components/celebration/module-complete-celebration";
 
 export function MarkDoneButton({
   lessonId,
   initialDone,
+  moduleTitle,
+  lessonsTotal = 1,
+  moduleDoneOthers = 0,
+  continueHref,
 }: {
   lessonId: string;
   initialDone: boolean;
+  /** Titre du module — pour la célébration de validation. */
+  moduleTitle?: string;
+  /** Nombre total de leçons du module. */
+  lessonsTotal?: number;
+  /** Leçons du module déjà terminées, hors leçon courante. */
+  moduleDoneOthers?: number;
+  /** Lien « continuer » (vue module) affiché dans la célébration. */
+  continueHref?: string;
 }) {
   const [done, setDone] = useState(initialDone);
   const [pending, start] = useTransition();
+  const [celebrate, setCelebrate] = useState(false);
   const router = useRouter();
 
   async function toggle() {
@@ -50,24 +64,43 @@ export function MarkDoneButton({
         }
       }
       setDone(newDone);
+      // Célébration : cette leçon valide le dernier maillon du module.
+      if (
+        newDone &&
+        moduleTitle &&
+        moduleDoneOthers + 1 >= lessonsTotal
+      ) {
+        setCelebrate(true);
+      }
       router.refresh();
     });
   }
 
   return (
-    <Button
-      variant={done ? "secondary" : "gold"}
-      onClick={toggle}
-      disabled={pending}
-      size="md"
-    >
-      {done ? (
-        <>
-          <Check className="w-4 h-4" /> Terminé
-        </>
-      ) : (
-        "Marquer terminé"
+    <>
+      <Button
+        variant={done ? "secondary" : "gold"}
+        onClick={toggle}
+        disabled={pending}
+        size="md"
+      >
+        {done ? (
+          <>
+            <Check className="w-4 h-4" /> Terminé
+          </>
+        ) : (
+          "Marquer terminé"
+        )}
+      </Button>
+
+      {celebrate && moduleTitle && (
+        <ModuleCompleteCelebration
+          moduleTitle={moduleTitle}
+          lessonsTotal={lessonsTotal}
+          continueHref={continueHref ?? "/modules"}
+          onClose={() => setCelebrate(false)}
+        />
       )}
-    </Button>
+    </>
   );
 }

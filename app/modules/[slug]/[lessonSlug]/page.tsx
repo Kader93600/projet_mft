@@ -111,6 +111,23 @@ export default async function LessonPage({
     completed = !!data?.completed;
   }
 
+  // Leçons du module déjà terminées (hors leçon courante) → permet de
+  // déclencher la célébration « Module validé » quand on termine la dernière.
+  let moduleDoneOthers = 0;
+  if (user && lessons && lessons.length) {
+    const ids = lessons.map((l) => l.id);
+    const { data: doneRows } = await reader
+      .from("lesson_progress")
+      .select("lesson_id")
+      .eq("user_id", user.id)
+      .eq("completed", true)
+      .in("lesson_id", ids);
+    const doneSet = new Set((doneRows ?? []).map((r: any) => r.lesson_id));
+    moduleDoneOthers = ids.filter(
+      (id) => id !== lesson.id && doneSet.has(id)
+    ).length;
+  }
+
   // Résolution formation pour identification visuelle
   const formationSlug = await resolveFormationFromModule(module.id);
   const readingMin = estimateReadingTime(lesson.content_md);
@@ -217,7 +234,14 @@ export default async function LessonPage({
           avec gap large. Desktop : grille 3 colonnes asymétriques. */}
       <div className="pt-10 border-t border-navy-100">
         <div className="flex justify-center mb-5 md:mb-6">
-          <MarkDoneButton lessonId={lesson.id} initialDone={completed} />
+          <MarkDoneButton
+            lessonId={lesson.id}
+            initialDone={completed}
+            moduleTitle={module.title}
+            lessonsTotal={lessons?.length ?? 1}
+            moduleDoneOthers={moduleDoneOthers}
+            continueHref={`/modules/${module.slug}`}
+          />
         </div>
 
         <nav
