@@ -1,12 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { BadgeCard } from "@/components/badge-card";
 import { Card, CardBody } from "@/components/ui/card";
-import { Trophy, Sparkles, Flame, History, Award } from "lucide-react";
+import { Sparkles, Flame, History, Award } from "lucide-react";
 import {
   computeBadgeProgress,
   type BadgeCriteria,
   type UserStats,
 } from "@/lib/gamification/badge-progress";
+import { RankHero } from "@/components/gamification/rank-hero";
 
 const CATEGORY_LABEL: Record<string, string> = {
   progression: "Progression",
@@ -198,67 +199,15 @@ export default async function ReussitesPage() {
         </p>
       </header>
 
-      {/* ─── Hero : Niveau + XP + Streak ────────────────────────────── */}
-      <Card variant="solid-navy" className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-mesh-navy opacity-40" />
-        <CardBody className="relative grid lg:grid-cols-[auto_1fr_auto] gap-6 items-center">
-          <div className="flex items-center gap-4">
-            <div className="h-14 w-14 rounded-2xl bg-gold-500 text-navy-900 flex items-center justify-center shrink-0">
-              <Trophy className="h-7 w-7" />
-            </div>
-            <div>
-              <div className="text-[11px] uppercase tracking-wider text-gold-300">
-                Niveau
-              </div>
-              <div className="font-display text-3xl font-semibold">{level}</div>
-            </div>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between text-xs text-white/70 mb-1.5">
-              <span className="tabular-nums">{totalXp} XP</span>
-              <span className="tabular-nums">{nextStart} XP</span>
-            </div>
-            <div className="h-2 rounded-full bg-white/10 overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-gold-400 to-gold-600 transition-all duration-700"
-                style={{ width: `${pct}%` }}
-              />
-            </div>
-            <div className="mt-2 text-xs text-white/60">
-              Encore {Math.max(0, nextStart - totalXp)} XP avant le niveau{" "}
-              {level + 1}
-            </div>
-          </div>
-
-          <div className="flex gap-3">
-            <div className="flex items-center gap-2 rounded-xl bg-white/5 border border-white/10 px-3 py-2">
-              <Flame className="h-4 w-4 text-gold-400" />
-              <div>
-                <div className="text-[10px] uppercase tracking-wider text-white/60">
-                  Série
-                </div>
-                <div className="font-display text-lg font-semibold tabular-nums">
-                  {currentStreak}
-                  <span className="text-xs text-white/50"> j</span>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 rounded-xl bg-white/5 border border-white/10 px-3 py-2">
-              <Sparkles className="h-4 w-4 text-gold-400" />
-              <div>
-                <div className="text-[10px] uppercase tracking-wider text-white/60">
-                  Record
-                </div>
-                <div className="font-display text-lg font-semibold tabular-nums">
-                  {longestStreak}
-                  <span className="text-xs text-white/50"> j</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardBody>
-      </Card>
+      {/* ─── Hero : Rang + Niveau + XP + Streak ─────────────────────── */}
+      <RankHero
+        level={level}
+        totalXp={totalXp}
+        nextStart={nextStart}
+        pct={pct}
+        currentStreak={currentStreak}
+        longestStreak={longestStreak}
+      />
 
       {/* ─── Stats compactes ───────────────────────────────────────── */}
       <div className="grid md:grid-cols-3 gap-4">
