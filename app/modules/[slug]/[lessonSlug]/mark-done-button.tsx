@@ -4,7 +4,12 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { ModuleCompleteCelebration } from "@/components/celebration/module-complete-celebration";
+import {
+  RewardCelebration,
+  type RewardBadge,
+  type RewardRankUp,
+} from "@/components/celebration/reward-celebration";
+import { getRank } from "@/lib/gamification/ranks";
 
 export function MarkDoneButton({
   lessonId,
@@ -16,19 +21,20 @@ export function MarkDoneButton({
 }: {
   lessonId: string;
   initialDone: boolean;
-  /** Titre du module — pour la célébration de validation. */
   moduleTitle?: string;
-  /** Nombre total de leçons du module. */
   lessonsTotal?: number;
-  /** Leçons du module déjà terminées, hors leçon courante. */
   moduleDoneOthers?: number;
-  /** Lien « continuer » (vue module) affiché dans la célébration. */
   continueHref?: string;
 }) {
   const [done, setDone] = useState(initialDone);
   const [pending, start] = useTransition();
-  const [celebrate, setCelebrate] = useState(false);
   const router = useRouter();
+  const [reward, setReward] = useState<null | {
+    moduleComplete: { title: string; lessonsTotal: number } | null;
+    xpGained: number;
+    rankUp: RewardRankUp | null;
+    badges: RewardBadge[];
+  }>(null);
 
   async function toggle() {
     start(async () => {
@@ -38,7 +44,25 @@ export function MarkDoneButton({
       } = await supabase.auth.getUser();
       if (!user) return;
       const newDone = !done;
-      // 1) Source explicite : lesson_progress (utilisée par la page détail)
+
+      // État gamification AVANT (uniquement à la complétion) — pour calculer
+      // l'XP gagnée, le passage de rang et les nouveaux badges.
+      let before: { total_xp: number; level: number } | null = null;
+      let beforeBadgeIds = new Set<string>();
+      if (newDone) {
+        const [g, b] = await Promise.all([
+          supabase
+            .from("user_gamification")
+            .select("total_xp, level")
+            .eq("user_id", user.id)
+            .maybeSingle(),
+          supabase.from("user_badges").select("badge_id").eq("user_id", user.id),
+        ]);
+        before = (g.data as any) ?? null;
+        beforeBadgeIds = new Set((b.data ?? []).map((r: any) => r.badge_id));
+      }
+
+      // Upsert (déclenche XP + recompute badges via triggers Postgres).
       await supabase.from("lesson_progress").upsert(
         {
           user_id: user.id,
@@ -48,11 +72,6 @@ export function MarkDoneButton({
         },
         { onConflict: "user_id,lesson_id" }
       );
-      // 2) Source de tracking : lesson_views (utilisée par /modules)
-      //    On synchronise via la RPC ping_lesson_view pour empêcher la
-      //    divergence entre les 2 vues. La RPC ne fait que OR sur
-      //    completed, donc le toggle off n'est répliqué qu'à demi (on
-      //    s'appuie sur l'union côté lecture).
       if (newDone) {
         try {
           await supabase.rpc("ping_lesson_view", {
@@ -60,18 +79,66 @@ export function MarkDoneButton({
             p_completed: true,
           });
         } catch {
-          /* non-bloquant : la lecture fait l'union des 2 tables */
+          /* non-bloquant */
         }
       }
       setDone(newDone);
-      // Célébration : cette leçon valide le dernier maillon du module.
-      if (
-        newDone &&
-        moduleTitle &&
-        moduleDoneOthers + 1 >= lessonsTotal
-      ) {
-        setCelebrate(true);
+
+      // Récompenses (uniquement à la complétion).
+      if (newDone) {
+        const moduleComplete =
+          !!moduleTitle && moduleDoneOthers + 1 >= lessonsTotal;
+        let xpGained = 0;
+        let rankUp: RewardRankUp | null = null;
+        let badges: RewardBadge[] = [];
+        try {
+          const [g2, b2] = await Promise.all([
+            supabase
+              .from("user_gamification")
+              .select("total_xp, level")
+              .eq("user_id", user.id)
+              .maybeSingle(),
+            supabase
+              .from("user_badges")
+              .select("badge_id")
+              .eq("user_id", user.id),
+          ]);
+          const after = (g2.data as any) ?? null;
+          if (before && after) {
+            xpGained = Math.max(
+              0,
+              (after.total_xp ?? 0) - (before.total_xp ?? 0)
+            );
+            const rb = getRank(before.level ?? 1);
+            const ra = getRank(after.level ?? 1);
+            if (ra.index > rb.index)
+              rankUp = { label: ra.rank.label, emoji: ra.rank.emoji };
+          }
+          const afterIds = (b2.data ?? []).map((r: any) => r.badge_id);
+          const newIds = afterIds.filter((id: string) => !beforeBadgeIds.has(id));
+          if (newIds.length) {
+            const { data: bd } = await supabase
+              .from("badges")
+              .select("name, description, icon, tier")
+              .in("id", newIds);
+            badges = (bd ?? []) as RewardBadge[];
+          }
+        } catch {
+          /* non-bloquant : on célèbre avec ce qu'on a pu lire */
+        }
+
+        if (moduleComplete || rankUp || badges.length > 0) {
+          setReward({
+            moduleComplete: moduleComplete
+              ? { title: moduleTitle!, lessonsTotal }
+              : null,
+            xpGained,
+            rankUp,
+            badges,
+          });
+        }
       }
+
       router.refresh();
     });
   }
@@ -93,12 +160,16 @@ export function MarkDoneButton({
         )}
       </Button>
 
-      {celebrate && moduleTitle && (
-        <ModuleCompleteCelebration
-          moduleTitle={moduleTitle}
-          lessonsTotal={lessonsTotal}
-          continueHref={continueHref ?? "/modules"}
-          onClose={() => setCelebrate(false)}
+      {reward && (
+        <RewardCelebration
+          moduleComplete={reward.moduleComplete}
+          xpGained={reward.xpGained}
+          rankUp={reward.rankUp}
+          badges={reward.badges}
+          continueHref={
+            reward.moduleComplete ? continueHref ?? "/modules" : undefined
+          }
+          onClose={() => setReward(null)}
         />
       )}
     </>
