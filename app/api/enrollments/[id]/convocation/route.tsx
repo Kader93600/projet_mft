@@ -174,7 +174,7 @@ export async function GET(
   const { data: enrollment } = await supabase
     .from("enrollments")
     .select(
-      "*, user:profiles!user_id(full_name, email, address)"
+      "*, user:profiles!user_id(full_name, email, adresse, code_postal, ville)"
     )
     .eq("id", params.id)
     .maybeSingle();
@@ -207,7 +207,15 @@ export async function GET(
       stagiaire={{
         fullName: stagiaire.full_name ?? stagiaire.email,
         email: stagiaire.email,
-        address: stagiaire.address,
+        address:
+          [
+            stagiaire.adresse,
+            [stagiaire.code_postal, stagiaire.ville]
+              .filter(Boolean)
+              .join(" "),
+          ]
+            .filter(Boolean)
+            .join(", ") || null,
       }}
       e={enrollment}
     />

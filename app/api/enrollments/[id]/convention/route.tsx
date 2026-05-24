@@ -481,7 +481,7 @@ export async function GET(
   const { data: enrollment, error } = await supabase
     .from("enrollments")
     .select(
-      "*, user:profiles!user_id(full_name, email, phone, address), funder:funders(name, kind)"
+      "*, user:profiles!user_id(full_name, email, phone, adresse, code_postal, ville), funder:funders(name, kind)"
     )
     .eq("id", params.id)
     .maybeSingle();
@@ -505,7 +505,15 @@ export async function GET(
         fullName: stagiaire.full_name ?? stagiaire.email,
         email: stagiaire.email,
         phone: stagiaire.phone,
-        address: stagiaire.address,
+        address:
+          [
+            stagiaire.adresse,
+            [stagiaire.code_postal, stagiaire.ville]
+              .filter(Boolean)
+              .join(" "),
+          ]
+            .filter(Boolean)
+            .join(", ") || null,
       }}
       funder={(enrollment as any).funder ?? null}
       e={enrollment}
