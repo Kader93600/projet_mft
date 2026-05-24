@@ -136,11 +136,22 @@ export function MarkDoneButton({
             rankUp,
             badges,
           });
+          // ⚠️ Ne PAS rafraîchir maintenant : router.refresh() ferait
+          // re-suspendre la page (skeleton loading.tsx) → remontage du bouton
+          // → l'overlay disparaîtrait aussitôt. On diffère le refresh à la
+          // fermeture de l'overlay (handleClose).
+          return;
         }
       }
 
       router.refresh();
     });
+  }
+
+  // Fermeture de l'overlay : on synchronise alors l'état serveur.
+  function handleClose() {
+    setReward(null);
+    router.refresh();
   }
 
   return (
@@ -169,7 +180,7 @@ export function MarkDoneButton({
           continueHref={
             reward.moduleComplete ? continueHref ?? "/modules" : undefined
           }
-          onClose={() => setReward(null)}
+          onClose={handleClose}
         />
       )}
     </>
