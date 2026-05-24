@@ -34,6 +34,7 @@ import {
   Inbox,
   Crown,
   Landmark,
+  FolderOpen,
 } from "lucide-react";
 
 /**
@@ -116,6 +117,7 @@ export const ADMIN_GROUPS: NavGroup[] = [
       { href: "/admin/groups", labelKey: "nav.adminGroups", icon: UsersRound },
       { href: "/admin/coaching", labelKey: "nav.adminCoaching", icon: HH2 },
       { href: "/admin/alerts", labelKey: "nav.adminAlerts", icon: HH2 },
+      { href: "/admin/documents", labelKey: "nav.adminDocuments", icon: FolderOpen },
       { href: "/admin/accessibilite", labelKey: "nav.adminAccessibility", icon: Accessibility },
     ],
   },
