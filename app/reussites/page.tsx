@@ -8,6 +8,7 @@ import {
   type UserStats,
 } from "@/lib/gamification/badge-progress";
 import { RankHero } from "@/components/gamification/rank-hero";
+import { xpLevelFromTotal } from "@/lib/gamification/ranks";
 
 const CATEGORY_LABEL: Record<string, string> = {
   progression: "Progression",
@@ -59,10 +60,9 @@ export default async function ReussitesPage() {
       .select("badge_id, earned_at")
       .eq("user_id", user.id),
     supabase
-      .from("user_gamification")
-      .select("total_xp, level, active_days")
-      .eq("user_id", user.id)
-      .maybeSingle(),
+      .from("xp_events")
+      .select("points, created_at")
+      .eq("user_id", user.id),
     supabase.rpc("user_streak", { p_user: user.id }),
     // Stocks pour la progression
     supabase
@@ -166,9 +166,14 @@ export default async function ReussitesPage() {
   };
 
   // ─── XP / Niveau / Streak (cartes hero) ──────────────────────────────
-  const totalXp = (stats as any)?.total_xp ?? 0;
-  const level = (stats as any)?.level ?? 1;
-  const activeDays = (stats as any)?.active_days ?? 0;
+  // Calcul direct depuis xp_events (robuste quel que soit le rôle ; la vue
+  // user_gamification est filtrée role='student' pour le classement).
+  const xpRows = (stats ?? []) as { points: number; created_at: string }[];
+  const totalXp = xpRows.reduce((s, r) => s + (r.points ?? 0), 0);
+  const level = xpLevelFromTotal(totalXp);
+  const activeDays = new Set(
+    xpRows.map((r) => String(r.created_at).slice(0, 10))
+  ).size;
   const curStart = ((level - 1) * level) / 2 * 100;
   const nextStart = (level * (level + 1)) / 2 * 100;
   const pct = Math.min(

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody } from "@/components/ui/card";
 import { Flame, Sparkles, Trophy } from "lucide-react";
+import { xpLevelFromTotal } from "@/lib/gamification/ranks";
 
 export async function XpWidget() {
   const supabase = createClient();
@@ -9,23 +10,19 @@ export async function XpWidget() {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const [{ data: stats }, { data: streak }, { data: recent }] = await Promise.all([
-    supabase
-      .from("user_gamification")
-      .select("total_xp, level, active_days")
-      .eq("user_id", user.id)
-      .maybeSingle(),
+  // XP calculée directement depuis xp_events (la vue user_gamification est
+  // filtrée role='student' pour le classement → ne couvrirait pas un staff
+  // qui consulte son propre espace).
+  const [{ data: xpRows }, { data: streak }] = await Promise.all([
+    supabase.from("xp_events").select("points").eq("user_id", user.id),
     supabase.rpc("user_streak", { p_user: user.id }),
-    supabase
-      .from("xp_events")
-      .select("kind, points, created_at")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(5),
   ]);
 
-  const totalXp = stats?.total_xp ?? 0;
-  const level = stats?.level ?? 1;
+  const totalXp = (xpRows ?? []).reduce(
+    (s: number, r: any) => s + (r.points ?? 0),
+    0
+  );
+  const level = xpLevelFromTotal(totalXp);
   // XP requis pour le début du niveau courant : (L-1)*L/2 * 100
   const curStart = ((level - 1) * level) / 2 * 100;
   const nextStart = (level * (level + 1)) / 2 * 100;
