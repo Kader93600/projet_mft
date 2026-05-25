@@ -69,12 +69,24 @@ export function SearchPalette({ role = "student" }: { role?: Role }) {
         ? [...STUDENT_GROUPS, ...ADMIN_GROUPS]
         : STUDENT_GROUPS;
     return groups.flatMap((g) =>
-      g.items.map((it) => ({
-        href: it.href,
-        label: t(it.labelKey),
-        group: t(g.labelKey),
-        icon: it.icon,
-      })),
+      g.items.flatMap((it) => {
+        const entry = {
+          href: it.href,
+          label: t(it.labelKey),
+          group: t(g.labelKey),
+          icon: it.icon,
+        };
+        // Inclut les sous-pages (children) pour qu'elles soient atteignables
+        // au clavier via ⌘K, même si elles ne s'affichent qu'en contexte
+        // dans la sidebar.
+        const kids = (it.children ?? []).map((c) => ({
+          href: c.href,
+          label: t(c.labelKey),
+          group: t(g.labelKey),
+          icon: c.icon,
+        }));
+        return [entry, ...kids];
+      }),
     );
   }, [role, t]);
 

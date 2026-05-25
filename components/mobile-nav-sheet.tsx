@@ -62,7 +62,11 @@ export function MobileNavSheet({ groups, labelKey = "navGroups.more" }: Props) {
                     {t(g.labelKey)}
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    {g.items.map((it) => {
+                    {g.items
+                      .flatMap((it) =>
+                        it.children ? [it, ...it.children] : [it]
+                      )
+                      .map((it) => {
                       const active =
                         pathname === it.href ||
                         pathname.startsWith(it.href + "/");

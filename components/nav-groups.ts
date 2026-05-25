@@ -51,6 +51,12 @@ export type NavItem = {
   icon: any;
   shortKey?: string;
   exact?: boolean;
+  /**
+   * Sous-pages (3ᵉ niveau). Affichées en retrait sous l'item, et seulement
+   * lorsque la « branche » est active (on est sur l'item parent ou sur l'une
+   * de ses sous-pages). Ex. « Signatures » sous « Vue d'ensemble ».
+   */
+  children?: NavItem[];
 };
 export type NavGroup = { labelKey: string; items: NavItem[] };
 
@@ -103,23 +109,53 @@ export const ADMIN_GROUPS: NavGroup[] = [
   {
     labelKey: "navGroups.pilotage",
     items: [
-      { href: "/admin", labelKey: "nav.adminOverview", icon: LayoutDashboard, exact: true },
-      { href: "/admin/analytics", labelKey: "nav.adminAnalytics", icon: BarChart3 },
-      { href: "/admin/reports", labelKey: "nav.adminReports", icon: FileText },
-      { href: "/admin/reports/bpf", labelKey: "nav.adminBpf", icon: FileText },
-      { href: "/admin/reports/surveys", labelKey: "nav.adminSurveys", icon: ClipboardCheck },
+      {
+        href: "/admin",
+        labelKey: "nav.adminOverview",
+        icon: LayoutDashboard,
+        exact: true,
+        children: [
+          { href: "/admin/signatures", labelKey: "nav.adminSignatures", icon: FileSignature },
+        ],
+      },
+      {
+        href: "/admin/analytics",
+        labelKey: "nav.adminAnalytics",
+        icon: BarChart3,
+        children: [
+          { href: "/admin/analytics/acquisition", labelKey: "nav.adminAnalyticsAcquisition", icon: Target },
+          { href: "/admin/analytics/search", labelKey: "nav.adminAnalyticsSearch", icon: Library },
+          { href: "/admin/analytics/tv", labelKey: "nav.adminAnalyticsTv", icon: Video },
+        ],
+      },
+      {
+        href: "/admin/reports",
+        labelKey: "nav.adminReports",
+        icon: FileText,
+        children: [
+          { href: "/admin/reports/bpf", labelKey: "nav.adminBpf", icon: FileText },
+          { href: "/admin/reports/surveys", labelKey: "nav.adminSurveys", icon: ClipboardCheck },
+        ],
+      },
     ],
   },
   {
     labelKey: "navGroups.people",
     items: [
       { href: "/admin/users", labelKey: "nav.adminUsers", icon: Users },
-      { href: "/admin/affectations", labelKey: "nav.adminAssignments", icon: UsersRound },
+      {
+        href: "/admin/affectations",
+        labelKey: "nav.adminAssignments",
+        icon: UsersRound,
+        children: [
+          { href: "/admin/affectations/formateurs", labelKey: "nav.adminAffectFormateurs", icon: UsersRound },
+          { href: "/admin/affectations/stagiaires", labelKey: "nav.adminAffectStagiaires", icon: Users },
+        ],
+      },
       { href: "/admin/groups", labelKey: "nav.adminGroups", icon: UsersRound },
       { href: "/admin/coaching", labelKey: "nav.adminCoaching", icon: HH2 },
       { href: "/admin/alerts", labelKey: "nav.adminAlerts", icon: HH2 },
       { href: "/admin/documents", labelKey: "nav.adminDocuments", icon: FolderOpen },
-      { href: "/admin/signatures", labelKey: "nav.adminSignatures", icon: FileSignature },
       { href: "/admin/accessibilite", labelKey: "nav.adminAccessibility", icon: Accessibility },
     ],
   },
@@ -165,5 +201,9 @@ export const ADMIN_GROUPS: NavGroup[] = [
 ];
 
 export function flattenGroups(groups: NavGroup[]): NavItem[] {
-  return groups.flatMap((g) => g.items);
+  // Inclut les sous-pages (children) pour que le fil d'Ariane et la
+  // recherche (⌘K) retrouvent leur libellé.
+  return groups.flatMap((g) =>
+    g.items.flatMap((it) => (it.children ? [it, ...it.children] : [it]))
+  );
 }

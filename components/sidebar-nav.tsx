@@ -5,7 +5,9 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
-import type { NavGroup } from "./nav-groups";
+import type { NavGroup, NavItem } from "./nav-groups";
+
+const STORAGE_KEY = "gotrm.nav.collapsed.v1";
 
 interface Props {
   groups: NavGroup[];
@@ -17,36 +19,42 @@ function isActive(pathname: string, href: string, exact?: boolean) {
   return pathname === href || pathname.startsWith(href + "/");
 }
 
+/** Une branche est « active » si l'item ou l'une de ses sous-pages l'est. */
+function branchIsActive(pathname: string, item: NavItem) {
+  if (isActive(pathname, item.href, item.exact)) return true;
+  return (item.children ?? []).some((c) => isActive(pathname, c.href, c.exact));
+}
+
 /**
- * Navigation latérale en accordéon exclusif : une seule section est ouverte à
- * la fois. La section qui contient la route active s'ouvre automatiquement et
- * les autres se replient — y compris à chaque navigation. Le déroulé / repli
- * est animé via `grid-template-rows` (0fr → 1fr), sans hauteur magique ni
- * mesure JS, doublé d'un fondu d'opacité sur le contenu (esprit Emil :
- * courbe ease-out marquée, < 300 ms, désactivé sous prefers-reduced-motion).
+ * Navigation latérale à 3 niveaux :
+ *  1. Sections (Pilotage, Personnes…) — ouvertes par défaut, repliables une à
+ *     une (plusieurs peuvent rester ouvertes ; état mémorisé en localStorage).
+ *  2. Pages — toujours visibles dans leur section.
+ *  3. Sous-pages (children) — affichées en retrait sous leur page parente, et
+ *     uniquement quand on se trouve sur cette branche (ex. « Signatures » sous
+ *     « Vue d'ensemble »). Déroulé animé via grid-template-rows 0fr → 1fr +
+ *     fondu (courbe ease-premium, neutralisé sous prefers-reduced-motion).
  */
 export function SidebarNav({ groups, variant = "light" }: Props) {
   const pathname = usePathname();
   const t = useTranslations();
+  const [collapsed, setCollapsed] = React.useState<Record<string, boolean>>({});
 
-  // Clé de la section contenant la route active (sinon la 1ʳᵉ section).
-  const activeGroupKey = React.useMemo(() => {
-    const g = groups.find((gr) =>
-      gr.items.some((i) => isActive(pathname, i.href, i.exact))
-    );
-    return g?.labelKey ?? groups[0]?.labelKey ?? null;
-  }, [groups, pathname]);
-
-  const [openKey, setOpenKey] = React.useState<string | null>(activeGroupKey);
-
-  // À chaque navigation, la section de la page courante s'ouvre et les autres
-  // se replient.
   React.useEffect(() => {
-    setOpenKey(activeGroupKey);
-  }, [activeGroupKey]);
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) setCollapsed(JSON.parse(raw));
+    } catch {}
+  }, []);
 
   function toggle(label: string) {
-    setOpenKey((cur) => (cur === label ? null : label));
+    setCollapsed((c) => {
+      const next = { ...c, [label]: !c[label] };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
   }
 
   const dark = variant === "dark";
@@ -55,18 +63,19 @@ export function SidebarNav({ groups, variant = "light" }: Props) {
     : "focus-visible:ring-navy-600/30";
 
   return (
-    <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+    <nav className="flex-1 px-3 py-4 space-y-3 overflow-y-auto">
       {groups.map((g) => {
-        const isOpen = openKey === g.labelKey;
+        // Une section reste ouverte par défaut ; elle est forcée ouverte si
+        // elle contient la route active (ou une sous-page active).
+        const hasActive = g.items.some((i) => branchIsActive(pathname, i));
+        const isOpen = !(collapsed[g.labelKey] ?? false) || hasActive;
         const groupLabel = t(g.labelKey);
-        const panelId = `nav-panel-${g.labelKey.replace(/[^a-zA-Z0-9]+/g, "-")}`;
         return (
           <div key={g.labelKey}>
             <button
               type="button"
               onClick={() => toggle(g.labelKey)}
               aria-expanded={isOpen}
-              aria-controls={panelId}
               className={cn(
                 "w-full flex items-center justify-between px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] rounded-lg transition-colors",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset",
@@ -84,29 +93,15 @@ export function SidebarNav({ groups, variant = "light" }: Props) {
                 )}
               />
             </button>
-
-            {/* Panneau accordéon : grid-template-rows 0fr → 1fr. Le wrapper
-                interne (min-h-0 + overflow-hidden) permet le repli total. */}
-            <div
-              id={panelId}
-              className={cn(
-                "grid transition-[grid-template-rows] duration-300 ease-premium motion-reduce:transition-none",
-                isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-              )}
-            >
-              <div
-                className={cn(
-                  "min-h-0 overflow-hidden transition-opacity duration-200 ease-premium motion-reduce:transition-none",
-                  isOpen ? "opacity-100" : "opacity-0"
-                )}
-                {...(isOpen ? {} : ({ inert: "" } as any))}
-              >
-                <div className="mt-1 space-y-0.5 pb-1">
-                  {g.items.map((item) => {
-                    const active = isActive(pathname, item.href, item.exact);
-                    return (
+            {isOpen && (
+              <div className="mt-1 space-y-0.5">
+                {g.items.map((item) => {
+                  const active = isActive(pathname, item.href, item.exact);
+                  const kids = item.children ?? [];
+                  const branchActive = branchIsActive(pathname, item);
+                  return (
+                    <div key={item.href}>
                       <Link
-                        key={item.href}
                         href={item.href}
                         aria-current={active ? "page" : undefined}
                         className={cn(
@@ -130,11 +125,69 @@ export function SidebarNav({ groups, variant = "light" }: Props) {
                           <span className="absolute right-3 h-1.5 w-1.5 rounded-full bg-gold-400" />
                         )}
                       </Link>
-                    );
-                  })}
-                </div>
+
+                      {/* Sous-pages contextuelles : visibles uniquement sur la
+                          branche active, déroulé animé (grid-rows 0fr→1fr). */}
+                      {kids.length > 0 && (
+                        <div
+                          className={cn(
+                            "grid transition-[grid-template-rows] duration-300 ease-premium motion-reduce:transition-none",
+                            branchActive ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              "min-h-0 overflow-hidden transition-opacity duration-200 ease-premium motion-reduce:transition-none",
+                              branchActive ? "opacity-100" : "opacity-0"
+                            )}
+                            {...(branchActive ? {} : ({ inert: "" } as any))}
+                          >
+                            <div
+                              className={cn(
+                                "mt-0.5 ml-[1.375rem] space-y-0.5 border-l pl-3",
+                                dark ? "border-white/10" : "border-navy-100"
+                              )}
+                            >
+                              {kids.map((child) => {
+                                const cActive = isActive(
+                                  pathname,
+                                  child.href,
+                                  child.exact
+                                );
+                                return (
+                                  <Link
+                                    key={child.href}
+                                    href={child.href}
+                                    aria-current={cActive ? "page" : undefined}
+                                    className={cn(
+                                      "relative flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] transition-colors",
+                                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset",
+                                      ringFocus,
+                                      dark
+                                        ? cActive
+                                          ? "bg-white/10 text-white font-medium"
+                                          : "text-white/55 hover:bg-white/5 hover:text-white"
+                                        : cActive
+                                          ? "bg-navy-100 text-navy-900 font-medium"
+                                          : "text-slate-500 hover:bg-navy-50 hover:text-navy-900"
+                                    )}
+                                  >
+                                    <child.icon className="w-3.5 h-3.5 shrink-0 opacity-80" />
+                                    <span className="truncate">
+                                      {t(child.labelKey)}
+                                    </span>
+                                  </Link>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-            </div>
+            )}
           </div>
         );
       })}
