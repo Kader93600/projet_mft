@@ -148,7 +148,8 @@ export async function createStudent(raw: unknown): Promise<CreateStudentResult> 
   let userId: string;
   if (data.access_mode === "invite") {
     const redirectTo =
-      (process.env.NEXT_PUBLIC_APP_URL ?? "") + "/login";
+      (process.env.NEXT_PUBLIC_APP_URL ?? "") +
+    "/auth/callback?next=/reset-password";
     const { data: invited, error: invErr } = await sb.auth.admin.inviteUserByEmail(
       data.email,
       {
@@ -437,7 +438,8 @@ export async function createTrainer(raw: unknown): Promise<StaffCreateResult> {
   // 1) Création auth user
   let userId: string;
   if (data.access_mode === "invite") {
-    const redirectTo = (process.env.NEXT_PUBLIC_APP_URL ?? "") + "/login";
+    const redirectTo = (process.env.NEXT_PUBLIC_APP_URL ?? "") +
+    "/auth/callback?next=/reset-password";
     const { data: invited, error: invErr } = await sb.auth.admin.inviteUserByEmail(
       data.email,
       {
@@ -546,7 +548,8 @@ export async function createAdminUser(raw: unknown): Promise<StaffCreateResult> 
   // 1) Création auth user
   let userId: string;
   if (data.access_mode === "invite") {
-    const redirectTo = (process.env.NEXT_PUBLIC_APP_URL ?? "") + "/login";
+    const redirectTo = (process.env.NEXT_PUBLIC_APP_URL ?? "") +
+    "/auth/callback?next=/reset-password";
     const { data: invited, error: invErr } = await sb.auth.admin.inviteUserByEmail(
       data.email,
       {
