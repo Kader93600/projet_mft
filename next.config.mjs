@@ -49,6 +49,8 @@ const cspDirectives = {
     "https://api.stripe.com",
     "https://eu.i.posthog.com",
     "https://eu-assets.i.posthog.com",
+    // Base Adresse Nationale (autocomplétion d'adresse, officielle/gratuite).
+    "https://api-adresse.data.gouv.fr",
   ],
   "frame-src": [
     "'self'",
