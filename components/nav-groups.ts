@@ -107,6 +107,7 @@ export const ADMIN_GROUPS: NavGroup[] = [
       { href: "/admin/analytics", labelKey: "nav.adminAnalytics", icon: BarChart3 },
       { href: "/admin/reports", labelKey: "nav.adminReports", icon: FileText },
       { href: "/admin/reports/bpf", labelKey: "nav.adminBpf", icon: FileText },
+      { href: "/admin/reports/surveys", labelKey: "nav.adminSurveys", icon: ClipboardCheck },
     ],
   },
   {
@@ -118,6 +119,7 @@ export const ADMIN_GROUPS: NavGroup[] = [
       { href: "/admin/coaching", labelKey: "nav.adminCoaching", icon: HH2 },
       { href: "/admin/alerts", labelKey: "nav.adminAlerts", icon: HH2 },
       { href: "/admin/documents", labelKey: "nav.adminDocuments", icon: FolderOpen },
+      { href: "/admin/signatures", labelKey: "nav.adminSignatures", icon: FileSignature },
       { href: "/admin/accessibilite", labelKey: "nav.adminAccessibility", icon: Accessibility },
     ],
   },
