@@ -162,7 +162,11 @@ function fmtEuros(cents: number) {
   return new Intl.NumberFormat("fr-FR", {
     style: "currency",
     currency: "EUR",
-  }).format((cents ?? 0) / 100);
+  })
+    .format((cents ?? 0) / 100)
+    // Helvetica ne rend pas les espaces insécables (U+202F/U+00A0) →
+    // "4 000 €" s'affichait "4/000 €".
+    .replace(/\s/g, " ");
 }
 
 function fmtDate(iso: string | null | undefined) {

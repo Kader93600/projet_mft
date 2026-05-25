@@ -28,7 +28,11 @@ function eur(n: number) {
   return new Intl.NumberFormat("fr-FR", {
     style: "currency",
     currency: "EUR",
-  }).format(Number.isFinite(n) ? n : 0);
+  })
+    .format(Number.isFinite(n) ? n : 0)
+    // Helvetica ne rend pas les espaces insécables (U+202F/U+00A0) →
+    // "4 000 €" s'affichait "4/000 €".
+    .replace(/\s/g, " ");
 }
 
 function frDate(iso?: string | null) {

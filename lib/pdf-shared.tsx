@@ -190,7 +190,12 @@ export function fmtEurosPdf(cents: number) {
   return new Intl.NumberFormat("fr-FR", {
     style: "currency",
     currency: "EUR",
-  }).format((cents ?? 0) / 100);
+  })
+    .format((cents ?? 0) / 100)
+    // Helvetica (PDF) n_a pas de glyphe pour les espaces insecables (fine
+    // U+202F, normale U+00A0) qui servent de separateur de milliers en fr-FR :
+    // "4 000 EUR" s_affichait "4/000 EUR". \s couvre toutes ces variantes.
+    .replace(/\s/g, " ");
 }
 
 export function fmtDatePdf(iso: string | null | undefined) {
