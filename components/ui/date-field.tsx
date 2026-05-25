@@ -21,7 +21,12 @@ import { cn } from "@/lib/utils";
  * Sélecteur de date maison — remplace `<input type="date">` natif (calendrier
  * et bulle de validation moches, incohérents d'un navigateur à l'autre).
  *
- * Deux modes :
+ * Saisie hybride :
+ *  - au clavier  : on tape directement `jj/mm/aaaa` dans le champ (les `/`
+ *    s'insèrent tout seuls, seuls les chiffres sont acceptés) ;
+ *  - au calendrier : on clique l'icône pour ouvrir le popover.
+ *
+ * Deux modes de valeur :
  *  - contrôlé   : `value` (ISO "YYYY-MM-DD") + `onChange(iso)`
  *  - formulaire : `name` (+ `defaultValue`, `required`) → input caché soumis
  *    avec le `<form action={...}>`. La validation `required` est gérée par le
@@ -50,6 +55,27 @@ function parseIso(iso: string): { y: number; m: number; d: number } | null {
 function formatFr(iso: string): string {
   const p = parseIso(iso);
   return p ? `${pad(p.d)}/${pad(p.m)}/${p.y}` : "";
+}
+
+/** Insère les `/` au fil de la frappe (jjmmaaaa → jj/mm/aaaa). */
+function formatTyping(raw: string): string {
+  const d = raw.replace(/\D/g, "").slice(0, 8);
+  if (d.length <= 2) return d;
+  if (d.length <= 4) return `${d.slice(0, 2)}/${d.slice(2)}`;
+  return `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}`;
+}
+
+/** Convertit une saisie "jj/mm/aaaa" complète et cohérente en ISO. */
+function parseFrToIso(text: string): string | null {
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(text);
+  if (!m) return null;
+  const d = +m[1];
+  const mo = +m[2];
+  const y = +m[3];
+  if (mo < 1 || mo > 12) return null;
+  const daysInMonth = new Date(y, mo, 0).getDate();
+  if (d < 1 || d > daysInMonth) return null;
+  return `${y}-${pad(mo)}-${pad(d)}`;
 }
 
 export interface DateFieldProps {
@@ -85,6 +111,9 @@ export function DateField({
   const [internal, setInternal] = useState(defaultValue ?? "");
   const val = isControlled ? value ?? "" : internal;
 
+  // Texte affiché dans l'input (peut différer de `val` pendant la frappe).
+  const [text, setText] = useState(() => formatFr(val));
+
   const [open, setOpen] = useState(false);
   const [shown, setShown] = useState(false);
   const [placement, setPlacement] = useState<"bottom" | "top">("bottom");
@@ -97,9 +126,13 @@ export function DateField({
   const [view, setView] = useState(initView);
 
   const rootRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const valRef = useRef(val);
   valRef.current = val;
+  // Vrai tant que l'utilisateur est en train de taper dans le champ : évite
+  // de réécraser sa saisie quand `val` change.
+  const editingRef = useRef(false);
 
   const autoId = useId();
   const fieldId = id ?? `date-${autoId}`;
@@ -113,10 +146,17 @@ export function DateField({
     [isControlled, onChange]
   );
 
+  // Synchronise le texte affiché quand la valeur change de l'extérieur
+  // (calendrier, « Aujourd'hui », « Effacer », prop `value`) — mais pas
+  // pendant la frappe, pour ne pas faire sauter le curseur.
+  useEffect(() => {
+    if (!editingRef.current) setText(formatFr(val));
+  }, [val]);
+
   function openCal() {
     if (disabled) return;
     setView(initView());
-    const rect = triggerRef.current?.getBoundingClientRect();
+    const rect = rootRef.current?.getBoundingClientRect();
     if (rect) {
       const below = window.innerHeight - rect.bottom;
       setPlacement(below < 360 && rect.top > below ? "top" : "bottom");
@@ -144,7 +184,7 @@ export function DateField({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         closeCal();
-        triggerRef.current?.focus();
+        inputRef.current?.focus();
       }
     };
     document.addEventListener("mousedown", onDown);
@@ -166,12 +206,54 @@ export function DateField({
         e.preventDefault();
         e.stopPropagation();
         setInvalid(true);
-        triggerRef.current?.focus();
+        inputRef.current?.focus();
       }
     };
     form.addEventListener("submit", onSubmit, true);
     return () => form.removeEventListener("submit", onSubmit, true);
   }, [required, name]);
+
+  // ── Saisie clavier ───────────────────────────────────────────────────
+  function onType(e: React.ChangeEvent<HTMLInputElement>) {
+    const formatted = formatTyping(e.target.value);
+    setText(formatted);
+    if (formatted === "") {
+      setVal("");
+      return;
+    }
+    const iso = parseFrToIso(formatted);
+    if (iso && !outOfRange(iso)) {
+      setVal(iso);
+      const p = parseIso(iso)!;
+      setView({ y: p.y, m: p.m - 1 }); // aligne le calendrier sur la saisie
+    }
+  }
+  function onInputFocus() {
+    editingRef.current = true;
+  }
+  function onInputBlur() {
+    editingRef.current = false;
+    if (text === "") {
+      setVal("");
+      return;
+    }
+    const iso = parseFrToIso(text);
+    if (iso && !outOfRange(iso)) {
+      setVal(iso);
+      setText(formatFr(iso)); // normalise (zéros de tête)
+    } else {
+      setText(formatFr(val)); // saisie invalide/incomplète → on restaure
+    }
+  }
+  function onInputKeyDown(e: React.KeyboardEvent) {
+    if (e.key === "ArrowDown" && !open) {
+      e.preventDefault();
+      openCal();
+    } else if (e.key === "Enter" && open) {
+      e.preventDefault();
+      closeCal();
+    }
+  }
 
   // Grille de 42 cellules (6 semaines), lundi d'abord.
   const monthStart = new Date(view.y, view.m, 1);
@@ -188,14 +270,16 @@ export function DateField({
   }
 
   const today = todayIso();
-  const outOfRange = (iso: string) =>
-    (!!min && iso < min) || (!!max && iso > max);
+  function outOfRange(iso: string) {
+    return (!!min && iso < min) || (!!max && iso > max);
+  }
 
   function selectDay(iso: string) {
     if (outOfRange(iso)) return;
     setVal(iso);
+    setText(formatFr(iso));
     closeCal();
-    triggerRef.current?.focus();
+    inputRef.current?.focus();
   }
   function shiftMonth(delta: number) {
     setView((v) => {
@@ -211,48 +295,70 @@ export function DateField({
     <div ref={rootRef} className={cn("relative", className)}>
       {name && <input type="hidden" name={name} value={val} readOnly />}
 
-      <button
-        ref={triggerRef}
-        type="button"
-        id={fieldId}
-        disabled={disabled}
-        onClick={() => (open ? closeCal() : openCal())}
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        aria-label={ariaLabel}
+      <div
         className={cn(
-          "group flex w-full h-11 items-center justify-between gap-2 rounded-xl border bg-white px-3.5 text-[15px]",
+          "group flex w-full h-11 items-center gap-2 rounded-xl border bg-white px-3.5 text-[15px]",
           "dark:bg-[hsl(var(--surface))] dark:text-[hsl(var(--text))] dark:border-[hsl(var(--border))]",
-          "transition-[border-color,box-shadow,transform] duration-150 ease-premium",
-          "focus:outline-none focus-visible:ring-2 focus-visible:ring-navy-600/15 focus-visible:border-navy-600",
-          "active:scale-[0.99] motion-reduce:active:scale-100",
-          "disabled:bg-navy-50 disabled:text-slate-400 disabled:cursor-not-allowed dark:disabled:bg-[hsl(var(--surface-2))]",
-          open && "border-navy-600 ring-2 ring-navy-600/15 dark:border-signal-500 dark:ring-signal-500/20",
+          "transition-[border-color,box-shadow] duration-150 ease-premium",
+          "focus-within:outline-none focus-within:ring-2 focus-within:ring-navy-600/15 focus-within:border-navy-600",
+          "dark:focus-within:border-signal-500 dark:focus-within:ring-signal-500/20",
+          disabled &&
+            "bg-navy-50 text-slate-400 cursor-not-allowed dark:bg-[hsl(var(--surface-2))]",
+          open &&
+            "border-navy-600 ring-2 ring-navy-600/15 dark:border-signal-500 dark:ring-signal-500/20",
           !open && invalid && "border-rose-400 ring-2 ring-rose-500/15",
           !open && !invalid && "border-navy-200"
         )}
       >
-        <span
+        <input
+          ref={inputRef}
+          id={fieldId}
+          type="text"
+          inputMode="numeric"
+          autoComplete="off"
+          disabled={disabled}
+          value={text}
+          onChange={onType}
+          onFocus={onInputFocus}
+          onBlur={onInputBlur}
+          onKeyDown={onInputKeyDown}
+          placeholder={placeholder}
+          maxLength={10}
+          aria-label={ariaLabel}
+          aria-invalid={invalid || undefined}
           className={cn(
-            "truncate tabular-nums",
-            val
-              ? "text-navy-900 dark:text-[hsl(var(--text))]"
-              : "text-slate-400 dark:text-[hsl(var(--text-muted))]"
-          )}
-        >
-          {val ? formatFr(val) : placeholder}
-        </span>
-        <Calendar
-          className={cn(
-            "h-4 w-4 shrink-0 transition-colors",
-            open ? "text-navy-700 dark:text-signal-400" : "text-slate-400 group-hover:text-navy-600"
+            "min-w-0 flex-1 bg-transparent tabular-nums outline-none",
+            "text-navy-900 dark:text-[hsl(var(--text))]",
+            "placeholder:text-slate-400 dark:placeholder:text-[hsl(var(--text-muted))]",
+            "disabled:cursor-not-allowed"
           )}
         />
-      </button>
+        <button
+          ref={triggerRef}
+          type="button"
+          disabled={disabled}
+          onClick={() => (open ? closeCal() : openCal())}
+          tabIndex={-1}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          aria-label="Ouvrir le calendrier"
+          className={cn(
+            "shrink-0 -mr-1 inline-flex h-7 w-7 items-center justify-center rounded-lg transition-colors",
+            "active:scale-90 motion-reduce:active:scale-100",
+            "focus:outline-none focus-visible:ring-2 focus-visible:ring-navy-600/30",
+            "disabled:cursor-not-allowed",
+            open
+              ? "text-navy-700 dark:text-signal-400"
+              : "text-slate-400 hover:text-navy-600 hover:bg-navy-50 dark:hover:bg-white/10"
+          )}
+        >
+          <Calendar className="h-4 w-4" />
+        </button>
+      </div>
 
       {invalid && (
         <p className="mt-1.5 text-xs font-medium text-rose-600">
-          Veuillez sélectionner une date.
+          Veuillez saisir ou sélectionner une date.
         </p>
       )}
 
@@ -345,6 +451,7 @@ export function DateField({
               type="button"
               onClick={() => {
                 setVal("");
+                setText("");
                 closeCal();
               }}
               className="rounded-md px-1.5 py-1 text-xs font-medium text-slate-500 transition-colors hover:text-rose-600"
