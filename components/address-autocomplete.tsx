@@ -12,44 +12,78 @@ interface Suggestion {
   city: string;
 }
 
+export interface AddressValue {
+  address: string;
+  postcode: string;
+  city: string;
+}
+
 /**
  * Autocomplétion d'adresse française via la Base Adresse Nationale
  * (api-adresse.data.gouv.fr — officielle, gratuite, sans clé, RGPD-friendly).
  *
- * Rend les 3 champs (adresse / code postal / ville) avec des `name` standards
- * → compatible avec un formulaire non contrôlé (FormData). Sélectionner une
- * suggestion remplit automatiquement code postal + ville.
+ * Deux modes :
+ *  • Non contrôlé (par défaut) → rend 3 champs `name` standards
+ *    (adresse / code_postal / ville) compatibles FormData. Utilisé par le
+ *    formulaire de contact public.
+ *  • Contrôlé → fournir `value` + `onChange` (le parent possède l'état).
+ *    Utilisé par le back-office (formulaire React contrôlé, import de lead).
+ *
+ * Sélectionner une suggestion remplit automatiquement code postal + ville.
  */
 export function AddressAutocomplete({
   theme = "dark",
+  idPrefix = "addr",
   defaultAddress = "",
   defaultPostcode = "",
   defaultCity = "",
-  idPrefix = "addr",
+  value,
+  onChange,
+  labels,
 }: {
   theme?: "dark" | "light";
+  idPrefix?: string;
   defaultAddress?: string;
   defaultPostcode?: string;
   defaultCity?: string;
-  idPrefix?: string;
+  /** Mode contrôlé : fournir `value` ET `onChange` (le parent gère l'état). */
+  value?: AddressValue;
+  onChange?: (next: AddressValue) => void;
+  /** Libellés personnalisés (par défaut : variantes « (facultatif) »). */
+  labels?: { address?: string; postcode?: string; city?: string };
 }) {
-  const [address, setAddress] = useState(defaultAddress);
-  const [postcode, setPostcode] = useState(defaultPostcode);
-  const [city, setCity] = useState(defaultCity);
+  const controlled = value !== undefined && typeof onChange === "function";
+  const [internal, setInternal] = useState<AddressValue>({
+    address: defaultAddress,
+    postcode: defaultPostcode,
+    city: defaultCity,
+  });
+  const current = controlled ? (value as AddressValue) : internal;
+
+  function update(patch: Partial<AddressValue>) {
+    const next = { ...current, ...patch };
+    if (controlled) onChange!(next);
+    else setInternal(next);
+  }
+
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [active, setActive] = useState(-1);
   const boxRef = useRef<HTMLDivElement>(null);
   const skip = useRef(false);
+  const focused = useRef(false);
 
-  // Recherche debouncée sur la BAN.
+  // Recherche debouncée sur la BAN. On ne déclenche que si le champ adresse
+  // a le focus → une mise à jour programmatique (import d'un lead) ne fait
+  // pas surgir le menu de suggestions.
   useEffect(() => {
     if (skip.current) {
       skip.current = false;
       return;
     }
-    const q = address.trim();
+    if (!focused.current) return;
+    const q = current.address.trim();
     if (q.length < 3) {
       setSuggestions([]);
       setOpen(false);
@@ -74,7 +108,7 @@ export function AddressAutocomplete({
           city: f.properties.city ?? "",
         }));
         setSuggestions(sugg);
-        setOpen(sugg.length > 0);
+        setOpen(focused.current && sugg.length > 0);
         setActive(-1);
       } catch {
         /* abort / réseau : on ignore silencieusement */
@@ -86,12 +120,14 @@ export function AddressAutocomplete({
       clearTimeout(id);
       ctrl.abort();
     };
-  }, [address]);
+  }, [current.address]);
 
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
-      if (boxRef.current && !boxRef.current.contains(e.target as Node))
+      if (boxRef.current && !boxRef.current.contains(e.target as Node)) {
         setOpen(false);
+        focused.current = false;
+      }
     };
     document.addEventListener("mousedown", onDown);
     return () => document.removeEventListener("mousedown", onDown);
@@ -99,9 +135,7 @@ export function AddressAutocomplete({
 
   function pick(s: Suggestion) {
     skip.current = true;
-    setAddress(s.name);
-    setPostcode(s.postcode);
-    setCity(s.city);
+    update({ address: s.name, postcode: s.postcode, city: s.city });
     setSuggestions([]);
     setOpen(false);
     setActive(-1);
@@ -126,29 +160,39 @@ export function AddressAutocomplete({
   const dark = theme === "dark";
   const labelCls = dark
     ? "block text-[11px] font-semibold uppercase tracking-[0.16em] text-white/55 mb-2"
-    : "block text-sm font-medium text-navy-900 mb-2";
+    : "block text-sm font-medium text-navy-900 dark:text-[hsl(var(--text))] mb-2";
   const inputCls = dark
     ? "w-full bg-night-50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/60 focus:border-signal-500 focus:outline-none focus:ring-2 focus:ring-signal-500/30"
-    : "w-full h-11 rounded-xl border border-navy-200 bg-white px-3.5 text-[15px] text-navy-900 placeholder:text-slate-400 focus:border-navy-600 focus:outline-none focus:ring-2 focus:ring-navy-600/15";
+    : "w-full h-11 rounded-xl border border-navy-200 bg-white px-3.5 text-[15px] text-navy-900 dark:bg-[hsl(var(--surface))] dark:text-[hsl(var(--text))] dark:border-[hsl(var(--border))] placeholder:text-slate-500 dark:placeholder:text-[hsl(var(--text-muted))] transition-all duration-150 focus:border-navy-600 focus:outline-none focus:ring-2 focus:ring-navy-600/15 dark:focus:border-signal-500 dark:focus:ring-signal-500/20";
   const menuCls = dark
     ? "border-white/10 bg-night-100 text-white"
-    : "border-navy-100 bg-white text-navy-900 shadow-raised";
+    : "border-navy-100 bg-white text-navy-900 shadow-raised dark:bg-[hsl(var(--surface))] dark:text-[hsl(var(--text))] dark:border-[hsl(var(--border))]";
+
+  const lblAddress = labels?.address ?? "Adresse postale (facultatif)";
+  const lblPostcode = labels?.postcode ?? "Code postal (facultatif)";
+  const lblCity = labels?.city ?? "Ville (facultatif)";
 
   return (
     <>
       <div className="relative" ref={boxRef}>
         <label className={labelCls} htmlFor={`${idPrefix}-adresse`}>
-          Adresse postale (facultatif)
+          {lblAddress}
         </label>
         <div className="relative">
           <input
             id={`${idPrefix}-adresse`}
             name="adresse"
             autoComplete="off"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
+            value={current.address}
+            onChange={(e) => update({ address: e.target.value })}
             onKeyDown={onKeyDown}
-            onFocus={() => suggestions.length > 0 && setOpen(true)}
+            onFocus={() => {
+              focused.current = true;
+              if (suggestions.length > 0) setOpen(true);
+            }}
+            onBlur={() => {
+              focused.current = false;
+            }}
             placeholder="Commencez à taper votre adresse…"
             className={inputCls}
             role="combobox"
@@ -191,10 +235,10 @@ export function AddressAutocomplete({
                   i === active
                     ? dark
                       ? "bg-signal-500/15 text-white"
-                      : "bg-navy-50 text-navy-900"
+                      : "bg-navy-50 text-navy-900 dark:bg-white/5 dark:text-[hsl(var(--text))]"
                     : dark
                       ? "text-white/85 hover:bg-white/5"
-                      : "text-navy-800 hover:bg-navy-50"
+                      : "text-navy-800 hover:bg-navy-50 dark:text-[hsl(var(--text))] dark:hover:bg-white/5"
                 )}
               >
                 <MapPin
@@ -213,28 +257,29 @@ export function AddressAutocomplete({
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
           <label className={labelCls} htmlFor={`${idPrefix}-code_postal`}>
-            Code postal (facultatif)
+            {lblPostcode}
           </label>
           <input
             id={`${idPrefix}-code_postal`}
             name="code_postal"
-            value={postcode}
-            onChange={(e) => setPostcode(e.target.value)}
+            value={current.postcode}
+            onChange={(e) => update({ postcode: e.target.value })}
             placeholder="77100"
             inputMode="numeric"
+            maxLength={10}
             autoComplete="postal-code"
             className={inputCls}
           />
         </div>
         <div>
           <label className={labelCls} htmlFor={`${idPrefix}-ville`}>
-            Ville (facultatif)
+            {lblCity}
           </label>
           <input
             id={`${idPrefix}-ville`}
             name="ville"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
+            value={current.city}
+            onChange={(e) => update({ city: e.target.value })}
             placeholder="Meaux"
             autoComplete="address-level2"
             className={inputCls}

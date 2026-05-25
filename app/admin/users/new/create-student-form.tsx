@@ -7,6 +7,7 @@ import { Input, Label } from "@/components/ui/input";
 import { DateField } from "@/components/ui/date-field";
 import { Select } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toast";
+import { AddressAutocomplete } from "@/components/address-autocomplete";
 import { createStudent } from "../actions";
 import {
   User,
@@ -433,59 +434,60 @@ export function CreateStudentForm({
         index={0}
         stagger={stagger}
       >
-        <div className="grid md:grid-cols-2 gap-4">
-          <Field label="Nom complet" required>
-            <Input
-              value={f.full_name}
-              onChange={up("full_name")}
-              placeholder="Prénom Nom"
-              autoFocus
-            />
-          </Field>
-          <Field label="Email" required>
-            <Input
-              type="email"
-              value={f.email}
-              onChange={up("email")}
-              placeholder="prenom.nom@exemple.fr"
-            />
-          </Field>
-          <Field label="Téléphone">
-            <Input
-              type="tel"
-              value={f.phone}
-              onChange={up("phone")}
-              placeholder="06 XX XX XX XX"
-            />
-          </Field>
-          <Field label="Date de naissance">
-            <DateField
-              value={f.date_naissance}
-              onChange={(v) => setF((s) => ({ ...s, date_naissance: v }))}
-            />
-          </Field>
-          <Field label="Adresse" className="md:col-span-2">
-            <Input
-              value={f.adresse}
-              onChange={up("adresse")}
-              placeholder="N° et nom de la voie"
-            />
-          </Field>
-          <Field label="Code postal">
-            <Input
-              value={f.code_postal}
-              onChange={up("code_postal")}
-              placeholder="75001"
-              maxLength={10}
-            />
-          </Field>
-          <Field label="Ville">
-            <Input
-              value={f.ville}
-              onChange={up("ville")}
-              placeholder="Paris"
-            />
-          </Field>
+        <div className="space-y-4">
+          <div className="grid md:grid-cols-2 gap-4">
+            <Field label="Nom complet" required>
+              <Input
+                value={f.full_name}
+                onChange={up("full_name")}
+                placeholder="Prénom Nom"
+                autoFocus
+              />
+            </Field>
+            <Field label="Email" required>
+              <Input
+                type="email"
+                value={f.email}
+                onChange={up("email")}
+                placeholder="prenom.nom@exemple.fr"
+              />
+            </Field>
+            <Field label="Téléphone">
+              <Input
+                type="tel"
+                value={f.phone}
+                onChange={up("phone")}
+                placeholder="06 XX XX XX XX"
+              />
+            </Field>
+            <Field label="Date de naissance">
+              <DateField
+                value={f.date_naissance}
+                onChange={(v) => setF((s) => ({ ...s, date_naissance: v }))}
+              />
+            </Field>
+          </div>
+          {/* Adresse avec autocomplétion BAN — sélectionner une suggestion
+              remplit automatiquement code postal + ville. Mode contrôlé pour
+              rester synchro avec l'import de lead. */}
+          <AddressAutocomplete
+            theme="light"
+            idPrefix="student"
+            labels={{ address: "Adresse", postcode: "Code postal", city: "Ville" }}
+            value={{
+              address: f.adresse,
+              postcode: f.code_postal,
+              city: f.ville,
+            }}
+            onChange={(v) =>
+              setF((s) => ({
+                ...s,
+                adresse: v.address,
+                code_postal: v.postcode,
+                ville: v.city,
+              }))
+            }
+          />
         </div>
       </Section>
 
