@@ -6,6 +6,13 @@ import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { ConfirmAction } from "@/components/ui/confirm-action";
+import {
+  SortHeader,
+  nextSort,
+  cmpStr,
+  cmpNum,
+  type SortState,
+} from "@/components/ui/sortable";
 import { formatDate, initials, scoreColor } from "@/lib/utils";
 import {
   Search,
@@ -59,6 +66,23 @@ const ROLE_TONE: Record<Role, "gold" | "navy" | "amber" | "rose"> = {
   admin: "amber", // ambre (= bouton Admin)
   super_admin: "rose", // rouge — privilège le plus élevé
 };
+
+// Ordre de privilège pour le tri par rôle.
+const ROLE_ORDER: Record<Role, number> = {
+  student: 0,
+  trainer: 1,
+  admin: 2,
+  super_admin: 3,
+};
+
+type UserSortKey =
+  | "name"
+  | "group"
+  | "role"
+  | "activity"
+  | "score"
+  | "lastSignIn"
+  | "status";
 
 interface Group {
   id: string;
@@ -119,6 +143,10 @@ export function UsersTable({
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [groupFilter, setGroupFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [sort, setSort] = useState<SortState<UserSortKey>>({
+    key: null,
+    dir: "asc",
+  });
 
   const filtered = useMemo(() => {
     return users.filter((u) => {
@@ -133,7 +161,52 @@ export function UsersTable({
     });
   }, [users, roleFilter, groupFilter, statusFilter]);
 
-  const groupsById = new Map(groups.map((g) => [g.id, g]));
+  const groupsById = useMemo(
+    () => new Map(groups.map((g) => [g.id, g])),
+    [groups]
+  );
+
+  // Tri par en-tête — opère sur la page courante (comme les filtres client).
+  const sorted = useMemo(() => {
+    if (!sort.key) return filtered;
+    const key = sort.key;
+    const arr = [...filtered];
+    arr.sort((a, b) => {
+      let c = 0;
+      switch (key) {
+        case "name":
+          c = cmpStr(a.full_name || a.email, b.full_name || b.email);
+          break;
+        case "group":
+          c = cmpStr(
+            a.group_id ? groupsById.get(a.group_id)?.name : "",
+            b.group_id ? groupsById.get(b.group_id)?.name : ""
+          );
+          break;
+        case "role":
+          c = (ROLE_ORDER[a.role] ?? 9) - (ROLE_ORDER[b.role] ?? 9);
+          break;
+        case "activity":
+          c = cmpNum(a.attempts_count, b.attempts_count);
+          break;
+        case "score":
+          c = cmpNum(a.avg_score, b.avg_score);
+          break;
+        case "lastSignIn":
+          c = cmpStr(a.last_sign_in_at ?? "", b.last_sign_in_at ?? "");
+          break;
+        case "status":
+          c = cmpNum(a.disabled ? 1 : 0, b.disabled ? 1 : 0);
+          break;
+      }
+      return sort.dir === "asc" ? c : -c;
+    });
+    return arr;
+  }, [filtered, sort, groupsById]);
+
+  function toggleSort(key: UserSortKey) {
+    setSort((s) => nextSort(s, key));
+  }
 
   function run(fn: () => Promise<any>, okMsg: string) {
     startTransition(async () => {
@@ -198,18 +271,18 @@ export function UsersTable({
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-navy-50/60 text-[11px] uppercase tracking-wider text-slate-600">
-                <th className="text-left px-5 py-3 font-semibold">Utilisateur</th>
-                <th className="hidden xl:table-cell text-left px-5 py-3 font-semibold">Classe</th>
-                <th className="hidden md:table-cell text-left px-5 py-3 font-semibold">Rôle</th>
-                <th className="hidden lg:table-cell text-left px-5 py-3 font-semibold">Activité</th>
-                <th className="hidden lg:table-cell text-left px-5 py-3 font-semibold">Score moy.</th>
-                <th className="hidden xl:table-cell text-left px-5 py-3 font-semibold">Dernière conn.</th>
-                <th className="hidden md:table-cell text-left px-5 py-3 font-semibold">Statut</th>
+                <SortHeader label="Utilisateur" col="name" sort={sort} onSort={toggleSort} className="px-5" />
+                <SortHeader label="Classe" col="group" sort={sort} onSort={toggleSort} className="hidden xl:table-cell px-5" />
+                <SortHeader label="Rôle" col="role" sort={sort} onSort={toggleSort} className="hidden md:table-cell px-5" />
+                <SortHeader label="Activité" col="activity" sort={sort} onSort={toggleSort} className="hidden lg:table-cell px-5" />
+                <SortHeader label="Score moy." col="score" sort={sort} onSort={toggleSort} className="hidden lg:table-cell px-5" />
+                <SortHeader label="Dernière conn." col="lastSignIn" sort={sort} onSort={toggleSort} className="hidden xl:table-cell px-5" />
+                <SortHeader label="Statut" col="status" sort={sort} onSort={toggleSort} className="hidden md:table-cell px-5" />
                 <th className="text-right px-5 py-3 font-semibold">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((u) => {
+              {sorted.map((u) => {
                 const group = u.group_id ? groupsById.get(u.group_id) : null;
                 return (
                   <tr

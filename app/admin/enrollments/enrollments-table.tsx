@@ -10,15 +10,13 @@ import {
   Trash2,
   GraduationCap,
   Search,
-  ChevronUp,
-  ChevronDown,
-  ChevronsUpDown,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { PackChip } from "@/components/ui/pack-chip";
 import { ConfirmAction } from "@/components/ui/confirm-action";
+import { SortHeader, nextSort, type SortState } from "@/components/ui/sortable";
 import { findFormation } from "@/lib/formations-config";
 import { deleteEnrollment, setEnrollmentStatus } from "./actions";
 
@@ -84,9 +82,7 @@ export function EnrollmentsTable({ enrollments }: { enrollments: any[] }) {
   const [fFormation, setFFormation] = useState("");
   const [fPack, setFPack] = useState("");
   const [fStatut, setFStatut] = useState("");
-  const [sort, setSort] = useState<{ key: SortKey | null; dir: "asc" | "desc" }>(
-    { key: null, dir: "asc" }
-  );
+  const [sort, setSort] = useState<SortState<SortKey>>({ key: null, dir: "asc" });
 
   const rows = useMemo<Row[]>(
     () =>
@@ -199,11 +195,7 @@ export function EnrollmentsTable({ enrollments }: { enrollments: any[] }) {
   }, [filtered, sort]);
 
   function toggleSort(key: SortKey) {
-    setSort((s) =>
-      s.key === key
-        ? { key, dir: s.dir === "asc" ? "desc" : "asc" }
-        : { key, dir: "asc" }
-    );
+    setSort((s) => nextSort(s, key));
   }
 
   const hasFilters = q || fFormation || fPack || fStatut;
@@ -412,51 +404,6 @@ export function EnrollmentsTable({ enrollments }: { enrollments: any[] }) {
         </table>
       </div>
     </div>
-  );
-}
-
-function SortHeader({
-  label,
-  col,
-  sort,
-  onSort,
-  align = "left",
-  className,
-}: {
-  label: string;
-  col: SortKey;
-  sort: { key: SortKey | null; dir: "asc" | "desc" };
-  onSort: (k: SortKey) => void;
-  align?: "left" | "right";
-  className?: string;
-}) {
-  const active = sort.key === col;
-  return (
-    <th
-      aria-sort={active ? (sort.dir === "asc" ? "ascending" : "descending") : "none"}
-      className={cn("px-4 py-3", align === "right" ? "text-right" : "text-left", className)}
-    >
-      <button
-        type="button"
-        onClick={() => onSort(col)}
-        className={cn(
-          "group/sort inline-flex items-center gap-1 uppercase tracking-wider transition-colors hover:text-navy-900 dark:hover:text-[hsl(var(--text))]",
-          align === "right" && "flex-row-reverse",
-          active && "text-navy-900 dark:text-[hsl(var(--text))]"
-        )}
-      >
-        <span>{label}</span>
-        {active ? (
-          sort.dir === "asc" ? (
-            <ChevronUp className="h-3.5 w-3.5" />
-          ) : (
-            <ChevronDown className="h-3.5 w-3.5" />
-          )
-        ) : (
-          <ChevronsUpDown className="h-3.5 w-3.5 opacity-0 transition-opacity group-hover/sort:opacity-60" />
-        )}
-      </button>
-    </th>
   );
 }
 
