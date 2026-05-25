@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { FORMATIONS } from "@/lib/formations-config";
+import { AddressAutocomplete } from "@/components/address-autocomplete";
 
 const PACK_LABEL: Record<string, string> = {
   initial: "Initial",
@@ -83,27 +84,9 @@ export function ContactForm() {
       </div>
 
       {/* Adresse complète (facultative mais accélère l'inscription une
-          fois le lead converti — évite à l'admin de redemander). */}
-      <Field
-        name="adresse"
-        label="Adresse postale (facultatif)"
-        placeholder="N° et nom de la voie"
-        autoComplete="street-address"
-      />
-      <div className="grid sm:grid-cols-2 gap-4">
-        <Field
-          name="code_postal"
-          label="Code postal (facultatif)"
-          placeholder="77100"
-          autoComplete="postal-code"
-        />
-        <Field
-          name="ville"
-          label="Ville (facultatif)"
-          placeholder="Meaux"
-          autoComplete="address-level2"
-        />
-      </div>
+          fois le lead converti — évite à l'admin de redemander).
+          Autocomplétion via la Base Adresse Nationale (officielle, sans clé). */}
+      <AddressAutocomplete theme="dark" idPrefix="contact" />
 
       <div>
         <Label htmlFor="contact-formation">Formation qui vous intéresse</Label>
