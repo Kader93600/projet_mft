@@ -90,6 +90,20 @@ export function DocumentsFilters({
           </option>
         ))}
       </select>
+
+      {/* Tri (liste de cartes → menu déroulant plutôt qu'en-têtes) */}
+      <select
+        value={params?.get("sort") ?? ""}
+        onChange={(e) => setParam("sort", e.target.value)}
+        className={selectCls}
+        aria-label="Trier les documents"
+      >
+        <option value="">Tri : plus récents</option>
+        <option value="date_asc">Plus anciens</option>
+        <option value="name">Stagiaire (A→Z)</option>
+        <option value="statut">Statut</option>
+        <option value="formation">Formation</option>
+      </select>
     </div>
   );
 }

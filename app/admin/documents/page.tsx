@@ -32,6 +32,7 @@ export default async function AdminDocumentsPage({
     formation?: string;
     motif?: string;
     statut?: string;
+    sort?: string;
   };
 }) {
   const supabase = createClient();
@@ -74,6 +75,29 @@ export default async function AdminDocumentsPage({
         .includes(q)
     );
   }
+
+  // Tri (par défaut : plus récents). Effectué en mémoire — le jeu est borné
+  // à 500 lignes et certains critères viennent de joins.
+  const studentName = (d: any) =>
+    d.profiles?.full_name || d.profiles?.email || "";
+  const sort = searchParams?.sort ?? "";
+  docs = [...docs].sort((a, b) => {
+    switch (sort) {
+      case "date_asc":
+        return String(a.created_at).localeCompare(String(b.created_at));
+      case "name":
+        return studentName(a).localeCompare(studentName(b), "fr");
+      case "statut":
+        return String(a.status).localeCompare(String(b.status), "fr");
+      case "formation":
+        return (a.formations?.title || "").localeCompare(
+          b.formations?.title || "",
+          "fr"
+        );
+      default:
+        return String(b.created_at).localeCompare(String(a.created_at));
+    }
+  });
 
   // URLs signées (1 h).
   const signedMap: Record<string, string> = {};
