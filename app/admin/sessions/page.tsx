@@ -16,6 +16,7 @@ import {
   Clock3,
   Sparkles,
 } from "lucide-react";
+import { UrlSearchInput } from "@/components/ui/url-search-input";
 
 export const dynamic = "force-dynamic";
 
@@ -55,7 +56,7 @@ function fmtDuration(start: string, end: string): string {
 export default async function AdminSessionsPage({
   searchParams,
 }: {
-  searchParams?: { filter?: string };
+  searchParams?: { filter?: string; q?: string };
 }) {
   const supabase = createClient();
   const { slugs, isStaff } = await getAuthorizedFormationSlugs();
@@ -80,6 +81,10 @@ export default async function AdminSessionsPage({
   }
 
   const filter = searchParams?.filter ?? "upcoming";
+  const qRaw = searchParams?.q ?? "";
+  const q = qRaw.trim().toLowerCase();
+  const tabHref = (f: string) =>
+    `/admin/sessions?filter=${f}${qRaw ? `&q=${encodeURIComponent(qRaw)}` : ""}`;
   const now = new Date().toISOString();
   if (filter === "upcoming") {
     query = query.gte("end_at", now).neq("status", "cancelled");
@@ -90,6 +95,18 @@ export default async function AdminSessionsPage({
   }
 
   const { data: sessions } = await query;
+
+  // Recherche libre (titre / formateur / formation) appliquée après l'onglet.
+  let list = (sessions ?? []) as any[];
+  if (q) {
+    list = list.filter(
+      (s) =>
+        (s.title ?? "").toLowerCase().includes(q) ||
+        (s.trainer?.full_name ?? "").toLowerCase().includes(q) ||
+        (s.trainer?.email ?? "").toLowerCase().includes(q) ||
+        ((s.formations as any)?.title ?? "").toLowerCase().includes(q)
+    );
+  }
 
   // Compteurs pour les onglets
   const [upcoming, past, cancelled] = await Promise.all([
@@ -120,6 +137,9 @@ export default async function AdminSessionsPage({
             Planning, visioconférences (Zoom / Teams / Meet) et émargement
             horodaté Qualiopi. Réservé aux stagiaires Premium.
           </p>
+          <div className="mt-4 max-w-sm">
+            <UrlSearchInput placeholder="Rechercher (titre, formateur)…" />
+          </div>
         </div>
         <Link href="/admin/sessions/new">
           <Button variant="gold" size="md">
@@ -132,36 +152,42 @@ export default async function AdminSessionsPage({
       {/* Onglets de filtre */}
       <div className="flex items-center gap-2 flex-wrap border-b border-navy-100 pb-1">
         <FilterTab
-          href="/admin/sessions?filter=upcoming"
+          href={tabHref("upcoming")}
           active={filter === "upcoming"}
           label="À venir"
           count={upcoming.count ?? 0}
         />
         <FilterTab
-          href="/admin/sessions?filter=past"
+          href={tabHref("past")}
           active={filter === "past"}
           label="Passées"
           count={past.count ?? 0}
         />
         <FilterTab
-          href="/admin/sessions?filter=cancelled"
+          href={tabHref("cancelled")}
           active={filter === "cancelled"}
           label="Annulées"
           count={cancelled.count ?? 0}
         />
         <FilterTab
-          href="/admin/sessions?filter=all"
+          href={tabHref("all")}
           active={filter === "all"}
           label="Toutes"
         />
       </div>
 
       {/* Liste */}
-      {!sessions?.length ? (
-        <EmptyState filter={filter} />
+      {!list.length ? (
+        q ? (
+          <div className="rounded-2xl border border-dashed border-navy-200 bg-ivory/50 px-8 py-12 text-center text-sm text-slate-500">
+            Aucune session ne correspond à «&nbsp;{qRaw}&nbsp;».
+          </div>
+        ) : (
+          <EmptyState filter={filter} />
+        )
       ) : (
         <ul className="grid gap-3">
-          {sessions.map((s: any) => {
+          {list.map((s: any) => {
             const Kind = KIND_LABEL[s.kind] ?? KIND_LABEL.distanciel;
             const Status = STATUS_LABEL[s.status] ?? STATUS_LABEL.scheduled;
             const enrolled = (s.enrollments ?? []).filter(

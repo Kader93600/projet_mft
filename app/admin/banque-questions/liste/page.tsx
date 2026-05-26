@@ -46,6 +46,7 @@ export default async function BanqueQuestionsListPage({
     type?: string;
     status?: string;
     module?: string;
+    sort?: string;
     page?: string;
   };
 }) {
@@ -56,15 +57,15 @@ export default async function BanqueQuestionsListPage({
   const typeFilter = searchParams?.type ?? "";
   const statusFilter = searchParams?.status ?? "";
   const moduleFilter = searchParams?.module ?? "";
+  const sortParam = searchParams?.sort ?? "";
   const page = Math.max(1, parseInt(searchParams?.page ?? "1", 10));
 
-  // Construction de la requête
+  // Construction de la requête (l'ordre est appliqué plus bas selon `sort`).
   let query = supabase
     .from("question_bank")
     .select("id, statement, type, choices, difficulty, tags, active, source_ref", {
       count: "exact",
-    })
-    .order("source_ref", { ascending: true });
+    });
 
   if (formationSlug) {
     const f = findFormation(formationSlug);
@@ -104,6 +105,18 @@ export default async function BanqueQuestionsListPage({
     query = query.contains("tags", [`${filterConfig.tagPrefix}${moduleFilter}`]);
   if (search) query = query.ilike("statement", `%${search}%`);
 
+  // Tri (par défaut : référence). source_ref reste critère secondaire pour un
+  // ordre stable, indispensable avec la pagination.
+  if (sortParam === "type") {
+    query = query.order("type").order("source_ref");
+  } else if (sortParam === "difficulty") {
+    query = query.order("difficulty").order("source_ref");
+  } else if (sortParam === "status") {
+    query = query.order("active", { ascending: false }).order("source_ref");
+  } else {
+    query = query.order("source_ref", { ascending: true });
+  }
+
   const { data, count } = await query.range(
     (page - 1) * PAGE_SIZE,
     page * PAGE_SIZE - 1
@@ -122,6 +135,7 @@ export default async function BanqueQuestionsListPage({
       type: typeFilter,
       status: statusFilter,
       module: moduleFilter,
+      sort: sortParam,
       ...overrides,
     };
     Object.entries(merged).forEach(([k, v]) => {
@@ -236,6 +250,17 @@ export default async function BanqueQuestionsListPage({
               })),
             ]}
             buildUrl={(v) => buildUrl({ module: v || undefined, page: "1" })}
+          />
+          <SelectFilter
+            label="Tri"
+            value={sortParam}
+            options={[
+              { v: "", l: "Référence" },
+              { v: "type", l: "Type" },
+              { v: "difficulty", l: "Difficulté" },
+              { v: "status", l: "Statut" },
+            ]}
+            buildUrl={(v) => buildUrl({ sort: v || undefined, page: "1" })}
           />
         </div>
       </section>

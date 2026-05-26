@@ -20,6 +20,7 @@ import {
   deleteEnrollmentRequest,
   setRequestStatus,
 } from "../enrollments/actions";
+import { UrlSearchInput } from "@/components/ui/url-search-input";
 
 export const dynamic = "force-dynamic";
 
@@ -45,7 +46,11 @@ const STATUS_TONE: Record<string, "gold" | "navy" | "success" | "slate" | "rose"
   refuse: "slate",
 };
 
-export default async function AdminCrmPage() {
+export default async function AdminCrmPage({
+  searchParams,
+}: {
+  searchParams?: { q?: string };
+}) {
   const supabase = createClient();
   const {
     data: { user },
@@ -59,11 +64,18 @@ export default async function AdminCrmPage() {
     .maybeSingle();
   if (!profile?.role || !isStaff(profile.role)) redirect("/dashboard");
 
+  // Recherche transversale (nom / email), appliquée aux trois listes.
+  const q = (searchParams?.q ?? "").trim().toLowerCase();
+  const matchesSearch = (l: any) =>
+    !q ||
+    (l.full_name ?? "").toLowerCase().includes(q) ||
+    (l.email ?? "").toLowerCase().includes(q);
+
   // Ma file : leads qui me sont assignés
   const { data: myQueueRaw } = await supabase
     .from("crm_my_queue")
     .select("*");
-  const myQueue = (myQueueRaw ?? []) as any[];
+  const myQueue = ((myQueueRaw ?? []) as any[]).filter(matchesSearch);
 
   // Pipeline counters
   const { data: countersRaw } = await supabase
@@ -82,7 +94,7 @@ export default async function AdminCrmPage() {
     .in("status", PIPELINE_ORDER)
     .order("created_at", { ascending: false })
     .limit(60);
-  const pool = (poolRaw ?? []) as any[];
+  const pool = ((poolRaw ?? []) as any[]).filter(matchesSearch);
 
   // Leads convertis ou refusés (statut terminal). Sans ce bloc, un lead
   // "inscrit" disparaît de toutes les vues admin alors qu'il n'a peut-être
@@ -96,7 +108,7 @@ export default async function AdminCrmPage() {
     .in("status", ["inscrit", "refuse"])
     .order("created_at", { ascending: false })
     .limit(60);
-  const closed = (closedRaw ?? []) as any[];
+  const closed = ((closedRaw ?? []) as any[]).filter(matchesSearch);
 
   // Stats globales
   const totalNew = counters.find((c) => c.status === "nouveau")?.count ?? 0;
@@ -128,6 +140,15 @@ export default async function AdminCrmPage() {
           inscription. Prenez en charge un lead, ajoutez des notes après
           chaque échange, et planifiez vos relances.
         </p>
+        <div className="mt-4 max-w-sm">
+          <UrlSearchInput placeholder="Rechercher un lead (nom, email)…" />
+        </div>
+        {q && (
+          <p className="mt-2 text-xs text-slate-500">
+            Résultats filtrés pour «&nbsp;{q}&nbsp;» — les compteurs ci-dessous
+            restent globaux.
+          </p>
+        )}
       </header>
 
       {/* KPIs */}
