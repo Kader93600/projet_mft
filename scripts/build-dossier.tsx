@@ -6,11 +6,13 @@
 // Sortie    :  livraison/dossier-premium-mft.pdf
 // =====================================================================
 import React from "react";
+import path from "node:path";
 import {
   Document,
   Page,
   View,
   Text,
+  Image,
   Svg,
   Path,
   Circle,
@@ -269,6 +271,29 @@ function Callout({ title, children, tone = "navy" }: { title: string; children: 
   );
 }
 
+// Capture d'écran réelle présentée dans un cadre « navigateur » stylisé.
+const SHOT_DIR = path.join(process.cwd(), "livraison", "screenshots");
+function Shot({ name, url, caption }: { name: string; url: string; caption?: string }) {
+  return (
+    <View wrap={false} style={{ marginTop: 6, marginBottom: 6 }}>
+      <View style={{ borderRadius: 10, borderWidth: 0.75, borderColor: C.border, overflow: "hidden", backgroundColor: C.paper }}>
+        <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: C.navy, paddingHorizontal: 9, paddingVertical: 5 }}>
+          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: "#F87171", marginRight: 4 }} />
+          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: "#FBBF24", marginRight: 4 }} />
+          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: C.lime, marginRight: 4 }} />
+          <View style={{ flex: 1, marginLeft: 8, backgroundColor: C.navy2, borderRadius: 5, paddingHorizontal: 8, paddingVertical: 3 }}>
+            <Text style={{ fontSize: 6.5, color: C.whiteDim }}>{url}</Text>
+          </View>
+        </View>
+        <Image src={path.join(SHOT_DIR, `${name}.png`)} style={{ width: "100%" }} />
+      </View>
+      {caption ? (
+        <Text style={{ fontSize: 7.5, color: C.muted, marginTop: 4, lineHeight: 1.4 }}>{caption}</Text>
+      ) : null}
+    </View>
+  );
+}
+
 // Feature card : titre + objectif + fonctionnement + bénéfices
 function Feature({
   title,
@@ -498,6 +523,33 @@ function Sec01() {
             </View>
           </View>
         ))}
+      </View>
+    </Page>
+  );
+}
+
+// Galerie de captures réelles
+function Gallery() {
+  return (
+    <Page size="A4" style={s.pageLight}>
+      <Footer />
+      <SectionHead
+        n="—"
+        title="Aperçu de la plateforme"
+        intro="Captures réelles de l'espace stagiaire, prises sur un compte de démonstration. L'interface est entièrement en français, responsive, et déclinée en mode clair et sombre."
+      />
+      <Shot
+        name="dashboard"
+        url="app.maformationtransport.fr  ·  Tableau de bord"
+        caption="Tableau de bord stagiaire : formation en cours, progression globale, niveau et points d'expérience, et la prochaine action recommandée pour ne jamais perdre le fil."
+      />
+      <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 4 }}>
+        <View style={{ width: "48.5%" }}>
+          <Shot name="quiz" url="·  Quiz" caption="Lancement d'un quiz : consignes, nombre de questions, seuil de réussite et mode d'entraînement." />
+        </View>
+        <View style={{ width: "48.5%" }}>
+          <Shot name="reussites" url="·  Réussites" caption="Gamification : rang, points d'expérience, badges et série de connexion." />
+        </View>
       </View>
     </Page>
   );
@@ -764,7 +816,13 @@ function Sec04() {
         </Card>
       </View>
 
-      <Text style={s.h2}>Évaluations : du QCM à l'épreuve rédigée</Text>
+      <Shot
+        name="module"
+        url="·  Module D — Activité financière"
+        caption="Vue d'un module : objectifs, durée, nombre de leçons et de quiz, vidéo d'introduction et bouton de démarrage de la première leçon."
+      />
+
+      <Text style={[s.h2, { marginTop: 6 }]}>Évaluations : du QCM à l'épreuve rédigée</Text>
       <View style={{ marginTop: 7, marginBottom: 12 }}>
         <Bullet><Text style={{ fontFamily: "Helvetica-Bold", color: C.navy }}>QCM auto-corrigés</Text> : entraînement et évaluation instantanés, paramétrables (seuil, tentatives, minuteur).</Bullet>
         <Bullet><Text style={{ fontFamily: "Helvetica-Bold", color: C.navy }}>Questions rédigées</Text> : réponses libres notées par le formateur, au plus près des épreuves du jury.</Bullet>
@@ -851,6 +909,12 @@ function Sec05() {
           </View>
         </Card>
       </View>
+
+      <Shot
+        name="emargement"
+        url="·  Émargement"
+        caption="Feuille d'émargement stagiaire : signature horodatée par session, avec empreinte SHA-256, adresse IP et horodatage stockés comme preuve d'intégrité (indicateur 11)."
+      />
 
       <Callout title="Une conception orientée preuve" tone="gold">
         Chaque action sensible est horodatée, tracée et protégée. Cette logique (empreintes de sécurité, journaux,
@@ -1152,6 +1216,7 @@ function Dossier() {
 
       <Divider n="01" title="Présentation générale" sub="Le concept, la plateforme, le catalogue de formations, les utilisateurs et la vision globale." points={["L'école 100 % digitale du transport", "Une plateforme, quatre publics", "Huit formations métier", "Une vision multi-écoles"]} />
       <Sec01 />
+      <Gallery />
 
       <Divider n="02" title="Les rôles utilisateurs" sub="Quatre profils, quatre espaces, des droits cloisonnés au niveau de la base de données." points={["Stagiaire : apprendre et progresser", "Formateur : encadrer et corriger", "Admin : gérer l'organisme", "Super-admin : superviser et sécuriser"]} />
       <Sec02 />
