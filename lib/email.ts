@@ -15,6 +15,8 @@ const RESEND_URL = "https://api.resend.com/emails";
 
 export interface SendEmailInput {
   to: string | string[];
+  cc?: string | string[];
+  bcc?: string | string[];
   subject: string;
   html: string;
   text?: string;
@@ -50,6 +52,16 @@ export async function sendEmail(input: SendEmailInput): Promise<{
       body: JSON.stringify({
         from,
         to: Array.isArray(input.to) ? input.to : [input.to],
+        cc: input.cc
+          ? Array.isArray(input.cc)
+            ? input.cc
+            : [input.cc]
+          : undefined,
+        bcc: input.bcc
+          ? Array.isArray(input.bcc)
+            ? input.bcc
+            : [input.bcc]
+          : undefined,
         subject: input.subject,
         html: input.html,
         text: input.text ?? stripHtml(input.html),

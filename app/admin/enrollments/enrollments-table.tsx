@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { PackChip } from "@/components/ui/pack-chip";
 import { ConfirmAction } from "@/components/ui/confirm-action";
 import { SortHeader, nextSort, type SortState } from "@/components/ui/sortable";
+import { useEmailComposer } from "@/components/email/email-composer-provider";
 import { findFormation } from "@/lib/formations-config";
 import { deleteEnrollment, setEnrollmentStatus } from "./actions";
 
@@ -434,21 +435,37 @@ function FormationChip({
 }
 
 function EnrollmentActions({ enrollment: e }: { enrollment: any }) {
+  const composer = useEmailComposer();
   const closed = ["termine", "abandon", "refuse"].includes(e.status);
   const inProgress = e.status === "en_cours";
   const userEmail = e.user?.email as string | undefined;
+  const fullName = (e.user?.full_name as string) ?? "";
+  const [firstName, ...restName] = fullName.split(" ");
 
   return (
     <div className="flex items-center justify-end gap-1">
       {userEmail && (
-        <a
-          href={`mailto:${userEmail}`}
-          title={`Email — ${userEmail}`}
-          aria-label={`Email — ${userEmail}`}
+        <button
+          type="button"
+          onClick={() =>
+            composer.open({
+              to: userEmail,
+              context: "enrollment",
+              relatedUserId: e.user_id,
+              variables: {
+                prenom: firstName || fullName,
+                nom: restName.join(" "),
+                formation: findFormation(e.formation_slug)?.title ?? "",
+                montant: fmtEuros(e.total_amount_cents ?? 0),
+              },
+            })
+          }
+          title={`Écrire un email — ${userEmail}`}
+          aria-label={`Écrire un email — ${userEmail}`}
           className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-navy-200 text-navy-800 transition hover:bg-navy-50 dark:border-[hsl(var(--border))] dark:text-[hsl(var(--text))] dark:hover:bg-white/5"
         >
           <Mail className="h-3.5 w-3.5" />
-        </a>
+        </button>
       )}
 
       <Link

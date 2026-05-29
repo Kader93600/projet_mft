@@ -13,6 +13,7 @@ import {
   cmpNum,
   type SortState,
 } from "@/components/ui/sortable";
+import { useEmailComposer } from "@/components/email/email-composer-provider";
 import { formatDate, initials, scoreColor } from "@/lib/utils";
 import {
   Search,
@@ -108,6 +109,7 @@ export function UsersTable({
   pagination: Pagination;
 }) {
   const { toast } = useToast();
+  const composer = useEmailComposer();
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const pathname = usePathname();
@@ -355,14 +357,23 @@ export function UsersTable({
                         </Link>
 
                         {/* Contacter */}
-                        <a
-                          href={`mailto:${u.email}`}
-                          title={`Envoyer un email — ${u.email}`}
-                          aria-label={`Envoyer un email — ${u.email}`}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const fn = u.full_name || "";
+                            const [p, ...r] = fn.split(" ");
+                            composer.open({
+                              to: u.email,
+                              relatedUserId: u.id,
+                              variables: { prenom: p || fn, nom: r.join(" ") },
+                            });
+                          }}
+                          title={`Écrire un email — ${u.email}`}
+                          aria-label={`Écrire un email — ${u.email}`}
                           className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-navy-200 text-navy-800 hover:bg-navy-50 transition"
                         >
                           <Mail className="h-3.5 w-3.5" />
-                        </a>
+                        </button>
 
                         {/* Désactiver / Réactiver */}
                         <button

@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { ToastProvider } from "@/components/ui/toast";
+import { EmailComposerProvider } from "@/components/email/email-composer-provider";
 import { SessionTracker } from "@/components/session-tracker";
 import { ChevronRight } from "lucide-react";
 import { NotificationsBell } from "@/components/notifications-bell";
@@ -77,6 +78,7 @@ export function AdminShell({ children, profile }: Props) {
 
   return (
     <ToastProvider>
+      <EmailComposerProvider>
       <SessionTracker />
       <div className="min-h-screen flex bg-ivory text-ink dark:bg-[hsl(var(--bg))] dark:text-[hsl(var(--text))]">
         {/* Skip link a11y */}
@@ -199,6 +201,7 @@ export function AdminShell({ children, profile }: Props) {
           </nav>
         </main>
       </div>
+      </EmailComposerProvider>
     </ToastProvider>
   );
 }

@@ -116,6 +116,9 @@ const nextConfig = {
     // (./test/data/05-versions-space.pdf) cassent en serverless. On le
     // garde "externe" → resolved au runtime depuis node_modules.
     serverComponentsExternalPackages: ["pdf-parse"],
+    // Composer email : autoriser des Server Actions plus volumineuses pour
+    // transmettre les pièces jointes (encodées base64) sans 413.
+    serverActions: { bodySizeLimit: "12mb" },
   },
   async headers() {
     return [

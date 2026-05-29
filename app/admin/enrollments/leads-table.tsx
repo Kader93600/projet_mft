@@ -26,6 +26,7 @@ import {
   cmpStr,
   type SortState,
 } from "@/components/ui/sortable";
+import { useEmailComposer } from "@/components/email/email-composer-provider";
 import { findFormation } from "@/lib/formations-config";
 import { setRequestStatus, deleteEnrollmentRequest } from "./actions";
 
@@ -419,9 +420,12 @@ export function LeadsTable({ requests }: { requests: any[] }) {
 }
 
 function LeadActions({ request: r }: { request: any }) {
+  const composer = useEmailComposer();
   const isNouveau = r.status === "nouveau";
   const isContacte = r.status === "contacte";
   const formationSlug = extractFormationSlug(r);
+  const fullName = (r.full_name as string) ?? "";
+  const [firstName, ...restName] = fullName.split(" ");
   const convertUrl =
     `/admin/users/new` +
     `?email=${encodeURIComponent(r.email ?? "")}` +
@@ -432,6 +436,27 @@ function LeadActions({ request: r }: { request: any }) {
 
   return (
     <div className="flex items-center justify-end gap-1">
+      {r.email && (
+        <button
+          type="button"
+          onClick={() =>
+            composer.open({
+              to: r.email,
+              context: "lead",
+              variables: {
+                prenom: firstName || fullName,
+                nom: restName.join(" "),
+                formation: formationSlug ? findFormation(formationSlug)?.title ?? "" : "",
+              },
+            })
+          }
+          title={`Écrire un email — ${r.email}`}
+          aria-label={`Écrire un email — ${r.email}`}
+          className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-navy-200 text-navy-800 transition hover:bg-navy-50 dark:border-[hsl(var(--border))] dark:text-[hsl(var(--text))] dark:hover:bg-white/5"
+        >
+          <Mail className="h-3.5 w-3.5" />
+        </button>
+      )}
       {isNouveau && (
         <form action={setRequestStatus.bind(null, r.id, "contacte")}>
           <ActionBtn title="Marquer comme contacté" tone="navy" type="submit">
