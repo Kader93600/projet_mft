@@ -12,6 +12,12 @@ const STORAGE_KEY = "gotrm.nav.collapsed.v1";
 interface Props {
   groups: NavGroup[];
   variant?: "light" | "dark";
+  /**
+   * Pastilles de notification par `href`. Une valeur > 0 affiche une
+   * pastille discrète à droite de l'item. Idéal pour des compteurs
+   * type « emails non lus ». Le rendu reste silencieux à 0.
+   */
+  badges?: Record<string, number>;
 }
 
 function isActive(pathname: string, href: string, exact?: boolean) {
@@ -35,7 +41,7 @@ function branchIsActive(pathname: string, item: NavItem) {
  *     « Vue d'ensemble »). Déroulé animé via grid-template-rows 0fr → 1fr +
  *     fondu (courbe ease-premium, neutralisé sous prefers-reduced-motion).
  */
-export function SidebarNav({ groups, variant = "light" }: Props) {
+export function SidebarNav({ groups, variant = "light", badges }: Props) {
   const pathname = usePathname();
   const t = useTranslations();
   const [collapsed, setCollapsed] = React.useState<Record<string, boolean>>({});
@@ -121,9 +127,28 @@ export function SidebarNav({ groups, variant = "light" }: Props) {
                           className={cn("w-4 h-4", active && "text-gold-400")}
                         />
                         <span className="truncate">{t(item.labelKey)}</span>
-                        {active && (
-                          <span className="absolute right-3 h-1.5 w-1.5 rounded-full bg-gold-400" />
-                        )}
+                        {(() => {
+                          const count = badges?.[item.href] ?? 0;
+                          if (count > 0) {
+                            return (
+                              <span
+                                aria-label={`${count} nouveau${count > 1 ? "x" : ""}`}
+                                className={cn(
+                                  "ml-auto inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1.5 text-[10px] font-bold tabular-nums motion-safe:animate-[fade-in_180ms_ease-out]",
+                                  "bg-signal-500 text-night-900 shadow-[0_0_0_3px_rgba(159,226,32,0.12)]"
+                                )}
+                              >
+                                {count > 99 ? "99+" : count}
+                              </span>
+                            );
+                          }
+                          if (active) {
+                            return (
+                              <span className="ml-auto h-1.5 w-1.5 rounded-full bg-gold-400" />
+                            );
+                          }
+                          return null;
+                        })()}
                       </Link>
 
                       {/* Sous-pages contextuelles : visibles uniquement sur la

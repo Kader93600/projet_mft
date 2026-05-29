@@ -24,6 +24,8 @@ import {
 interface Props {
   children: React.ReactNode;
   profile: { full_name: string | null; email: string; role: string };
+  /** Pastilles de notification par href (ex. { "/admin/emails": 3 }). */
+  badges?: Record<string, number>;
 }
 
 const FLAT = flattenGroups(ADMIN_GROUPS);
@@ -69,7 +71,7 @@ function crumbsFromPath(p: string): { labelKey?: string; rawLabel?: string; href
   return crumbs;
 }
 
-export function AdminShell({ children, profile }: Props) {
+export function AdminShell({ children, profile, badges }: Props) {
   const pathname = usePathname();
   const t = useTranslations();
   const tA11y = useTranslations("a11y");
@@ -101,7 +103,11 @@ export function AdminShell({ children, profile }: Props) {
             </Link>
           </div>
 
-          <SidebarNav groups={filterGroupsForRole(profile.role)} variant="dark" />
+          <SidebarNav
+            groups={filterGroupsForRole(profile.role)}
+            variant="dark"
+            badges={badges}
+          />
         </aside>
 
         {/* Mobile top bar */}
@@ -197,7 +203,10 @@ export function AdminShell({ children, profile }: Props) {
                 </Link>
               );
             })}
-            <MobileNavSheet groups={filterGroupsForRole(profile.role)} />
+            <MobileNavSheet
+              groups={filterGroupsForRole(profile.role)}
+              badges={badges}
+            />
           </nav>
         </main>
       </div>

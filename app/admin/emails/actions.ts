@@ -114,3 +114,67 @@ export async function sendPlatformEmail(input: SendPlatformEmailInput): Promise<
     ? { ok: true, id: result.id }
     : { ok: false, error: result.error ?? "Échec de l'envoi." };
 }
+
+// ─── Boîte de réception : libellés, attribution, lecture ──────────────
+async function requireStaff(): Promise<{ ok: true; userId: string } | { ok: false; error: string }> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Non authentifié." };
+  const { data: me } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (!STAFF.includes((me as any)?.role)) return { ok: false, error: "Accès refusé." };
+  return { ok: true, userId: user.id };
+}
+
+/** Remplace l'ensemble des libellés d'un email. */
+export async function setEmailLabels(emailId: string, labels: string[]) {
+  const auth = await requireStaff();
+  if (!auth.ok) return auth;
+  const admin = createAdminClient();
+  const clean = (labels ?? []).map((s) => String(s).trim()).filter(Boolean).slice(0, 10);
+  const { error } = await admin.from("email_log").update({ labels: clean }).eq("id", emailId);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/emails");
+  return { ok: true };
+}
+
+/** Attribue un email à un staff (admin/super-admin) ou désattribue (null). */
+export async function assignEmail(emailId: string, userId: string | null) {
+  const auth = await requireStaff();
+  if (!auth.ok) return auth;
+  const admin = createAdminClient();
+  if (userId) {
+    const { data: who } = await admin.from("profiles").select("role").eq("id", userId).maybeSingle();
+    const role = (who as any)?.role;
+    if (role !== "admin" && role !== "super_admin") {
+      return { ok: false, error: "Seuls les admins / super-admins peuvent recevoir une attribution." };
+    }
+  }
+  const { error } = await admin
+    .from("email_log")
+    .update({ assigned_to: userId })
+    .eq("id", emailId);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/emails");
+  return { ok: true };
+}
+
+/** Marque un email reçu comme lu (ou non lu si read=false). */
+export async function markEmailRead(emailId: string, read = true) {
+  const auth = await requireStaff();
+  if (!auth.ok) return auth;
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("email_log")
+    .update({ read_at: read ? new Date().toISOString() : null })
+    .eq("id", emailId);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/emails");
+  return { ok: true };
+}
+

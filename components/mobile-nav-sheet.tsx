@@ -10,9 +10,15 @@ import type { NavGroup } from "./nav-groups";
 interface Props {
   groups: NavGroup[];
   labelKey?: string;
+  /** Pastilles de notification par `href` (ex. emails non lus). */
+  badges?: Record<string, number>;
 }
 
-export function MobileNavSheet({ groups, labelKey = "navGroups.more" }: Props) {
+export function MobileNavSheet({
+  groups,
+  labelKey = "navGroups.more",
+  badges,
+}: Props) {
   const t = useTranslations();
   const tA11y = useTranslations("a11y");
   const tCommon = useTranslations("common");
@@ -83,6 +89,15 @@ export function MobileNavSheet({ groups, labelKey = "navGroups.more" }: Props) {
                         >
                           <it.icon className="w-4 h-4 shrink-0" />
                           <span className="truncate">{t(it.labelKey)}</span>
+                          {(() => {
+                            const c = badges?.[it.href] ?? 0;
+                            if (c <= 0) return null;
+                            return (
+                              <span className="ml-auto inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-signal-500 px-1.5 text-[10px] font-bold text-night-900 tabular-nums">
+                                {c > 99 ? "99+" : c}
+                              </span>
+                            );
+                          })()}
                         </Link>
                       );
                     })}
