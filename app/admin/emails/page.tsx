@@ -43,12 +43,12 @@ export default async function EmailsHistoryPage() {
           <span className="eyebrow text-gold-700">Communication</span>
           <h1 className="mt-2 font-display text-3xl font-semibold text-navy-950 tracking-tight inline-flex items-center gap-2.5">
             <Mail className="h-7 w-7 text-brand-700" />
-            Emails envoyés
+            Boîte de réception
           </h1>
           <p className="mt-2 text-slate-600 max-w-2xl">
-            Historique des emails envoyés depuis la plateforme, avec leur statut.
-            Cliquez sur une icône « email » dans les listes pour écrire à un
-            stagiaire, un prospect ou un utilisateur.
+            Suivi de vos communications email depuis la plateforme : historique
+            des envois et leur statut. Cliquez sur une icône « email » dans les
+            listes pour écrire à un stagiaire, un prospect ou un utilisateur.
           </p>
         </div>
         <NewEmailButton />
@@ -108,7 +108,7 @@ export default async function EmailsHistoryPage() {
                   <tr>
                     <td colSpan={5} className="px-5 py-16 text-center text-slate-400">
                       <Mail className="h-8 w-8 mx-auto mb-2 text-slate-300" />
-                      Aucun email envoyé pour le moment.
+                      Aucun email pour le moment.
                     </td>
                   </tr>
                 )}
