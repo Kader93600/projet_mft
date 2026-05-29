@@ -4,9 +4,9 @@ import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate, initials, scoreColor } from "@/lib/utils";
+import { ContactButton } from "./contact-button";
 import {
   ArrowLeft,
-  Mail,
   Phone,
   Calendar,
   Clock,
@@ -147,11 +147,11 @@ export default async function UserProfilePage({
           <ArrowLeft className="h-4 w-4" /> Retour aux utilisateurs
         </Link>
         <div className="flex items-center gap-2">
-          <a href={`mailto:${user.email}`}>
-            <Button variant="secondary" size="sm">
-              <Mail className="h-4 w-4" /> Contacter
-            </Button>
-          </a>
+          <ContactButton
+            email={user.email}
+            fullName={user.full_name}
+            userId={user.id}
+          />
           <a href={`/admin/analytics/export/pdf?user=${user.id}`} target="_blank">
             <Button variant="gold" size="sm">
               <Download className="h-4 w-4" /> Rapport PDF
