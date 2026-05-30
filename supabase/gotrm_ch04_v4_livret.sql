@@ -192,10 +192,10 @@ $lesson$,
   (v_formation, v_module, 'qcm',
    'Que signifie l''acronyme CNR dans le contexte du transport routier ?',
    '[
-     {"id":"a","text":"Conseil National des Routiers","correct":false},
-     {"id":"b","text":"Comité National Routier","correct":true},
-     {"id":"c","text":"Centre National de Régulation","correct":false},
-     {"id":"d","text":"Commission Nationale Routière","correct":false}
+     {"id":"a","text":"Conseil National des Routiers","is_correct":false},
+     {"id":"b","text":"Comité National Routier","is_correct":true},
+     {"id":"c","text":"Centre National de Régulation","is_correct":false},
+     {"id":"d","text":"Commission Nationale Routière","is_correct":false}
    ]'::jsonb,
    1, 'facile', ARRAY['cnr','references','tarification'],
    'mft-2026-gotrm-livret:ch04:qcm:01', true,
@@ -205,10 +205,10 @@ $lesson$,
   (v_formation, v_module, 'qcm',
    'À quoi correspond le terme TK dans la structure des coûts ?',
    '[
-     {"id":"a","text":"Terme kilométrique — coût par km parcouru (charges variables)","correct":true},
-     {"id":"b","text":"Terme kilométrique — coût par km parcouru (charges fixes)","correct":false},
-     {"id":"c","text":"Tarif kilométrique pratiqué par le CNR","correct":false},
-     {"id":"d","text":"Taxe kilométrique applicable aux poids lourds","correct":false}
+     {"id":"a","text":"Terme kilométrique — coût par km parcouru (charges variables)","is_correct":true},
+     {"id":"b","text":"Terme kilométrique — coût par km parcouru (charges fixes)","is_correct":false},
+     {"id":"c","text":"Tarif kilométrique pratiqué par le CNR","is_correct":false},
+     {"id":"d","text":"Taxe kilométrique applicable aux poids lourds","is_correct":false}
    ]'::jsonb,
    1, 'facile', ARRAY['tk','structure-couts'],
    'mft-2026-gotrm-livret:ch04:qcm:02', true,
@@ -218,10 +218,10 @@ $lesson$,
   (v_formation, v_module, 'qcm',
    'Quelles charges composent le terme TJ (terme journalier) ?',
    '[
-     {"id":"a","text":"Salaires des conducteurs et charges sociales","correct":false},
-     {"id":"b","text":"Carburant, pneumatiques et entretien","correct":false},
-     {"id":"c","text":"Amortissement du véhicule, assurances, taxes, frais financiers","correct":true},
-     {"id":"d","text":"Frais administratifs et loyers","correct":false}
+     {"id":"a","text":"Salaires des conducteurs et charges sociales","is_correct":false},
+     {"id":"b","text":"Carburant, pneumatiques et entretien","is_correct":false},
+     {"id":"c","text":"Amortissement du véhicule, assurances, taxes, frais financiers","is_correct":true},
+     {"id":"d","text":"Frais administratifs et loyers","is_correct":false}
    ]'::jsonb,
    1, 'facile', ARRAY['tj','charges-fixes'],
    'mft-2026-gotrm-livret:ch04:qcm:03', true,
@@ -231,10 +231,10 @@ $lesson$,
   (v_formation, v_module, 'qcm',
    'Quelle est la formule trinôme du coût de revient ?',
    '[
-     {"id":"a","text":"Coût global = (TK × km) + (TJ × jours)","correct":false},
-     {"id":"b","text":"Coût global = (TK × km) + (TH × heures) + (TJ × jours)","correct":true},
-     {"id":"c","text":"Coût global = (TK × heures) + (TH × jours) + (TJ × km)","correct":false},
-     {"id":"d","text":"Coût global = TK + TH + TJ","correct":false}
+     {"id":"a","text":"Coût global = (TK × km) + (TJ × jours)","is_correct":false},
+     {"id":"b","text":"Coût global = (TK × km) + (TH × heures) + (TJ × jours)","is_correct":true},
+     {"id":"c","text":"Coût global = (TK × heures) + (TH × jours) + (TJ × km)","is_correct":false},
+     {"id":"d","text":"Coût global = TK + TH + TJ","is_correct":false}
    ]'::jsonb,
    1, 'facile', ARRAY['formule-trinome'],
    'mft-2026-gotrm-livret:ch04:qcm:04', true,
@@ -244,10 +244,10 @@ $lesson$,
   (v_formation, v_module, 'qcm',
    'Comment se calcule le prix de vente HT à partir du coût global ?',
    '[
-     {"id":"a","text":"Prix de vente HT = Coût global + Marge fixe","correct":false},
-     {"id":"b","text":"Prix de vente HT = Coût global × (1 + taux de marge)","correct":true},
-     {"id":"c","text":"Prix de vente HT = Coût global / (1 − taux de marge)","correct":false},
-     {"id":"d","text":"Prix de vente HT = Coût global × taux de marge","correct":false}
+     {"id":"a","text":"Prix de vente HT = Coût global + Marge fixe","is_correct":false},
+     {"id":"b","text":"Prix de vente HT = Coût global × (1 + taux de marge)","is_correct":true},
+     {"id":"c","text":"Prix de vente HT = Coût global / (1 − taux de marge)","is_correct":false},
+     {"id":"d","text":"Prix de vente HT = Coût global × taux de marge","is_correct":false}
    ]'::jsonb,
    1, 'moyen', ARRAY['prix-vente','marge'],
    'mft-2026-gotrm-livret:ch04:qcm:05', true,
@@ -257,10 +257,10 @@ $lesson$,
   (v_formation, v_module, 'qcm',
    'En messagerie, comment se définit le poids taxable ?',
    '[
-     {"id":"a","text":"Le poids réel uniquement","correct":false},
-     {"id":"b","text":"Le maximum du poids réel et du poids volumétrique","correct":true},
-     {"id":"c","text":"La moyenne du poids réel et du poids métrique","correct":false},
-     {"id":"d","text":"Le minimum des trois poids","correct":false}
+     {"id":"a","text":"Le poids réel uniquement","is_correct":false},
+     {"id":"b","text":"Le maximum du poids réel et du poids volumétrique","is_correct":true},
+     {"id":"c","text":"La moyenne du poids réel et du poids métrique","is_correct":false},
+     {"id":"d","text":"Le minimum des trois poids","is_correct":false}
    ]'::jsonb,
    1, 'moyen', ARRAY['messagerie','poids-taxable'],
    'mft-2026-gotrm-livret:ch04:qcm:06', true,
@@ -270,10 +270,10 @@ $lesson$,
   (v_formation, v_module, 'qcm',
    'Que prévoit la règle du « payant pour » en messagerie ?',
    '[
-     {"id":"a","text":"Imposer le tarif de la tranche supérieure dans tous les cas","correct":false},
-     {"id":"b","text":"Comparer le prix de la tranche réelle et celui de la tranche supérieure et retenir le moins cher","correct":true},
-     {"id":"c","text":"Appliquer le tarif moyen entre deux tranches","correct":false},
-     {"id":"d","text":"Refuser tout envoi non conforme à la grille","correct":false}
+     {"id":"a","text":"Imposer le tarif de la tranche supérieure dans tous les cas","is_correct":false},
+     {"id":"b","text":"Comparer le prix de la tranche réelle et celui de la tranche supérieure et retenir le moins cher","is_correct":true},
+     {"id":"c","text":"Appliquer le tarif moyen entre deux tranches","is_correct":false},
+     {"id":"d","text":"Refuser tout envoi non conforme à la grille","is_correct":false}
    ]'::jsonb,
    1, 'moyen', ARRAY['messagerie','payant-pour'],
    'mft-2026-gotrm-livret:ch04:qcm:07', true,
@@ -283,10 +283,10 @@ $lesson$,
   (v_formation, v_module, 'qcm',
    'En lots partiels, comment est défini le poids taxable ?',
    '[
-     {"id":"a","text":"Le maximum du poids réel et du poids volumétrique uniquement","correct":false},
-     {"id":"b","text":"Le maximum des trois valeurs (poids réel, poids volumétrique, poids métrique), arrondi aux 100 kg supérieurs","correct":true},
-     {"id":"c","text":"Le poids volumétrique uniquement","correct":false},
-     {"id":"d","text":"La moyenne des trois poids arrondie au kg supérieur","correct":false}
+     {"id":"a","text":"Le maximum du poids réel et du poids volumétrique uniquement","is_correct":false},
+     {"id":"b","text":"Le maximum des trois valeurs (poids réel, poids volumétrique, poids métrique), arrondi aux 100 kg supérieurs","is_correct":true},
+     {"id":"c","text":"Le poids volumétrique uniquement","is_correct":false},
+     {"id":"d","text":"La moyenne des trois poids arrondie au kg supérieur","is_correct":false}
    ]'::jsonb,
    1, 'moyen', ARRAY['lots-partiels','poids-taxable'],
    'mft-2026-gotrm-livret:ch04:qcm:08', true,
@@ -296,10 +296,10 @@ $lesson$,
   (v_formation, v_module, 'qcm',
    'Quelles sont les trois méthodes de tarification des lots partiels ?',
    '[
-     {"id":"a","text":"À la tonne, à la palette, au mètre linéaire","correct":true},
-     {"id":"b","text":"Au km, à l''heure, à la journée","correct":false},
-     {"id":"c","text":"À la tonne, au volume, au forfait","correct":false},
-     {"id":"d","text":"Au poids réel, au poids volumétrique, au poids métrique","correct":false}
+     {"id":"a","text":"À la tonne, à la palette, au mètre linéaire","is_correct":true},
+     {"id":"b","text":"Au km, à l''heure, à la journée","is_correct":false},
+     {"id":"c","text":"À la tonne, au volume, au forfait","is_correct":false},
+     {"id":"d","text":"Au poids réel, au poids volumétrique, au poids métrique","is_correct":false}
    ]'::jsonb,
    1, 'moyen', ARRAY['lots-partiels','methodes'],
    'mft-2026-gotrm-livret:ch04:qcm:09', true,
@@ -309,10 +309,10 @@ $lesson$,
   (v_formation, v_module, 'qcm',
    'Comment se calcule le prix d''un lot complet ?',
    '[
-     {"id":"a","text":"À partir d''une grille de messagerie selon la zone","correct":false},
-     {"id":"b","text":"À partir du coût de revient (formule binôme ou trinôme) auquel on ajoute la marge commerciale","correct":true},
-     {"id":"c","text":"Selon le nombre de palettes uniquement","correct":false},
-     {"id":"d","text":"À partir du seul terme journalier (TJ)","correct":false}
+     {"id":"a","text":"À partir d''une grille de messagerie selon la zone","is_correct":false},
+     {"id":"b","text":"À partir du coût de revient (formule binôme ou trinôme) auquel on ajoute la marge commerciale","is_correct":true},
+     {"id":"c","text":"Selon le nombre de palettes uniquement","is_correct":false},
+     {"id":"d","text":"À partir du seul terme journalier (TJ)","is_correct":false}
    ]'::jsonb,
    1, 'difficile', ARRAY['lots-complets','tarification'],
    'mft-2026-gotrm-livret:ch04:qcm:10', true,
@@ -322,10 +322,10 @@ $lesson$,
   (v_formation, v_module, 'qcm',
    'Quels articles du Code des transports encadrent la révision du prix carburant ?',
    '[
-     {"id":"a","text":"Articles L.1411-1 et L.1411-2","correct":false},
-     {"id":"b","text":"Articles L.3222-1 et L.3222-2","correct":true},
-     {"id":"c","text":"Articles L.3261-1 et L.3261-2","correct":false},
-     {"id":"d","text":"Articles L.3411-1 et L.3411-2","correct":false}
+     {"id":"a","text":"Articles L.1411-1 et L.1411-2","is_correct":false},
+     {"id":"b","text":"Articles L.3222-1 et L.3222-2","is_correct":true},
+     {"id":"c","text":"Articles L.3261-1 et L.3261-2","is_correct":false},
+     {"id":"d","text":"Articles L.3411-1 et L.3411-2","is_correct":false}
    ]'::jsonb,
    1, 'difficile', ARRAY['pied-facture','reglementation'],
    'mft-2026-gotrm-livret:ch04:qcm:11', true,
@@ -335,10 +335,10 @@ $lesson$,
   (v_formation, v_module, 'qcm',
    'Quelle est la sanction applicable au cocontractant refusant un pied de facture justifié ?',
    '[
-     {"id":"a","text":"7 500 € d''amende","correct":false},
-     {"id":"b","text":"15 000 € d''amende","correct":true},
-     {"id":"c","text":"30 000 € d''amende","correct":false},
-     {"id":"d","text":"Une simple mise en demeure sans amende","correct":false}
+     {"id":"a","text":"7 500 € d''amende","is_correct":false},
+     {"id":"b","text":"15 000 € d''amende","is_correct":true},
+     {"id":"c","text":"30 000 € d''amende","is_correct":false},
+     {"id":"d","text":"Une simple mise en demeure sans amende","is_correct":false}
    ]'::jsonb,
    1, 'difficile', ARRAY['pied-facture','sanction'],
    'mft-2026-gotrm-livret:ch04:qcm:12', true,
