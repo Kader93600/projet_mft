@@ -192,84 +192,84 @@ $lesson$,
   -- QCM 1 (facile)
   (v_formation, v_module, 'qcm',
    'Quelle est la longueur maximale autorisée pour un ensemble articulé (tracteur + semi-remorque) ?',
-   '[{"key":"a","text":"12 m","is_correct":false},{"key":"b","text":"16,50 m","is_correct":true},{"key":"c","text":"18,75 m","is_correct":false},{"key":"d","text":"25,25 m","is_correct":false}]'::jsonb,
+   '[{"id":"a","label":"12 m","is_correct":false},{"id":"b","label":"16,50 m","is_correct":true},{"id":"c","label":"18,75 m","is_correct":false},{"id":"d","label":"25,25 m","is_correct":false}]'::jsonb,
    1, 'facile', ARRAY['vehicules','dimensions'], 'mft-2026-gotrm-livret:ch02:qcm:1', true,
    'Selon le tableau 2.1 du livret, l''ensemble articulé a une longueur maximale de 16,50 m.'),
 
   -- QCM 2 (facile)
   (v_formation, v_module, 'qcm',
    'Que signifie le sigle PTAC ?',
-   '[{"key":"a","text":"Poids Total à Charger","is_correct":false},{"key":"b","text":"Poids Total Autorisé en Charge","is_correct":true},{"key":"c","text":"Poids Total Admissible Camion","is_correct":false},{"key":"d","text":"Poids Tracteur Autorisé Conducteur","is_correct":false}]'::jsonb,
+   '[{"id":"a","label":"Poids Total à Charger","is_correct":false},{"id":"b","label":"Poids Total Autorisé en Charge","is_correct":true},{"id":"c","label":"Poids Total Admissible Camion","is_correct":false},{"id":"d","label":"Poids Tracteur Autorisé Conducteur","is_correct":false}]'::jsonb,
    1, 'facile', ARRAY['vocabulaire','poids'], 'mft-2026-gotrm-livret:ch02:qcm:2', true,
    'PTAC = Poids Total Autorisé en Charge — poids maximum légal d''un véhicule chargé, indiqué sur la carte grise.'),
 
   -- QCM 3 (facile)
   (v_formation, v_module, 'qcm',
    'Quelle carrosserie est obligatoirement utilisée pour transporter des denrées à température dirigée ?',
-   '[{"key":"a","text":"Tautliner","is_correct":false},{"key":"b","text":"Plateau","is_correct":false},{"key":"c","text":"Frigorifique certifié ATP","is_correct":true},{"key":"d","text":"Fourgon rigide","is_correct":false}]'::jsonb,
+   '[{"id":"a","label":"Tautliner","is_correct":false},{"id":"b","label":"Plateau","is_correct":false},{"id":"c","label":"Frigorifique certifié ATP","is_correct":true},{"id":"d","label":"Fourgon rigide","is_correct":false}]'::jsonb,
    1, 'facile', ARRAY['carrosseries','atp'], 'mft-2026-gotrm-livret:ch02:qcm:3', true,
    'Le livret précise qu''un véhicule transportant des denrées périssables à température dirigée doit être certifié ATP.'),
 
   -- QCM 4 (facile)
   (v_formation, v_module, 'qcm',
    'Combien de palettes EUR (EPAL) peut-on charger au maximum dans une semi-remorque de 13,60 m ?',
-   '[{"key":"a","text":"27","is_correct":false},{"key":"b","text":"30","is_correct":false},{"key":"c","text":"33","is_correct":false},{"key":"d","text":"34","is_correct":true}]'::jsonb,
+   '[{"id":"a","label":"27","is_correct":false},{"id":"b","label":"30","is_correct":false},{"id":"c","label":"33","is_correct":false},{"id":"d","label":"34","is_correct":true}]'::jsonb,
    1, 'facile', ARRAY['metre-lineaire','palettes'], 'mft-2026-gotrm-livret:ch02:qcm:4', true,
    '13,60 m / 0,40 ml par palette EUR = 34 palettes maximum (3 palettes côte à côte par rang).'),
 
   -- QCM 5 (moyen)
   (v_formation, v_module, 'qcm',
    'Comment se calcule la charge utile (CU) d''un ensemble articulé ?',
-   '[{"key":"a","text":"CU = PTAC + Tare","is_correct":false},{"key":"b","text":"CU = PMA – Tare TRR – Tare SREM","is_correct":true},{"key":"c","text":"CU = PTRA + Tare semi","is_correct":false},{"key":"d","text":"CU = PMA + ensemble des tares","is_correct":false}]'::jsonb,
+   '[{"id":"a","label":"CU = PTAC + Tare","is_correct":false},{"id":"b","label":"CU = PMA – Tare TRR – Tare SREM","is_correct":true},{"id":"c","label":"CU = PTRA + Tare semi","is_correct":false},{"id":"d","label":"CU = PMA + ensemble des tares","is_correct":false}]'::jsonb,
    1, 'moyen', ARRAY['poids','charge-utile'], 'mft-2026-gotrm-livret:ch02:qcm:5', true,
    'Pour un ensemble articulé : CU = PMA – Tare tracteur (TRR) – Tare semi-remorque (SREM).'),
 
   -- QCM 6 (moyen)
   (v_formation, v_module, 'qcm',
    'Comment est défini le poids taxable d''un envoi ?',
-   '[{"key":"a","text":"La somme du poids réel et du poids volumétrique","is_correct":false},{"key":"b","text":"La moyenne des trois poids (réel, volumétrique, métrique)","is_correct":false},{"key":"c","text":"Le maximum des trois poids (réel, volumétrique, métrique)","is_correct":true},{"key":"d","text":"Le minimum des trois poids (réel, volumétrique, métrique)","is_correct":false}]'::jsonb,
+   '[{"id":"a","label":"La somme du poids réel et du poids volumétrique","is_correct":false},{"id":"b","label":"La moyenne des trois poids (réel, volumétrique, métrique)","is_correct":false},{"id":"c","label":"Le maximum des trois poids (réel, volumétrique, métrique)","is_correct":true},{"id":"d","label":"Le minimum des trois poids (réel, volumétrique, métrique)","is_correct":false}]'::jsonb,
    1, 'moyen', ARRAY['poids-taxable'], 'mft-2026-gotrm-livret:ch02:qcm:6', true,
    'POIDS TAXABLE = max (poids réel / poids volumétrique / poids métrique). C''est sur ce poids que s''applique le tarif.'),
 
   -- QCM 7 (moyen)
   (v_formation, v_module, 'qcm',
    'Quel est le PTAC maximum d''un porteur (véhicule solo) en France ?',
-   '[{"key":"a","text":"19 000 kg","is_correct":false},{"key":"b","text":"26 000 kg","is_correct":true},{"key":"c","text":"32 000 kg","is_correct":false},{"key":"d","text":"44 000 kg","is_correct":false}]'::jsonb,
+   '[{"id":"a","label":"19 000 kg","is_correct":false},{"id":"b","label":"26 000 kg","is_correct":true},{"id":"c","label":"32 000 kg","is_correct":false},{"id":"d","label":"44 000 kg","is_correct":false}]'::jsonb,
    1, 'moyen', ARRAY['vehicules','ptac'], 'mft-2026-gotrm-livret:ch02:qcm:7', true,
    'D''après le tableau 2.1, le PTAC max France d''un porteur est de 26 000 kg.'),
 
   -- QCM 8 (moyen)
   (v_formation, v_module, 'qcm',
    'Quelle norme régit les sangles d''arrimage selon le livret ?',
-   '[{"key":"a","text":"NF G 36-034","is_correct":true},{"key":"b","text":"ISO 9001","is_correct":false},{"key":"c","text":"NF EN 12195","is_correct":false},{"key":"d","text":"ADR 2023","is_correct":false}]'::jsonb,
+   '[{"id":"a","label":"NF G 36-034","is_correct":true},{"id":"b","label":"ISO 9001","is_correct":false},{"id":"c","label":"NF EN 12195","is_correct":false},{"id":"d","label":"ADR 2023","is_correct":false}]'::jsonb,
    1, 'moyen', ARRAY['arrimage','reglementation'], 'mft-2026-gotrm-livret:ch02:qcm:8', true,
    'Le livret cite explicitement la norme NF G 36-034 pour les sangles d''arrimage.'),
 
   -- QCM 9 (moyen)
   (v_formation, v_module, 'qcm',
    'Quel est le coefficient volumétrique courant pour la messagerie ?',
-   '[{"key":"a","text":"150 kg/m³","is_correct":false},{"key":"b","text":"250 kg/m³","is_correct":true},{"key":"c","text":"330 kg/m³","is_correct":false},{"key":"d","text":"1 790 kg/m³","is_correct":false}]'::jsonb,
+   '[{"id":"a","label":"150 kg/m³","is_correct":false},{"id":"b","label":"250 kg/m³","is_correct":true},{"id":"c","label":"330 kg/m³","is_correct":false},{"id":"d","label":"1 790 kg/m³","is_correct":false}]'::jsonb,
    1, 'moyen', ARRAY['poids-volumetrique'], 'mft-2026-gotrm-livret:ch02:qcm:9', true,
    'Le tableau 2.5 indique 250 kg/m³ pour la messagerie et 330 kg/m³ pour les lots partiels.'),
 
   -- QCM 10 (difficile)
   (v_formation, v_module, 'qcm',
    'Pour un ensemble articulé : PTRA 44 000 kg, Tare TRR 8 200 kg, Tare SREM 6 800 kg. Quelle est la charge utile ?',
-   '[{"key":"a","text":"15 000 kg","is_correct":false},{"key":"b","text":"22 000 kg","is_correct":false},{"key":"c","text":"29 000 kg","is_correct":true},{"key":"d","text":"35 800 kg","is_correct":false}]'::jsonb,
+   '[{"id":"a","label":"15 000 kg","is_correct":false},{"id":"b","label":"22 000 kg","is_correct":false},{"id":"c","label":"29 000 kg","is_correct":true},{"id":"d","label":"35 800 kg","is_correct":false}]'::jsonb,
    1, 'difficile', ARRAY['poids','calcul'], 'mft-2026-gotrm-livret:ch02:qcm:10', true,
    'CU = PMA – Tare TRR – Tare SREM = 44 000 – 8 200 – 6 800 = 29 000 kg (exemple du livret).'),
 
   -- QCM 11 (difficile)
   (v_formation, v_module, 'qcm',
    'À quel moment les moyens d''arrimage doivent-ils être resserrés selon la réglementation ?',
-   '[{"key":"a","text":"Uniquement à l''arrivée","is_correct":false},{"key":"b","text":"Après les 50 premiers kilomètres et après tout choc","is_correct":true},{"key":"c","text":"Toutes les 4 heures de conduite","is_correct":false},{"key":"d","text":"Une fois par jour","is_correct":false}]'::jsonb,
+   '[{"id":"a","label":"Uniquement à l''arrivée","is_correct":false},{"id":"b","label":"Après les 50 premiers kilomètres et après tout choc","is_correct":true},{"id":"c","label":"Toutes les 4 heures de conduite","is_correct":false},{"id":"d","label":"Une fois par jour","is_correct":false}]'::jsonb,
    1, 'difficile', ARRAY['arrimage','reglementation'], 'mft-2026-gotrm-livret:ch02:qcm:11', true,
    'Le livret indique que les moyens d''arrimage doivent être resserrés après les 50 premiers kilomètres et après tout choc.'),
 
   -- QCM 12 (difficile)
   (v_formation, v_module, 'qcm',
    'Quelle classe ATP correspond aux produits surgelés (jusqu''à –20 °C) ?',
-   '[{"key":"a","text":"FRA","is_correct":true},{"key":"b","text":"FRB","is_correct":false},{"key":"c","text":"FRC","is_correct":false},{"key":"d","text":"FRD","is_correct":false}]'::jsonb,
+   '[{"id":"a","label":"FRA","is_correct":true},{"id":"b","label":"FRB","is_correct":false},{"id":"c","label":"FRC","is_correct":false},{"id":"d","label":"FRD","is_correct":false}]'::jsonb,
    1, 'difficile', ARRAY['atp','frigorifique'], 'mft-2026-gotrm-livret:ch02:qcm:12', true,
    'FRA = jusqu''à –20 °C (surgelés) ; FRB = jusqu''à –10 °C ; FRC = 0 à +4 °C (produits laitiers).'),
 
