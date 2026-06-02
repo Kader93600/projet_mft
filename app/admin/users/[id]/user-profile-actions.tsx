@@ -98,7 +98,14 @@ export function UserProfileActions({
               `Supprimer définitivement le compte "${email}" ? Cette action est irréversible.`
             )
           )
-            run(() => deleteUser(userId), "Compte supprimé", true);
+            run(
+              async () => {
+                const res = await deleteUser(userId);
+                if (!res.ok) throw new Error(res.error);
+              },
+              "Compte supprimé",
+              true
+            );
         }}
         disabled={isPending}
       >

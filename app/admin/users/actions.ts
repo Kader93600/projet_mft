@@ -4,6 +4,7 @@ import { requireAdmin, validate, auditLog } from "@/lib/admin-guard";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { updateProfileSchema, uuid } from "@/lib/validations";
 import { appUrl } from "@/lib/app-url";
+import { captureException } from "@/lib/observability";
 import { z } from "zod";
 
 // ─── Schéma de création stagiaire ──────────────────────────────────────
@@ -328,45 +329,77 @@ export async function toggleUserDisabled(userId: string, disabled: boolean) {
   return updateUserProfile(userId, { disabled });
 }
 
-export async function deleteUser(userId: string) {
-  const { admin } = await requireAdmin();
-  validate(uuid, userId);
+export async function deleteUser(
+  userId: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  // Retour STRUCTURÉ (et non throw) : Next.js masque en prod le message
+  // des erreurs lancées par une server action (« An error occurred in the
+  // Server Components render… »). En retournant { ok:false, error } le
+  // client voit le vrai motif.
+  let admin: { id: string };
+  try {
+    const r = await requireAdmin();
+    admin = r.admin;
+    validate(uuid, userId);
+  } catch (e: any) {
+    return { ok: false, error: e?.message ?? "Accès refusé." };
+  }
   if (userId === admin.id) {
-    throw new Error("Vous ne pouvez pas supprimer votre propre compte");
+    return { ok: false, error: "Vous ne pouvez pas supprimer votre propre compte." };
   }
 
   // ⚠️ Important : il faut supprimer le user de `auth.users` (pas seulement
   // `public.profiles`) sinon Supabase Auth garde l'email "réservé" et toute
   // ré-invitation échoue avec "User with this email already registered".
-  //
-  // Ordre privilégié :
-  //   1. auth.admin.deleteUser() → cascade ON DELETE vers profiles +
-  //      enrollments + quiz_attempts + ... grâce aux FK définies en schema.
-  //   2. Fallback : si l'auth user a déjà disparu (orphan profile d'un
-  //      ancien delete partiel), on nettoie public.profiles directement.
   const sb = createAdminClient();
   const { error: authErr } = await sb.auth.admin.deleteUser(userId);
 
   if (authErr) {
-    // Cas typique : "User not found" → orphan dans profiles seulement.
+    const msg = authErr.message ?? "";
     const isNotFound =
-      /not[\s_-]?found|does not exist/i.test(authErr.message ?? "") ||
+      /not[\s_-]?found|does not exist/i.test(msg) ||
       (authErr as any).status === 404;
 
     if (isNotFound) {
-      const { error: pErr } = await sb
-        .from("profiles")
-        .delete()
-        .eq("id", userId);
-      if (pErr) throw new Error(pErr.message);
+      // Orphan : profil présent mais auth user déjà disparu → on nettoie
+      // public.profiles directement (les FK profiles cascadent/set null).
+      const { error: pErr } = await sb.from("profiles").delete().eq("id", userId);
+      if (pErr) {
+        await captureException(pErr, {
+          tags: { action: "delete_user", phase: "profile_delete" },
+          extra: { userId },
+        });
+        return { ok: false, error: friendlyDeleteError(pErr.message) };
+      }
     } else {
-      throw new Error(authErr.message);
+      // Vraie erreur (souvent une FK sans ON DELETE bloquant la cascade).
+      await captureException(authErr, {
+        tags: { action: "delete_user", phase: "auth_delete" },
+        extra: { userId },
+      });
+      return { ok: false, error: friendlyDeleteError(msg) };
     }
   }
 
   await auditLog("delete_user", "profile", userId);
   revalidatePath("/admin/users");
   return { ok: true };
+}
+
+/** Traduit les erreurs techniques de suppression en message actionnable. */
+function friendlyDeleteError(msg: string): string {
+  const m = (msg || "").toLowerCase();
+  if (/foreign key|violates|constraint|still referenced/.test(m)) {
+    return (
+      "Ce compte est lié à des données qui empêchent sa suppression " +
+      "(annonces, documents ou paramètres qu'il a créés/modifiés). " +
+      "Appliquez la migration 2026_05_30_fix_delete_user_fk.sql, puis réessayez."
+    );
+  }
+  if (/not[\s_-]?found|does not exist/.test(m)) {
+    return "Compte introuvable (déjà supprimé ?). Rafraîchissez la page.";
+  }
+  return `Suppression impossible : ${msg}`;
 }
 
 /**

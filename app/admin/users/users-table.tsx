@@ -487,7 +487,11 @@ export function UsersTable({
 
                         {/* Supprimer */}
                         <ConfirmAction
-                          action={() => deleteUser(u.id)}
+                          action={async () => {
+                            const res = await deleteUser(u.id);
+                            if (!res.ok) throw new Error(res.error);
+                            router.refresh();
+                          }}
                           title="Supprimer ce compte ?"
                           description={`Supprime définitivement le compte ${u.email}. Toutes les données personnelles, progressions et résultats seront perdus.`}
                           confirmLabel="Supprimer"
