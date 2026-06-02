@@ -26,9 +26,21 @@ export function UserEditForm({
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
 
-  const [fullName, setFullName] = useState(user.full_name ?? "");
+  // Prénom/Nom : on part des colonnes dédiées si présentes, sinon on
+  // dérive un fallback depuis full_name (1er mot = prénom, reste = nom)
+  // pour pré-remplir proprement avant la première sauvegarde.
+  const derived = deriveNames(user);
+  const [firstName, setFirstName] = useState(user.first_name ?? derived.first);
+  const [lastName, setLastName] = useState(user.last_name ?? derived.last);
   const [email, setEmail] = useState(user.email ?? "");
   const [phone, setPhone] = useState(user.phone ?? "");
+  const [dateNaissance, setDateNaissance] = useState(
+    (user.date_naissance ?? "").slice(0, 10)
+  );
+  const [adresse, setAdresse] = useState(user.adresse ?? "");
+  const [codePostal, setCodePostal] = useState(user.code_postal ?? "");
+  const [ville, setVille] = useState(user.ville ?? "");
+  const [pays, setPays] = useState(user.pays ?? "France");
   const [level, setLevel] = useState(user.level ?? "debutant");
   const [role, setRole] = useState<
     "student" | "trainer" | "admin" | "super_admin"
@@ -41,9 +53,15 @@ export function UserEditForm({
     startTransition(async () => {
       try {
         await updateUserProfile(user.id, {
-          full_name: fullName || null,
+          first_name: firstName || null,
+          last_name: lastName || null,
           email: email || null,
           phone: phone || null,
+          date_naissance: dateNaissance || null,
+          adresse: adresse || null,
+          code_postal: codePostal || null,
+          ville: ville || null,
+          pays: pays || null,
           notes: notes || null,
           level,
           role,
@@ -59,9 +77,22 @@ export function UserEditForm({
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <Field label="Nom complet">
-        <Input value={fullName} onChange={(e) => setFullName(e.target.value)} />
-      </Field>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Prénom">
+          <Input
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            placeholder="Prénom"
+          />
+        </Field>
+        <Field label="Nom">
+          <Input
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            placeholder="Nom de famille"
+          />
+        </Field>
+      </div>
       <Field label="Email">
         <Input
           type="email"
@@ -69,8 +100,39 @@ export function UserEditForm({
           onChange={(e) => setEmail(e.target.value)}
         />
       </Field>
-      <Field label="Téléphone">
-        <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Téléphone">
+          <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
+        </Field>
+        <Field label="Date de naissance">
+          <Input
+            type="date"
+            value={dateNaissance}
+            onChange={(e) => setDateNaissance(e.target.value)}
+          />
+        </Field>
+      </div>
+      <Field label="Adresse">
+        <Input
+          value={adresse}
+          onChange={(e) => setAdresse(e.target.value)}
+          placeholder="N° et rue"
+        />
+      </Field>
+      <div className="grid grid-cols-3 gap-3">
+        <Field label="Code postal">
+          <Input
+            value={codePostal}
+            onChange={(e) => setCodePostal(e.target.value)}
+            placeholder="75001"
+          />
+        </Field>
+        <Field label="Ville" className="col-span-2">
+          <Input value={ville} onChange={(e) => setVille(e.target.value)} />
+        </Field>
+      </div>
+      <Field label="Pays">
+        <Input value={pays} onChange={(e) => setPays(e.target.value)} />
       </Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Rôle">
@@ -120,16 +182,34 @@ export function UserEditForm({
 function Field({
   label,
   children,
+  className,
 }: {
   label: string;
   children: React.ReactNode;
+  className?: string;
 }) {
   return (
-    <label className="block">
+    <label className={"block" + (className ? " " + className : "")}>
       <span className="block text-xs font-medium text-slate-600 mb-1.5">
         {label}
       </span>
       {children}
     </label>
   );
+}
+
+/**
+ * Fallback prénom/nom depuis full_name tant que les colonnes dédiées ne
+ * sont pas renseignées : 1er mot = prénom, le reste = nom. Heuristique
+ * imparfaite sur les noms composés, corrigeable à la main ensuite.
+ */
+function deriveNames(user: any): { first: string; last: string } {
+  if (user.first_name || user.last_name) {
+    return { first: user.first_name ?? "", last: user.last_name ?? "" };
+  }
+  const full = (user.full_name ?? "").replace(/\s+/g, " ").trim();
+  if (!full) return { first: "", last: "" };
+  const parts = full.split(" ");
+  if (parts.length === 1) return { first: parts[0], last: "" };
+  return { first: parts[0], last: parts.slice(1).join(" ") };
 }

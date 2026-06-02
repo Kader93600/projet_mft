@@ -18,12 +18,30 @@ export const slugSchema = z
 // ============ Profiles ============
 export const updateProfileSchema = z.object({
   full_name: z.string().trim().max(120).nullable().optional(),
+  first_name: z.string().trim().max(80).nullable().optional(),
+  last_name: z.string().trim().max(80).nullable().optional(),
   email: emailSchema.nullable().optional(),
   phone: z
     .string()
     .trim()
     .max(30)
     .regex(/^[0-9+\-.\s()]*$/, "Téléphone invalide")
+    .nullable()
+    .optional(),
+  adresse: z.string().trim().max(300).nullable().optional(),
+  code_postal: z
+    .string()
+    .trim()
+    .max(20)
+    .regex(/^[0-9A-Za-z\-\s]*$/, "Code postal invalide")
+    .nullable()
+    .optional(),
+  ville: z.string().trim().max(120).nullable().optional(),
+  pays: z.string().trim().max(80).nullable().optional(),
+  date_naissance: z
+    .string()
+    .trim()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date invalide (AAAA-MM-JJ)")
     .nullable()
     .optional(),
   notes: z.string().trim().max(2000).nullable().optional(),

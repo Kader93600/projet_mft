@@ -281,7 +281,20 @@ export async function createStudent(raw: unknown): Promise<CreateStudentResult> 
 export async function updateUserProfile(userId: string, raw: unknown) {
   const { supabase, admin } = await requireAdmin();
   validate(uuid, userId);
-  const patch = validate(updateProfileSchema, raw);
+  const patch = validate(updateProfileSchema, raw) as Record<string, any>;
+
+  // Recompose full_name à partir de prénom/nom dès que l'un des deux est
+  // fourni — full_name reste la source d'affichage (recherche, tri,
+  // initiales, emails). Si first/last sont vides mais full_name est fourni
+  // explicitement, on respecte full_name tel quel.
+  if (patch.first_name !== undefined || patch.last_name !== undefined) {
+    const fn = (patch.first_name ?? "").toString().trim();
+    const ln = (patch.last_name ?? "").toString().trim();
+    const composed = [fn, ln].filter(Boolean).join(" ").trim();
+    if (composed) patch.full_name = composed;
+    patch.first_name = fn || null;
+    patch.last_name = ln || null;
+  }
 
   // Protection anti auto-rétrogradation : un staff (admin OU super_admin) ne
   // peut pas se rétrograder vers un rôle non-staff (student / trainer) — ça

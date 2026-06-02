@@ -20,6 +20,8 @@ import {
   FileSignature,
   CheckCircle2,
   AlertCircle,
+  MapPin,
+  Cake,
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -189,6 +191,24 @@ export default async function UserProfilePage({
               {user.phone && (
                 <span className="inline-flex items-center gap-1.5">
                   <Phone className="h-3.5 w-3.5" /> {user.phone}
+                </span>
+              )}
+              {user.date_naissance && (
+                <span className="inline-flex items-center gap-1.5">
+                  <Cake className="h-3.5 w-3.5" /> Né(e) le{" "}
+                  {formatDate(user.date_naissance)}
+                </span>
+              )}
+              {(user.adresse || user.ville || user.code_postal) && (
+                <span className="inline-flex items-center gap-1.5">
+                  <MapPin className="h-3.5 w-3.5" />
+                  {[
+                    user.adresse,
+                    [user.code_postal, user.ville].filter(Boolean).join(" "),
+                    user.pays && user.pays !== "France" ? user.pays : null,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}
                 </span>
               )}
             </div>

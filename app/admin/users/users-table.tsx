@@ -25,6 +25,8 @@ import {
   RotateCcw,
   ChevronLeft,
   ChevronRight,
+  FileSpreadsheet,
+  Download,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -168,6 +170,25 @@ export function UsersTable({
     [groups]
   );
 
+  // Construit la query string d'export en reflétant les filtres actifs
+  // (recherche serveur + rôle/classe/statut). L'export couvre TOUTE la
+  // base filtrée, pas seulement la page affichée.
+  const exportQuery = useMemo(() => {
+    const sp = new URLSearchParams();
+    if (search.trim()) sp.set("q", search.trim());
+    if (roleFilter !== "all") sp.set("role", roleFilter);
+    if (groupFilter !== "all") sp.set("group", groupFilter);
+    if (statusFilter !== "all") sp.set("status", statusFilter);
+    const qs = sp.toString();
+    return qs ? `?${qs}` : "";
+  }, [search, roleFilter, groupFilter, statusFilter]);
+
+  const hasActiveFilters =
+    !!search.trim() ||
+    roleFilter !== "all" ||
+    groupFilter !== "all" ||
+    statusFilter !== "all";
+
   // Tri par en-tête — opère sur la page courante (comme les filtres client).
   const sorted = useMemo(() => {
     if (!sort.key) return filtered;
@@ -266,6 +287,31 @@ export function UsersTable({
           </Select>
         </div>
       </Card>
+
+      {/* Barre d'export — respecte les filtres actifs */}
+      <div className="flex items-center justify-between gap-3 flex-wrap px-1">
+        <p className="text-xs text-slate-500">
+          {hasActiveFilters
+            ? "L'export reprend les filtres actifs (toute la base correspondante)."
+            : "L'export couvre l'ensemble des comptes."}
+        </p>
+        <div className="flex items-center gap-2">
+          <a
+            href={`/api/admin/export/users/xlsx${exportQuery}`}
+            className="inline-flex items-center gap-2 h-9 px-3 rounded-lg border border-emerald-200 bg-emerald-50 text-sm font-medium text-emerald-800 hover:bg-emerald-100 hover:border-emerald-300 transition active:scale-[0.98]"
+            title="Exporter en XLSX (Excel) avec toutes les informations, filtres appliqués"
+          >
+            <FileSpreadsheet className="h-4 w-4" /> Export Excel
+          </a>
+          <a
+            href={`/api/admin/export/users${exportQuery}`}
+            className="inline-flex items-center gap-2 h-9 px-3 rounded-lg border border-navy-200 bg-white text-sm text-navy-800 hover:bg-navy-50 transition active:scale-[0.98]"
+            title="Exporter en CSV, filtres appliqués"
+          >
+            <Download className="h-4 w-4" /> CSV
+          </a>
+        </div>
+      </div>
 
       {/* Table */}
       <Card>
