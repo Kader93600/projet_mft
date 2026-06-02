@@ -27,6 +27,7 @@ import {
   ChevronRight,
   FileSpreadsheet,
   Download,
+  Send,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -36,6 +37,7 @@ import {
   resetUserResults,
   toggleUserDisabled,
   updateUserProfile,
+  resendUserInvitation,
 } from "./actions";
 
 type Role = "student" | "trainer" | "admin" | "super_admin";
@@ -326,6 +328,7 @@ export function UsersTable({
                 <SortHeader label="Score moy." col="score" sort={sort} onSort={toggleSort} className="hidden lg:table-cell px-5" />
                 <SortHeader label="Dernière conn." col="lastSignIn" sort={sort} onSort={toggleSort} className="hidden xl:table-cell px-5" />
                 <SortHeader label="Statut" col="status" sort={sort} onSort={toggleSort} className="hidden md:table-cell px-5" />
+                <th className="hidden lg:table-cell text-left px-5 py-3 font-semibold">Accès</th>
                 <th className="text-right px-5 py-3 font-semibold">Actions</th>
               </tr>
             </thead>
@@ -390,8 +393,33 @@ export function UsersTable({
                         <Badge tone="success">Actif</Badge>
                       )}
                     </td>
+                    <td className="hidden lg:table-cell px-5 py-3.5">
+                      {u.last_sign_in_at ? (
+                        <Badge tone="success" size="sm">Activé</Badge>
+                      ) : (
+                        <Badge tone="gold" size="sm">En attente</Badge>
+                      )}
+                    </td>
                     <td className="px-5 py-3.5">
                       <div className="flex items-center justify-end gap-1">
+                        {/* Renvoyer l'invitation — uniquement comptes jamais connectés */}
+                        {!u.last_sign_in_at && !u.disabled && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              run(
+                                () => resendUserInvitation(u.id),
+                                "Invitation renvoyée"
+                              )
+                            }
+                            disabled={isPending}
+                            title="Renvoyer l'invitation"
+                            aria-label="Renvoyer l'invitation"
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-brand-200 text-brand-700 hover:bg-brand-50 transition active:scale-[0.97] disabled:opacity-50"
+                          >
+                            <Send className="h-3.5 w-3.5" />
+                          </button>
+                        )}
                         {/* Voir le profil */}
                         <Link
                           href={`/admin/users/${u.id}`}
@@ -477,7 +505,7 @@ export function UsersTable({
               })}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-5 py-16 text-center text-slate-400">
+                  <td colSpan={9} className="px-5 py-16 text-center text-slate-400">
                     {pagination.total === 0
                       ? "Aucun utilisateur dans la base."
                       : "Aucun utilisateur ne correspond aux filtres sur cette page."}

@@ -369,6 +369,57 @@ export async function deleteUser(userId: string) {
   return { ok: true };
 }
 
+/**
+ * Renvoie un lien d'invitation/activation à un utilisateur depuis l'admin.
+ * Réservé staff. Utilisé pour les comptes invités qui n'ont jamais activé
+ * leur accès (lien expiré, email perdu, etc.).
+ */
+export async function resendUserInvitation(userId: string) {
+  const { admin } = await requireAdmin();
+  validate(uuid, userId);
+
+  const sb = createAdminClient();
+  const { data: profile, error: pErr } = await sb
+    .from("profiles")
+    .select("email, last_sign_in_at")
+    .eq("id", userId)
+    .maybeSingle();
+  if (pErr) throw new Error(pErr.message);
+  if (!profile?.email) throw new Error("Utilisateur introuvable.");
+
+  const redirectTo = appUrl("/auth/callback?next=/bienvenue");
+  const { error: invErr } = await sb.auth.admin.inviteUserByEmail(
+    profile.email,
+    { redirectTo }
+  );
+  if (invErr) {
+    const msg = invErr.message ?? "";
+    // Si le compte est déjà confirmé, Supabase refuse une nouvelle
+    // invitation : on bascule sur un lien de réinitialisation.
+    if (/already.*registered|already.*confirmed|email_exists/i.test(msg)) {
+      const { error: rErr } = await sb.auth.resetPasswordForEmail(
+        profile.email,
+        { redirectTo: appUrl("/auth/callback?next=/reset-password") }
+      );
+      if (rErr) throw new Error(rErr.message);
+    } else if (/rate[\s_-]?limit|too[_\s]many/i.test(msg)) {
+      throw new Error(
+        "Quota d'envoi Supabase atteint. Réessayez plus tard ou configurez un SMTP custom (Resend)."
+      );
+    } else {
+      throw new Error(`Renvoi impossible : ${msg}`);
+    }
+  }
+
+  await auditLog("resend_invitation", "profile", userId, {
+    email: profile.email,
+    by: admin.id,
+  });
+  revalidatePath("/admin/users");
+  revalidatePath(`/admin/users/${userId}`);
+  return { ok: true };
+}
+
 export async function resetUserResults(userId: string) {
   const { supabase } = await requireAdmin();
   validate(uuid, userId);

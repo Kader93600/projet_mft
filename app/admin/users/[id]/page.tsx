@@ -176,6 +176,9 @@ export default async function UserProfilePage({
               </h2>
               {user.role === "admin" && <Badge tone="gold">Admin</Badge>}
               {user.disabled && <Badge tone="slate">Désactivé</Badge>}
+              {!user.last_sign_in_at && !user.disabled && (
+                <Badge tone="gold">En attente d'activation</Badge>
+              )}
               {group && <Badge tone="navy">{group.name}</Badge>}
             </div>
             <p className="mt-1 text-white/70 text-sm">{user.email}</p>
@@ -217,6 +220,7 @@ export default async function UserProfilePage({
             userId={user.id}
             disabled={user.disabled}
             email={user.email}
+            neverSignedIn={!user.last_sign_in_at}
           />
         </CardBody>
       </Card>
