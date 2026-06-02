@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin, validate, auditLog } from "@/lib/admin-guard";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { updateProfileSchema, uuid } from "@/lib/validations";
+import { appUrl } from "@/lib/app-url";
 import { z } from "zod";
 
 // ─── Schéma de création stagiaire ──────────────────────────────────────
@@ -147,9 +148,9 @@ export async function createStudent(raw: unknown): Promise<CreateStudentResult> 
   // 1) Création du user auth
   let userId: string;
   if (data.access_mode === "invite") {
-    const redirectTo =
-      (process.env.NEXT_PUBLIC_APP_URL ?? "") +
-    "/auth/callback?next=/reset-password";
+    // URL ABSOLUE obligatoire (sinon Supabase ignore et renvoie sur la home).
+    // `next=/bienvenue` = page d'activation (création du mot de passe).
+    const redirectTo = appUrl("/auth/callback?next=/bienvenue");
     const { data: invited, error: invErr } = await sb.auth.admin.inviteUserByEmail(
       data.email,
       {
@@ -451,8 +452,7 @@ export async function createTrainer(raw: unknown): Promise<StaffCreateResult> {
   // 1) Création auth user
   let userId: string;
   if (data.access_mode === "invite") {
-    const redirectTo = (process.env.NEXT_PUBLIC_APP_URL ?? "") +
-    "/auth/callback?next=/reset-password";
+    const redirectTo = appUrl("/auth/callback?next=/bienvenue");
     const { data: invited, error: invErr } = await sb.auth.admin.inviteUserByEmail(
       data.email,
       {
@@ -561,8 +561,7 @@ export async function createAdminUser(raw: unknown): Promise<StaffCreateResult> 
   // 1) Création auth user
   let userId: string;
   if (data.access_mode === "invite") {
-    const redirectTo = (process.env.NEXT_PUBLIC_APP_URL ?? "") +
-    "/auth/callback?next=/reset-password";
+    const redirectTo = appUrl("/auth/callback?next=/bienvenue");
     const { data: invited, error: invErr } = await sb.auth.admin.inviteUserByEmail(
       data.email,
       {
