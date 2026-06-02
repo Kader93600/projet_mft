@@ -150,7 +150,7 @@ export async function createStudent(raw: unknown): Promise<CreateStudentResult> 
   if (data.access_mode === "invite") {
     // URL ABSOLUE obligatoire (sinon Supabase ignore et renvoie sur la home).
     // `next=/bienvenue` = page d'activation (création du mot de passe).
-    const redirectTo = appUrl("/auth/callback?next=/bienvenue");
+    const redirectTo = appUrl("/activer?next=/bienvenue");
     const { data: invited, error: invErr } = await sb.auth.admin.inviteUserByEmail(
       data.email,
       {
@@ -387,7 +387,7 @@ export async function resendUserInvitation(userId: string) {
   if (pErr) throw new Error(pErr.message);
   if (!profile?.email) throw new Error("Utilisateur introuvable.");
 
-  const redirectTo = appUrl("/auth/callback?next=/bienvenue");
+  const redirectTo = appUrl("/activer?next=/bienvenue");
   const { error: invErr } = await sb.auth.admin.inviteUserByEmail(
     profile.email,
     { redirectTo }
@@ -399,7 +399,7 @@ export async function resendUserInvitation(userId: string) {
     if (/already.*registered|already.*confirmed|email_exists/i.test(msg)) {
       const { error: rErr } = await sb.auth.resetPasswordForEmail(
         profile.email,
-        { redirectTo: appUrl("/auth/callback?next=/reset-password") }
+        { redirectTo: appUrl("/activer?next=/reset-password") }
       );
       if (rErr) throw new Error(rErr.message);
     } else if (/rate[\s_-]?limit|too[_\s]many/i.test(msg)) {
@@ -503,7 +503,7 @@ export async function createTrainer(raw: unknown): Promise<StaffCreateResult> {
   // 1) Création auth user
   let userId: string;
   if (data.access_mode === "invite") {
-    const redirectTo = appUrl("/auth/callback?next=/bienvenue");
+    const redirectTo = appUrl("/activer?next=/bienvenue");
     const { data: invited, error: invErr } = await sb.auth.admin.inviteUserByEmail(
       data.email,
       {
@@ -612,7 +612,7 @@ export async function createAdminUser(raw: unknown): Promise<StaffCreateResult> 
   // 1) Création auth user
   let userId: string;
   if (data.access_mode === "invite") {
-    const redirectTo = appUrl("/auth/callback?next=/bienvenue");
+    const redirectTo = appUrl("/activer?next=/bienvenue");
     const { data: invited, error: invErr } = await sb.auth.admin.inviteUserByEmail(
       data.email,
       {

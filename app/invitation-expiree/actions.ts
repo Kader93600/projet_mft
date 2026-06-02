@@ -57,7 +57,7 @@ export async function resendInvitation(rawEmail: string): Promise<{
     // L'utilisateur utilisera « mot de passe oublié » s'il en a besoin.
     if (user.email_confirmed_at) return generic;
 
-    const redirectTo = appUrl("/auth/callback?next=/bienvenue");
+    const redirectTo = appUrl("/activer?next=/bienvenue");
     await sb.auth.admin.inviteUserByEmail(email, { redirectTo });
     return generic;
   } catch {
