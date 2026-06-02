@@ -391,9 +391,16 @@ function friendlyDeleteError(msg: string): string {
   const m = (msg || "").toLowerCase();
   if (/foreign key|violates|constraint|still referenced/.test(m)) {
     return (
-      "Ce compte est lié à des données qui empêchent sa suppression " +
-      "(annonces, documents ou paramètres qu'il a créés/modifiés). " +
-      "Appliquez la migration 2026_05_30_fix_delete_user_fk.sql, puis réessayez."
+      "Ce compte est lié à des données qui empêchent sa suppression. " +
+      "Appliquez les migrations 2026_05_30_fix_delete_user_fk.sql puis " +
+      "2026_05_30_fix_attempt_deletion_trigger.sql, puis réessayez."
+    );
+  }
+  if (/database error (deleting|removing)/.test(m)) {
+    return (
+      "Erreur base de données lors de la suppression (souvent le trigger " +
+      "de journalisation des tentatives de quiz). Appliquez la migration " +
+      "2026_05_30_fix_attempt_deletion_trigger.sql, puis réessayez."
     );
   }
   if (/not[\s_-]?found|does not exist/.test(m)) {
