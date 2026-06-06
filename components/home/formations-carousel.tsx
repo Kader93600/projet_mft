@@ -51,6 +51,7 @@ const NORMAL_DURATION_S = 22;
  */
 export function FormationsCarousel() {
   const [touchPaused, setTouchPaused] = React.useState(false);
+  const [hoverPaused, setHoverPaused] = React.useState(false);
   const touchTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
     null
   );
@@ -67,8 +68,11 @@ export function FormationsCarousel() {
     };
   }, []);
 
-  // Pause temporaire après un toucher (mobile) pour laisser lire / cliquer.
-  const isPaused = touchPaused;
+  // Pause : au survol des cartes (desktop) ou après un toucher (mobile).
+  // NB : on pilote la pause en JS (état -> animationPlayState inline) car
+  // le raccourci CSS `animation` inline écrase toute classe Tailwind
+  // `group-hover:[animation-play-state:paused]` (les styles inline gagnent).
+  const isPaused = touchPaused || hoverPaused;
 
   // Duplique les formations pour la boucle parfaite
   const items = [...FORMATIONS, ...FORMATIONS];
@@ -116,14 +120,17 @@ export function FormationsCarousel() {
                 "linear-gradient(to right, transparent 0, black 6%, black 94%, transparent 100%)",
             }}
           >
-            {/* Wrapper marquee : pause au hover (CSS) + pause forcée si flip ou touch */}
-            <div className="group overflow-hidden py-6">
+            {/* Wrapper marquee : pause dès que le curseur est sur une carte
+                (mouseenter/leave de la rangée) ou après un toucher. */}
+            <div className="overflow-hidden py-6">
               <div
-                className="flex gap-5 w-max group-hover:[animation-play-state:paused] motion-reduce:!animation-none"
+                className="flex gap-5 w-max motion-reduce:!animation-none"
                 style={{
                   animation: `marquee-x ${NORMAL_DURATION_S}s linear infinite`,
                   animationPlayState: isPaused ? "paused" : undefined,
                 }}
+                onMouseEnter={() => setHoverPaused(true)}
+                onMouseLeave={() => setHoverPaused(false)}
               >
                 {items.map((f, i) => (
                   <FlipCard key={`${f.slug}-${i}`} formation={f} />
