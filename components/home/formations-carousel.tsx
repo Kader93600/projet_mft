@@ -12,7 +12,6 @@ import {
   Award,
   ShieldCheck,
   ArrowRight,
-  ArrowLeft,
   RotateCw,
   Clock,
   MapPin,
@@ -37,47 +36,24 @@ const MODALITY_LABEL: Record<string, string> = {
   mixte: "Mixte présentiel / distanciel",
 };
 
-/** Vitesse normale du défilement auto (secondes pour 1 boucle complète). */
-const NORMAL_DURATION_S = 35;
-/** Durée de l'accélération quand on clique une flèche. */
-const BOOST_DURATION_MS = 1500;
-/** Vitesse boostée (temporaire, à chaque click flèche) — plus doux que 4s. */
-const BOOST_DURATION_S = 10;
+/** Vitesse du défilement auto (secondes pour 1 boucle complète). Plus
+ *  petit = plus rapide. */
+const NORMAL_DURATION_S = 22;
 
 /**
- * Marquee infini des formations — défile lentement et en continu, avec
- * cartes flip 3D individuelles + flèches gauche/droite pour boost manuel.
+ * Marquee infini des formations — défile en continu, cartes flip 3D.
  *
  *  - Inner row : flex gap, width: max-content, animation translateX 0 → -50%
  *  - Cartes dupliquées (×2) → boucle parfaitement sans saut
  *  - Auto-pause au hover, flip de carte, ou touch récent
- *  - Flèches gauche/droite : boost temporaire (4s/loop pendant 1,5s)
- *    → effet "fast-forward" / "rewind" instinctif
+ *  - Clic n'importe où sur la carte (ou sur « Découvrir ») → page formation
  *  - prefers-reduced-motion : marquee figée
  */
 export function FormationsCarousel() {
-  const [flippedSlugs, setFlippedSlugs] = React.useState<Set<string>>(
-    () => new Set()
-  );
   const [touchPaused, setTouchPaused] = React.useState(false);
-  const [boostMode, setBoostMode] = React.useState<"normal" | "fwd" | "bwd">(
-    "normal"
-  );
   const touchTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
     null
   );
-  const boostTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
-    null
-  );
-
-  const toggleFlip = (slug: string) => {
-    setFlippedSlugs((prev) => {
-      const n = new Set(prev);
-      if (n.has(slug)) n.delete(slug);
-      else n.add(slug);
-      return n;
-    });
-  };
 
   const handleTouchStart = () => {
     if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
@@ -85,31 +61,14 @@ export function FormationsCarousel() {
     touchTimerRef.current = setTimeout(() => setTouchPaused(false), 4000);
   };
 
-  const handleArrow = (direction: "fwd" | "bwd") => {
-    if (boostTimerRef.current) clearTimeout(boostTimerRef.current);
-    setBoostMode(direction);
-    boostTimerRef.current = setTimeout(() => {
-      setBoostMode("normal");
-    }, BOOST_DURATION_MS);
-  };
-
   React.useEffect(() => {
     return () => {
       if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
-      if (boostTimerRef.current) clearTimeout(boostTimerRef.current);
     };
   }, []);
 
-  // Pause si flip ou touch récent
-  const isPaused = flippedSlugs.size > 0 || touchPaused;
-
-  // Calcule l'animation selon le mode
-  // Convention :
-  //   - Click flèche GAUCHE (←) → "bwd" → contenu défile vers la GAUCHE (sens normal, accéléré)
-  //   - Click flèche DROITE (→) → "fwd" → contenu défile vers la DROITE (sens reverse, accéléré)
-  const animationDuration =
-    boostMode === "normal" ? `${NORMAL_DURATION_S}s` : `${BOOST_DURATION_S}s`;
-  const animationDirection = boostMode === "fwd" ? "reverse" : "normal";
+  // Pause temporaire après un toucher (mobile) pour laisser lire / cliquer.
+  const isPaused = touchPaused;
 
   // Duplique les formations pour la boucle parfaite
   const items = [...FORMATIONS, ...FORMATIONS];
@@ -138,8 +97,8 @@ export function FormationsCarousel() {
             Toutes nos formations transport.
           </h2>
           <p className="mt-3 text-white/70 text-base md:text-lg leading-relaxed">
-            Survolez (ou tapez) une carte pour la retourner et accéder au
-            détail. Le défilement se met en pause automatiquement.
+            Survolez une carte pour découvrir le détail. Cliquez pour accéder
+            à la formation. Le défilement se met en pause au survol.
           </p>
         </div>
 
@@ -148,26 +107,6 @@ export function FormationsCarousel() {
           className="relative mt-12"
           onTouchStart={handleTouchStart}
         >
-          {/* Flèche gauche (rewind) */}
-          <button
-            type="button"
-            onClick={() => handleArrow("bwd")}
-            aria-label="Revenir en arrière dans le carrousel"
-            className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 h-11 w-11 rounded-full bg-night-300/90 border border-white/15 text-white backdrop-blur-md shadow-float flex items-center justify-center transition-[transform,background-color,border-color] duration-200 ease-premium hover:bg-night-200 hover:border-signal-400/60 hover:scale-110 active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-night motion-reduce:transition-none motion-reduce:hover:scale-100"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-
-          {/* Flèche droite (fast-forward) */}
-          <button
-            type="button"
-            onClick={() => handleArrow("fwd")}
-            aria-label="Avancer rapidement dans le carrousel"
-            className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 h-11 w-11 rounded-full bg-night-300/90 border border-white/15 text-white backdrop-blur-md shadow-float flex items-center justify-center transition-[transform,background-color,border-color] duration-200 ease-premium hover:bg-night-200 hover:border-signal-400/60 hover:scale-110 active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-night motion-reduce:transition-none motion-reduce:hover:scale-100"
-          >
-            <ArrowRight className="h-5 w-5" />
-          </button>
-
           <div
             style={{
               // Masques fade gauche/droite (les cartes apparaissent/disparaissent en douceur)
@@ -182,18 +121,12 @@ export function FormationsCarousel() {
               <div
                 className="flex gap-5 w-max group-hover:[animation-play-state:paused] motion-reduce:!animation-none"
                 style={{
-                  animation: `marquee-x ${animationDuration} linear infinite`,
-                  animationDirection,
+                  animation: `marquee-x ${NORMAL_DURATION_S}s linear infinite`,
                   animationPlayState: isPaused ? "paused" : undefined,
                 }}
               >
                 {items.map((f, i) => (
-                  <FlipCard
-                    key={`${f.slug}-${i}`}
-                    formation={f}
-                    flipped={flippedSlugs.has(f.slug)}
-                    onToggle={() => toggleFlip(f.slug)}
-                  />
+                  <FlipCard key={`${f.slug}-${i}`} formation={f} />
                 ))}
               </div>
             </div>
@@ -218,40 +151,22 @@ export function FormationsCarousel() {
 
 function FlipCard({
   formation,
-  flipped,
-  onToggle,
 }: {
   formation: (typeof FORMATIONS)[number];
-  flipped: boolean;
-  onToggle: () => void;
 }) {
   const Icon = ICONS[formation.iconName] ?? Truck;
   const accent = formation.accent ?? "#9FE220";
 
   return (
-    <div
-      className="shrink-0 w-[260px] sm:w-[280px] md:w-[300px]"
+    <Link
+      href={`/formations/${formation.slug}`}
+      className="shrink-0 w-[260px] sm:w-[280px] md:w-[300px] block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-night rounded-[1.5rem]"
       style={{ aspectRatio: "3 / 4" }}
+      aria-label={`Découvrir la formation ${formation.code} — ${formation.title}`}
     >
       <div
         className="flip-card group/card relative w-full h-full cursor-pointer"
         style={{ perspective: "1400px" }}
-        data-flipped={flipped ? "true" : "false"}
-        onClick={(e) => {
-          if ((e.target as HTMLElement).closest("a")) return;
-          onToggle();
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            onToggle();
-          }
-        }}
-        role="button"
-        tabIndex={0}
-        aria-label={`${formation.code} — ${formation.title}. ${
-          flipped ? "Face arrière" : "Face avant"
-        } visible. Tapez pour retourner.`}
       >
         {/* Ombre sous la carte */}
         <div
@@ -268,7 +183,6 @@ function FlipCard({
             "relative w-full h-full transition-transform duration-[800ms] " +
             "ease-[cubic-bezier(0.16,1,0.3,1)] [transform-style:preserve-3d] " +
             "md:group-hover/card:[transform:rotateY(180deg)] " +
-            "group-data-[flipped=true]/card:[transform:rotateY(180deg)] " +
             "motion-reduce:transition-none"
           }
         >
@@ -439,21 +353,21 @@ function FlipCard({
               </li>
             </ul>
 
-            <Link
-              href={`/formations/${formation.slug}`}
-              className="mt-auto inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-night-900 transition-transform hover:scale-[1.02]"
+            {/* Visuel uniquement : toute la carte est déjà un lien (<Link>
+                parent). On évite un lien imbriqué (invalide). */}
+            <span
+              className="mt-auto inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-night-900 transition-transform group-hover/card:scale-[1.02] motion-reduce:group-hover/card:scale-100"
               style={{
                 background: accent,
                 boxShadow: `0 10px 28px -6px ${accent}99`,
               }}
-              onClick={(e) => e.stopPropagation()}
             >
               Découvrir la formation
               <ArrowRight className="h-4 w-4" />
-            </Link>
+            </span>
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
