@@ -30,7 +30,9 @@ export function organizationSchema() {
     name: LEGAL.legalName,
     alternateName: LEGAL.brand,
     url: LEGAL.website,
-    logo: `${LEGAL.website}/og-logo.png`,
+    // Image OG générée dynamiquement (un fichier og-logo.png statique
+    // n'existe pas — l'ancienne URL renvoyait 404).
+    logo: `${LEGAL.website}/opengraph-image`,
     description: LEGAL.shortDescription,
     address: {
       "@type": "PostalAddress",

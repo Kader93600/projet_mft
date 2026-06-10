@@ -14,7 +14,16 @@ export const dynamic = "force-dynamic";
  * Inclut l'identité complète + stats agrégées. Réservé admin.
  */
 export async function GET(req: NextRequest) {
-  const { supabase } = await requireAdmin();
+  // 401 propre (et non 500) si non authentifié / non admin.
+  let supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"];
+  try {
+    ({ supabase } = await requireAdmin());
+  } catch {
+    return new Response(JSON.stringify({ error: "unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
   const sp = req.nextUrl.searchParams;
   const q = (sp.get("q") ?? "").trim();
   const role = sp.get("role") ?? "all";

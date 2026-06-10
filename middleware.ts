@@ -4,32 +4,6 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request: { headers: request.headers } });
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value;
-        },
-        set(name: string, value: string, options: CookieOptions) {
-          request.cookies.set({ name, value, ...options });
-          response = NextResponse.next({ request: { headers: request.headers } });
-          response.cookies.set({ name, value, ...options });
-        },
-        remove(name: string, options: CookieOptions) {
-          request.cookies.set({ name, value: "", ...options });
-          response = NextResponse.next({ request: { headers: request.headers } });
-          response.cookies.set({ name, value: "", ...options });
-        },
-      },
-    }
-  );
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
   const { pathname } = request.nextUrl;
   const isAuthPage =
     (pathname.startsWith("/login") && !pathname.startsWith("/login/mfa")) ||
@@ -67,6 +41,55 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/super-admin") ||
     isMfaChallenge ||
     pathname.startsWith("/admin");
+
+  // ── Court-circuit perf : visiteur SANS cookie de session Supabase ──
+  // Pas de cookie sb-* ⇒ aucune session possible ⇒ inutile d'appeler
+  // l'API Supabase (getUser = appel réseau sur CHAQUE requête). La
+  // vitrine publique est servie sans dépendance réseau (TTFB réduit).
+  // Les règles « visiteur non connecté » ci-dessous sont reproduites
+  // à l'identique du flux complet.
+  const hasAuthCookie = request.cookies
+    .getAll()
+    .some((c) => c.name.startsWith("sb-"));
+  if (!hasAuthCookie) {
+    if (pathname.startsWith("/inscription")) {
+      const url = new URL("/contact", request.url);
+      request.nextUrl.searchParams.forEach((v, k) =>
+        url.searchParams.set(k, v)
+      );
+      return NextResponse.redirect(url);
+    }
+    if (isProtected || isOnboarding || isSignature) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+    return response;
+  }
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return request.cookies.get(name)?.value;
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          request.cookies.set({ name, value, ...options });
+          response = NextResponse.next({ request: { headers: request.headers } });
+          response.cookies.set({ name, value, ...options });
+        },
+        remove(name: string, options: CookieOptions) {
+          request.cookies.set({ name, value: "", ...options });
+          response = NextResponse.next({ request: { headers: request.headers } });
+          response.cookies.set({ name, value: "", ...options });
+        },
+      },
+    }
+  );
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   // Cas spécial : /inscription est le tableau de bord "Mon dossier" du
   // stagiaire connecté, mais d'anciens liens publics y pointaient. Pour un

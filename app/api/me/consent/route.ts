@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
 const ALLOWED = new Set([
   "essential",
   "analytics",
+  "marketing",
   "communications",
   "newsletter",
 ]);

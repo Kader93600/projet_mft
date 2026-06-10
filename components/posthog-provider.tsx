@@ -9,10 +9,12 @@
 // directement identifié dès le mount.
 // =====================================================================
 
-import { useEffect, Suspense } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import posthog from "posthog-js";
 import { identifyUser } from "@/lib/analytics";
+import { hasAnalyticsConsent } from "@/lib/marketing/consent";
+import { CONSENT_CHANGED_EVENT } from "@/components/cookie-banner";
 
 const KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY;
 // API host : on utilise notre PROXY interne /ingest (rewrites Next.js) au
@@ -34,10 +36,42 @@ interface PostHogProviderProps {
 }
 
 export function PostHogProvider({ children, profile }: PostHogProviderProps) {
-  // Init PostHog une seule fois au mount du provider
+  // RGPD : PostHog (mesure d'audience avec identification) ne démarre
+  // QUE si le consentement « analytics » de la bannière cookies est donné.
+  // `consented` suit le choix en direct (événement CONSENT_CHANGED_EVENT).
+  const [consented, setConsented] = useState(false);
+
+  useEffect(() => {
+    setConsented(hasAnalyticsConsent());
+    const onConsent = (e: Event) => {
+      const detail = (e as CustomEvent).detail as
+        | { analytics?: boolean }
+        | undefined;
+      const granted = detail?.analytics === true;
+      setConsented(granted);
+      // Retrait du consentement : stoppe la capture et purge l'état local
+      // PostHog (cookies + localStorage), exigence CNIL.
+      if (!granted && (window as any).__posthog_inited) {
+        try {
+          posthog.opt_out_capturing();
+          posthog.reset();
+        } catch {}
+      }
+      if (granted && (window as any).__posthog_inited) {
+        try {
+          posthog.opt_in_capturing();
+        } catch {}
+      }
+    };
+    window.addEventListener(CONSENT_CHANGED_EVENT, onConsent);
+    return () => window.removeEventListener(CONSENT_CHANGED_EVENT, onConsent);
+  }, []);
+
+  // Init PostHog une seule fois, et uniquement après consentement
   useEffect(() => {
     if (!KEY) return;
     if (typeof window === "undefined") return;
+    if (!consented) return;
     // Évite la double-init lors d'un hot-reload en dev
     if ((window as any).__posthog_inited) return;
     (window as any).__posthog_inited = true;
@@ -80,10 +114,12 @@ export function PostHogProvider({ children, profile }: PostHogProviderProps) {
 
     // expose pour le wrapper lib/analytics.ts
     (window as any).posthog = posthog;
-  }, []);
+  }, [consented]);
 
-  // Identification du user dès qu'il est disponible
+  // Identification du user dès qu'il est disponible — uniquement si
+  // PostHog a été initialisé (donc avec consentement).
   useEffect(() => {
+    if (!consented || !(window as any).__posthog_inited) return;
     if (!profile?.id) return;
     identifyUser(profile.id, {
       email: profile.email,
@@ -91,7 +127,7 @@ export function PostHogProvider({ children, profile }: PostHogProviderProps) {
       full_name: profile.full_name ?? undefined,
       active_formation_slug: profile.active_formation_slug ?? undefined,
     });
-  }, [profile?.id, profile?.email, profile?.role, profile?.full_name, profile?.active_formation_slug]);
+  }, [consented, profile?.id, profile?.email, profile?.role, profile?.full_name, profile?.active_formation_slug]);
 
   return (
     <>
@@ -115,6 +151,8 @@ function PageviewTracker() {
     if (!KEY) return;
     if (typeof window === "undefined") return;
     if (!pathname) return;
+    // Pas de capture si PostHog n'est pas initialisé (pas de consentement).
+    if (!(window as any).__posthog_inited) return;
     const url = `${window.location.origin}${pathname}${
       searchParams?.toString() ? `?${searchParams.toString()}` : ""
     }`;

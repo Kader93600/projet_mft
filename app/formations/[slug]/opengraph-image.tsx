@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { findFormation } from "@/lib/formations-config";
 import { LEGAL } from "@/lib/legal-config";
 
-export const runtime = "edge";
+// NB : pas de `runtime = "edge"` — renvoyait des PNG vides sur Vercel.
 export const alt = "MA FORMATION TRANSPORT — Formation";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -117,7 +117,7 @@ export default async function OgImage({ params }: { params: { slug: string } }) 
         {/* Code formation */}
         <div
           style={{
-            display: "inline-flex",
+            display: "flex",
             alignSelf: "flex-start",
             padding: "8px 18px",
             borderRadius: 9999,
@@ -163,7 +163,7 @@ export default async function OgImage({ params }: { params: { slug: string } }) 
           {rncp && (
             <span
               style={{
-                display: "inline-flex",
+                display: "flex",
                 alignItems: "center",
                 gap: 8,
               }}
@@ -174,7 +174,7 @@ export default async function OgImage({ params }: { params: { slug: string } }) 
                   height: 8,
                   borderRadius: 9999,
                   background: "#9FE220",
-                  display: "inline-block",
+                  display: "block",
                 }}
               />
               {rncp}
@@ -183,7 +183,7 @@ export default async function OgImage({ params }: { params: { slug: string } }) 
           {duration && (
             <span
               style={{
-                display: "inline-flex",
+                display: "flex",
                 alignItems: "center",
                 gap: 8,
               }}
@@ -194,7 +194,7 @@ export default async function OgImage({ params }: { params: { slug: string } }) 
                   height: 8,
                   borderRadius: 9999,
                   background: accent,
-                  display: "inline-block",
+                  display: "block",
                 }}
               />
               {duration}
@@ -202,7 +202,7 @@ export default async function OgImage({ params }: { params: { slug: string } }) 
           )}
           <span
             style={{
-              display: "inline-flex",
+              display: "flex",
               alignItems: "center",
               gap: 8,
             }}
@@ -213,7 +213,7 @@ export default async function OgImage({ params }: { params: { slug: string } }) 
                 height: 8,
                 borderRadius: 9999,
                 background: "#9FE220",
-                display: "inline-block",
+                display: "block",
               }}
             />
             Certifié Qualiopi

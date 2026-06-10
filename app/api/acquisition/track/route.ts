@@ -9,7 +9,8 @@
 //   • Périmètre : pages publiques uniquement (pas d'auth requise)
 //
 // Body : { kind, landing_page, referrer?, utm_source?, utm_medium?,
-//          utm_campaign?, utm_content?, utm_term? }
+//          utm_campaign?, utm_content?, utm_term?,
+//          gclid?, gbraid?, wbraid?, fbclid?, ttclid?, msclkid? }
 //
 // Comportement :
 //   1. Lit ou génère le cookie `mft_vid` (UUID v4)
@@ -43,6 +44,13 @@ type TrackBody = {
   utm_campaign?: string;
   utm_content?: string;
   utm_term?: string;
+  // Click-IDs régies publicitaires
+  gclid?: string;
+  gbraid?: string;
+  wbraid?: string;
+  fbclid?: string;
+  ttclid?: string;
+  msclkid?: string;
 };
 
 function generateVisitorId(): string {
@@ -130,6 +138,13 @@ export async function POST(req: NextRequest) {
       utm_campaign: clean(body.utm_campaign, 200),
       utm_content: clean(body.utm_content, 200),
       utm_term: clean(body.utm_term, 200),
+      // Click-IDs régies (fbclid/ttclid peuvent être longs → 400)
+      gclid: clean(body.gclid, 200),
+      gbraid: clean(body.gbraid, 200),
+      wbraid: clean(body.wbraid, 200),
+      fbclid: clean(body.fbclid, 400),
+      ttclid: clean(body.ttclid, 400),
+      msclkid: clean(body.msclkid, 200),
       user_agent: ua.slice(0, 300),
       ip_country: country ? country.slice(0, 4) : null,
     });

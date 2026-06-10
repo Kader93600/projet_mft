@@ -2,7 +2,8 @@ import { LegalPage, Section, DataRow } from "@/components/legal/legal-page";
 import { LEGAL, LEGAL_LAST_UPDATE } from "@/lib/legal-config";
 
 export const metadata = {
-  title: `Mentions légales — ${LEGAL.brand}`,
+  title: "Mentions légales",
+  alternates: { canonical: "/mentions-legales" },
   description: `Mentions légales du site ${LEGAL.brand}, organisme de formation préparant au titre RNCP 40990.`,
 };
 
@@ -149,17 +150,29 @@ export default function MentionsLegalesPage() {
           médiateur de la consommation en vue de la résolution amiable d'un
           litige.
         </p>
-        <dl className="rounded-xl border border-navy-100 bg-white p-5 not-prose">
-          <DataRow label="Médiateur" value={LEGAL.mediator.name} />
-          <DataRow
-            label="Site"
-            value={
-              <a href={LEGAL.mediator.website} target="_blank" rel="noreferrer">
-                {LEGAL.mediator.website}
-              </a>
-            }
-          />
-        </dl>
+        {/* Garde-fou : jamais de placeholder « [À COMPLÉTER] » en public.
+            Tant que le médiateur n'est pas renseigné dans legal-config,
+            on affiche la mention transitoire conforme. */}
+        {!LEGAL.mediator.name.includes("COMPLÉTER") ? (
+          <dl className="rounded-xl border border-navy-100 bg-white p-5 not-prose">
+            <DataRow label="Médiateur" value={LEGAL.mediator.name} />
+            <DataRow
+              label="Site"
+              value={
+                <a href={LEGAL.mediator.website} target="_blank" rel="noreferrer">
+                  {LEGAL.mediator.website}
+                </a>
+              }
+            />
+          </dl>
+        ) : (
+          <p>
+            Les coordonnées du médiateur de la consommation compétent sont
+            communiquées sur simple demande à{" "}
+            <a href={`mailto:${LEGAL.email}`}>{LEGAL.email}</a> et seront
+            publiées sur cette page.
+          </p>
+        )}
       </Section>
 
       <Section number="8" title="Droit applicable">

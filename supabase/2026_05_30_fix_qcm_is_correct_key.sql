@@ -13,18 +13,17 @@
 --       => badge « aucune bonne réponse ».
 --     - Éditeur de question : lit `id` / `label` => cases de réponse
 --       A/B/C/D affichées VIDES.
---     - (Le player de quiz tolère les deux formats, donc le passage de
---       quiz n'était pas bloqué, mais la correction admin l'était.)
+--     - (Le player de quiz tolère les deux formats : le passage de quiz
+--       n'était pas bloqué, mais la correction admin l'était.)
 --
 -- CE QUE FAIT CE SCRIPT
---   Réécrit la colonne jsonb `choices` au format canonique en
---   renommant les clés, SANS retranscrire aucune valeur à la main :
+--   Réécrit la colonne jsonb `choices` au format canonique en renommant
+--   les clés, SANS retranscrire aucune valeur à la main :
 --       key      -> id
 --       text     -> label
 --       correct  -> is_correct
---   La valeur booléenne de la bonne réponse et les textes d'options sont
---   simplement déplacés sous le bon nom de clé. Zéro risque d'erreur de
---   saisie.
+--   Les textes d'options et le booléen de bonne réponse sont simplement
+--   déplacés sous le bon nom de clé. Zéro risque d'erreur de saisie.
 --
 -- SÛRETÉ
 --   - Ne touche QUE les QCM dont au moins une option utilise encore une

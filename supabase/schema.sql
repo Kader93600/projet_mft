@@ -1,6 +1,6 @@
 -- =====================================================================
 -- supabase/schema.sql — BASELINE CONSOLIDÉ (source de vérité des tables)
--- Généré le 2026-05-24 par scripts/introspect-schema.mjs
+-- Généré le 2026-06-02 par scripts/introspect-schema.mjs
 -- via introspection du schéma public déployé (PostgREST OpenAPI).
 --
 -- ⚠️  Régénérer avec :  node scripts/introspect-schema.mjs
@@ -13,7 +13,7 @@
 --   • FONCTIONS / TRIGGERS / RLS / INDEX / CHECK : voir les migrations
 --     horodatées dans supabase/*.sql (index : supabase/MIGRATIONS_INDEX.md).
 --
--- Tables : 95
+-- Tables : 96
 -- =====================================================================
 
 create extension if not exists "uuid-ossp";
@@ -51,6 +51,12 @@ create table if not exists public.acquisition_events (
   ip_country text,
   kind text not null,
   occurred_at timestamp with time zone default now() not null,
+  gclid text,
+  gbraid text,
+  wbraid text,
+  fbclid text,
+  ttclid text,
+  msclkid text,
   primary key (id)
 );
 
@@ -339,6 +345,26 @@ create table if not exists public.document_acceptances (
 );
 
 -- ─────────────────────────────────────────────────────────────────────
+create table if not exists public.email_log (
+  id uuid default gen_random_uuid(),
+  sender_id uuid,  -- FK → profiles.id
+  sender_email text,
+  recipients text[] not null,
+  cc text[] not null,
+  bcc text[] not null,
+  subject text default '' not null,
+  body_html text,
+  status text default 'sent' not null,
+  provider_id text,
+  error text,
+  attachments_meta jsonb not null,
+  related_user_id uuid,  -- FK → profiles.id
+  context text,
+  created_at timestamp with time zone default now() not null,
+  primary key (id)
+);
+
+-- ─────────────────────────────────────────────────────────────────────
 create table if not exists public.enrollment_requests (
   id uuid default extensions.uuid_generate_v4(),
   user_id uuid,  -- FK → profiles.id
@@ -360,6 +386,16 @@ create table if not exists public.enrollment_requests (
   adresse text,
   code_postal text,
   ville text,
+  visitor_id text,
+  gclid text,
+  gbraid text,
+  wbraid text,
+  fbclid text,
+  ttclid text,
+  msclkid text,
+  utm_source text,
+  utm_medium text,
+  utm_campaign text,
   primary key (id)
 );
 

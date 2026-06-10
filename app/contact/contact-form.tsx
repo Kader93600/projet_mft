@@ -63,6 +63,22 @@ export function ContactForm() {
 
   return (
     <form onSubmit={onSubmit} className="space-y-5">
+      {/* Honeypot anti-spam : champ invisible pour les humains (aria-hidden
+          + hors écran). Les bots le remplissent → rejet silencieux serveur.
+          Nom volontairement plausible ("website") pour appâter. */}
+      <div
+        aria-hidden="true"
+        className="absolute -left-[9999px] top-auto h-px w-px overflow-hidden"
+      >
+        <label htmlFor="contact-website">Ne pas remplir</label>
+        <input
+          id="contact-website"
+          type="text"
+          name="website"
+          tabIndex={-1}
+          autoComplete="off"
+        />
+      </div>
       <div className="grid sm:grid-cols-2 gap-4">
         <Field name="firstName" label="Prénom" required />
         <Field name="lastName" label="Nom" required />
@@ -79,6 +95,7 @@ export function ContactForm() {
           name="phone"
           label="Téléphone"
           type="tel"
+          required
           autoComplete="tel"
         />
       </div>

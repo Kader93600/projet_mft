@@ -2,8 +2,6 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import {
   ArrowRight,
-  Award,
-  CheckCircle2,
   ShieldCheck,
   Sparkles,
   Users,
@@ -12,12 +10,6 @@ import {
   MapPin,
   Phone,
   Mail,
-  Truck,
-  Bus,
-  GraduationCap,
-  Car,
-  Briefcase,
-  Package,
 } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { SiteMobileMenu } from "@/components/site/site-mobile-menu";
@@ -27,25 +19,16 @@ import { FormationsCarousel } from "@/components/home/formations-carousel";
 import { RecognizedBy } from "@/components/home/recognized-by";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { LEGAL } from "@/lib/legal-config";
-import { FORMATIONS, listByCategory } from "@/lib/formations-config";
 
 type HomeT = Awaited<ReturnType<typeof getTranslations<"home">>>;
 
 export const metadata = {
-  title: `${LEGAL.brand} — L'école des pros du transport`,
+  // `absolute` : ne pas appliquer le template du layout (évite la marque
+  // dupliquée « … · MA FORMATION TRANSPORT »).
+  title: { absolute: `${LEGAL.brand} — L'école des pros du transport` },
   description:
     "Centre de formation spécialisé transport routier de marchandises et de voyageurs. GOTRM, ERTV, ECSR, FIMO/FCO, Taxi/VTC, capacités de transport. Certifié Qualiopi.",
-};
-
-const ICONS: Record<string, any> = {
-  Truck,
-  Bus,
-  GraduationCap,
-  Car,
-  Briefcase,
-  Package,
-  Award,
-  ShieldCheck,
+  alternates: { canonical: "/" },
 };
 
 export default async function HomePage() {
@@ -98,17 +81,18 @@ function Header({ t }: { t: HomeT }) {
           </Link>
         </nav>
         <div className="flex items-center gap-3">
-          <Link
-            href="/contact"
-            className="hidden md:inline text-sm text-white/70 hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
-          >
-            {t("requestQuote")}
-          </Link>
+          {/* Même hiérarchie CTA que SiteShell : devis = bouton saillant. */}
           <Link
             href="/login"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-signal-500 text-night-900 px-4 py-2 text-sm font-semibold shadow-glow-signal transition-[transform,background-color] duration-200 ease-premium hover:bg-signal-400 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-night motion-reduce:transition-none"
+            className="hidden md:inline text-sm text-white/70 hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
           >
             {t("studentSpace")}
+          </Link>
+          <Link
+            href="/contact"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-signal-500 text-night-900 px-4 py-2.5 text-sm font-semibold shadow-glow-signal transition-[transform,background-color] duration-200 ease-premium hover:bg-signal-400 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-night motion-reduce:transition-none"
+          >
+            {t("requestQuote")}
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
           <SiteMobileMenu />
@@ -126,10 +110,12 @@ function Hero({ t }: { t: HomeT }) {
     animationDelay: `${delayMs}ms`,
   });
 
+  // KPIs : uniquement des faits vérifiables. Pas de chiffres de cohorte
+  // tant que lib/results-config.ts n'a rien de publié (source unique).
   const kpis = [
     { value: "8", label: t("kpiFormations") },
-    { value: "1 200+", label: t("kpiStudents") },
-    { value: "87 %", label: t("kpiSuccess") },
+    { value: "100 %", label: t("kpiFunding") },
+    { value: "24 h", label: t("kpiResponse") },
     { value: "Qualiopi", label: t("kpiQualiopi") },
   ];
 
@@ -278,106 +264,6 @@ function Pillars({ t }: { t: HomeT }) {
               <p className="mt-1.5 text-sm text-white/60 leading-relaxed">
                 {desc}
               </p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* =============================================================== CATALOG */
-function FormationsCatalog() {
-  const groups = listByCategory().filter((g) => g.items.length > 0);
-  return (
-    <section id="formations" className="py-20 md:py-28 bg-white/[0.02] border-y border-white/5">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div className="max-w-2xl">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-signal-400">
-              Catalogue
-            </span>
-            <h2 className="mt-3 font-display text-3xl md:text-5xl font-semibold tracking-tight">
-              Toutes nos formations transport.
-            </h2>
-            <p className="mt-3 text-white/70 text-lg">
-              Marchandises, voyageurs, enseignement, capacités professionnelles
-              — choisissez votre voie.
-            </p>
-          </div>
-          <Link
-            href="/formations"
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-signal-400 hover:text-signal-300"
-          >
-            Voir le catalogue complet
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-
-        <div className="mt-12 space-y-12">
-          {groups.map((group) => (
-            <div key={group.key}>
-              <h3 className="font-display text-xl font-semibold text-white/90 mb-1">
-                {group.label}
-              </h3>
-              <p className="text-sm text-white/50 mb-5">{group.description}</p>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {group.items.map((f) => {
-                  const Icon = ICONS[f.iconName] ?? Truck;
-                  return (
-                    <Link
-                      key={f.slug}
-                      href={`/formations/${f.slug}`}
-                      className="group rounded-2xl border border-white/10 bg-night-100 p-6 relative overflow-hidden transition-[transform,border-color] duration-200 ease-premium hover:border-signal-500/40 hover:-translate-y-1 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-night motion-reduce:transition-none motion-reduce:hover:translate-y-0"
-                    >
-                      {/* Glow accent */}
-                      <div
-                        aria-hidden="true"
-                        className="absolute -top-12 -right-12 h-32 w-32 rounded-full opacity-20 group-hover:opacity-40 transition-opacity blur-2xl"
-                        style={{ backgroundColor: f.accent ?? "#9FE220" }}
-                      />
-
-                      <div className="relative">
-                        <div
-                          className="h-11 w-11 rounded-xl flex items-center justify-center"
-                          style={{
-                            backgroundColor: `${f.accent ?? "#9FE220"}22`,
-                            border: `1px solid ${f.accent ?? "#9FE220"}55`,
-                          }}
-                        >
-                          <Icon
-                            className="h-5 w-5"
-                            style={{ color: f.accent ?? "#9FE220" }}
-                          />
-                        </div>
-                        <div className="mt-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/50">
-                          {f.code}
-                        </div>
-                        <h4 className="mt-1 font-display text-lg font-semibold leading-tight">
-                          {f.title}
-                        </h4>
-                        <p className="mt-2 text-sm text-white/60 line-clamp-2">
-                          {f.tagline}
-                        </p>
-                        <div className="mt-5 flex flex-wrap gap-1.5">
-                          {f.funding.slice(0, 3).map((k) => (
-                            <span
-                              key={k}
-                              className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-white/60"
-                            >
-                              {k}
-                            </span>
-                          ))}
-                        </div>
-                        <div className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-signal-400">
-                          Découvrir
-                          <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 ease-premium group-hover:translate-x-1 motion-reduce:transition-none" />
-                        </div>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
             </div>
           ))}
         </div>

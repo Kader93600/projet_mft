@@ -24,7 +24,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Et si j'échoue à l'examen final ?",
-    a: "Pour le titre GOTRM (formule Intensif) et certaines formations, nous proposons une garantie : si vous échouez malgré une assiduité ≥ 90 %, vous bénéficiez d'une nouvelle session sans frais. Les conditions sont détaillées dans nos CGV.",
+    a: "Nous proposons une garantie re-formation : si vous échouez à l'examen final malgré une assiduité ≥ 90 %, vous bénéficiez d'une nouvelle session sans frais. Les conditions sont détaillées dans nos CGV.",
   },
   {
     q: "Puis-je essayer la plateforme avant de m'engager ?",
@@ -32,7 +32,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Comment se déroule l'examen blanc ?",
-    a: "En conditions réelles : plein écran obligatoire, chrono visible, détection des sorties d'onglet, navigation entre questions avec drapeau « à revoir ». Les corrections détaillées sont accessibles après l'examen pour les formules Accompagné et Intensif.",
+    a: "En conditions réelles : plein écran obligatoire, chrono visible, détection des sorties d'onglet, navigation entre questions avec drapeau « à revoir ». Les corrections détaillées sont accessibles après l'examen pour les packs Medium et Premium.",
   },
 ];
 

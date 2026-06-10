@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { WifiOff, RefreshCw } from "lucide-react";
 
 export const metadata = {
-  title: "Hors connexion — MA FORMATION TRANSPORT",
+  title: "Hors connexion",
 };
 
 /**

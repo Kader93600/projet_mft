@@ -111,7 +111,7 @@ function Card({ org }: { org: Org }) {
         <Icon className="h-5 w-5" />
       </div>
       <div className="min-w-0">
-        <div className="text-[9px] font-bold uppercase tracking-[0.18em] text-white/45 group-hover:text-white/65 transition-colors">
+        <div className="text-[9px] font-bold uppercase tracking-[0.18em] text-white/60 group-hover:text-white/65 transition-colors">
           {category}
         </div>
         <div className="font-display text-sm font-semibold text-white/85 group-hover:text-white whitespace-nowrap transition-colors">
@@ -140,7 +140,7 @@ export function RecognizedBy() {
 
       <div className="relative max-w-7xl mx-auto px-6">
         <div className="flex flex-col items-center justify-center mb-7">
-          <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/45 inline-flex items-center gap-2">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/60 inline-flex items-center gap-2">
             <span
               aria-hidden
               className="h-px w-10 bg-gradient-to-r from-transparent to-white/40"

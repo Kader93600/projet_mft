@@ -29,15 +29,11 @@ Sentry.init({
   replaysSessionSampleRate: 0,
   replaysOnErrorSampleRate: 0.5,
 
-  // Intégrations spécifiques.
-  integrations: [
-    Sentry.replayIntegration({
-      // Masque les inputs sensibles (mot de passe, CB) et les emails.
-      maskAllInputs: true,
-      maskAllText: false, // on garde le texte visible pour le contexte
-      blockAllMedia: false,
-    }),
-  ],
+  // Perf : PAS de replayIntegration statique ici — elle embarquait ~37 KB gz
+  // (rrweb) dans le First Load JS de TOUTES les pages, vitrine comprise.
+  // Elle est chargée en différé ci-dessous (lazyLoadIntegration télécharge
+  // le module depuis le CDN Sentry uniquement quand le SDK est actif).
+  integrations: [],
 
   // Ignore certaines erreurs non actionnables.
   ignoreErrors: [
@@ -75,3 +71,22 @@ Sentry.init({
     return event;
   },
 });
+
+// Chargement DIFFÉRÉ du Session Replay : le bundle rrweb est téléchargé
+// depuis le CDN Sentry après l'init, hors du First Load JS des pages.
+if (DSN && ENV !== "development") {
+  Sentry.lazyLoadIntegration("replayIntegration")
+    .then((replayIntegration) => {
+      Sentry.addIntegration(
+        replayIntegration({
+          // Masque les inputs sensibles (mot de passe, CB) et les emails.
+          maskAllInputs: true,
+          maskAllText: false, // on garde le texte visible pour le contexte
+          blockAllMedia: false,
+        })
+      );
+    })
+    .catch(() => {
+      // Réseau indisponible / bloqueur : on continue sans replay.
+    });
+}

@@ -39,22 +39,27 @@ interface Props {
  *   - Crossfade des cards au changement de formation
  */
 export function PricingSection({ prices, defaultFormationSlug }: Props) {
-  const formationsWithPrices = useMemo(() => {
-    const slugs = new Set(prices.map((p) => p.formationSlug));
-    return FORMATIONS.filter((f) => slugs.has(f.slug));
-  }, [prices]);
+  // Slugs disposant d'une grille de packs active en base. Les autres
+  // formations restent sélectionnables et affichent un panneau
+  // « offre sur mesure » (devis) au lieu des 3 packs.
+  const pricedSlugs = useMemo(
+    () => new Set(prices.map((p) => p.formationSlug)),
+    [prices]
+  );
 
   const initialSlug =
     defaultFormationSlug &&
-    formationsWithPrices.some((f) => f.slug === defaultFormationSlug)
+    FORMATIONS.some((f) => f.slug === defaultFormationSlug)
       ? defaultFormationSlug
-      : formationsWithPrices[0]?.slug ?? FORMATIONS[0].slug;
+      : FORMATIONS.find((f) => pricedSlugs.has(f.slug))?.slug ??
+        FORMATIONS[0].slug;
 
   const [selectedSlug, setSelectedSlug] = useState<string>(initialSlug);
   const selectedFormation = FORMATIONS.find((f) => f.slug === selectedSlug);
   const accent = selectedFormation?.accent ?? "#9FE220";
 
   const isCapaciteOnly = selectedSlug === "capacite-3-5t";
+  const hasPacks = pricedSlugs.has(selectedSlug);
 
   return (
     <section
@@ -97,12 +102,12 @@ export function PricingSection({ prices, defaultFormationSlug }: Props) {
         {/* Sélecteur formation */}
         <ScrollReveal delay={240}>
           <div className="mt-12">
-            <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/45 mb-3">
+            <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/60 mb-3">
               Pour quelle formation ?
             </div>
             <div className="-mx-6 px-6 overflow-x-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10">
               <div className="flex gap-2.5 pb-2 min-w-max">
-                {formationsWithPrices.map((f, i) => {
+                {FORMATIONS.map((f, i) => {
                   const isActive = f.slug === selectedSlug;
                   return (
                     <button
@@ -110,7 +115,7 @@ export function PricingSection({ prices, defaultFormationSlug }: Props) {
                       type="button"
                       onClick={() => setSelectedSlug(f.slug)}
                       className={
-                        "inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap " +
+                        "inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap " +
                         "transition-[transform,background-color,border-color,color,box-shadow] duration-200 motion-reduce:transition-none " +
                         "active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 " +
                         (isActive
@@ -158,6 +163,13 @@ export function PricingSection({ prices, defaultFormationSlug }: Props) {
           <CapaciteOnlyLayout
             formationCode={selectedFormation?.code ?? "Capacité ≤ 3,5 t"}
             formationSlug={selectedSlug}
+          />
+        ) : !hasPacks ? (
+          <CustomQuoteLayout
+            formationCode={selectedFormation?.code ?? ""}
+            formationTitle={selectedFormation?.title ?? ""}
+            formationSlug={selectedSlug}
+            accent={accent}
           />
         ) : (
           <div className="grid lg:grid-cols-12 gap-5 md:gap-6 items-stretch">
@@ -519,6 +531,65 @@ function PremiumCard({
 // =====================================================================
 // CAPACITÉ ≤ 3,5 T — Layout spécifique
 // =====================================================================
+// =====================================================================
+// CustomQuoteLayout — formations sans grille de packs en base
+// (ERTV, Taxi/VTC, Commissionnaire, Capacité > 3,5 t…) : offre sur
+// mesure, on oriente vers un devis personnalisé.
+// =====================================================================
+function CustomQuoteLayout({
+  formationCode,
+  formationTitle,
+  formationSlug,
+  accent,
+}: {
+  formationCode: string;
+  formationTitle: string;
+  formationSlug: string;
+  accent: string;
+}) {
+  return (
+    <ScrollReveal delay={0} distance={32}>
+      <div className="max-w-3xl mx-auto rounded-3xl bg-white/[0.03] border border-white/10 p-8 md:p-12 text-center transition-[background-color,border-color] duration-[250ms] motion-reduce:transition-none hover:bg-white/[0.05] hover:border-white/20">
+        <span
+          className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em]"
+          style={{
+            color: accent,
+            backgroundColor: `${accent}1A`,
+            border: `1px solid ${accent}44`,
+          }}
+        >
+          <Sparkles className="h-3 w-3" />
+          Offre sur mesure
+        </span>
+        <h3 className="mt-5 font-display text-2xl md:text-3xl font-semibold text-white">
+          {formationTitle}
+        </h3>
+        <p className="mt-4 text-[15px] text-white/65 leading-relaxed max-w-xl mx-auto">
+          La formation <strong className="text-white">{formationCode}</strong>{" "}
+          fait l'objet d'un parcours personnalisé selon votre profil, vos
+          contraintes et votre mode de financement. Nous construisons le devis
+          avec vous, sous 24 h ouvrées.
+        </p>
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <Link
+            href={`/contact?formation=${formationSlug}`}
+            className="group inline-flex items-center gap-2 rounded-2xl bg-signal-500 text-night-900 px-6 py-3 text-sm font-semibold shadow-glow-signal transition-[transform,background-color] duration-200 ease-premium hover:bg-signal-400 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-night motion-reduce:transition-none"
+          >
+            Demander un devis personnalisé
+            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none" />
+          </Link>
+          <Link
+            href={`/formations/${formationSlug}`}
+            className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-6 py-3 text-sm font-semibold text-white transition-[transform,background-color] duration-200 ease-premium hover:bg-white/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-night motion-reduce:transition-none"
+          >
+            Voir le programme
+          </Link>
+        </div>
+      </div>
+    </ScrollReveal>
+  );
+}
+
 function CapaciteOnlyLayout({
   formationCode,
   formationSlug,
@@ -535,7 +606,7 @@ function CapaciteOnlyLayout({
       </ScrollReveal>
       <ScrollReveal delay={150} distance={32} className="lg:col-span-5">
         <div className="rounded-3xl bg-white/[0.03] border border-white/10 p-7 md:p-8 flex flex-col justify-center h-full transition-[background-color,border-color] duration-[250ms] motion-reduce:transition-none hover:bg-white/[0.05] hover:border-white/20">
-          <Lock className="h-5 w-5 text-white/40 mb-3" />
+          <Lock className="h-5 w-5 text-white/60 mb-3" />
           <h3 className="font-display text-xl font-semibold text-white">
             Pourquoi un seul pack ?
           </h3>

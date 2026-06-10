@@ -2,7 +2,8 @@ import { LegalPage, Section } from "@/components/legal/legal-page";
 import { LEGAL, LEGAL_LAST_UPDATE } from "@/lib/legal-config";
 
 export const metadata = {
-  title: `Conditions générales de vente — ${LEGAL.brand}`,
+  title: "Conditions générales de vente",
+  alternates: { canonical: "/cgv" },
   description: `Conditions de vente des actions de formation ${LEGAL.brand}.`,
 };
 
@@ -180,14 +181,26 @@ export default function CgvPage() {
       </Section>
 
       <Section number="13" title="Médiation et litiges">
-        <p>
-          En cas de litige, les parties privilégieront une résolution amiable.
-          À défaut, le consommateur peut saisir gratuitement le médiateur de la
-          consommation : <strong>{LEGAL.mediator.name}</strong> —{" "}
-          <a href={LEGAL.mediator.website} target="_blank" rel="noreferrer">
-            {LEGAL.mediator.website}
-          </a>.
-        </p>
+        {/* Garde-fou anti-placeholder : tant que le médiateur n'est pas
+            renseigné dans legal-config, mention transitoire conforme. */}
+        {!LEGAL.mediator.name.includes("COMPLÉTER") ? (
+          <p>
+            En cas de litige, les parties privilégieront une résolution amiable.
+            À défaut, le consommateur peut saisir gratuitement le médiateur de la
+            consommation : <strong>{LEGAL.mediator.name}</strong> —{" "}
+            <a href={LEGAL.mediator.website} target="_blank" rel="noreferrer">
+              {LEGAL.mediator.website}
+            </a>.
+          </p>
+        ) : (
+          <p>
+            En cas de litige, les parties privilégieront une résolution amiable.
+            À défaut, conformément à l'article L. 612-1 du Code de la
+            consommation, le consommateur peut recourir gratuitement à un
+            médiateur de la consommation ; ses coordonnées sont communiquées
+            sur demande à <a href={`mailto:${LEGAL.email}`}>{LEGAL.email}</a>.
+          </p>
+        )}
         <p>
           À défaut d'accord, les tribunaux du ressort de {LEGAL.address.city}{" "}
           seront seuls compétents (B2B). Pour les litiges B2C, les règles de

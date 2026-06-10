@@ -12,7 +12,8 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: `Financements — ${LEGAL.brand}`,
+  title: "Financements",
+  alternates: { canonical: "/financements" },
   description: `CPF, OPCO, France Travail, employeur, Transitions Pro : tous les modes de financement de nos formations transport.`,
 };
 
@@ -108,7 +109,7 @@ export default function FinancementsPage() {
                   <f.icon className="h-5 w-5" />
                 </div>
                 <div className="flex-1">
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/40">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/60">
                     {f.audience}
                   </div>
                   <h3 className="mt-1 font-display text-xl font-semibold">

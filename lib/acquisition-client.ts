@@ -1,5 +1,5 @@
 // =====================================================================
-// Helpers acquisition (UTM tracking) — CLIENT ONLY.
+// Helpers acquisition (UTM + click-IDs) — CLIENT ONLY.
 //
 // Aucune dépendance Next.js (pas d'import next/headers) pour pouvoir
 // être bundlé sans souci dans un composant 'use client'.
@@ -17,6 +17,14 @@ export interface TrackingPayload {
   utm_campaign: string | null;
   utm_content: string | null;
   utm_term: string | null;
+  // Click-IDs des régies publicitaires (acquisition payante). Présents
+  // dans l'URL d'atterrissage quand le clic provient d'une annonce.
+  gclid: string | null; // Google Ads
+  gbraid: string | null; // Google (app→web, iOS)
+  wbraid: string | null; // Google (web, iOS)
+  fbclid: string | null; // Meta (Facebook/Instagram)
+  ttclid: string | null; // TikTok
+  msclkid: string | null; // Microsoft Advertising (Bing)
 }
 
 /**
@@ -35,6 +43,9 @@ export function buildTrackingPayloadFromBrowser(
   const utm_campaign = sp.get("utm_campaign") ?? null;
   const utm_content = sp.get("utm_content") ?? null;
   const utm_term = sp.get("utm_term") ?? null;
+
+  // Click-IDs : simple lecture de query param (null si absent ou vide).
+  const clickId = (k: string) => sp.get(k) || null;
 
   // Referrer : uniquement si différent du même domaine (pour mesurer
   // les vrais entrants externes — pas les navigations internes).
@@ -57,5 +68,11 @@ export function buildTrackingPayloadFromBrowser(
     utm_campaign,
     utm_content,
     utm_term,
+    gclid: clickId("gclid"),
+    gbraid: clickId("gbraid"),
+    wbraid: clickId("wbraid"),
+    fbclid: clickId("fbclid"),
+    ttclid: clickId("ttclid"),
+    msclkid: clickId("msclkid"),
   };
 }

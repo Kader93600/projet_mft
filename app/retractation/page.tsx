@@ -3,7 +3,8 @@ import { LEGAL, LEGAL_LAST_UPDATE } from "@/lib/legal-config";
 import { Download, FileText } from "lucide-react";
 
 export const metadata = {
-  title: `Droit de rétractation — ${LEGAL.brand}`,
+  title: "Droit de rétractation",
+  alternates: { canonical: "/retractation" },
   description: `Modalités d'exercice du droit de rétractation de 14 jours.`,
 };
 

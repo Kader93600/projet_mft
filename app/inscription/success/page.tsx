@@ -6,7 +6,7 @@ import { LEGAL } from "@/lib/legal-config";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: `Paiement confirmé — ${LEGAL.brand}`,
+  title: "Paiement confirmé",
 };
 
 export default function CheckoutSuccessPage() {

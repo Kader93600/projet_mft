@@ -2,7 +2,8 @@ import { LegalPage, Section } from "@/components/legal/legal-page";
 import { LEGAL, LEGAL_LAST_UPDATE } from "@/lib/legal-config";
 
 export const metadata = {
-  title: `Règlement intérieur — ${LEGAL.brand}`,
+  title: "Règlement intérieur",
+  alternates: { canonical: "/reglement-interieur" },
   description: `Règlement intérieur de l'organisme de formation ${LEGAL.brand}.`,
 };
 

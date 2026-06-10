@@ -5,7 +5,8 @@ import { LEGAL, LEGAL_DATE_FR } from "@/lib/legal-config";
 import { Info, CalendarDays, RefreshCw } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Indicateurs de résultats — MA FORMATION TRANSPORT",
+  title: "Indicateurs de résultats",
+  alternates: { canonical: "/resultats" },
   description:
     "Taux de satisfaction, de réussite et d'insertion de nos formations. Indicateurs publiés conformément à notre certification Qualiopi.",
 };

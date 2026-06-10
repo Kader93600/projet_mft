@@ -10,7 +10,8 @@ import { LEGAL } from "@/lib/legal-config";
 import { Star, Filter, Quote, ArrowRight } from "lucide-react";
 
 export const metadata = {
-  title: `Témoignages stagiaires — ${LEGAL.brand}`,
+  title: "Témoignages stagiaires",
+  alternates: { canonical: "/temoignages" },
   description: `Avis des stagiaires de ${LEGAL.brand}. Note moyenne ${avgRating().toFixed(1)}/5 sur ${TESTIMONIALS.length} témoignages.`,
 };
 
@@ -52,7 +53,7 @@ export default function TemoignagesPage({
       {/* Filtres */}
       <section className="sticky top-16 z-20 border-b border-white/5 bg-night/85 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 py-4 flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/45 mr-2">
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/60 mr-2">
             <Filter className="h-3.5 w-3.5" />
             Filtrer par formation
           </span>
@@ -257,7 +258,7 @@ function Stat({
 }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-night-100 p-5 text-center">
-      <div className="flex items-center justify-center gap-1.5 text-[11px] uppercase tracking-[0.16em] text-white/45">
+      <div className="flex items-center justify-center gap-1.5 text-[11px] uppercase tracking-[0.16em] text-white/60">
         {Icon && <Icon className="h-3 w-3 text-signal-400" />}
         {label}
       </div>

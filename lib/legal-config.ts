@@ -64,8 +64,9 @@ export const LEGAL = {
     website: "https://supabase.com",
   },
 
-  // Site
-  website: "https://maformationtransport.fr",
+  // Site — domaine CANONIQUE (www) : la prod sert www, l'apex redirige.
+  // Consommé par metadataBase, sitemap, robots, Open Graph et JSON-LD.
+  website: "https://www.maformationtransport.fr",
   // Tagline / promesse
   tagline: "L'école qui forme les pros du transport",
   shortDescription:

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LEGAL } from "@/lib/legal-config";
 import { ShieldCheck } from "lucide-react";
+import { ManageCookiesButton } from "./manage-cookies-button";
 
 const LINKS = [
   { href: "/mentions-legales", label: "Mentions légales" },
@@ -9,7 +10,7 @@ const LINKS = [
   { href: "/confidentialite", label: "Confidentialité" },
   { href: "/retractation", label: "Rétractation" },
   { href: "/reglement-interieur", label: "Règlement intérieur" },
-  { href: "/accessibilite", label: "Accessibilité" },
+  { href: "/declaration-accessibilite", label: "Accessibilité" },
   { href: "/resultats", label: "Indicateurs de résultats" },
   { href: "/reclamations", label: "Réclamations & médiation" },
 ];
@@ -62,6 +63,9 @@ export function LegalFooter({ variant = "light" }: { variant?: "light" | "dark" 
                 </Link>
               </li>
             ))}
+            <li>
+              <ManageCookiesButton dark={dark} />
+            </li>
             <li>
               <a
                 href={`mailto:${LEGAL.email}`}

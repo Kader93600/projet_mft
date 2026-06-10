@@ -16,6 +16,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { EMAIL_LABELS, findLabel, LABEL_TONE_CLASSES } from "@/lib/email-labels";
+import { sanitizeRichTextClient } from "@/lib/rich-text-client";
 import { assignEmail, markEmailRead, setEmailLabels } from "./actions";
 
 type EmailRow = {
@@ -751,8 +752,12 @@ export function InboxTable({
 
                       <div
                         className="email-html rounded-lg border border-navy-50 bg-slate-50/40 p-4 text-sm leading-relaxed text-navy-900"
-                        // body_html déjà sanitisé côté serveur (sendPlatformEmail / route inbound)
-                        dangerouslySetInnerHTML={{ __html: row.body_html }}
+                        // Défense en profondeur : le serveur sanitise à
+                        // l'insertion, et DOMPurify re-sanitise au rendu —
+                        // les emails entrants sont du HTML NON FIABLE.
+                        dangerouslySetInnerHTML={{
+                          __html: sanitizeRichTextClient(row.body_html || ""),
+                        }}
                       />
 
                       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500">

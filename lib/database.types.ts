@@ -1,6 +1,6 @@
 // =====================================================================
 // lib/database.types.ts — Types du schéma public Supabase
-// Généré le 2026-05-24 par scripts/introspect-schema.mjs (introspection live).
+// Généré le 2026-06-02 par scripts/introspect-schema.mjs (introspection live).
 // NE PAS éditer à la main — régénérer avec : node scripts/introspect-schema.mjs
 // =====================================================================
 
@@ -88,6 +88,12 @@ export interface Database {
           ip_country: string | null;
           kind: string;
           occurred_at: string;
+          gclid: string | null;
+          gbraid: string | null;
+          wbraid: string | null;
+          fbclid: string | null;
+          ttclid: string | null;
+          msclkid: string | null;
         };
         Insert: {
           id?: string;
@@ -104,6 +110,12 @@ export interface Database {
           ip_country?: string | null;
           kind: string;
           occurred_at?: string;
+          gclid?: string | null;
+          gbraid?: string | null;
+          wbraid?: string | null;
+          fbclid?: string | null;
+          ttclid?: string | null;
+          msclkid?: string | null;
         };
         Update: {
           id?: string;
@@ -120,6 +132,12 @@ export interface Database {
           ip_country?: string | null;
           kind?: string;
           occurred_at?: string;
+          gclid?: string | null;
+          gbraid?: string | null;
+          wbraid?: string | null;
+          fbclid?: string | null;
+          ttclid?: string | null;
+          msclkid?: string | null;
         };
         Relationships: [
           {
@@ -1055,6 +1073,75 @@ export interface Database {
           },
         ];
       };
+      email_log: {
+        Row: {
+          id: string;
+          sender_id: string | null;
+          sender_email: string | null;
+          recipients: string[];
+          cc: string[];
+          bcc: string[];
+          subject: string;
+          body_html: string | null;
+          status: string;
+          provider_id: string | null;
+          error: string | null;
+          attachments_meta: Json;
+          related_user_id: string | null;
+          context: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          sender_id?: string | null;
+          sender_email?: string | null;
+          recipients: string[];
+          cc: string[];
+          bcc: string[];
+          subject?: string;
+          body_html?: string | null;
+          status?: string;
+          provider_id?: string | null;
+          error?: string | null;
+          attachments_meta: Json;
+          related_user_id?: string | null;
+          context?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          sender_id?: string | null;
+          sender_email?: string | null;
+          recipients?: string[];
+          cc?: string[];
+          bcc?: string[];
+          subject?: string;
+          body_html?: string | null;
+          status?: string;
+          provider_id?: string | null;
+          error?: string | null;
+          attachments_meta?: Json;
+          related_user_id?: string | null;
+          context?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "email_log_sender_id_fkey";
+            columns: ["sender_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "email_log_related_user_id_fkey";
+            columns: ["related_user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       enrollment_requests: {
         Row: {
           id: string;
@@ -1077,6 +1164,16 @@ export interface Database {
           adresse: string | null;
           code_postal: string | null;
           ville: string | null;
+          visitor_id: string | null;
+          gclid: string | null;
+          gbraid: string | null;
+          wbraid: string | null;
+          fbclid: string | null;
+          ttclid: string | null;
+          msclkid: string | null;
+          utm_source: string | null;
+          utm_medium: string | null;
+          utm_campaign: string | null;
         };
         Insert: {
           id?: string;
@@ -1099,6 +1196,16 @@ export interface Database {
           adresse?: string | null;
           code_postal?: string | null;
           ville?: string | null;
+          visitor_id?: string | null;
+          gclid?: string | null;
+          gbraid?: string | null;
+          wbraid?: string | null;
+          fbclid?: string | null;
+          ttclid?: string | null;
+          msclkid?: string | null;
+          utm_source?: string | null;
+          utm_medium?: string | null;
+          utm_campaign?: string | null;
         };
         Update: {
           id?: string;
@@ -1121,6 +1228,16 @@ export interface Database {
           adresse?: string | null;
           code_postal?: string | null;
           ville?: string | null;
+          visitor_id?: string | null;
+          gclid?: string | null;
+          gbraid?: string | null;
+          wbraid?: string | null;
+          fbclid?: string | null;
+          ttclid?: string | null;
+          msclkid?: string | null;
+          utm_source?: string | null;
+          utm_medium?: string | null;
+          utm_campaign?: string | null;
         };
         Relationships: [
           {

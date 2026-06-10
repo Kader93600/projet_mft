@@ -24,7 +24,8 @@ import {
 import { LEGAL } from "@/lib/legal-config";
 
 export const metadata = {
-  title: `Toutes nos formations — ${LEGAL.brand}`,
+  title: "Toutes nos formations",
+  alternates: { canonical: "/formations" },
   description: `Catalogue complet des formations transport ${LEGAL.brand} : ${FORMATIONS.map((f) => f.code).join(", ")}.`,
 };
 
@@ -100,7 +101,7 @@ export default function FormationsPage({
       {/* Barre de filtres */}
       <section className="sticky top-16 z-20 border-b border-white/5 bg-night/85 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 py-4 flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/45 mr-2">
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/60 mr-2">
             <Filter className="h-3.5 w-3.5" />
             Filtres
           </span>
@@ -173,7 +174,7 @@ export default function FormationsPage({
                   </h2>
                   <p className="text-white/60 mt-1">{g.description}</p>
                 </div>
-                <span className="text-[11px] uppercase tracking-[0.18em] text-white/40">
+                <span className="text-[11px] uppercase tracking-[0.18em] text-white/60">
                   {g.items.length} formation{g.items.length > 1 ? "s" : ""}
                 </span>
               </div>

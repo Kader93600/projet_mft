@@ -4,7 +4,8 @@ import { LEGAL } from "@/lib/legal-config";
 import { Phone, Mail, Scale, Accessibility, ShieldCheck } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Réclamations & médiation — MA FORMATION TRANSPORT",
+  title: "Réclamations & médiation",
+  alternates: { canonical: "/reclamations" },
   description:
     "Comment nous faire part d'un différend ou d'une réclamation : interlocuteurs, délais de réponse et voies de médiation.",
 };

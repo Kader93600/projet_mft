@@ -60,8 +60,10 @@ export async function generateMetadata({
   const f = findFormation(params.slug);
   if (!f) return { title: "Formation introuvable" };
   return {
-    title: `${f.code} — ${f.title} · ${LEGAL.brand}`,
+    // Le template du layout ajoute déjà « · MA FORMATION TRANSPORT ».
+    title: `${f.code} — ${f.title}`,
     description: f.tagline,
+    alternates: { canonical: `/formations/${f.slug}` },
   };
 }
 
@@ -154,10 +156,10 @@ export default function FormationPage({ params }: { params: { slug: string } }) 
                 <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-premium group-hover:translate-x-0.5 motion-reduce:transition-none" />
               </Link>
               <Link
-                href="/contact"
+                href={`/tarifs?formation=${f.slug}`}
                 className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/5 backdrop-blur px-6 py-3 text-sm font-semibold transition-[transform,background-color] duration-200 ease-premium hover:bg-white/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-night motion-reduce:transition-none"
               >
-                Demander un devis
+                Voir les tarifs
               </Link>
             </div>
           </div>
@@ -178,7 +180,7 @@ export default function FormationPage({ params }: { params: { slug: string } }) 
                 value={f.prerequisites}
               />
               <div>
-                <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/45 mb-2">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/60 mb-2">
                   Financements
                 </div>
                 <div className="flex flex-wrap gap-1.5">
@@ -349,7 +351,7 @@ export default function FormationPage({ params }: { params: { slug: string } }) 
           </div>
 
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40 mb-3">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60 mb-3">
               Autres formations
             </div>
             <div className="space-y-2">
@@ -360,14 +362,14 @@ export default function FormationPage({ params }: { params: { slug: string } }) 
                   className="flex items-center justify-between gap-2 px-4 py-3 rounded-xl border border-white/10 bg-night-100 hover:border-signal-500/40 hover:bg-white/[0.04] transition"
                 >
                   <span>
-                    <div className="text-[10px] uppercase tracking-wider text-white/40">
+                    <div className="text-[10px] uppercase tracking-wider text-white/60">
                       {o.code}
                     </div>
                     <div className="text-sm font-medium text-white truncate max-w-[200px]">
                       {o.title}
                     </div>
                   </span>
-                  <ArrowRight className="h-4 w-4 text-white/40" />
+                  <ArrowRight className="h-4 w-4 text-white/60" />
                 </Link>
               ))}
             </div>
@@ -389,7 +391,7 @@ function InfoRow({
 }) {
   return (
     <div>
-      <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/45 mb-1">
+      <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/60 mb-1">
         <Icon className="h-3.5 w-3.5" />
         {label}
       </div>

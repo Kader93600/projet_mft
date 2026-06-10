@@ -99,20 +99,28 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const locale = await getLocale();
   const messages = await getMessages();
 
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Perf : sans cookie sb-* il ne peut pas y avoir de session — on évite
+  // l'appel réseau getUser() + la requête profiles sur chaque page de la
+  // vitrine publique (même court-circuit que le middleware).
+  const hasAuthCookie = cookies()
+    .getAll()
+    .some((c) => c.name.startsWith("sb-"));
   let prefs: any = null;
-  if (user) {
-    const { data } = await supabase
-      .from("profiles")
-      .select(
-        "a11y_font_scale, a11y_dyslexia_font, a11y_high_contrast, a11y_reduced_motion, a11y_underline_links"
-      )
-      .eq("id", user.id)
-      .maybeSingle();
-    prefs = data;
+  if (hasAuthCookie) {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      const { data } = await supabase
+        .from("profiles")
+        .select(
+          "a11y_font_scale, a11y_dyslexia_font, a11y_high_contrast, a11y_reduced_motion, a11y_underline_links"
+        )
+        .eq("id", user.id)
+        .maybeSingle();
+      prefs = data;
+    }
   }
   // Thème SSR : si l'utilisateur a explicitement choisi "dark", on l'applique
   // dès le HTML serveur → zéro flash. "system" reste géré par ThemeInit côté client.

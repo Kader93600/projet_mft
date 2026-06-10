@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { rateLimit, rateLimitHeaders, clientIp } from "@/lib/rate-limit";
+import { getAcquisitionSnapshot } from "@/lib/acquisition";
 import {
   sendEmail,
   newLeadEmail,
@@ -40,6 +41,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false }, { status: 400 });
   }
 
+  // Honeypot anti-bot : le champ caché "website" n'est jamais rempli par
+  // un humain. S'il l'est, on répond 200 (succès factice) SANS rien créer
+  // ni envoyer — le bot croit avoir réussi et n'adapte pas sa stratégie.
+  if (String(body?.website ?? "").trim() !== "") {
+    return NextResponse.json({ ok: true });
+  }
+
   const firstName = String(body?.firstName ?? "").trim();
   const lastName = String(body?.lastName ?? "").trim();
   const email = String(body?.email ?? "").trim().toLowerCase();
@@ -59,7 +67,9 @@ export async function POST(req: Request) {
     premium: "Premium (sessions présentielles)",
   };
 
-  if (!firstName || !lastName || !email || !consent) {
+  // Téléphone requis : le formulaire promet un rappel — un lead sans
+  // numéro est injoignable (cohérent avec le `required` côté client).
+  if (!firstName || !lastName || !email || !phone || !consent) {
     return NextResponse.json({ ok: false, error: "missing_fields" }, { status: 400 });
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -67,6 +77,15 @@ export async function POST(req: Request) {
   }
 
   const supabase = createClient();
+
+  // Snapshot d'attribution : on relie le lead à son parcours marketing via
+  // le cookie visiteur (mft_vid) — même si l'URL ne porte plus les params
+  // (utm/click-IDs captés à l'atterrissage, pas forcément sur /contact).
+  // Best-effort : `attribution` peut être null, on n'empêche jamais la
+  // création du lead pour autant.
+  const visitorId = cookies().get("mft_vid")?.value ?? null;
+  const attribution = await getAcquisitionSnapshot(visitorId);
+
   const fundingMap: Record<string, string> = {
     cpf: "cpf",
     opco: "opco",
@@ -93,6 +112,17 @@ export async function POST(req: Request) {
       .filter(Boolean)
       .join("\n\n"),
     user_id: null,
+    // Snapshot d'attribution marketing (figé à la soumission)
+    visitor_id: visitorId,
+    utm_source: attribution?.utm_source ?? null,
+    utm_medium: attribution?.utm_medium ?? null,
+    utm_campaign: attribution?.utm_campaign ?? null,
+    gclid: attribution?.gclid ?? null,
+    gbraid: attribution?.gbraid ?? null,
+    wbraid: attribution?.wbraid ?? null,
+    fbclid: attribution?.fbclid ?? null,
+    ttclid: attribution?.ttclid ?? null,
+    msclkid: attribution?.msclkid ?? null,
   });
 
   if (error) {
@@ -106,7 +136,6 @@ export async function POST(req: Request) {
   // Tracking acquisition : émet un event "contact_form" lié au visitor_id
   // (best-effort). Permet de mesurer le funnel landing → contact par canal.
   try {
-    const visitorId = cookies().get("mft_vid")?.value;
     if (visitorId) {
       const supaUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const supaKey = process.env.SUPABASE_SERVICE_ROLE_KEY;

@@ -101,8 +101,13 @@ export function FormationsCarousel() {
             Toutes nos formations transport.
           </h2>
           <p className="mt-3 text-white/70 text-base md:text-lg leading-relaxed">
-            Survolez une carte pour découvrir le détail. Cliquez pour accéder
-            à la formation. Le défilement se met en pause au survol.
+            <span className="md:hidden">
+              Touchez une carte pour accéder au détail de la formation.
+            </span>
+            <span className="hidden md:inline">
+              Survolez une carte pour découvrir le détail. Cliquez pour accéder
+              à la formation. Le défilement se met en pause au survol.
+            </span>
           </p>
         </div>
 
@@ -280,7 +285,9 @@ function FlipCard({
                     <Clock className="h-3 w-3" />
                     {formation.duration}
                   </span>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-white/40 group-hover/card:text-white/85 transition-colors">
+                  {/* Hint flip : pertinent au survol desktop uniquement —
+                      sur mobile le tap navigue directement. */}
+                  <span className="hidden md:inline-flex items-center gap-1 text-[10px] font-semibold text-white/55 group-hover/card:text-white/85 transition-colors">
                     <RotateCw className="h-3 w-3" />
                     Retourner
                   </span>

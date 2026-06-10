@@ -2,7 +2,8 @@ import { LegalPage, Section } from "@/components/legal/legal-page";
 import { LEGAL, LEGAL_LAST_UPDATE } from "@/lib/legal-config";
 
 export const metadata = {
-  title: `Conditions générales d'utilisation — ${LEGAL.brand}`,
+  title: "Conditions générales d'utilisation",
+  alternates: { canonical: "/cgu" },
   description: `Règles d'utilisation de la plateforme ${LEGAL.brand}.`,
 };
 

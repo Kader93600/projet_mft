@@ -4,7 +4,8 @@ import { Mail, Phone, MapPin, Clock, MessageCircle } from "lucide-react";
 import { ContactForm } from "./contact-form";
 
 export const metadata = {
-  title: `Contact — ${LEGAL.brand}`,
+  title: "Contact",
+  alternates: { canonical: "/contact" },
   description: `Contactez ${LEGAL.brand} : ${LEGAL.address.city}, ${LEGAL.email}, ${LEGAL.phone}.`,
 };
 
@@ -31,13 +32,13 @@ export default function ContactPage() {
 
       <main className="max-w-7xl mx-auto px-6 py-16 md:py-20 grid lg:grid-cols-3 gap-10">
         {/* Coordonnées */}
-        <aside className="space-y-6">
+        <aside className="space-y-6 min-w-0">
           <div className="rounded-2xl border border-white/10 bg-night-100 p-6">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-signal-500/15 border border-signal-500/30 text-signal-400 flex items-center justify-center">
                 <MapPin className="h-5 w-5" />
               </div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/45">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/60">
                 Adresse
               </div>
             </div>
@@ -72,7 +73,7 @@ export default function ContactPage() {
               href={`mailto:${LEGAL.supportEmail}`}
             />
             <div className="pt-5 border-t border-white/10">
-              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/45 mb-1.5">
+              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/60 mb-1.5">
                 <Clock className="h-3.5 w-3.5" />
                 Horaires
               </div>
@@ -171,7 +172,7 @@ export default function ContactPage() {
         </aside>
 
         {/* Formulaire */}
-        <section className="lg:col-span-2">
+        <section className="lg:col-span-2 min-w-0">
           <div className="rounded-3xl border border-white/10 bg-night-100 p-8 md:p-10">
             <h2 className="font-display text-2xl md:text-3xl font-semibold">
               Demander un rappel
@@ -201,15 +202,17 @@ function ContactRow({
   href: string;
 }) {
   return (
-    <a href={href} className="flex items-start gap-3 group">
+    <a href={href} className="flex items-start gap-3 group min-w-0">
       <div className="h-9 w-9 rounded-lg bg-white/5 border border-white/10 text-signal-400 flex items-center justify-center shrink-0">
         <Icon className="h-4 w-4" />
       </div>
-      <div>
-        <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
+      <div className="min-w-0">
+        <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/60">
           {label}
         </div>
-        <div className="text-white/90 group-hover:text-signal-400 transition mt-0.5">
+        {/* break-words : l'email (insécable) forçait un débordement
+            horizontal de la grille sur mobile 375px. */}
+        <div className="text-white/90 group-hover:text-signal-400 transition mt-0.5 break-words">
           {value}
         </div>
       </div>

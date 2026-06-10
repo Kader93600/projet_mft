@@ -2,13 +2,42 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Award, ScrollText, ArrowRight } from "lucide-react";
-import * as Lucide from "lucide-react";
+import {
+  Award,
+  ScrollText,
+  ArrowRight,
+  Sparkles,
+  BookOpen,
+  Library,
+  Medal,
+  ShieldCheck,
+  Star,
+  Trophy,
+  Flame,
+  Target,
+  Zap,
+  GraduationCap,
+} from "lucide-react";
+
+// Map EXPLICITE (perf : pas d'import * → pas les ~1500 icônes du paquet).
+const BADGE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  Award,
+  Sparkles,
+  BookOpen,
+  Library,
+  Medal,
+  ShieldCheck,
+  Star,
+  Trophy,
+  Flame,
+  Target,
+  Zap,
+  GraduationCap,
+};
 
 function Icon({ name, className }: { name: string; className?: string }) {
-  const C = (Lucide as any)[name];
-  if (C && typeof C === "function") return <C className={className} />;
-  return <Award className={className} />;
+  const C = BADGE_ICONS[name] ?? Award;
+  return <C className={className} />;
 }
 
 const TIER_STYLES: Record<string, string> = {

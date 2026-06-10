@@ -26,6 +26,9 @@ const cspDirectives = {
     "'unsafe-inline'", // Next.js inline runtime
     process.env.NODE_ENV === "development" ? "'unsafe-eval'" : "",
     "https://*.sentry.io",
+    // Session Replay chargé en différé depuis le CDN Sentry
+    // (cf. sentry.client.config.ts — lazyLoadIntegration).
+    "https://browser.sentry-cdn.com",
     "https://js.stripe.com",
     "https://eu.i.posthog.com",
     "https://eu-assets.i.posthog.com",
@@ -109,6 +112,8 @@ const securityHeaders = [
 
 const nextConfig = {
   reactStrictMode: true,
+  // Ne pas annoncer le framework dans les réponses HTTP (x-powered-by).
+  poweredByHeader: false,
   experimental: {
     typedRoutes: false,
     // pdf-parse charge ses modules en require dynamique. Si webpack tente

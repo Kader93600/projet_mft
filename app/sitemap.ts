@@ -22,7 +22,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/confidentialite`, lastModified: now, priority: 0.3 },
     { url: `${base}/retractation`, lastModified: now, priority: 0.3 },
     { url: `${base}/reglement-interieur`, lastModified: now, priority: 0.3 },
-    { url: `${base}/accessibilite`, lastModified: now, priority: 0.3 },
+    // /accessibilite est une page PROTÉGÉE (préférences stagiaire) — la
+    // page publique indexable est la déclaration d'accessibilité.
+    { url: `${base}/declaration-accessibilite`, lastModified: now, priority: 0.3 },
+    { url: `${base}/resultats`, lastModified: now, priority: 0.3 },
+    { url: `${base}/reclamations`, lastModified: now, priority: 0.3 },
   ];
 
   // Pages formations dynamiques

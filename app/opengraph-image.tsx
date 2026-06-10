@@ -1,7 +1,8 @@
 import { ImageResponse } from "next/og";
 import { LEGAL } from "@/lib/legal-config";
 
-export const runtime = "edge";
+// NB : pas de `runtime = "edge"` — sur Vercel, le runtime edge renvoyait
+// des PNG vides (0 octet) mis en cache 1 an. next/og fonctionne en Node.
 export const alt = `${LEGAL.brand} — L'école qui forme les pros du transport`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -117,7 +118,7 @@ export default async function OgImage() {
         {/* Eyebrow */}
         <div
           style={{
-            display: "inline-flex",
+            display: "flex",
             alignSelf: "flex-start",
             padding: "10px 22px",
             borderRadius: 9999,
@@ -184,7 +185,7 @@ export default async function OgImage() {
             <span
               key={chip}
               style={{
-                display: "inline-flex",
+                display: "flex",
                 padding: "8px 16px",
                 borderRadius: 9999,
                 background: "rgba(255,255,255,0.06)",

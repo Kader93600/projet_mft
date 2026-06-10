@@ -10,7 +10,16 @@ export const dynamic = "force-dynamic";
  * Réservé admin via requireAdmin().
  */
 export async function GET() {
-  const { supabase } = await requireAdmin();
+  // 401 propre (et non 500) si non authentifié / non admin.
+  let supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"];
+  try {
+    ({ supabase } = await requireAdmin());
+  } catch {
+    return new Response(JSON.stringify({ error: "unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
   const { data, error } = await supabase
     .from("enrollment_requests")

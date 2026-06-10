@@ -3,13 +3,42 @@ import { useEffect, useRef, useState } from "react";
 import { Card, CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import * as Lucide from "lucide-react";
-import { Award, Sparkles } from "lucide-react";
+import {
+  Award,
+  Sparkles,
+  BookOpen,
+  Library,
+  Medal,
+  ShieldCheck,
+  Star,
+  Trophy,
+  Flame,
+  Target,
+  Zap,
+  GraduationCap,
+} from "lucide-react";
+
+// Map EXPLICITE des icônes de badges (perf : `import * as Lucide`
+// embarquait les ~1500 icônes du paquet dans le bundle de /reussites).
+// Tout nom inconnu retombe sur Award.
+const BADGE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  Award,
+  Sparkles,
+  BookOpen,
+  Library,
+  Medal,
+  ShieldCheck,
+  Star,
+  Trophy,
+  Flame,
+  Target,
+  Zap,
+  GraduationCap,
+};
 
 function Icon({ name, className }: { name: string; className?: string }) {
-  const C = (Lucide as any)[name] as any;
-  if (C && typeof C === "function") return <C className={className} />;
-  return <Award className={className} />;
+  const C = BADGE_ICONS[name] ?? Award;
+  return <C className={className} />;
 }
 
 const TIER_STYLES: Record<string, string> = {

@@ -10,6 +10,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { captureException } from "@/lib/observability";
+import { sanitizeRichTextServer } from "@/lib/rich-text";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -88,11 +89,16 @@ function parseInbound(body: any): Parsed | null {
   return null;
 }
 
+/**
+ * Sanitisation serveur du HTML entrant (emails externes = non fiables).
+ * Délègue à sanitizeRichTextServer (lib/rich-text.ts) qui retire les tags
+ * dangereux (script/iframe/object/embed…), les handlers on* MÊME non
+ * quotés (<img onerror=…>) et les URI javascript:/data:text/html.
+ * Le rendu côté admin repasse en plus par DOMPurify (défense en
+ * profondeur — voir inbox-table.tsx).
+ */
 function safeHtml(s: string): string {
-  return (s || "")
-    .replace(/<script[\s\S]*?<\/script>/gi, "")
-    .replace(/\son\w+="[^"]*"/gi, "")
-    .replace(/\son\w+='[^']*'/gi, "");
+  return sanitizeRichTextServer(s || "");
 }
 
 export async function POST(req: NextRequest) {

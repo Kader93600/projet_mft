@@ -19,7 +19,8 @@ import {
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: `Tarifs et packs — ${LEGAL.brand}`,
+  title: "Tarifs et packs",
+  alternates: { canonical: "/tarifs" },
   description: `Trois packs (Initial, Medium, Premium) pour toutes nos formations transport. Achat unique, sans engagement. Financement CPF, OPCO, employeur, France Travail.`,
 };
 
@@ -126,7 +127,7 @@ export default async function TarifsPage({ searchParams }: PageProps) {
                 <div className="h-10 w-10 rounded-xl bg-signal-500/15 border border-signal-500/30 text-signal-400 flex items-center justify-center">
                   <ShieldCheck className="h-5 w-5" />
                 </div>
-                <div className="text-[10px] uppercase tracking-[0.18em] font-bold text-white/45">
+                <div className="text-[10px] uppercase tracking-[0.18em] font-bold text-white/60">
                   {t("guarantee1Eyebrow")}
                 </div>
               </div>
@@ -147,7 +148,7 @@ export default async function TarifsPage({ searchParams }: PageProps) {
                 <div className="h-10 w-10 rounded-xl bg-signal-500/15 border border-signal-500/30 text-signal-400 flex items-center justify-center">
                   <Wallet className="h-5 w-5" />
                 </div>
-                <div className="text-[10px] uppercase tracking-[0.18em] font-bold text-white/45">
+                <div className="text-[10px] uppercase tracking-[0.18em] font-bold text-white/60">
                   {t("guarantee2Eyebrow")}
                 </div>
               </div>

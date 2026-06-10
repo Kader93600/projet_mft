@@ -6,9 +6,15 @@ import { Cookie } from "lucide-react";
 
 const STORAGE_KEY = "gotrm.cookie.consent.v1";
 
+/** Événement émis à chaque enregistrement de choix (detail = Choice). */
+export const CONSENT_CHANGED_EVENT = "mft:consent-changed";
+/** Événement permettant de ré-ouvrir la bannière (lien « Gérer les cookies »). */
+export const OPEN_BANNER_EVENT = "mft:open-cookie-banner";
+
 type Choice = {
   essential: true;
   analytics: boolean;
+  marketing: boolean;
   communications: boolean;
   newsletter: boolean;
   ts: string;
@@ -19,6 +25,7 @@ export function CookieBanner() {
   const [open, setOpen] = React.useState(false);
   const [details, setDetails] = React.useState(false);
   const [analytics, setAnalytics] = React.useState(false);
+  const [marketing, setMarketing] = React.useState(false);
   const [communications, setCommunications] = React.useState(true);
   const [newsletter, setNewsletter] = React.useState(false);
 
@@ -31,10 +38,37 @@ export function CookieBanner() {
   React.useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) setOpen(true);
+      if (!raw) {
+        setOpen(true);
+        return;
+      }
+      const saved = JSON.parse(raw) as Partial<Choice>;
+      // Validité du consentement : 6 mois (recommandation CNIL ≤ 13 mois,
+      // annoncé « 6 mois » dans la politique de confidentialité).
+      const SIX_MONTHS_MS = 182 * 24 * 60 * 60 * 1000;
+      const age = saved.ts ? Date.now() - new Date(saved.ts).getTime() : Infinity;
+      if (!Number.isFinite(age) || age > SIX_MONTHS_MS) {
+        setOpen(true);
+        return;
+      }
+      // Pré-remplit les toggles avec le choix existant (ré-ouverture
+      // via « Gérer les cookies »).
+      setAnalytics(saved.analytics === true);
+      setMarketing(saved.marketing === true);
+      setCommunications(saved.communications !== false);
+      setNewsletter(saved.newsletter === true);
     } catch {
       setOpen(true);
     }
+  }, []);
+
+  // Ré-ouverture à la demande (lien « Gérer les cookies » du footer) —
+  // exigence CNIL : le retrait du consentement doit être aussi simple
+  // que son octroi.
+  React.useEffect(() => {
+    const onOpen = () => setOpen(true);
+    window.addEventListener(OPEN_BANNER_EVENT, onOpen);
+    return () => window.removeEventListener(OPEN_BANNER_EVENT, onOpen);
   }, []);
 
   // Focus trap + restore previous focus + ESC to refuse-all
@@ -58,7 +92,12 @@ export function CookieBanner() {
       if (e.key === "Escape") {
         e.preventDefault();
         // ESC = refus minimal (essentiels seuls), conformément aux recommandations CNIL
-        persist({ analytics: false, communications: false, newsletter: false });
+        persist({
+          analytics: false,
+          marketing: false,
+          communications: false,
+          newsletter: false,
+        });
         return;
       }
       if (e.key !== "Tab") return;
@@ -93,6 +132,13 @@ export function CookieBanner() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(choice));
     } catch {}
     setOpen(false);
+    // Notifie les consommateurs (PostHog, AcquisitionTracker…) pour
+    // qu'ils s'activent / se désactivent immédiatement, sans rechargement.
+    try {
+      window.dispatchEvent(
+        new CustomEvent(CONSENT_CHANGED_EVENT, { detail: choice })
+      );
+    } catch {}
     (Object.entries(c) as [string, boolean][]).forEach(([kind, granted]) => {
       fetch("/api/me/consent", {
         method: "POST",
@@ -160,6 +206,13 @@ export function CookieBanner() {
                   onChange={setAnalytics}
                 />
                 <ConsentRow
+                  id="c-marketing"
+                  label={t("marketing")}
+                  desc={t("marketingDesc")}
+                  checked={marketing}
+                  onChange={setMarketing}
+                />
+                <ConsentRow
                   id="c-comms"
                   label={t("communications")}
                   desc={t("communicationsDesc")}
@@ -191,6 +244,7 @@ export function CookieBanner() {
                 onClick={() =>
                   persist({
                     analytics: false,
+                    marketing: false,
                     communications: false,
                     newsletter: false,
                   })
@@ -202,7 +256,7 @@ export function CookieBanner() {
               <button
                 type="button"
                 onClick={() =>
-                  persist({ analytics, communications, newsletter })
+                  persist({ analytics, marketing, communications, newsletter })
                 }
                 className="px-4 py-2 rounded-xl border border-navy-200 dark:border-[hsl(var(--border))] text-sm font-medium text-navy-900 dark:text-[hsl(var(--text))] hover:bg-navy-50 dark:hover:bg-[hsl(var(--surface-2))] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-900"
               >
@@ -213,6 +267,7 @@ export function CookieBanner() {
                 onClick={() =>
                   persist({
                     analytics: true,
+                    marketing: true,
                     communications: true,
                     newsletter: true,
                   })
