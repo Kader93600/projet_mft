@@ -56,6 +56,19 @@ async function resolveFormationId(
   return data?.id ?? null;
 }
 
+/**
+ * Génère un `source_ref` UNIQUE pour une question créée manuellement.
+ *
+ * La table question_bank a une contrainte UNIQUE(source_ref). On ne peut
+ * donc PAS réutiliser une valeur fixe ("manual") : la 2ᵉ création
+ * planterait avec "duplicate key value violates unique constraint
+ * question_bank_source_ref_unique". On suffixe un UUID pour rester unique
+ * tout en gardant la traçabilité de l'origine (création manuelle admin).
+ */
+function manualSourceRef(): string {
+  return `manual:${crypto.randomUUID()}`;
+}
+
 // ─── Création QCM ─────────────────────────────────────────────────────
 
 export async function createQcmQuestion(raw: unknown): Promise<CreateResult> {
@@ -94,7 +107,7 @@ export async function createQcmQuestion(raw: unknown): Promise<CreateResult> {
         tags: data.tags,
         explanation: data.explanation || null,
         active: data.active,
-        source_ref: "manual",
+        source_ref: manualSourceRef(),
       })
       .select("id")
       .single();
@@ -143,7 +156,7 @@ export async function createQrQuestion(raw: unknown): Promise<CreateResult> {
         tags: data.tags,
         explanation: data.explanation || null,
         active: data.active,
-        source_ref: "manual",
+        source_ref: manualSourceRef(),
       })
       .select("id")
       .single();

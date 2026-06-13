@@ -97,7 +97,10 @@ export async function generateQuestionsForLesson(
     };
   }
 
-  // 5) Insertion en BROUILLONS (active=false) → validation humaine ensuite
+  // 5) Insertion en BROUILLONS (active=false) → validation humaine ensuite.
+  //    source_ref UNIQUE par question (contrainte UNIQUE(source_ref)) :
+  //    plusieurs questions sont insérées d'un coup et la génération peut
+  //    être relancée sur la même leçon → on suffixe un UUID.
   const rows = questions.map((q) => ({
     formation_id: formationId,
     module_id: lesson.module_id ?? null,
@@ -114,7 +117,7 @@ export async function generateQuestionsForLesson(
     tags: ["ia-generee"],
     explanation: q.explanation || null,
     active: false,
-    source_ref: `ai:lesson:${lesson.id}`,
+    source_ref: `ai:lesson:${lesson.id}:${crypto.randomUUID()}`,
   }));
 
   const { error } = await service.from("question_bank").insert(rows);
