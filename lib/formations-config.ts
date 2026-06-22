@@ -41,6 +41,14 @@ export interface Formation {
   objectives: string[];
   /** Programme par modules / chapitres. */
   program: { title: string; details: string[] }[];
+  /**
+   * Modules complémentaires proposés par le centre, HORS blocs de la
+   * certification RNCP (atouts pédagogiques, pas des compétences
+   * attestées par l'État). Affichés dans un encart distinct pour éviter
+   * toute confusion avec les blocs officiels (exigence EDOF / France
+   * Compétences). Optionnel.
+   */
+  complementaryModules?: { title: string; details: string[] };
   /** Compétences visées. */
   skills: string[];
   /** Modalités d'évaluation (Qualiopi — critère 1, indicateur 1). */
@@ -78,7 +86,7 @@ export const FORMATIONS: Formation[] = [
   {
     slug: "gotrm",
     assessment:
-      "Évaluation continue (QCM et études de cas), examens blancs en conditions réelles, puis épreuves du titre devant un jury (dossier professionnel et mises en situation). Titre RNCP 40990 de niveau 5 délivré par le Ministère du Travail.",
+      "Évaluation continue en cours de formation (études de cas, mises en situation), puis épreuves officielles du titre devant un jury professionnel : mise en situation professionnelle (10 h, en deux parties), entretien technique (1 h), questionnement à partir de production(s) (30 min) et entretien final (30 min). Durée totale des épreuves : 12 h. Une preuve de période en entreprise de 280 heures minimum est exigée pour se présenter à ces épreuves. Titre RNCP 40990 de niveau 5 délivré par le Ministère du Travail.",
     outcomes: [
       "Responsable ou gestionnaire d'exploitation transport",
       "Affréteur, dispatcher, chef de quai",
@@ -92,23 +100,25 @@ export const FORMATIONS: Formation[] = [
     category: "marchandises",
     level: 5,
     rncpCode: "RNCP 40990",
-    duration: "8 à 16 semaines selon formule",
+    duration:
+      "8 à 16 semaines en centre (selon formule) + 280 heures minimum en entreprise, obligatoires pour se présenter à l'examen du titre",
     modality: "mixte",
     audience:
       "Demandeurs d'emploi, salariés en évolution, chefs d'entreprise du secteur transport.",
     prerequisites:
       "Niveau bac ou expérience significative dans le transport / logistique.",
     description:
-      "Préparation complète au titre professionnel niveau 5 (RNCP 40990) délivré par le Ministère du Travail. La formation couvre les trois blocs de compétences : exploitation, gestion, qualité-sécurité.",
+      "Préparation complète au titre professionnel niveau 5 (RNCP 40990) délivré par le Ministère du Travail. La formation couvre les trois blocs de compétences officiels de la certification : concevoir et piloter les prestations de transport, piloter les trafics réguliers sous sous-traitance, et optimiser les moyens de l'activité.",
     objectives: [
-      "Organiser une activité de transport routier conformément à la réglementation",
-      "Gérer les ressources humaines et matérielles de l'exploitation",
-      "Animer la démarche qualité, sécurité et environnement",
+      "Concevoir, organiser et piloter des prestations de transport routier de marchandises",
+      "Piloter les trafics réguliers réalisés sous contrat de sous-traitance",
+      "Optimiser l'ensemble des moyens (humains, matériels, financiers) de l'activité",
       "Préparer et passer l'examen final du titre RNCP 40990",
     ],
     program: [
       {
-        title: "Bloc 1 — Exploitation",
+        title:
+          "Bloc 1 (RNCP40990BC01) — Concevoir, organiser, mettre en œuvre et piloter des prestations de transport routier de marchandises jusqu'à la clôture des dossiers",
         details: [
           "Réglementation européenne et nationale",
           "Temps de conduite et de repos (R561/2006, AETR)",
@@ -117,24 +127,33 @@ export const FORMATIONS: Formation[] = [
         ],
       },
       {
-        title: "Bloc 2 — Gestion",
+        title:
+          "Bloc 2 (RNCP40990BC02) — Piloter les trafics réguliers sous contrat de sous-traitance",
         details: [
+          "Affrètement et relation avec les sous-traitants",
           "Calculs de prix de revient et de vente",
-          "Gestion des conducteurs et du matériel",
-          "Outils numériques (TMS, télématique)",
           "Comptabilité et pilotage financier",
         ],
       },
       {
-        title: "Bloc 3 — Qualité, sécurité, environnement",
+        title:
+          "Bloc 3 (RNCP40990BC03) — Optimiser l'ensemble des moyens liés à l'activité de transport",
         details: [
-          "Management QSE",
-          "Prévention des risques routiers",
-          "Transport de marchandises dangereuses (notions ADR)",
-          "Empreinte carbone et CSRD",
+          "Gestion des conducteurs et du matériel",
+          "Outils numériques (TMS, télématique)",
+          "Optimisation des tournées et des ressources",
         ],
       },
     ],
+    complementaryModules: {
+      title: "Modules complémentaires proposés par notre centre",
+      details: [
+        "Management QSE (qualité, sécurité, environnement)",
+        "Prévention des risques routiers",
+        "Sensibilisation au transport de marchandises dangereuses (notions ADR)",
+        "Empreinte carbone et enjeux RSE / CSRD du transport",
+      ],
+    },
     skills: [
       "Pilotage d'exploitation",
       "Réglementation transport",

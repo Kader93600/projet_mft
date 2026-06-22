@@ -265,6 +265,36 @@ export default function FormationPage({ params }: { params: { slug: string } }) 
                 </details>
               ))}
             </div>
+
+            {/* Modules complémentaires — HORS blocs RNCP. Présentés dans
+                un encart visuellement distinct (exigence EDOF / France
+                Compétences : ne pas confondre avec les blocs certifiants). */}
+            {f.complementaryModules && (
+              <div className="mt-6 rounded-xl border border-dashed border-white/15 bg-white/[0.02] p-5">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <Sparkles className="h-4 w-4 text-white/50" />
+                  <h3 className="font-semibold text-white/90">
+                    {f.complementaryModules.title}
+                  </h3>
+                </div>
+                <p className="text-xs text-white/50 mb-3">
+                  Atouts pédagogiques de notre centre, proposés en complément
+                  du titre professionnel (hors compétences certifiées par
+                  l'État).
+                </p>
+                <ul className="space-y-2">
+                  {f.complementaryModules.details.map((d) => (
+                    <li
+                      key={d}
+                      className="flex items-start gap-2.5 text-sm text-white/70"
+                    >
+                      <span className="h-1.5 w-1.5 rounded-full bg-white/40 shrink-0 mt-2" />
+                      <span>{d}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </section>
 
           {/* Compétences */}
