@@ -40,6 +40,9 @@ export function SiteHeader() {
           <Link href="/temoignages" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
             Témoignages
           </Link>
+          <Link href="/blog" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
+            Guides
+          </Link>
           <Link href="/contact" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
             Contact
           </Link>
@@ -100,6 +103,11 @@ function SiteFooterContact() {
             <li>
               <Link href="/tarifs" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
                 Tarifs
+              </Link>
+            </li>
+            <li>
+              <Link href="/blog" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
+                Guides & conseils
               </Link>
             </li>
             <li>

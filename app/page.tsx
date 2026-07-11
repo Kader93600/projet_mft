@@ -28,6 +28,8 @@ export const metadata = {
   title: { absolute: `${LEGAL.brand} — L'école des pros du transport` },
   description:
     "Centre de formation spécialisé transport routier de marchandises et de voyageurs. GOTRM, ERTV, ECSR, FIMO/FCO, Taxi/VTC, capacités de transport. Certifié Qualiopi.",
+  // Canonical racine. Next normalise en « …fr » (sans slash) via
+  // metadataBase ; le sitemap est aligné sur cette même forme sans slash.
   alternates: { canonical: "/" },
 };
 

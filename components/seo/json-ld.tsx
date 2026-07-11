@@ -133,6 +133,47 @@ export function localBusinessSchema() {
   };
 }
 
+/**
+ * Schéma Article pour une page de blog / guide.
+ * Renseigne l'auteur (organisation), l'éditeur, les dates et l'URL
+ * canonique. Éligible aux résultats enrichis « Article ».
+ */
+export function articleSchema(a: {
+  title: string;
+  description: string;
+  slug: string;
+  datePublished: string;
+  dateModified: string;
+}) {
+  const url = `${LEGAL.website}/blog/${a.slug}`;
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: a.title,
+    description: a.description,
+    datePublished: a.datePublished,
+    dateModified: a.dateModified,
+    inLanguage: "fr-FR",
+    mainEntityOfPage: { "@type": "WebPage", "@id": url },
+    url,
+    image: `${LEGAL.website}/opengraph-image`,
+    author: {
+      "@type": "Organization",
+      name: LEGAL.brand,
+      url: LEGAL.website,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: LEGAL.brand,
+      url: LEGAL.website,
+      logo: {
+        "@type": "ImageObject",
+        url: `${LEGAL.website}/opengraph-image`,
+      },
+    },
+  };
+}
+
 /** Schéma BreadcrumbList générique. */
 export function breadcrumbSchema(items: { name: string; url: string }[]) {
   return {
