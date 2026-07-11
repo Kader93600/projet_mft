@@ -28,8 +28,26 @@ function fmtDate(iso: string): string {
   });
 }
 
+/** Pastille de catégorie (réutilisée sur la une et les cartes). */
+function CategoryPill({ category }: { category: string }) {
+  return (
+    <span
+      className={
+        "inline-flex self-start items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold " +
+        (CATEGORY_TONE[category] ?? "bg-white/10 text-white/70 border-white/15")
+      }
+    >
+      {category}
+    </span>
+  );
+}
+
 export default function BlogIndexPage() {
   const articles = articlesSorted();
+  // Rythme éditorial : le guide le plus récent passe "à la une" (grande
+  // carte 2 colonnes), les autres suivent en grille. On casse ainsi la
+  // grille monotone de cartes identiques.
+  const [featured, ...rest] = articles;
 
   return (
     <SiteShell>
@@ -55,49 +73,99 @@ export default function BlogIndexPage() {
             Nos premiers guides arrivent très bientôt.
           </div>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {articles.map((a) => (
+          <>
+            {/* À la une — guide le plus récent, carte large 2 colonnes */}
+            {featured && (
               <Link
-                key={a.slug}
-                href={`/blog/${a.slug}`}
-                className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-night-100 p-6 transition-[transform,border-color] duration-200 ease-premium hover:border-signal-500/40 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-400 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                href={`/blog/${featured.slug}`}
+                style={{ animation: "fade-up 0.5s ease-out both" }}
+                className="group relative mb-6 grid gap-8 overflow-hidden rounded-3xl border border-white/10 bg-night-100 p-8 md:grid-cols-[1.45fr_1fr] md:p-10 transition-[transform,border-color] duration-200 ease-premium hover:border-signal-500/40 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-400 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
               >
-                <span
-                  className={
-                    "inline-flex self-start items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold " +
-                    (CATEGORY_TONE[a.category] ??
-                      "bg-white/10 text-white/70 border-white/15")
-                  }
-                >
-                  {a.category}
-                </span>
-
-                <h2 className="mt-4 font-display text-lg font-semibold leading-snug text-white group-hover:text-signal-300 transition-colors">
-                  {a.title}
-                </h2>
-
-                <p className="mt-2 text-sm text-white/65 leading-relaxed line-clamp-3">
-                  {a.excerpt}
-                </p>
-
-                <div className="mt-4 flex items-center gap-4 text-[11px] text-white/45">
-                  <span className="inline-flex items-center gap-1.5">
-                    <CalendarDays className="h-3 w-3" />
-                    {fmtDate(a.publishedAt)}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <Clock className="h-3 w-3" />
-                    {a.readingMinutes} min
+                {/* Halo signal discret en fond pour distinguer la une */}
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full opacity-60"
+                  style={{
+                    background:
+                      "radial-gradient(circle, rgba(159,226,32,0.10) 0%, rgba(159,226,32,0) 65%)",
+                  }}
+                />
+                <div className="relative">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-signal-400">
+                      À la une
+                    </span>
+                    <CategoryPill category={featured.category} />
+                  </div>
+                  <h2 className="mt-4 font-display text-2xl md:text-3xl font-semibold leading-[1.12] tracking-[-0.015em] text-white group-hover:text-signal-300 transition-colors">
+                    {featured.title}
+                  </h2>
+                  <p className="mt-3 text-white/65 leading-relaxed line-clamp-3 md:line-clamp-4">
+                    {featured.excerpt}
+                  </p>
+                </div>
+                <div className="relative flex flex-col justify-center gap-5 border-t border-white/10 pt-6 md:border-l md:border-t-0 md:pl-8 md:pt-0">
+                  <div className="flex items-center gap-4 text-[11px] text-white/45">
+                    <span className="inline-flex items-center gap-1.5">
+                      <CalendarDays className="h-3 w-3" />
+                      {fmtDate(featured.publishedAt)}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <Clock className="h-3 w-3" />
+                      {featured.readingMinutes} min de lecture
+                    </span>
+                  </div>
+                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-signal-400">
+                    Lire le guide
+                    <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none" />
                   </span>
                 </div>
-
-                <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-signal-400">
-                  Lire le guide
-                  <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none" />
-                </span>
               </Link>
-            ))}
-          </div>
+            )}
+
+            {/* Les autres guides — grille */}
+            {rest.length > 0 && (
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {rest.map((a, i) => (
+                  <Link
+                    key={a.slug}
+                    href={`/blog/${a.slug}`}
+                    style={{
+                      animation: "fade-up 0.5s ease-out both",
+                      animationDelay: `${Math.min(i, 6) * 60 + 80}ms`,
+                    }}
+                    className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-night-100 p-6 transition-[transform,border-color] duration-200 ease-premium hover:border-signal-500/40 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-400 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                  >
+                    <CategoryPill category={a.category} />
+
+                    <h2 className="mt-4 font-display text-lg font-semibold leading-snug text-white group-hover:text-signal-300 transition-colors">
+                      {a.title}
+                    </h2>
+
+                    <p className="mt-2 text-sm text-white/65 leading-relaxed line-clamp-3">
+                      {a.excerpt}
+                    </p>
+
+                    <div className="mt-4 flex items-center gap-4 text-[11px] text-white/45">
+                      <span className="inline-flex items-center gap-1.5">
+                        <CalendarDays className="h-3 w-3" />
+                        {fmtDate(a.publishedAt)}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Clock className="h-3 w-3" />
+                        {a.readingMinutes} min
+                      </span>
+                    </div>
+
+                    <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-signal-400">
+                      Lire le guide
+                      <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none" />
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </main>
     </SiteShell>

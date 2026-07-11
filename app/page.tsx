@@ -78,6 +78,9 @@ function Header({ t }: { t: HomeT }) {
           <Link href="/temoignages" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
             {t("navTestimonials")}
           </Link>
+          <Link href="/blog" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
+            Guides
+          </Link>
           <Link href="/contact" className="hover:text-white transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
             {t("navContact")}
           </Link>
