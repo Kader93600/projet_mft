@@ -24,9 +24,14 @@ import {
 import { LEGAL } from "@/lib/legal-config";
 
 export const metadata = {
-  title: "Toutes nos formations",
+  // title.absolute : mot-clé en tête, sans suffixe marque (évite la
+  // troncature). Reflète l'école généraliste (4 familles de métiers).
+  title: {
+    absolute: "Nos formations transport à Meaux — 8 cursus certifiants",
+  },
   alternates: { canonical: "/formations" },
-  description: `Catalogue complet des formations transport ${LEGAL.brand} : ${FORMATIONS.map((f) => f.code).join(", ")}.`,
+  description:
+    "Centre de formation aux métiers du transport à Meaux : GOTRM, ERTV, FIMO/FCO, ECSR, taxi/VTC, capacité et commissionnaire. Certifié Qualiopi, éligible CPF.",
 };
 
 export const revalidate = 300;

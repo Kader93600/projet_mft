@@ -59,11 +59,39 @@ export async function generateMetadata({
 }) {
   const f = findFormation(params.slug);
   if (!f) return { title: "Formation introuvable" };
+
+  // Titre SEO dédié (title.absolute → PAS de suffixe marque, évite la
+  // troncature en SERP) ; fallback sur l'ancien format si non renseigné.
+  const seoTitle = f.seoTitle ?? `${f.code} — ${f.title}`;
+  const seoDescription = f.seoDescription ?? f.tagline;
+  const canonicalPath = `/formations/${f.slug}`;
+
   return {
-    // Le template du layout ajoute déjà « · MA FORMATION TRANSPORT ».
-    title: `${f.code} — ${f.title}`,
-    description: f.tagline,
-    alternates: { canonical: `/formations/${f.slug}` },
+    title: { absolute: seoTitle },
+    description: seoDescription,
+    alternates: { canonical: canonicalPath },
+    // Open Graph différencié par fiche (sinon les 8 formations partagent
+    // le même aperçu social). L'image OG dynamique (opengraph-image.tsx)
+    // est reprise avec un alt spécifique à la formation.
+    openGraph: {
+      type: "website",
+      title: seoTitle,
+      description: seoDescription,
+      url: canonicalPath,
+      images: [
+        {
+          url: `${canonicalPath}/opengraph-image`,
+          width: 1200,
+          height: 630,
+          alt: `${f.code} — ${f.title}`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: seoTitle,
+      description: seoDescription,
+    },
   };
 }
 

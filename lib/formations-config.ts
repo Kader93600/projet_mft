@@ -19,6 +19,17 @@ export interface Formation {
   code: string;
   /** Titre complet. */
   title: string;
+  /**
+   * Titre SEO optimisé (<title> de la fiche). ≤ 60 car, mot-clé métier en
+   * tête. Utilisé via title.absolute (SANS suffixe marque) pour éviter la
+   * troncature en SERP. Fallback sur `title` si absent.
+   */
+  seoTitle?: string;
+  /**
+   * Meta description SEO (150-160 car) : mot-clé + ancrage local + durée +
+   * financements + CTA. Fallback sur `tagline` si absent.
+   */
+  seoDescription?: string;
   /** Sous-titre — promesse 1 ligne. */
   tagline: string;
   /** Catégorie pour filtrage. */
@@ -85,6 +96,9 @@ export const FUNDING_LABELS: Record<FundingKey, string> = {
 export const FORMATIONS: Formation[] = [
   {
     slug: "gotrm",
+    seoTitle: "Formation GOTRM — Titre pro transport RNCP 40990",
+    seoDescription:
+      "Préparez le titre professionnel GOTRM (RNCP 40990, niveau 5) à Meaux : gestion des opérations de transport de marchandises. Éligible CPF, OPCO, France Travail.",
     assessment:
       "Évaluation continue en cours de formation (études de cas, mises en situation), puis épreuves officielles du titre devant un jury professionnel : mise en situation professionnelle (10 h, en deux parties), entretien technique (1 h), questionnement à partir de production(s) (30 min) et entretien final (30 min). Durée totale des épreuves : 12 h. Une preuve de période en entreprise de 280 heures minimum est exigée pour se présenter à ces épreuves. Titre RNCP 40990 de niveau 5 délivré par le Ministère du Travail.",
     outcomes: [
@@ -167,6 +181,9 @@ export const FORMATIONS: Formation[] = [
   },
   {
     slug: "ertv",
+    seoTitle: "Formation ERTV — Exploitant transport de voyageurs",
+    seoDescription:
+      "Devenez exploitant en régulation du transport de voyageurs (ERTV, niveau 4). Formation de 12 semaines à Meaux. Éligible CPF, OPCO et France Travail.",
     assessment:
       "Contrôle continu (QCM, études de cas), examens blancs et épreuves de certification du titre devant jury.",
     outcomes: [
@@ -232,6 +249,9 @@ export const FORMATIONS: Formation[] = [
   },
   {
     slug: "ecsr",
+    seoTitle: "Formation ECSR — Devenir moniteur d'auto-école",
+    seoDescription:
+      "Formation ECSR pour devenir enseignant de la conduite et moniteur d'auto-école (titre niveau 5). Cursus de 8 à 12 mois à Meaux. Éligible CPF et France Travail.",
     assessment:
       "Contrôle continu, mises en situation pédagogiques évaluées et épreuves de certification du titre d'enseignant de la conduite.",
     outcomes: [
@@ -297,6 +317,9 @@ export const FORMATIONS: Formation[] = [
   },
   {
     slug: "fimo-fco",
+    seoTitle: "Formation FIMO & FCO — Conducteurs marchandises",
+    seoDescription:
+      "FIMO marchandises (140 h) et FCO obligatoire (35 h / 5 ans) pour conducteurs poids lourds à Meaux. Prise en charge OPCO, employeur et France Travail.",
     assessment:
       "Évaluation continue des acquis tout au long du stage ; attestation de formation délivrée à l'issue (formations obligatoires validées par l'assiduité et les tests réglementaires).",
     outcomes: [
@@ -357,6 +380,9 @@ export const FORMATIONS: Formation[] = [
   },
   {
     slug: "taxi-vtc",
+    seoTitle: "Formation Taxi & VTC — Préparation à l'examen",
+    seoDescription:
+      "Préparez les examens Taxi ou VTC et obtenez votre carte professionnelle de chauffeur. Formation de 150 à 250 h à Meaux. Éligible CPF, OPCO et France Travail.",
     assessment:
       "QCM blancs et mises en situation en conditions d'examen ; préparation à l'examen officiel (épreuve d'admissibilité puis d'admission).",
     outcomes: [
@@ -421,6 +447,9 @@ export const FORMATIONS: Formation[] = [
   },
   {
     slug: "commissionnaire",
+    seoTitle: "Formation Commissionnaire de transport — Examen",
+    seoDescription:
+      "Préparez l'examen national de commissionnaire de transport et obtenez votre attestation. Formation intensive de 8 semaines à Meaux. Éligible CPF et OPCO.",
     assessment:
       "Contrôle continu et examen blanc en conditions réelles ; préparation à l'examen national écrit de commissionnaire de transport.",
     outcomes: [
@@ -485,6 +514,9 @@ export const FORMATIONS: Formation[] = [
   },
   {
     slug: "capacite-3-5t",
+    seoTitle: "Capacité de transport léger (≤ 3,5 t) — Formation",
+    seoDescription:
+      "Obtenez l'attestation de capacité de transport léger (≤ 3,5 t) pour créer votre entreprise. Formation de 105 h à Meaux. Éligible CPF et France Travail.",
     assessment:
       "QCM blancs en conditions d'examen ; préparation à l'examen national écrit (attestation de capacité professionnelle, transport léger).",
     outcomes: [
@@ -549,6 +581,9 @@ export const FORMATIONS: Formation[] = [
   },
   {
     slug: "capacite-plus-3-5t",
+    seoTitle: "Capacité de transport (> 3,5 t) — Examen national",
+    seoDescription:
+      "Préparez l'examen national de capacité de transport de marchandises (> 3,5 t). Formation de 12 semaines à Meaux. Éligible CPF, OPCO et France Travail.",
     assessment:
       "Études de cas et examens blancs ; préparation à l'examen national (épreuve écrite et étude de cas) de capacité de transport lourd.",
     outcomes: [
