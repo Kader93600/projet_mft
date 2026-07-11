@@ -321,15 +321,15 @@ export function UsersTable({
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-navy-50/60 text-[11px] uppercase tracking-wider text-slate-600">
-                <SortHeader label="Utilisateur" col="name" sort={sort} onSort={toggleSort} className="px-5" />
-                <SortHeader label="Classe" col="group" sort={sort} onSort={toggleSort} className="hidden xl:table-cell px-5" />
-                <SortHeader label="Rôle" col="role" sort={sort} onSort={toggleSort} className="hidden md:table-cell px-5" />
-                <SortHeader label="Activité" col="activity" sort={sort} onSort={toggleSort} className="hidden lg:table-cell px-5" />
-                <SortHeader label="Score moy." col="score" sort={sort} onSort={toggleSort} className="hidden lg:table-cell px-5" />
-                <SortHeader label="Dernière conn." col="lastSignIn" sort={sort} onSort={toggleSort} className="hidden xl:table-cell px-5" />
-                <SortHeader label="Statut" col="status" sort={sort} onSort={toggleSort} className="hidden md:table-cell px-5" />
-                <th className="hidden lg:table-cell text-left px-5 py-3 font-semibold">Accès</th>
-                <th className="text-right px-5 py-3 font-semibold">Actions</th>
+                <SortHeader label="Utilisateur" col="name" sort={sort} onSort={toggleSort} className="px-4" />
+                <SortHeader label="Classe" col="group" sort={sort} onSort={toggleSort} className="hidden xl:table-cell px-3" />
+                <SortHeader label="Rôle" col="role" sort={sort} onSort={toggleSort} className="hidden md:table-cell px-3" />
+                <SortHeader label="Activité" col="activity" sort={sort} onSort={toggleSort} className="hidden lg:table-cell px-3" />
+                <SortHeader label="Score moy." col="score" sort={sort} onSort={toggleSort} className="hidden lg:table-cell px-3" />
+                <SortHeader label="Dernière conn." col="lastSignIn" sort={sort} onSort={toggleSort} className="hidden xl:table-cell px-3" />
+                <SortHeader label="Statut" col="status" sort={sort} onSort={toggleSort} className="hidden md:table-cell px-3" />
+                <th className="hidden lg:table-cell text-left px-3 py-3 font-semibold">Accès</th>
+                <th className="text-right px-3 py-3 font-semibold">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -340,7 +340,7 @@ export function UsersTable({
                     key={u.id}
                     className="border-t border-navy-50 hover:bg-navy-50/30"
                   >
-                    <td className="px-5 py-3.5">
+                    <td className="px-4 py-3.5">
                       <Link
                         href={`/admin/users/${u.id}`}
                         className="flex items-center gap-3 group"
@@ -348,33 +348,40 @@ export function UsersTable({
                         <div className="h-9 w-9 rounded-full bg-navy-900 text-gold-400 flex items-center justify-center font-semibold text-[11px]">
                           {initials(u.full_name || u.email)}
                         </div>
-                        <div>
-                          <div className="font-medium text-navy-900 group-hover:text-gold-700">
+                        {/* truncate + max-w : un email très long ne doit pas
+                            élargir toute la colonne (title = info complète). */}
+                        <div className="min-w-0">
+                          <div className="font-medium text-navy-900 group-hover:text-gold-700 truncate max-w-[220px]">
                             {u.full_name || "—"}
                           </div>
-                          <div className="text-xs text-slate-500">{u.email}</div>
+                          <div
+                            className="text-xs text-slate-500 truncate max-w-[220px]"
+                            title={u.email}
+                          >
+                            {u.email}
+                          </div>
                         </div>
                       </Link>
                     </td>
-                    <td className="hidden xl:table-cell px-5 py-3.5">
+                    <td className="hidden xl:table-cell px-3 py-3.5">
                       {group ? (
                         <Badge tone="navy">{group.name}</Badge>
                       ) : (
                         <span className="text-xs text-slate-400">—</span>
                       )}
                     </td>
-                    <td className="hidden md:table-cell px-5 py-3.5">
+                    <td className="hidden md:table-cell px-3 py-3.5">
                       <Badge tone={ROLE_TONE[u.role] ?? "slate"}>
                         {ROLE_LABEL[u.role] ?? u.role}
                       </Badge>
                     </td>
-                    <td className="hidden lg:table-cell px-5 py-3.5">
+                    <td className="hidden lg:table-cell px-3 py-3.5">
                       <div className="text-xs">
                         <strong className="text-navy-900">{u.attempts_count}</strong>
                         <span className="text-slate-500"> quiz</span>
                       </div>
                     </td>
-                    <td className="hidden lg:table-cell px-5 py-3.5">
+                    <td className="hidden lg:table-cell px-3 py-3.5">
                       {u.attempts_count > 0 ? (
                         <span className={`font-semibold ${scoreColor(u.avg_score)}`}>
                           {u.avg_score}%
@@ -383,24 +390,24 @@ export function UsersTable({
                         <span className="text-xs text-slate-400">—</span>
                       )}
                     </td>
-                    <td className="hidden xl:table-cell px-5 py-3.5 text-xs text-slate-500">
+                    <td className="hidden xl:table-cell px-3 py-3.5 text-xs text-slate-500">
                       {u.last_sign_in_at ? formatDate(u.last_sign_in_at) : "Jamais"}
                     </td>
-                    <td className="hidden md:table-cell px-5 py-3.5">
+                    <td className="hidden md:table-cell px-3 py-3.5">
                       {u.disabled ? (
                         <Badge tone="slate">Désactivé</Badge>
                       ) : (
                         <Badge tone="success">Actif</Badge>
                       )}
                     </td>
-                    <td className="hidden lg:table-cell px-5 py-3.5">
+                    <td className="hidden lg:table-cell px-3 py-3.5">
                       {u.last_sign_in_at ? (
                         <Badge tone="success" size="sm">Activé</Badge>
                       ) : (
                         <Badge tone="gold" size="sm">En attente</Badge>
                       )}
                     </td>
-                    <td className="px-5 py-3.5">
+                    <td className="px-4 py-3.5">
                       <div className="flex items-center justify-end gap-1">
                         {/* Renvoyer l'invitation — uniquement comptes jamais connectés */}
                         {!u.last_sign_in_at && !u.disabled && (

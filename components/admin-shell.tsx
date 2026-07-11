@@ -171,10 +171,13 @@ export function AdminShell({ children, profile, badges }: Props) {
             </div>
           </div>
 
+          {/* max-w-screen-2xl (1536px) : le back-office est dense en données
+              (tableaux 8-9 colonnes) — 7xl (1280px) forçait un scroll
+              horizontal permanent sur les tables une fois la sidebar déduite. */}
           <div
             id="main-content"
             tabIndex={-1}
-            className="max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-10"
+            className="max-w-screen-2xl mx-auto px-4 md:px-8 py-6 md:py-10"
           >
             {children}
           </div>
