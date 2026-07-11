@@ -103,10 +103,13 @@ export default function FormationsPage({
         }
       />
 
-      {/* Barre de filtres */}
+      {/* Barre de filtres.
+          Mobile : ruban horizontal scrollable sur une seule ligne — empilées,
+          les chips occupaient ~55 % du viewport sous le header sticky.
+          Desktop (md+) : wrap classique multi-lignes. */}
       <section className="sticky top-16 z-20 border-b border-white/5 bg-night/85 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/60 mr-2">
+        <div className="max-w-7xl mx-auto py-3 md:py-4 md:px-6 flex flex-nowrap md:flex-wrap items-center gap-2 overflow-x-auto md:overflow-visible px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <span className="inline-flex shrink-0 items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/60 mr-2">
             <Filter className="h-3.5 w-3.5" />
             Filtres
           </span>
@@ -146,7 +149,7 @@ export default function FormationsPage({
           {hasFilters && (
             <Link
               href="/formations"
-              className="ml-auto inline-flex items-center gap-1.5 text-xs text-white/55 hover:text-white"
+              className="ml-auto inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap pl-2 text-xs text-white/55 hover:text-white"
             >
               <X className="h-3 w-3" />
               Effacer
@@ -299,7 +302,7 @@ function FilterPill({
     <Link
       href={href}
       className={
-        "inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium border transition " +
+        "inline-flex shrink-0 items-center whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium border transition " +
         (active ? activeCls : inactiveCls)
       }
     >

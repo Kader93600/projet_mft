@@ -56,9 +56,11 @@ export function SiteHeader() {
           >
             Espace stagiaire
           </Link>
+          {/* Masqué < sm : le CTA devis est déjà dans le menu mobile et les
+              CTAs de page ; à 2 lignes il débordait du header h-16 sur mobile. */}
           <Link
             href="/contact"
-            className="group inline-flex items-center gap-1.5 rounded-xl bg-signal-500 text-night-900 px-4 py-2.5 text-sm font-semibold shadow-glow-signal transition-[transform,background-color] duration-200 ease-premium hover:bg-signal-400 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-night motion-reduce:transition-none"
+            className="group hidden sm:inline-flex items-center gap-1.5 whitespace-nowrap rounded-xl bg-signal-500 text-night-900 px-4 py-2.5 text-sm font-semibold shadow-glow-signal transition-[transform,background-color] duration-200 ease-premium hover:bg-signal-400 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-night motion-reduce:transition-none"
           >
             Demander un devis
             <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 ease-premium group-hover:translate-x-0.5 motion-reduce:transition-none" />

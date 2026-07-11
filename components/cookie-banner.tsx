@@ -159,11 +159,13 @@ export function CookieBanner() {
       aria-describedby={descId}
       className="fixed inset-x-0 bottom-0 z-40 p-3 md:p-5"
     >
-      <div className="mx-auto max-w-3xl rounded-2xl border border-navy-100 bg-white shadow-float p-5 md:p-6 dark:bg-[hsl(var(--surface))] dark:border-[hsl(var(--border))]">
+      {/* max-h + scroll interne : en mobile (surtout 320px) la bannière
+          couvrait ~75 % de l'écran ; on compacte icône/titre/texte < md. */}
+      <div className="mx-auto max-w-3xl max-h-[85dvh] overflow-y-auto rounded-2xl border border-navy-100 bg-white shadow-float p-4 md:p-6 dark:bg-[hsl(var(--surface))] dark:border-[hsl(var(--border))]">
         <div className="flex items-start gap-3">
           <div
             aria-hidden="true"
-            className="h-10 w-10 rounded-xl bg-gold-100 text-gold-800 flex items-center justify-center shrink-0"
+            className="h-10 w-10 rounded-xl bg-gold-100 text-gold-800 hidden sm:flex items-center justify-center shrink-0"
           >
             <Cookie className="h-5 w-5" />
           </div>
@@ -172,11 +174,11 @@ export function CookieBanner() {
               ref={titleRef}
               id={headingId}
               tabIndex={-1}
-              className="font-display text-lg font-semibold text-navy-950 dark:text-[hsl(var(--text))] outline-none"
+              className="font-display text-base md:text-lg font-semibold text-navy-950 dark:text-[hsl(var(--text))] outline-none"
             >
               {t("preferencesTitle")}
             </h2>
-            <p id={descId} className="text-sm text-slate-600 dark:text-[hsl(var(--text-muted))] mt-1">
+            <p id={descId} className="text-[13px] leading-snug md:text-sm md:leading-normal text-slate-600 dark:text-[hsl(var(--text-muted))] mt-1">
               {t("preferencesDescription")}{" "}
               <Link
                 href="/confidentialite"
@@ -229,7 +231,9 @@ export function CookieBanner() {
               </fieldset>
             )}
 
-            <div className="mt-5 flex flex-wrap items-center gap-2 justify-end">
+            {/* Mobile : grille 2×2 compacte (refus au même niveau visuel que
+                l'acceptation, exigence CNIL). Desktop : rangée alignée à droite. */}
+            <div className="mt-4 md:mt-5 grid grid-cols-2 gap-2 md:flex md:flex-wrap md:items-center md:justify-end">
               <button
                 type="button"
                 onClick={() => setDetails((v) => !v)}

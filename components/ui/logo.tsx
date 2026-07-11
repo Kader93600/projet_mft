@@ -37,9 +37,11 @@ export function Logo({
       <LogoMark className={markSize} variant={variant} />
       {withText && (
         <span className="flex flex-col leading-none">
+          {/* whitespace-nowrap : la marque ne doit jamais casser en 3 lignes,
+              même compressée dans un header mobile étroit. */}
           <span
             className={cn(
-              "font-sans font-bold tracking-tight",
+              "font-sans font-bold tracking-tight whitespace-nowrap",
               labelSize,
               titleColor
             )}
@@ -48,7 +50,7 @@ export function Logo({
           </span>
           <span
             className={cn(
-              "font-sans font-extrabold tracking-tight mt-0.5",
+              "font-sans font-extrabold tracking-tight mt-0.5 whitespace-nowrap",
               labelSize,
               subColor
             )}

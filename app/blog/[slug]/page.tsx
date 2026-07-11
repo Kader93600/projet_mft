@@ -162,7 +162,7 @@ export default function ArticlePage({ params }: { params: { slug: string } }) {
                   <Link
                     key={f.slug}
                     href={`/formations/${f.slug}`}
-                    className="group flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 transition-colors hover:border-signal-500/40 hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-400"
+                    className="group flex min-w-0 items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 transition-colors hover:border-signal-500/40 hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-400"
                   >
                     <span className="min-w-0">
                       <span className="block text-[11px] font-semibold uppercase tracking-wide text-signal-400">
