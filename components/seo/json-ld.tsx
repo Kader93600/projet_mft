@@ -92,6 +92,47 @@ export function courseSchema(f: Formation) {
   };
 }
 
+/**
+ * Schéma LocalBusiness pour le SEO local (centre physique à Meaux).
+ * Éligible aux résultats locaux / Google Business Profile. À monter sur
+ * la page la plus « locale » (l'école) et/ou la home.
+ *
+ * NB : `geo` (coordonnées GPS) et `openingHours` ne sont PAS renseignés
+ * tant que les valeurs exactes ne sont pas confirmées — on ne met pas de
+ * données inventées (Google pénalise les incohérences NAP). À compléter
+ * dès que disponibles.
+ */
+export function localBusinessSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": ["EducationalOrganization", "LocalBusiness"],
+    "@id": `${LEGAL.website}/#organization`,
+    name: LEGAL.legalName,
+    alternateName: LEGAL.brand,
+    url: LEGAL.website,
+    logo: `${LEGAL.website}/opengraph-image`,
+    image: `${LEGAL.website}/opengraph-image`,
+    description: LEGAL.shortDescription,
+    telephone: LEGAL.phone,
+    email: LEGAL.email,
+    priceRange: "€€",
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: LEGAL.address.street,
+      postalCode: LEGAL.address.postalCode,
+      addressLocality: LEGAL.address.city,
+      addressRegion: "Île-de-France",
+      addressCountry: "FR",
+    },
+    areaServed: [
+      { "@type": "City", name: "Meaux" },
+      { "@type": "AdministrativeArea", name: "Seine-et-Marne" },
+      { "@type": "AdministrativeArea", name: "Île-de-France" },
+    ],
+    sameAs: [LEGAL.website],
+  };
+}
+
 /** Schéma BreadcrumbList générique. */
 export function breadcrumbSchema(items: { name: string; url: string }[]) {
   return {

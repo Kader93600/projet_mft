@@ -19,9 +19,11 @@ import {
   ShieldCheck,
   ClipboardCheck,
   TrendingUp,
+  HelpCircle,
 } from "lucide-react";
 import { SiteShell } from "@/components/site/site-shell";
 import { JsonLd, courseSchema, breadcrumbSchema } from "@/components/seo/json-ld";
+import { formationFaq, faqSchema } from "@/lib/formation-faq";
 import {
   FORMATIONS,
   findFormation,
@@ -103,17 +105,19 @@ export default function FormationPage({ params }: { params: { slug: string } }) 
   // Lien vers les autres formations en bas de page
   const others = FORMATIONS.filter((x) => x.slug !== f.slug).slice(0, 3);
 
-  // SEO : Course + Breadcrumb structurés
+  // SEO : Course + Breadcrumb + FAQ structurés
   const breadcrumb = breadcrumbSchema([
     { name: "Accueil", url: `${LEGAL.website}/` },
     { name: "Formations", url: `${LEGAL.website}/formations` },
     { name: f.title, url: `${LEGAL.website}/formations/${f.slug}` },
   ]);
+  const faq = formationFaq(f);
 
   return (
     <SiteShell>
       <JsonLd schema={courseSchema(f)} />
       <JsonLd schema={breadcrumb} />
+      <JsonLd schema={faqSchema(faq)} />
       {/* Hero formation */}
       <section className="relative overflow-hidden border-b border-white/5">
         <div
@@ -377,6 +381,38 @@ export default function FormationPage({ params }: { params: { slug: string } }) 
                 </li>
               ))}
             </ul>
+          </section>
+
+          {/* FAQ — contenu longue traîne + éligibilité rich snippet
+              (JSON-LD FAQPage injecté en tête de page). */}
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <HelpCircle className="h-5 w-5 text-signal-400" />
+              <h2 className="font-display text-2xl md:text-3xl font-semibold">
+                Questions fréquentes
+              </h2>
+            </div>
+            <div className="space-y-3">
+              {faq.map((item, i) => (
+                <details
+                  key={item.question}
+                  className="group rounded-xl border border-white/10 bg-night-100 overflow-hidden"
+                  open={i === 0}
+                >
+                  <summary className="cursor-pointer list-none px-5 py-4 flex items-center justify-between gap-3 hover:bg-white/[0.03]">
+                    <span className="font-semibold text-[15px]">
+                      {item.question}
+                    </span>
+                    <span className="text-signal-400 group-open:rotate-180 transition-transform shrink-0">
+                      <ArrowRight className="h-4 w-4 rotate-90" />
+                    </span>
+                  </summary>
+                  <p className="px-5 pb-5 text-white/75 text-[15px] leading-relaxed">
+                    {item.answer}
+                  </p>
+                </details>
+              ))}
+            </div>
           </section>
         </div>
 

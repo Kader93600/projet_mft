@@ -84,8 +84,8 @@ export default function FinancementsPage() {
         eyebrow="Financements"
         title={
           <>
-            Tous les{" "}
-            <span className="italic text-signal-400">dispositifs</span> acceptés.
+            Financer votre{" "}
+            <span className="italic text-signal-400">formation transport</span>.
           </>
         }
         description={

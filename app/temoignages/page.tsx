@@ -12,7 +12,7 @@ import { Star, Filter, Quote, ArrowRight } from "lucide-react";
 export const metadata = {
   title: "Témoignages stagiaires",
   alternates: { canonical: "/temoignages" },
-  description: `Avis des stagiaires de ${LEGAL.brand}. Note moyenne ${avgRating().toFixed(1)}/5 sur ${TESTIMONIALS.length} témoignages.`,
+  description: `Avis et témoignages des stagiaires de nos formations transport (GOTRM, FIMO, capacité, taxi/VTC). Note moyenne ${avgRating().toFixed(1)}/5 sur ${TESTIMONIALS.length} témoignages. Centre certifié Qualiopi à ${LEGAL.address.city}.`,
 };
 
 export const revalidate = 3600;
@@ -37,8 +37,8 @@ export default function TemoignagesPage({
         eyebrow="Témoignages"
         title={
           <>
-            Ils nous ont fait{" "}
-            <span className="italic text-signal-400">confiance</span>.
+            Avis et témoignages de nos{" "}
+            <span className="italic text-signal-400">stagiaires</span>.
           </>
         }
         description={

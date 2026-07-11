@@ -6,7 +6,7 @@ import { ContactForm } from "./contact-form";
 export const metadata = {
   title: "Contact",
   alternates: { canonical: "/contact" },
-  description: `Contactez ${LEGAL.brand} : ${LEGAL.address.city}, ${LEGAL.email}, ${LEGAL.phone}.`,
+  description: `Contactez votre centre de formation transport à ${LEGAL.address.city} (${LEGAL.address.postalCode}). Devis gratuit et réponse sous 24 h ouvrées pour votre projet de formation. Financement CPF, OPCO, France Travail.`,
 };
 
 export const revalidate = 3600;
@@ -18,8 +18,8 @@ export default function ContactPage() {
         eyebrow="Contact"
         title={
           <>
-            Parlons de votre{" "}
-            <span className="italic text-signal-400">projet</span>.
+            Contactez votre centre de{" "}
+            <span className="italic text-signal-400">formation transport</span>.
           </>
         }
         description={

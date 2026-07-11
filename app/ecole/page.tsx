@@ -1,4 +1,5 @@
 import { SiteShell, PageHero } from "@/components/site/site-shell";
+import { JsonLd, localBusinessSchema } from "@/components/seo/json-ld";
 import { LEGAL } from "@/lib/legal-config";
 import { FORMATIONS } from "@/lib/formations-config";
 import {
@@ -12,9 +13,9 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "L'école",
+  title: "Centre de formation transport à Meaux",
   alternates: { canonical: "/ecole" },
-  description: `Découvrez ${LEGAL.brand}, organisme de formation spécialisé dans les métiers du transport, situé à Meaux.`,
+  description: `${LEGAL.brand}, centre de formation aux métiers du transport routier à ${LEGAL.address.city} (${LEGAL.address.postalCode}), en Île-de-France. Certifié Qualiopi, formations marchandises et voyageurs éligibles CPF.`,
 };
 
 export const revalidate = 3600;
@@ -22,12 +23,13 @@ export const revalidate = 3600;
 export default function EcolePage() {
   return (
     <SiteShell>
+      <JsonLd schema={localBusinessSchema()} />
       <PageHero
         eyebrow="Notre école"
         title={
           <>
-            Au service des{" "}
-            <span className="italic text-signal-400">métiers du transport</span>.
+            Votre centre de formation transport à{" "}
+            <span className="italic text-signal-400">Meaux</span>.
           </>
         }
         description={

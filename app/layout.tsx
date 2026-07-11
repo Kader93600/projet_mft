@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Inter, Bricolage_Grotesque, JetBrains_Mono } from "next/font/google";
-import { cookies } from "next/headers";
 import "./globals.css";
-import { createClient } from "@/lib/supabase/server";
 import { ThemeInit } from "@/components/theme-toggle";
 import { CookieBanner } from "@/components/cookie-banner";
 import { JsonLd, organizationSchema } from "@/components/seo/json-ld";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { AcquisitionTracker } from "@/components/acquisition-tracker";
 import { FormValidationTooltip } from "@/components/form-validation-tooltip";
+import { A11yPrefsLoader } from "@/components/a11y-prefs-loader";
 import { LEGAL } from "@/lib/legal-config";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
@@ -99,57 +99,27 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const locale = await getLocale();
   const messages = await getMessages();
 
-  // Perf : sans cookie sb-* il ne peut pas y avoir de session — on évite
-  // l'appel réseau getUser() + la requête profiles sur chaque page de la
-  // vitrine publique (même court-circuit que le middleware).
-  const hasAuthCookie = cookies()
-    .getAll()
-    .some((c) => c.name.startsWith("sb-"));
-  let prefs: any = null;
-  if (hasAuthCookie) {
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (user) {
-      const { data } = await supabase
-        .from("profiles")
-        .select(
-          "a11y_font_scale, a11y_dyslexia_font, a11y_high_contrast, a11y_reduced_motion, a11y_underline_links"
-        )
-        .eq("id", user.id)
-        .maybeSingle();
-      prefs = data;
-    }
-  }
-  // Thème SSR : si l'utilisateur a explicitement choisi "dark", on l'applique
-  // dès le HTML serveur → zéro flash. "system" reste géré par ThemeInit côté client.
-  const themeCookie = cookies().get("gotrm-theme")?.value;
-  const themeClass = themeCookie === "dark" ? "dark" : "";
-
-  const a11yClasses = [
-    prefs?.a11y_dyslexia_font && "a11y-dyslexia",
-    prefs?.a11y_high_contrast && "a11y-contrast",
-    prefs?.a11y_reduced_motion && "a11y-motion",
-    prefs?.a11y_underline_links && "a11y-underline",
-  ]
-    .filter(Boolean)
-    .join(" ");
-  const fontScale = prefs?.a11y_font_scale ?? 1;
+  // NB : ce layout n'appelle PLUS `cookies()` directement → il ne force
+  // plus tout le site en rendu dynamique. Les pages vitrine (/, /formations,
+  // /ecole, …) redeviennent statiques / cachables par le CDN.
+  //   - Thème (dark/light) : géré sans cookie serveur par <ThemeInit/>
+  //     (script inline anti-FOUC côté client).
+  //   - Préférences a11y de l'utilisateur connecté : isolées dans
+  //     <A11yPrefsLoader/> (sous <Suspense>), qui est le seul à lire les
+  //     cookies — sans contaminer le cache des pages publiques.
 
   return (
     <html
       lang={locale}
-      className={`${inter.variable} ${display.variable} ${jetbrains.variable} ${a11yClasses} ${themeClass}`}
-      style={{
-        fontSize: `${Math.round(fontScale * 100)}%`,
-        colorScheme: themeCookie === "dark" ? "dark" : themeCookie === "light" ? "light" : undefined,
-      }}
+      className={`${inter.variable} ${display.variable} ${jetbrains.variable}`}
     >
       <head>
         <ThemeInit />
         <ServiceWorkerRegister />
         <JsonLd schema={organizationSchema()} />
+        <Suspense fallback={null}>
+          <A11yPrefsLoader />
+        </Suspense>
       </head>
       <body className="min-h-screen bg-ivory font-sans antialiased text-ink selection:bg-gold-200 selection:text-navy-900">
         <a
