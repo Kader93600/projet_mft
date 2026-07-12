@@ -102,12 +102,13 @@ demande explicite). Jamais d'activation automatique.
 | 3 | Capa lourd — Module B Droit commercial : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_b_v1.sql` | ✅ livré, **à appliquer + valider** |
 | 4 | Capa lourd — Module C Droit social : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_c_v1.sql` | ✅ livré, **à appliquer + valider** |
 | 5 | Capa lourd — Module D Droit fiscal : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_d_v1.sql` | ✅ livré, **à appliquer + valider** |
-| 6+ | Capa lourd — ME, MG, MH, M0, M9 | — | ⏳ |
+| 6 | Capa lourd — Module E Gestion : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR (19 calculs vérifiés par script) | `capa_lourd_module_e_v1.sql` | ✅ livré, **à appliquer + valider** |
+| 7+ | Capa lourd — MG, MH, M0, M9 | — | ⏳ |
 | … | FIMO/FCO, Taxi-VTC, ECSR, ERTV, Commissionnaire | — | ⏳ |
 | UI | Étape 10 — refonte admin banque/validation/imports | — | ⏳ |
 
-Cumul Capa lourd : 5 modules, 20 leçons, 5 quiz, 60 QCM, 50 QC, 40 QR
-(150 questions, toutes « à valider », 0 doublon inter-lots vérifié).
+Cumul Capa lourd : 6 modules, 24 leçons, 6 quiz, 72 QCM, 60 QC, 48 QR
+(180 questions, toutes « à valider », 0 doublon inter-lots vérifié).
 
 ## 5. Checklist de validation formateur (par lot)
 
@@ -122,6 +123,16 @@ Cumul Capa lourd : 5 modules, 20 leçons, 5 quiz, 60 QCM, 50 QC, 40 QR
 - [ ] Activer les questions validées (Admin → Banque → Validation),
       corriger ou supprimer les autres.
 - [ ] Vérifier les compteurs du dashboard après activation.
+
+### Points signalés « à vérifier » (lot 6 — Module E)
+- Délai de paiement transport 30 jours (L. 441-11 c. com.) : stable,
+  confirmer la rédaction.
+- Indexation gazole (L. 3222-1/L. 3222-2 c. transports) : mécanisme
+  d'ordre public, formulation à valider.
+- Repères sectoriels (carburant 20-30 % du CA, salaires 35-45 %, marge
+  nette 1-4 %) : ordres de grandeur CNR à ajuster si besoin.
+- Les 19 calculs des corrigés (trinôme, SR, CAF, BFR, crédit-bail) sont
+  vérifiés par script — relecture métier néanmoins recommandée.
 
 ### Points signalés « à vérifier » (lot 5 — Module D)
 - Remboursement TICPE gazole professionnel : seuil 7,5 t stable, mais
