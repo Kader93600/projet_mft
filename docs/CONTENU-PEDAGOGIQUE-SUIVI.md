@@ -99,12 +99,13 @@ demande explicite). Jamais d'activation automatique.
 |---|---|---|---|
 | 1 | Capa lourd — Module F (pilote) : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_f_v1.sql` | ✅ **appliqué en base** (30 questions à valider) |
 | 2 | Capa lourd — Module A Droit civil : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_a_v1.sql` | ✅ livré, **à appliquer + valider** |
-| 3+ | Capa lourd — MB, MC, MD, ME, MG, MH, M0, M9 | — | ⏳ |
+| 3 | Capa lourd — Module B Droit commercial : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_b_v1.sql` | ✅ livré, **à appliquer + valider** |
+| 4+ | Capa lourd — MC, MD, ME, MG, MH, M0, M9 | — | ⏳ |
 | … | FIMO/FCO, Taxi-VTC, ECSR, ERTV, Commissionnaire | — | ⏳ |
 | UI | Étape 10 — refonte admin banque/validation/imports | — | ⏳ |
 
-Cumul Capa lourd : 2 modules, 8 leçons, 2 quiz, 24 QCM, 20 QC, 16 QR
-(60 questions, toutes « à valider »).
+Cumul Capa lourd : 3 modules, 12 leçons, 3 quiz, 36 QCM, 30 QC, 24 QR
+(90 questions, toutes « à valider », 0 doublon inter-lots vérifié).
 
 ## 5. Checklist de validation formateur (par lot)
 
@@ -119,6 +120,15 @@ Cumul Capa lourd : 2 modules, 8 leçons, 2 quiz, 24 QCM, 20 QC, 16 QR
 - [ ] Activer les questions validées (Admin → Banque → Validation),
       corriger ou supprimer les autres.
 - [ ] Vérifier les compteurs du dashboard après activation.
+
+### Points signalés « à vérifier » (lot 3 — Module B)
+- Délais de déclaration : cessation des paiements 45 jours (L. 631-4) et
+  déclaration des créances 2 mois après BODACC (R. 622-24) — confirmer.
+- RNE (registre national des entreprises, 2023) : formulation à valider.
+- Statuts sociaux des dirigeants (gérant majoritaire TNS / président SAS
+  assimilé salarié) : stable, vérifier l'absence de réforme récente.
+- Location-gérance : le régime de solidarité initiale du loueur a évolué ;
+  la leçon reste générale, le formateur peut préciser.
 
 ### Points signalés « à vérifier » (lot 2 — Module A)
 - Prescription annale du contrat de transport : art. L. 133-6 c. com. —
