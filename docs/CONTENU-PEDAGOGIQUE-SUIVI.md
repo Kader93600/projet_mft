@@ -106,8 +106,13 @@ demande explicite). Jamais d'activation automatique.
 | 7 | Capa lourd — Module G Normes techniques : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_g_v1.sql` | ✅ livré, **à appliquer + valider** |
 | 8 | Capa lourd — Module H Sécurité routière : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_h_v1.sql` | ✅ livré, **à appliquer + valider** |
 | 9 | Capa lourd — M0 Méthodo (2 leçons) + M9 Préparation (2 leçons, 6 QC + 4 QR transversales) + **2 examens blancs** (24 QCM ; 16 QCM + 8 QR, composés depuis la banque sans duplication) | `capa_lourd_module_m0_m9_v1.sql` | ✅ livré, **à appliquer + valider** |
-| … | FIMO/FCO, Taxi-VTC, ECSR, ERTV, Commissionnaire | — | ⏳ |
+| F1 | FIMO/FCO — Module 0 Qualification (FIMO/FCO/CQC) : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `fimo_module_0_v1.sql` | ✅ livré, **à appliquer + valider** |
+| F2+ | FIMO/FCO — T1 Conduite rationnelle, T2 Réglementation, T3 Santé/sécurité, T4 Service, M5 Évaluations | — | ⏳ |
+| … | Taxi-VTC, ECSR, ERTV, Commissionnaire | — | ⏳ |
 | UI | Étape 10 — refonte admin banque/validation/imports | — | ⏳ |
+
+Cumul FIMO/FCO : 1 module, 4 leçons, 1 quiz, 30 questions à valider.
+Cumul global (2 formations) : **280 questions, 0 doublon vérifié**.
 
 ## ✅ FORMATION CAPACITÉ > 3,5 T : PRODUCTION TERMINÉE
 10 modules (M0, A-H, M9), 36 leçons, 8 quiz de module + 2 examens
@@ -134,6 +139,17 @@ ci-dessous), puis production des 5 formations restantes.
 - [ ] Activer les questions validées (Admin → Banque → Validation),
       corriger ou supprimer les autres.
 - [ ] Vérifier les compteurs du dashboard après activation.
+
+### Points signalés « à vérifier » (lot FIMO-1 — Module 0)
+- FIMO 140 h / FCO 35 h / passerelle 35 h / carte 5 ans : stables,
+  relecture de confirmation (arrêté du 3 janvier 2008 modifié).
+- Liste exacte des exemptions de qualification (dont « activité
+  accessoire ») : vérifier la rédaction en vigueur.
+- Modalités précises de l'évaluation finale FIMO (nombre de questions,
+  seuils) : volontairement non chiffrées dans la leçon — le formateur
+  peut les préciser selon les textes applicables.
+- Organisme de délivrance des cartes (demande en ligne) : la leçon reste
+  générique — préciser l'opérateur actuel si souhaité.
 
 ### Points signalés « à vérifier » (lot 8 — Module H)
 - Vitesses PL (90/80/80/50) et interdistance 50 m : stables, confirmer.
