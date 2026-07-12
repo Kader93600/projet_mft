@@ -477,10 +477,10 @@ Indicateurs : **taux de fréquence** et **taux de gravité** des AT, sinistralit
    $mft$Accepter « document unique » ; il doit être tenu à jour.$mft$),
 
   (v_formation, v_module, v_l4, 'qr',
-   $mft$Qu'est-ce que le protocole de sécurité ?$mft$,
-   $mft$Le document écrit échangé entre l'entreprise d'accueil et le transporteur, qui fixe les consignes de sécurité pour les opérations de chargement et de déchargement.$mft$,
+   $mft$Quel document écrit, échangé entre l'entreprise d'accueil et le transporteur, encadre une opération de chargement ou de déchargement ?$mft$,
+   $mft$Le protocole de sécurité.$mft$,
    2, 'moyen', ARRAY['capa-lourd','module-h','question-courte'], 'CAPA-LOURD-H-QC-06', false,
-   $mft$Deux idées : document écrit entre les deux entreprises + opérations de chargement/déchargement.$mft$),
+   $mft$Réponse attendue : le protocole de sécurité (code du travail) ; bonus si le candidat précise son caractère préalable et la version unique pour opérations répétitives.$mft$),
 
   (v_formation, v_module, v_l2, 'qr',
    $mft$Sur quel créneau les véhicules de plus de 7,5 t sont-ils interdits de circulation chaque week-end ?$mft$,

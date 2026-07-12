@@ -529,7 +529,7 @@ Un délai de régularisation est généralement accordé : par exemple, remplace
    $mft$Direction régionale de l'environnement, de l'aménagement et du logement. Accepter DREAL seul.$mft$),
 
   (v_formation, v_module, v_l2, 'qr',
-   $mft$Quelle est la durée maximale de validité de la licence communautaire ?$mft$,
+   $mft$Pour combien d'années, au maximum, la licence communautaire est-elle délivrée ?$mft$,
    $mft$Dix ans, renouvelable.$mft$,
    2, 'moyen', ARRAY['capa-lourd','module-f','question-courte'], 'CAPA-LOURD-F-QC-04', false,
    $mft$Règlement (CE) n° 1072/2009. Accepter « 10 ans ».$mft$),

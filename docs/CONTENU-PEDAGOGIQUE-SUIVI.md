@@ -105,13 +105,21 @@ demande explicite). Jamais d'activation automatique.
 | 6 | Capa lourd — Module E Gestion : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR (19 calculs vérifiés par script) | `capa_lourd_module_e_v1.sql` | ✅ livré, **à appliquer + valider** |
 | 7 | Capa lourd — Module G Normes techniques : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_g_v1.sql` | ✅ livré, **à appliquer + valider** |
 | 8 | Capa lourd — Module H Sécurité routière : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_h_v1.sql` | ✅ livré, **à appliquer + valider** |
-| 9 | Capa lourd — M0 Méthodo + M9 Préparation examen + 2 examens blancs | — | ⏳ dernier lot Capa lourd |
+| 9 | Capa lourd — M0 Méthodo (2 leçons) + M9 Préparation (2 leçons, 6 QC + 4 QR transversales) + **2 examens blancs** (24 QCM ; 16 QCM + 8 QR, composés depuis la banque sans duplication) | `capa_lourd_module_m0_m9_v1.sql` | ✅ livré, **à appliquer + valider** |
 | … | FIMO/FCO, Taxi-VTC, ECSR, ERTV, Commissionnaire | — | ⏳ |
 | UI | Étape 10 — refonte admin banque/validation/imports | — | ⏳ |
 
-Cumul Capa lourd : 8 modules, 32 leçons, 8 quiz, 96 QCM, 80 QC, 64 QR
-(240 questions, toutes « à valider », 0 doublon inter-lots vérifié).
-Les 8 domaines de l'annexe I (A à H) sont tous couverts.
+## ✅ FORMATION CAPACITÉ > 3,5 T : PRODUCTION TERMINÉE
+10 modules (M0, A-H, M9), 36 leçons, 8 quiz de module + 2 examens
+blancs, **250 questions** (96 QCM + 86 QC + 68 QR), toutes « à
+valider », **0 doublon vérifié sur l'ensemble** (le contrôle du lot 9 a
+détecté et corrigé 2 QC intra-fichier qui reprenaient l'énoncé d'un
+QCM : F-QC-04 et H-QC-06 reformulées).
+⚠ Le module F ayant déjà été appliqué en base, **ré-appliquer
+`capa_lourd_module_f_v1.sql`** (idempotent) pour bénéficier de la
+reformulation, puis appliquer H et M0/M9.
+Prochaine étape : validation formateur module par module (checklist
+ci-dessous), puis production des 5 formations restantes.
 
 ## 5. Checklist de validation formateur (par lot)
 
