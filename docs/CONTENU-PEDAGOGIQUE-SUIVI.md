@@ -107,12 +107,13 @@ demande explicite). Jamais d'activation automatique.
 | 8 | Capa lourd — Module H Sécurité routière : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_h_v1.sql` | ✅ livré, **à appliquer + valider** |
 | 9 | Capa lourd — M0 Méthodo (2 leçons) + M9 Préparation (2 leçons, 6 QC + 4 QR transversales) + **2 examens blancs** (24 QCM ; 16 QCM + 8 QR, composés depuis la banque sans duplication) | `capa_lourd_module_m0_m9_v1.sql` | ✅ livré, **à appliquer + valider** |
 | F1 | FIMO/FCO — Module 0 Qualification (FIMO/FCO/CQC) : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `fimo_module_0_v1.sql` | ✅ livré, **à appliquer + valider** |
-| F2+ | FIMO/FCO — T1 Conduite rationnelle, T2 Réglementation, T3 Santé/sécurité, T4 Service, M5 Évaluations | — | ⏳ |
+| F2 | FIMO/FCO — T1 Conduite rationnelle : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR (4 calculs vérifiés) | `fimo_module_t1_v1.sql` | ✅ livré, **à appliquer + valider** |
+| F3+ | FIMO/FCO — T2 Réglementation, T3 Santé/sécurité, T4 Service, M5 Évaluations | — | ⏳ |
 | … | Taxi-VTC, ECSR, ERTV, Commissionnaire | — | ⏳ |
 | UI | Étape 10 — refonte admin banque/validation/imports | — | ⏳ |
 
-Cumul FIMO/FCO : 1 module, 4 leçons, 1 quiz, 30 questions à valider.
-Cumul global (2 formations) : **280 questions, 0 doublon vérifié**.
+Cumul FIMO/FCO : 2 modules, 8 leçons, 2 quiz, 60 questions à valider.
+Cumul global (2 formations) : **310 questions, 0 doublon vérifié**.
 
 ## ✅ FORMATION CAPACITÉ > 3,5 T : PRODUCTION TERMINÉE
 10 modules (M0, A-H, M9), 36 leçons, 8 quiz de module + 2 examens
@@ -139,6 +140,15 @@ ci-dessous), puis production des 5 formations restantes.
 - [ ] Activer les questions validées (Admin → Banque → Validation),
       corriger ou supprimer les autres.
 - [ ] Vérifier les compteurs du dashboard après activation.
+
+### Points signalés « à vérifier » (lot FIMO-2 — Thème 1)
+- Contenu technique (couple/zone verte, fading, ABS/ESP/AEBS, coupure
+  d'injection) : conforme à l'enseignement standard — relecture
+  formateur conduite recommandée.
+- Forces d'arrimage (0,8/0,5 du poids) : réutilisées côté conducteur
+  avec formulations distinctes du module G capa (0 doublon vérifié).
+- Valeur d'étude 1,60 €/L dans le cas télématique : explicitement
+  marquée « à ajuster au prix réel » dans l'énoncé et le corrigé.
 
 ### Points signalés « à vérifier » (lot FIMO-1 — Module 0)
 - FIMO 140 h / FCO 35 h / passerelle 35 h / carte 5 ans : stables,
