@@ -104,12 +104,14 @@ demande explicite). Jamais d'activation automatique.
 | 5 | Capa lourd — Module D Droit fiscal : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_d_v1.sql` | ✅ livré, **à appliquer + valider** |
 | 6 | Capa lourd — Module E Gestion : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR (19 calculs vérifiés par script) | `capa_lourd_module_e_v1.sql` | ✅ livré, **à appliquer + valider** |
 | 7 | Capa lourd — Module G Normes techniques : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_g_v1.sql` | ✅ livré, **à appliquer + valider** |
-| 8+ | Capa lourd — MH Sécurité routière, M0 Méthodo, M9 Préparation examen | — | ⏳ |
+| 8 | Capa lourd — Module H Sécurité routière : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_h_v1.sql` | ✅ livré, **à appliquer + valider** |
+| 9 | Capa lourd — M0 Méthodo + M9 Préparation examen + 2 examens blancs | — | ⏳ dernier lot Capa lourd |
 | … | FIMO/FCO, Taxi-VTC, ECSR, ERTV, Commissionnaire | — | ⏳ |
 | UI | Étape 10 — refonte admin banque/validation/imports | — | ⏳ |
 
-Cumul Capa lourd : 7 modules, 28 leçons, 7 quiz, 84 QCM, 70 QC, 56 QR
-(210 questions, toutes « à valider », 0 doublon inter-lots vérifié).
+Cumul Capa lourd : 8 modules, 32 leçons, 8 quiz, 96 QCM, 80 QC, 64 QR
+(240 questions, toutes « à valider », 0 doublon inter-lots vérifié).
+Les 8 domaines de l'annexe I (A à H) sont tous couverts.
 
 ## 5. Checklist de validation formateur (par lot)
 
@@ -124,6 +126,16 @@ Cumul Capa lourd : 7 modules, 28 leçons, 7 quiz, 84 QCM, 70 QC, 56 QR
 - [ ] Activer les questions validées (Admin → Banque → Validation),
       corriger ou supprimer les autres.
 - [ ] Vérifier les compteurs du dashboard après activation.
+
+### Points signalés « à vérifier » (lot 8 — Module H)
+- Vitesses PL (90/80/80/50) et interdistance 50 m : stables, confirmer.
+- Interdictions week-end > 7,5 t (sam 22 h → dim 22 h) et régime des
+  dérogations denrées périssables : vérifier l'arrêté en vigueur.
+- Validités médicales du permis lourd (5/2/1 ans aux bornes 60/76 ans) :
+  confirmer les seuils d'âge exacts.
+- Alcool 0,5/0,8 g/L et téléphone 135 € + 3 points : stables, confirmer.
+- Protocole de sécurité (R. 4515-4 s.) et déclaration AT 48 h : confirmer
+  les rédactions en vigueur.
 
 ### Points signalés « à vérifier » (lot 7 — Module G)
 - Masses/dimensions (19/26/38/44 t, 13 t essieu, 2,55/2,60 m,
