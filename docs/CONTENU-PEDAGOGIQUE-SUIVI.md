@@ -97,10 +97,14 @@ demande explicite). Jamais d'activation automatique.
 
 | Lot | Contenu | Fichier | État |
 |---|---|---|---|
-| 1 | Capa lourd — Module F (pilote) : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_f_v1.sql` | ✅ livré, **à appliquer + valider** |
-| 2+ | Capa lourd — M0, MA…M9 | — | ⏳ après validation pilote |
+| 1 | Capa lourd — Module F (pilote) : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_f_v1.sql` | ✅ **appliqué en base** (30 questions à valider) |
+| 2 | Capa lourd — Module A Droit civil : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_a_v1.sql` | ✅ livré, **à appliquer + valider** |
+| 3+ | Capa lourd — MB, MC, MD, ME, MG, MH, M0, M9 | — | ⏳ |
 | … | FIMO/FCO, Taxi-VTC, ECSR, ERTV, Commissionnaire | — | ⏳ |
 | UI | Étape 10 — refonte admin banque/validation/imports | — | ⏳ |
+
+Cumul Capa lourd : 2 modules, 8 leçons, 2 quiz, 24 QCM, 20 QC, 16 QR
+(60 questions, toutes « à valider »).
 
 ## 5. Checklist de validation formateur (par lot)
 
@@ -115,6 +119,16 @@ demande explicite). Jamais d'activation automatique.
 - [ ] Activer les questions validées (Admin → Banque → Validation),
       corriger ou supprimer les autres.
 - [ ] Vérifier les compteurs du dashboard après activation.
+
+### Points signalés « à vérifier » (lot 2 — Module A)
+- Prescription annale du contrat de transport : art. L. 133-6 c. com. —
+  confirmer la rédaction en vigueur.
+- Indemnité forfaitaire de recouvrement 40 € (D. 441-5 c. com.) — stable,
+  vérifier qu'aucune revalorisation n'est intervenue.
+- Statut entrepreneur individuel (loi 2022-172) et insaisissabilité de la
+  résidence principale : formulations à valider.
+- Jurisprudence « obligation essentielle » (messagerie express) : la leçon
+  la mobilise sans citer d'arrêt ; le formateur peut ajouter la référence.
 
 ### Points signalés « à vérifier » (lot 1 — pilote)
 - Sanction pénale exercice sans inscription : art. L. 3452-6 (1 an /
