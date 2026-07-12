@@ -103,12 +103,13 @@ demande explicite). Jamais d'activation automatique.
 | 4 | Capa lourd — Module C Droit social : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_c_v1.sql` | ✅ livré, **à appliquer + valider** |
 | 5 | Capa lourd — Module D Droit fiscal : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_d_v1.sql` | ✅ livré, **à appliquer + valider** |
 | 6 | Capa lourd — Module E Gestion : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR (19 calculs vérifiés par script) | `capa_lourd_module_e_v1.sql` | ✅ livré, **à appliquer + valider** |
-| 7+ | Capa lourd — MG, MH, M0, M9 | — | ⏳ |
+| 7 | Capa lourd — Module G Normes techniques : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_g_v1.sql` | ✅ livré, **à appliquer + valider** |
+| 8+ | Capa lourd — MH Sécurité routière, M0 Méthodo, M9 Préparation examen | — | ⏳ |
 | … | FIMO/FCO, Taxi-VTC, ECSR, ERTV, Commissionnaire | — | ⏳ |
 | UI | Étape 10 — refonte admin banque/validation/imports | — | ⏳ |
 
-Cumul Capa lourd : 6 modules, 24 leçons, 6 quiz, 72 QCM, 60 QC, 48 QR
-(180 questions, toutes « à valider », 0 doublon inter-lots vérifié).
+Cumul Capa lourd : 7 modules, 28 leçons, 7 quiz, 84 QCM, 70 QC, 56 QR
+(210 questions, toutes « à valider », 0 doublon inter-lots vérifié).
 
 ## 5. Checklist de validation formateur (par lot)
 
@@ -123,6 +124,19 @@ Cumul Capa lourd : 6 modules, 24 leçons, 6 quiz, 72 QCM, 60 QC, 48 QR
 - [ ] Activer les questions validées (Admin → Banque → Validation),
       corriger ou supprimer les autres.
 - [ ] Vérifier les compteurs du dashboard après activation.
+
+### Points signalés « à vérifier » (lot 7 — Module G)
+- Masses/dimensions (19/26/38/44 t, 13 t essieu, 2,55/2,60 m,
+  16,50/18,75 m) : stables, relecture de confirmation (R. 312-x).
+- Sanctions surcharge : « amende par tranche de 1 000 kg, aggravée pour
+  gros dépassements » — vérifier les classes exactes de contraventions
+  en vigueur (la leçon reste volontairement générale).
+- Hauteur : pas de limite générale en métropole — confirmer la
+  formulation.
+- Contrats types (règle des 3 t) : vérifier la rédaction actuelle du
+  contrat type général.
+- ADR : seuils 1.1.3.6 (« 1 000 points »), pneus PL 1 mm, extincteurs —
+  à confirmer dans l'édition ADR en vigueur (biennale).
 
 ### Points signalés « à vérifier » (lot 6 — Module E)
 - Délai de paiement transport 30 jours (L. 441-11 c. com.) : stable,
