@@ -108,12 +108,34 @@ demande explicite). Jamais d'activation automatique.
 | 9 | Capa lourd — M0 Méthodo (2 leçons) + M9 Préparation (2 leçons, 6 QC + 4 QR transversales) + **2 examens blancs** (24 QCM ; 16 QCM + 8 QR, composés depuis la banque sans duplication) | `capa_lourd_module_m0_m9_v1.sql` | ✅ livré, **à appliquer + valider** |
 | F1 | FIMO/FCO — Module 0 Qualification (FIMO/FCO/CQC) : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `fimo_module_0_v1.sql` | ✅ livré, **à appliquer + valider** |
 | F2 | FIMO/FCO — T1 Conduite rationnelle : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR (4 calculs vérifiés) | `fimo_module_t1_v1.sql` | ✅ livré, **à appliquer + valider** |
-| F3+ | FIMO/FCO — T2 Réglementation, T3 Santé/sécurité, T4 Service, M5 Évaluations | — | ⏳ |
+| F3 | FIMO/FCO — T2 Réglementations (scénarios conducteur) : 4 leçons, quiz, 30 questions | `fimo_module_t2_v1.sql` | ✅ livré, **à appliquer + valider** |
+| F4 | FIMO/FCO — T3 Santé/sécurité/sûreté : 4 leçons, quiz, 30 questions | `fimo_module_t3_v1.sql` | ✅ livré, **à appliquer + valider** |
+| F5 | FIMO/FCO — T4 Service/image : 3 leçons, quiz, 30 questions | `fimo_module_t4_v1.sql` | ✅ livré, **à appliquer + valider** |
+| F6 | FIMO/FCO — M5 Évaluation : 1 leçon, 10 questions transversales, **2 évaluations blanches** (20 QCM ; 10 QCM + 5 QR) | `fimo_module_m5_v1.sql` | ✅ livré, **à appliquer EN DERNIER + valider** |
 | … | Taxi-VTC, ECSR, ERTV, Commissionnaire | — | ⏳ |
 | UI | Étape 10 — refonte admin banque/validation/imports | — | ⏳ |
 
-Cumul FIMO/FCO : 2 modules, 8 leçons, 2 quiz, 60 questions à valider.
-Cumul global (2 formations) : **310 questions, 0 doublon vérifié**.
+## ✅ FORMATION FIMO/FCO : PRODUCTION TERMINÉE
+6 modules (M0, T1-T4, M5), 20 leçons, 5 quiz de module + 2 évaluations
+blanches, **160 questions** (60 QCM + 60 QC + 40 QR), angle conducteur
+(scénarios), toutes « à valider ».
+Cumul global (2 formations complètes) : **410 questions, 0 doublon
+vérifié sur l'ensemble, 156/156 QCM à réponse unique**.
+⚠ Ordre d'application FIMO : lots F1→F5 puis F6 (les évaluations
+blanches lient les questions des 5 modules par source_ref).
+
+### Points signalés « à vérifier » (lots FIMO-3 à 6)
+- T2 : règles 561/2006 réutilisées en scénarios (chiffres identiques
+  aux modules capa C, formulations distinctes — 0 doublon vérifié) ;
+  double équipage évoqué sans chiffrage détaillé (fenêtre 30 h) — le
+  formateur peut approfondir.
+- T3 : élimination alcool ~0,10-0,15 g/L/h (ordre de grandeur
+  pédagogique), pictogrammes médicaments 2/3 — confirmer les
+  formulations ; sanctions « passagers clandestins » volontairement
+  non chiffrées (variables selon pays).
+- T4 : contenu comportemental — relecture de ton par le formateur.
+- M5 : modalités précises de l'évaluation FIMO (nombre de questions,
+  seuils) renvoyées au centre — à préciser selon les textes.
 
 ## ✅ FORMATION CAPACITÉ > 3,5 T : PRODUCTION TERMINÉE
 10 modules (M0, A-H, M9), 36 leçons, 8 quiz de module + 2 examens
