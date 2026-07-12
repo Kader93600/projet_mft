@@ -100,12 +100,13 @@ demande explicite). Jamais d'activation automatique.
 | 1 | Capa lourd — Module F (pilote) : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_f_v1.sql` | ✅ **appliqué en base** (30 questions à valider) |
 | 2 | Capa lourd — Module A Droit civil : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_a_v1.sql` | ✅ livré, **à appliquer + valider** |
 | 3 | Capa lourd — Module B Droit commercial : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_b_v1.sql` | ✅ livré, **à appliquer + valider** |
-| 4+ | Capa lourd — MC, MD, ME, MG, MH, M0, M9 | — | ⏳ |
+| 4 | Capa lourd — Module C Droit social : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_c_v1.sql` | ✅ livré, **à appliquer + valider** |
+| 5+ | Capa lourd — MD, ME, MG, MH, M0, M9 | — | ⏳ |
 | … | FIMO/FCO, Taxi-VTC, ECSR, ERTV, Commissionnaire | — | ⏳ |
 | UI | Étape 10 — refonte admin banque/validation/imports | — | ⏳ |
 
-Cumul Capa lourd : 3 modules, 12 leçons, 3 quiz, 36 QCM, 30 QC, 24 QR
-(90 questions, toutes « à valider », 0 doublon inter-lots vérifié).
+Cumul Capa lourd : 4 modules, 16 leçons, 4 quiz, 48 QCM, 40 QC, 32 QR
+(120 questions, toutes « à valider », 0 doublon inter-lots vérifié).
 
 ## 5. Checklist de validation formateur (par lot)
 
@@ -120,6 +121,20 @@ Cumul Capa lourd : 3 modules, 12 leçons, 3 quiz, 36 QCM, 30 QC, 24 QR
 - [ ] Activer les questions validées (Admin → Banque → Validation),
       corriger ou supprimer les autres.
 - [ ] Vérifier les compteurs du dashboard après activation.
+
+### Points signalés « à vérifier » (lot 4 — Module C)
+- Règlement 561/2006 : chiffres stables (9/10 h, 56/90 h, 45 min 15+30,
+  11/9 h, 45/24 h) — relecture de confirmation.
+- Paquet mobilité : retour conducteur 4 semaines (3 si deux repos réduits
+  consécutifs à l'international) et interdiction du repos normal en
+  cabine — formulations à valider.
+- Téléchargements tachy 28 j (carte) / 90 j (véhicule) : délais français
+  à confirmer dans l'arrêté en vigueur.
+- Temps de service français des roulants (décret 83-40 modifié) : la
+  leçon renvoie volontairement aux textes sans chiffrer — le formateur
+  peut ajouter les plafonds par catégorie s'il le souhaite.
+- Échéances de mise à niveau du tachygraphe intelligent V2 : calendrier
+  européen évolutif, à actualiser chaque année.
 
 ### Points signalés « à vérifier » (lot 3 — Module B)
 - Délais de déclaration : cessation des paiements 45 jours (L. 631-4) et
