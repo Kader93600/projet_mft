@@ -101,12 +101,13 @@ demande explicite). Jamais d'activation automatique.
 | 2 | Capa lourd — Module A Droit civil : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_a_v1.sql` | ✅ livré, **à appliquer + valider** |
 | 3 | Capa lourd — Module B Droit commercial : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_b_v1.sql` | ✅ livré, **à appliquer + valider** |
 | 4 | Capa lourd — Module C Droit social : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_c_v1.sql` | ✅ livré, **à appliquer + valider** |
-| 5+ | Capa lourd — MD, ME, MG, MH, M0, M9 | — | ⏳ |
+| 5 | Capa lourd — Module D Droit fiscal : 4 leçons, quiz, 12 QCM, 10 QC, 8 QR | `capa_lourd_module_d_v1.sql` | ✅ livré, **à appliquer + valider** |
+| 6+ | Capa lourd — ME, MG, MH, M0, M9 | — | ⏳ |
 | … | FIMO/FCO, Taxi-VTC, ECSR, ERTV, Commissionnaire | — | ⏳ |
 | UI | Étape 10 — refonte admin banque/validation/imports | — | ⏳ |
 
-Cumul Capa lourd : 4 modules, 16 leçons, 4 quiz, 48 QCM, 40 QC, 32 QR
-(120 questions, toutes « à valider », 0 doublon inter-lots vérifié).
+Cumul Capa lourd : 5 modules, 20 leçons, 5 quiz, 60 QCM, 50 QC, 40 QR
+(150 questions, toutes « à valider », 0 doublon inter-lots vérifié).
 
 ## 5. Checklist de validation formateur (par lot)
 
@@ -121,6 +122,17 @@ Cumul Capa lourd : 4 modules, 16 leçons, 4 quiz, 48 QCM, 40 QC, 32 QR
 - [ ] Activer les questions validées (Admin → Banque → Validation),
       corriger ou supprimer les autres.
 - [ ] Vérifier les compteurs du dashboard après activation.
+
+### Points signalés « à vérifier » (lot 5 — Module D)
+- Remboursement TICPE gazole professionnel : seuil 7,5 t stable, mais
+  tarif au litre et trajectoire de réduction fixés en loi de finances —
+  à actualiser chaque année (les leçons ne chiffrent volontairement pas).
+- IS 25 % / 15 % jusqu'à 42 500 € (conditions PME) : stable, confirmer.
+- CVAE : extinction progressive, calendrier mouvant — vérifier.
+- Facturation électronique : échéances 2026-2027 évoquées sans dates
+  fermes dans la leçon — préciser selon le calendrier en vigueur.
+- TVA gazole 100 % PL / 80 % essence-carburant VP : confirmer les taux
+  de déductibilité en vigueur.
 
 ### Points signalés « à vérifier » (lot 4 — Module C)
 - Règlement 561/2006 : chiffres stables (9/10 h, 56/90 h, 45 min 15+30,
