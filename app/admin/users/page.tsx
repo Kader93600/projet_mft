@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { UsersTable } from "./users-table";
 import { Button } from "@/components/ui/button";
 import { UserPlus, Crown, GraduationCap } from "lucide-react";
+import { sanitizeSearchTerm } from "@/lib/search";
 
 export const dynamic = "force-dynamic";
 
@@ -28,8 +29,11 @@ export default async function AdminUsers({
     .order("created_at", { ascending: false })
     .range(from, to);
   if (q) {
-    const safe = q.replace(/[%_]/g, "\\$&"); // échappe les wildcards SQL
-    usersQuery = usersQuery.or(`email.ilike.%${safe}%,full_name.ilike.%${safe}%`);
+    const safe = sanitizeSearchTerm(q);
+    if (safe)
+      usersQuery = usersQuery.or(
+        `email.ilike.%${safe}%,full_name.ilike.%${safe}%`
+      );
   }
 
   const [{ data: users, count }, { data: groups }] = await Promise.all([

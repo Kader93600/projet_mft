@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { requireAdmin } from "@/lib/admin-guard";
 import { toCsv, csvHeaders, fmtDate, fmtDateTime } from "@/lib/csv";
+import { sanitizeSearchTerm } from "@/lib/search";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,8 +41,8 @@ export async function GET(req: NextRequest) {
     .order("created_at", { ascending: false });
 
   if (q) {
-    const safe = q.replace(/[%_]/g, "\\$&");
-    query = query.or(`email.ilike.%${safe}%,full_name.ilike.%${safe}%`);
+    const safe = sanitizeSearchTerm(q);
+    if (safe) query = query.or(`email.ilike.%${safe}%,full_name.ilike.%${safe}%`);
   }
   if (["student", "trainer", "admin", "super_admin"].includes(role)) {
     query = query.eq("role", role);

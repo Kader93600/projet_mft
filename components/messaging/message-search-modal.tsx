@@ -8,6 +8,7 @@ import {
 } from "react";
 import { Search, X, Loader2, MessageCircle, Users, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { sanitizeSearchTerm } from "@/lib/search";
 import { createClient } from "@/lib/supabase/client";
 import {
   avatarTone,
@@ -88,13 +89,15 @@ export function MessageSearchModal({
     setLoading(true);
     debounceRef.current = window.setTimeout(async () => {
       const supabase = createClient();
+      // Nettoie le terme (wildcards SQL + métacaractères de filtre PostgREST).
+      const safe = sanitizeSearchTerm(trimmed);
       // 1) Récupère les messages matchants (RLS filtre déjà par participation)
       const { data: msgs, error: e1 } = await supabase
         .from("messages")
         .select(
           "id, conversation_id, sender_id, sender_role, body, created_at"
         )
-        .ilike("body", `%${trimmed}%`)
+        .ilike("body", `%${safe}%`)
         .is("deleted_at", null)
         .order("created_at", { ascending: false })
         .limit(RESULT_LIMIT);

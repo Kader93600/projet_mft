@@ -10,6 +10,7 @@ import {
   removeStudentEnrollment,
 } from "../actions";
 import { FORMATIONS, findFormation } from "@/lib/formations-config";
+import { sanitizeSearchTerm } from "@/lib/search";
 
 export const dynamic = "force-dynamic";
 
@@ -42,9 +43,11 @@ export default async function StagiairesAffectationsPage({
     .order("full_name", { ascending: true })
     .limit(200);
   if (search) {
-    studentsQuery = studentsQuery.or(
-      `full_name.ilike.%${search}%,email.ilike.%${search}%`
-    );
+    const safe = sanitizeSearchTerm(search);
+    if (safe)
+      studentsQuery = studentsQuery.or(
+        `full_name.ilike.%${safe}%,email.ilike.%${safe}%`
+      );
   }
   const { data: students } = await studentsQuery;
 

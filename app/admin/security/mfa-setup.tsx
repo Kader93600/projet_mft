@@ -13,6 +13,39 @@ interface EnrollResult {
   uri: string;
 }
 
+/**
+ * Supabase renvoie `totp.qr_code` sous forme de data-URI SVG
+ * (`data:image/svg+xml;utf-8,<svg…>`) NON encodé. Or les couleurs du SVG
+ * contiennent des `#` (ex. `fill="#000000"`) : dans un data-URI, un `#` non
+ * échappé est interprété comme début de fragment et tronque l'image → le QR
+ * s'affiche vide via `<img src>`. On extrait donc le markup SVG brut pour le
+ * rendre en ligne (source = Supabase, pas d'entrée utilisateur).
+ */
+function extractSvgMarkup(qr: string): string {
+  const s = qr.trim();
+  if (s.startsWith("<svg") || s.startsWith("<?xml")) return s;
+  if (s.startsWith("data:")) {
+    const comma = s.indexOf(",");
+    if (comma !== -1) {
+      const meta = s.slice(0, comma);
+      const payload = s.slice(comma + 1);
+      if (/;base64/i.test(meta)) {
+        try {
+          return atob(payload);
+        } catch {
+          return s;
+        }
+      }
+      try {
+        return decodeURIComponent(payload);
+      } catch {
+        return payload;
+      }
+    }
+  }
+  return s;
+}
+
 export function MfaSetup() {
   const router = useRouter();
   const [enroll, setEnroll] = useState<EnrollResult | null>(null);
@@ -110,15 +143,12 @@ export function MfaSetup() {
     <div className="space-y-5">
       <div className="grid md:grid-cols-2 gap-6 items-start">
         <div className="rounded-2xl border border-navy-100 bg-ivory p-4 flex justify-center">
-          <div className="bg-white p-3 rounded-lg">
-            {/* Supabase renvoie une data URL (data:image/svg+xml;utf-8,...) */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={enroll.qrSvg}
-              alt="QR code TOTP — scanner avec votre application d'authentification"
-              className="h-44 w-44"
-            />
-          </div>
+          <div
+            className="bg-white p-3 rounded-lg [&>svg]:h-44 [&>svg]:w-44"
+            role="img"
+            aria-label="QR code TOTP — scanner avec votre application d'authentification"
+            dangerouslySetInnerHTML={{ __html: extractSvgMarkup(enroll.qrSvg) }}
+          />
         </div>
         <div className="space-y-3">
           <div>

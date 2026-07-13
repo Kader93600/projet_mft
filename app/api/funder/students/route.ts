@@ -10,6 +10,7 @@
 // =====================================================================
 
 import { NextRequest, NextResponse } from "next/server";
+import { sanitizeSearchTerm } from "@/lib/search";
 import { createClient } from "@/lib/supabase/server";
 import { getFunderAccess } from "@/lib/funder/access";
 
@@ -47,7 +48,9 @@ export async function GET(req: NextRequest) {
     query = query.eq("status", status);
   }
   if (q) {
-    query = query.or(`full_name.ilike.%${q}%,email.ilike.%${q}%`);
+    const safe = sanitizeSearchTerm(q);
+    if (safe)
+      query = query.or(`full_name.ilike.%${safe}%,email.ilike.%${safe}%`);
   }
 
   const { data, error, count } = await query.range(offset, offset + limit - 1);

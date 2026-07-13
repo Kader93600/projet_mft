@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { sanitizeSearchTerm } from "@/lib/search";
 import {
   ArrowLeft,
   Filter,
@@ -103,7 +104,10 @@ export default async function BanqueQuestionsListPage({
   };
   if (moduleFilter)
     query = query.contains("tags", [`${filterConfig.tagPrefix}${moduleFilter}`]);
-  if (search) query = query.ilike("statement", `%${search}%`);
+  if (search) {
+    const safe = sanitizeSearchTerm(search);
+    if (safe) query = query.ilike("statement", `%${safe}%`);
+  }
 
   // Tri (par défaut : référence). source_ref reste critère secondaire pour un
   // ordre stable, indispensable avec la pagination.

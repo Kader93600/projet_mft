@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyStripeSignature } from "@/lib/stripe";
 import { captureException } from "@/lib/observability";
 import { sendEmail, paymentReceivedEmail } from "@/lib/email";
@@ -74,8 +74,12 @@ export async function POST(req: Request) {
 }
 
 async function handlePaid(session: StripeCheckoutSession) {
-  // Service-role pour insérer côté admin (le webhook n'a pas de cookie user)
-  const supabase = createClient();
+  // Service-role : le webhook Stripe est appelé serveur-à-serveur, sans cookie
+  // utilisateur. Un client cookie (rôle anon) échouerait silencieusement sur
+  // les écritures RLS (payments_log) et les RPC de paiement. Le client admin
+  // (service_role) bypasse la RLS, ce qui est légitime ici (signature Stripe
+  // déjà vérifiée en amont).
+  const supabase = createAdminClient();
 
   // Métadonnées (2 sources : nouveau format pack ou legacy planId)
   const metadata = session.metadata ?? {};

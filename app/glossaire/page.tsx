@@ -6,6 +6,7 @@ import { FormationBadge } from "@/components/formation/formation-badge";
 import { renderMarkdown } from "@/lib/markdown";
 import { BookOpen } from "lucide-react";
 import { GlossaryFilters } from "./glossary-filters";
+import { sanitizeSearchTerm } from "@/lib/search";
 
 // Glossaire = filtré par formations du stagiaire connecté → dynamique
 export const dynamic = "force-dynamic";
@@ -113,16 +114,14 @@ export default async function GlossairePage({
     }
   }
   if (q) {
-    // Recherche : ILIKE sur term + definition + synonyms (PostgreSQL accepte
-    // l'opérateur cs.{value} pour les arrays). On échappe %_ pour ne pas
-    // ouvrir un pattern injection.
-    const safe = q.replace(/[%_]/g, "\\$&");
-    // Pour chercher dans les synonymes (text[]) on utilise array_to_string
-    // côté client n'est pas dispo — on reste sur term + definition (les
-    // index trigram pg_trgm rendent la requête rapide même à grande échelle).
-    query = query.or(
-      `term.ilike.%${safe}%,definition_md.ilike.%${safe}%`
-    );
+    // Recherche : ILIKE sur term + definition. Le terme est nettoyé (wildcards
+    // SQL + métacaractères de filtre PostgREST) pour éviter toute injection
+    // dans la chaîne `.or(...)`.
+    const safe = sanitizeSearchTerm(q);
+    // Les synonymes (text[]) ne sont pas couverts ici : on reste sur term +
+    // definition (les index trigram pg_trgm gardent la requête rapide).
+    if (safe)
+      query = query.or(`term.ilike.%${safe}%,definition_md.ilike.%${safe}%`);
   }
 
   // Pour les filtres : on liste UNIQUEMENT les blocs qui ont au moins

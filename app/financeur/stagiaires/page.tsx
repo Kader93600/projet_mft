@@ -12,6 +12,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { getFunderAccess } from "@/lib/funder/access";
+import { sanitizeSearchTerm } from "@/lib/search";
 
 export const dynamic = "force-dynamic";
 
@@ -55,7 +56,10 @@ export default async function FinanceurStagiairesPage({
 
   if (access.funder_id) query = query.eq("funder_id", access.funder_id);
   if (status) query = query.eq("status", status);
-  if (q) query = query.or(`full_name.ilike.%${q}%,email.ilike.%${q}%`);
+  if (q) {
+    const safe = sanitizeSearchTerm(q);
+    if (safe) query = query.or(`full_name.ilike.%${safe}%,email.ilike.%${safe}%`);
+  }
 
   const { data: students } = await query.limit(200);
   const list = (students ?? []) as any[];
