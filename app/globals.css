@@ -1020,12 +1020,23 @@
   }
 
   /* ============ Accessibilité (Point #12) ============ */
+  /* Confort de lecture DYS. « OpenDyslexic » est utilisée si l'utilisateur
+     l'a installée localement ; sinon on retombe sur des polices SYSTÈME
+     reconnues lisibles pour la dyslexie (recommandations British Dyslexia
+     Association : Verdana, Tahoma, Trebuchet). L'effet réel provient surtout
+     de l'espacement des lettres/mots et de l'interlignage augmentés — donc la
+     fonctionnalité agit même sans webfont dédiée. */
   .a11y-dyslexia, .a11y-dyslexia body, .a11y-dyslexia * {
-    font-family: "OpenDyslexic", "Atkinson Hyperlegible", "Verdana", sans-serif !important;
-    letter-spacing: 0.02em !important;
-    word-spacing: 0.08em !important;
-    line-height: 1.75 !important;
+    font-family: "OpenDyslexic", "Atkinson Hyperlegible", Verdana, Tahoma,
+      "Trebuchet MS", sans-serif !important;
+    letter-spacing: 0.05em !important;
+    word-spacing: 0.12em !important;
+    line-height: 1.8 !important;
   }
+  /* A11y : rehausse les textes blancs très translucides sous le seuil WCAG AA
+     (4.5:1) sur fond sombre. /40 ≈ 3.7:1 → ~4.6:1, sans toucher la mise en page. */
+  .text-white\/40 { color: rgb(255 255 255 / 0.58) !important; }
+  .text-white\/50 { color: rgb(255 255 255 / 0.62) !important; }
   .a11y-contrast {
     --a11y-bg: #ffffff;
     --a11y-fg: #000000;

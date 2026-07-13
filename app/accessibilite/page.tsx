@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -276,37 +277,25 @@ export default async function AccessibilitePage() {
         </Card>
       </section>
 
-      {/* Déclaration RGAA */}
+      {/* Déclaration RGAA — source unique : la déclaration publique canonique
+          (évite toute divergence de statut de conformité entre deux pages). */}
       <section>
         <Card>
-          <CardBody className="prose-lesson max-w-none">
-            <h2>Déclaration d'accessibilité</h2>
-            <p>
-              <strong>MA FORMATION TRANSPORT</strong> s'engage à rendre sa plateforme accessible
-              conformément à l'article 47 de la loi n° 2005-102 du 11 février 2005. Cette
-              déclaration s'applique au site et aux contenus pédagogiques.
+          <CardBody>
+            <CardTitle>Déclaration d'accessibilité</CardTitle>
+            <p className="text-sm text-slate-600 mt-1 max-w-2xl">
+              L'état de conformité RGAA officiel, les mesures déjà en place et
+              les voies de recours (Défenseur des droits) sont publiés sur notre
+              déclaration d'accessibilité, tenue à jour après chaque audit.
             </p>
-            <h3>Niveau de conformité visé</h3>
-            <p>
-              La plateforme vise une <strong>conformité partielle au RGAA 4.1 niveau AA</strong>.
-              Un audit complet est programmé et sera publié ici.
-            </p>
-            <h3>Adaptations disponibles</h3>
-            <ul>
-              <li>Navigation clavier complète (focus visible, liens d'évitement).</li>
-              <li>Taille de texte ajustable jusqu'à 160 %.</li>
-              <li>Police adaptée aux troubles DYS, mode contraste élevé.</li>
-              <li>Respect de <code>prefers-reduced-motion</code> et réduction manuelle.</li>
-              <li>Sous-titres automatiques sur les vidéos pédagogiques (en déploiement).</li>
-            </ul>
-            <h3>Défense des droits</h3>
-            <p>
-              Si vous constatez un défaut d'accessibilité, écrivez au référent handicap via le
-              formulaire ci-dessus. Si la réponse est insatisfaisante, vous pouvez saisir le
-              <a href="https://www.defenseurdesdroits.fr/" target="_blank" rel="noopener noreferrer">
-                {" "}Défenseur des droits
-              </a>.
-            </p>
+            <div className="mt-4">
+              <Link
+                href="/declaration-accessibilite"
+                className="inline-flex items-center gap-1.5 text-navy-900 font-medium underline"
+              >
+                Consulter la déclaration d'accessibilité
+              </Link>
+            </div>
           </CardBody>
         </Card>
       </section>

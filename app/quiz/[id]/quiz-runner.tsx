@@ -1298,10 +1298,12 @@ export function QuizRunner({
               </span>
             )}
           </div>
-          <RichTextDisplay
-            content={q.statement}
-            className="font-display text-xl font-semibold text-navy-900 leading-snug"
-          />
+          <div id={`q-statement-${q.id}`}>
+            <RichTextDisplay
+              content={q.statement}
+              className="font-display text-xl font-semibold text-navy-900 leading-snug"
+            />
+          </div>
           {q.annexes && q.annexes.length > 0 && (
             <AnnexPanel annexes={q.annexes} />
           )}
@@ -1329,7 +1331,11 @@ export function QuizRunner({
               </div>
             </div>
           ) : (
-            <div className="space-y-2.5">
+            <div
+              role="radiogroup"
+              aria-labelledby={`q-statement-${q.id}`}
+              className="space-y-2.5"
+            >
               {q.choices.map((c, i) => {
                 const letter = String.fromCharCode(65 + i);
                 const isSel = selected === c.id;
@@ -1337,6 +1343,8 @@ export function QuizRunner({
                   <button
                     key={c.id}
                     type="button"
+                    role="radio"
+                    aria-checked={isSel}
                     data-testid="quiz-choice"
                     onClick={() => setAnswers({ ...answers, [q.id]: c.id })}
                     className={cn(

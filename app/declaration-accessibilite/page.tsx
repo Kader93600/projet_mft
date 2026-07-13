@@ -32,7 +32,7 @@ export default function DeclarationAccessibilitePage() {
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-6 py-12 space-y-10">
+      <main id="main-content" tabIndex={-1} className="max-w-3xl mx-auto px-6 py-12 space-y-10">
         <Section icon={Accessibility} title="État de conformité">
           <p>
             Le site {LEGAL.brand} est en cours d'évaluation au regard du
