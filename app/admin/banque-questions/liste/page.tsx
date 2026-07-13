@@ -17,6 +17,7 @@ import {
 import { findFormation, FORMATIONS } from "@/lib/formations-config";
 import { getQuestionFilterConfig } from "@/lib/question-filters";
 import { ToggleActiveButton } from "./toggle-active-button";
+import { BulkActiveBar } from "./bulk-active-bar";
 import { ConfirmAction } from "@/components/ui/confirm-action";
 import { deleteQuestion } from "../validation-qr/actions";
 import { GroupAssignSelect } from "../group-assign-select";
@@ -290,6 +291,21 @@ export default async function BanqueQuestionsListPage({
           </>
         )}
       </div>
+
+      {/* Action en masse : uniquement quand une formation est sélectionnée
+          (garde-fou pour ne pas basculer toute la banque par accident). */}
+      {formationSlug && formation && (
+        <BulkActiveBar
+          filter={{
+            f: formationSlug,
+            type: typeFilter || undefined,
+            module: moduleFilter || undefined,
+          }}
+          scopeLabel={`${formation.code}${
+            typeFilter ? ` · ${typeFilter === "qcm" ? "QCM" : "QR"}` : ""
+          }${moduleFilter ? ` · ${filterConfig.formatPill(moduleFilter)}` : ""}`}
+        />
+      )}
 
       {/* Liste */}
       <Card>
