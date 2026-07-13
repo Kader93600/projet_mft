@@ -1,8 +1,8 @@
 # Index des migrations Supabase
 
-> Généré le 2026-05-20 par `scripts/gen-migrations-index.mjs`.
+> Généré le 2026-07-13 par `scripts/gen-migrations-index.mjs`.
 > La structure des **tables** fait foi dans `supabase/schema.sql` (baseline introspecté).
-> Ce fichier documente l'historique : **151 migrations** (vues, fonctions, RLS, triggers, données).
+> Ce fichier documente l'historique : **194 migrations** (vues, fonctions, RLS, triggers, données).
 
 ## ⚠️ Provisioning d'une base neuve
 1. Jouer les migrations horodatées dans l'ordre chronologique ci-dessous.
@@ -11,7 +11,7 @@
 
 ---
 
-## Migrations horodatées (40)
+## Migrations horodatées (53)
 
 | Fichier | Description |
 |---|---|
@@ -53,31 +53,41 @@
 | `2026_05_21_audit_lot_a_securite.sql` | AUDIT LOT A — Corrections sécurité & légal |
 | `2026_05_21_audit_lot_b_pedagogie.sql` | AUDIT LOT B — Corrections pédagogiques |
 | `2026_05_21_audit_lot_c_data.sql` | AUDIT LOT C — Corrections data/reporting |
+| `2026_05_21_edof_dossiers.sql` | 2026-05-21 · Intégration EDOF (Mon Compte Formation / Caisse des Dépôts) |
 | `2026_05_21_fix_rls_org_recursion.sql` | HOTFIX — RLS récursion infinie sur organization_members |
 | `2026_05_21_fix_rls_silencieux.sql` | FIX RLS SILENCIEUX — 2026-05-21 |
+| `2026_05_22_attendance_signature_reuse.sql` | Émargement : réutilisation de la signature de référence |
+| `2026_05_22_document_signature_audit.sql` | Renforcement de la piste d'audit des signatures de documents |
+| `2026_05_22_onboarding_documents_custom.sql` | Documents d'accueil : autoriser des types personnalisés |
+| `2026_05_22_signature_obligatoire.sql` | Signature obligatoire à la première connexion + signature de référence |
+| `2026_05_24_student_documents.sql` | MA FORMATION TRANSPORT — Documents importés par le stagiaire |
+| `2026_05_29_email_log.sql` | Journal des emails envoyés depuis la plateforme (composer interne). |
+| `2026_05_30_email_inbox.sql` | Boîte de réception : ajoute direction / état de lecture / attribution / |
+| `2026_05_30_fix_attempt_deletion_trigger.sql` | Correctif suppression d'utilisateur (suite) — trigger de log sur |
+| `2026_05_30_fix_delete_user_fk.sql` | Correctif suppression d'utilisateur — FK bloquantes vers auth.users. |
+| `2026_05_30_fix_qcm_is_correct_key.sql` | Correctif — QCM sans bonne réponse + champs de réponse vides en édition. |
+| `2026_05_30_profiles_first_last_name.sql` | Profiles : Prénom / Nom séparés (en plus de full_name). |
+| `2026_06_02_acquisition_click_ids.sql` | Marketing acquisition — Phase 0 : capture des click-IDs publicitaires |
 
-## Fichiers thématiques / contenu (111)
+## Fichiers thématiques / contenu (141)
 
 | Fichier | Description |
 |---|---|
-| `_diagnostic_bouchoucha.sql` | DIAGNOSTIC — Cas BOUCHOUCHA JOUNAIDI : pourquoi pas de contenu ? |
-| `_diagnostic_enrollments_disparus.sql` | DIAGNOSTIC URGENT — Pourquoi les enrollments ont-ils disparu ? |
-| `_diagnostic_enrollments_only.sql` | Version courte : juste l'état de enrollments |
-| `_diagnostic_enrollments_org_policy.sql` | DIAGNOSTIC URGENT — Pourquoi enrollments.SELECT retourne NULL |
-| `_diagnostic_intro_videos.sql` | DIAGNOSTIC — Vidéos d'intro module par module / par CCP |
-| `_diagnostic_intro_videos_ccp.sql` | Version courte : pour chaque CCP GOTRM, combien de modules ont |
-| `_diagnostic_rls.sql` | DIAGNOSTIC RLS SILENCIEUX — 2026-05-21 |
-| `_diagnostic_sfaxi.sql` | DIAGNOSTIC — Pourquoi le stagiaire ne voit aucun module ? |
-| `_diagnostic_sfaxi_2.sql` | DIAGNOSTIC #2 — Pourquoi UN seul student dans le résultat ? |
-| `_diagnostic_sfaxi_3.sql` | DIAGNOSTIC #3 — Simule EXACTEMENT la requête du dashboard |
-| `_fix_create_enrollment_sfaxi.sql` | FIX DATA — Crée un enrollment GOTRM pour les comptes Sfaxi |
-| `_fix_create_enrollments_admins.sql` | FIX DATA — Force la création d'enrollments GOTRM pour TOUS les |
 | `accessibility.sql` | MA FORMATION TRANSPORT — Point #12 : Accessibilité & handicap (RGAA) |
 | `achievements.sql` | Point #9 — Certificats & badges de progression |
 | `admin_extensions.sql` | MA FORMATION TRANSPORT — Extensions schema pour l'espace admin |
 | `attendance_signed.sql` | Émargement digital signé — sessions synchrones (live, webinaires, jury) |
 | `bpf_views.sql` | Vues d'aide pour le Bilan Pédagogique et Financier (DGEFP, annuel) |
 | `capa_examen_blanc_final.sql` | CAPACITÉ ≤ 3,5 T — EXAMEN BLANC FINAL TRANSVERSAL |
+| `capa_lourd_module_a_v1.sql` | CAPACITÉ DE TRANSPORT > 3,5 T (LOURD) : MODULE A : DROIT CIVIL : v1 |
+| `capa_lourd_module_b_v1.sql` | CAPACITÉ DE TRANSPORT > 3,5 T (LOURD) : MODULE B : DROIT COMMERCIAL |
+| `capa_lourd_module_c_v1.sql` | CAPACITÉ DE TRANSPORT > 3,5 T (LOURD) : MODULE C : DROIT SOCIAL : v1 |
+| `capa_lourd_module_d_v1.sql` | CAPACITÉ DE TRANSPORT > 3,5 T (LOURD) : MODULE D : DROIT FISCAL : v1 |
+| `capa_lourd_module_e_v1.sql` | CAPACITÉ DE TRANSPORT > 3,5 T (LOURD) : MODULE E : GESTION |
+| `capa_lourd_module_f_v1.sql` | CAPACITÉ DE TRANSPORT > 3,5 T (LOURD) : MODULE F : ACCÈS À LA |
+| `capa_lourd_module_g_v1.sql` | CAPACITÉ DE TRANSPORT > 3,5 T (LOURD) : MODULE G : NORMES TECHNIQUES |
+| `capa_lourd_module_h_v1.sql` | CAPACITÉ DE TRANSPORT > 3,5 T (LOURD) : MODULE H : SÉCURITÉ ROUTIÈRE |
+| `capa_lourd_module_m0_m9_v1.sql` | CAPACITÉ DE TRANSPORT > 3,5 T (LOURD) : LOT 9 (FINAL) : |
 | `capa_module_a_v3_dense.sql` | MODULE A — DROIT CIVIL ET COMMERCIAL (Capacité de transport ≤ 3,5 T) |
 | `capa_module_b_v3_dense.sql` | MODULE B — L'ENTREPRISE ET SON ACTIVITÉ COMMERCIALE (Capacité ≤ 3,5 T) |
 | `capa_module_c_v3_dense.sql` | MODULE C — CADRE RÉGLEMENTAIRE DU TRANSPORT (Capacité ≤ 3,5 T) |
@@ -87,10 +97,34 @@
 | `capa_modules_cleanup_2026_05_update.sql` | MIGRATION — Nettoyage post-update durées modules Capacité ≤ 3,5 t |
 | `capa_modules_durations_2026_05_update.sql` | MIGRATION — Mise à jour des durées des modules Capacité ≤ 3,5 t |
 | `coaching.sql` | Point #10 — Accompagnement formateur |
+| `comm_module_1_v1.sql` | COMMISSIONNAIRE DE TRANSPORT : MODULE 1 : LE MÉTIER ET SON CADRE |
+| `comm_module_2_v1.sql` | COMMISSIONNAIRE DE TRANSPORT : MODULE 2 : LE CONTRAT DE COMMISSION |
+| `comm_module_3_v1.sql` | COMMISSIONNAIRE DE TRANSPORT : MODULE 3, ORGANISER LE TRANSPORT |
+| `comm_module_4_v1.sql` | COMMISSIONNAIRE DE TRANSPORT : MODULE 4 : INCOTERMS ET DOUANE |
+| `comm_module_5_v1.sql` | COMMISSIONNAIRE DE TRANSPORT : MODULE 5 : GESTION, AFFRÈTEMENT |
+| `comm_module_6_v1.sql` | COMMISSIONNAIRE DE TRANSPORT : MODULE 6 (FINAL) |
 | `e2e_seed.sql` | E2E SEED — Provisionne les fixtures pour les tests Playwright |
+| `ecsr_module_1_v1.sql` | ECSR : MODULE 1 : LE MÉTIER ET LE TITRE ECSR |
+| `ecsr_module_2_v1.sql` | ECSR : MODULE 2 : LE REMC ET LES PARCOURS DE FORMATION |
+| `ecsr_module_3_v1.sql` | ECSR : MODULE 3 : ENSEIGNER EN VOITURE : LA SÉANCE INDIVIDUELLE |
+| `ecsr_module_4_v1.sql` | ECSR (TITRE PRO ENSEIGNANT DE LA CONDUITE ET DE LA SÉCURITÉ ROUTIÈRE) |
+| `ecsr_module_5_v1.sql` | TITRE PRO ECSR : MODULE 5 : SENSIBILISER TOUS LES PUBLICS (CCP2) |
+| `ecsr_module_6_v1.sql` | TITRE PROFESSIONNEL ECSR : MODULE 6 : PRÉPARER LA SESSION DU TITRE |
 | `enrollment.sql` | MA FORMATION TRANSPORT — Point #16 : Inscription, paiement, CPF, financeur |
 | `enrollment_extras.sql` | Extras pour la convention de formation Qualiopi |
+| `ertv_module_1_v1.sql` | ERTV (Exploitant en transport routier de voyageurs) |
+| `ertv_module_2_v1.sql` | ERTV : EXPLOITANT EN TRANSPORT ROUTIER DE VOYAGEURS |
+| `ertv_module_3_v1.sql` | ERTV : EXPLOITANT EN TRANSPORT ROUTIER DE VOYAGEURS |
+| `ertv_module_4_v1.sql` | ERTV : EXPLOITANT EN TRANSPORT ROUTIER DE VOYAGEURS |
+| `ertv_module_5_v1.sql` | ERTV : EXPLOITANT EN TRANSPORT ROUTIER DE VOYAGEURS |
+| `ertv_module_6_v1.sql` | ERTV : EXPLOITANT EN TRANSPORT ROUTIER DE VOYAGEURS |
 | `exam_v2.sql` | Simulateur d'examen v2 — drapeaux + relecture |
+| `fimo_module_0_v1.sql` | FIMO / FCO MARCHANDISES : MODULE 0 : LA QUALIFICATION DES |
+| `fimo_module_m5_v1.sql` | FIMO / FCO MARCHANDISES : MODULE 5 : PRÉPARATION À L'ÉVALUATION |
+| `fimo_module_t1_v1.sql` | FIMO / FCO MARCHANDISES : THÈME 1 : CONDUITE RATIONNELLE AXÉE |
+| `fimo_module_t2_v1.sql` | FIMO / FCO MARCHANDISES : THÈME 2 : RÉGLEMENTATIONS DU TRANSPORT |
+| `fimo_module_t3_v1.sql` | FIMO / FCO MARCHANDISES : THÈME 3 : SANTÉ, SÉCURITÉ ROUTIÈRE ET |
+| `fimo_module_t4_v1.sql` | FIMO / FCO MARCHANDISES : THÈME 4 : SERVICE, LOGISTIQUE ET IMAGE |
 | `formation_settings_multi.sql` | MIGRATION — formation_settings : singleton → multi-formations |
 | `formations_v2.sql` | Multi-formations v2 — modèle de données. |
 | `funder_signature.sql` | Signature électronique simple côté financeur (eIDAS niveau 1). |
@@ -168,6 +202,15 @@
 | `security.sql` | MA FORMATION TRANSPORT — Durcissement sécurité |
 | `seed.sql` | MA FORMATION TRANSPORT — Données pédagogiques enrichies |
 | `storage_content_media.sql` | STORAGE — bucket content-media (uploads images modules / quiz / questions) |
+| `taxi_module_1_v1.sql` | TAXI / VTC (T3P) : MODULE 1 : LE CADRE DU T3P ET L'ACCÈS AU MÉTIER |
+| `taxi_module_2_v1.sql` | TAXI / VTC (T3P) : MODULE 2 : TAXI ET VTC, DEUX RÉGIMES À MAÎTRISER |
+| `taxi_module_3_v1.sql` | TAXI / VTC (T3P) : MODULE 3 : GÉRER SON ACTIVITÉ T3P |
+| `taxi_module_4_v1.sql` | TAXI / VTC (T3P) : MODULE 4 : SÉCURITÉ ROUTIÈRE DU CONDUCTEUR T3P |
+| `taxi_module_5_v1.sql` | TAXI / VTC : MODULE 5 : RÉUSSIR LE FRANÇAIS ET L'ANGLAIS DE L'EXAMEN |
+| `taxi_module_6_v1.sql` | TAXI / VTC (T3P) : MODULE 6 : CONNAISSANCE DU TERRITOIRE ET ITINÉRAIRES |
+| `taxi_module_7_v1.sql` | TAXI / VTC : MODULE 7 : SPÉCIFIQUE TAXI (ADS, TAXIMÈTRE, TARIFS) |
+| `taxi_module_8_v1.sql` | TAXI / VTC (T3P) : MODULE 8 : SPÉCIFIQUE VTC : REGISTRE, RÉSERVATION |
+| `taxi_module_9_v1.sql` | TAXI / VTC : MODULE 9 : PRÉPARATION À L'EXAMEN + 2 EXAMENS BLANCS |
 | `tracking.sql` | MA FORMATION TRANSPORT — Tracking temps réel & Qualiopi |
 | `trainer_role.sql` | Espace Formateur — ajout du rôle 'trainer' à l'enum user_role. |
 | `xp_antifarm.sql` | Anti-farming XP : on n'octroie l'XP qu'à la PREMIÈRE réussite par quiz |
