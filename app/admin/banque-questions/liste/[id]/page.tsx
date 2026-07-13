@@ -5,6 +5,7 @@ import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft } from "lucide-react";
 import { EditQuestionForm } from "./edit-form";
+import { QuestionPreview } from "./question-preview";
 import { GroupAssignSelect } from "../../group-assign-select";
 import { getQuestionFilterConfig } from "@/lib/question-filters";
 
@@ -85,6 +86,13 @@ export default async function EditQuestionPage({
           Éditer la question
         </h1>
       </header>
+
+      <Card>
+        <CardBody>
+          <CardTitle className="mb-4">Prévisualisation stagiaire</CardTitle>
+          <QuestionPreview question={q as any} />
+        </CardBody>
+      </Card>
 
       <Card>
         <CardBody>
