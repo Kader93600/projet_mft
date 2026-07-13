@@ -26,23 +26,42 @@ function fmtEuros(cents: number) {
   });
 }
 
-export default async function AdminEnrollmentsPage() {
+const EPAGE_SIZE = 25;
+
+export default async function AdminEnrollmentsPage({
+  searchParams,
+}: {
+  searchParams?: { epage?: string; estatus?: string };
+}) {
   // Client session : les RLS sont réparées (migration
   // fix_rls_org_recursion), is_admin() autorise le staff à tout lire.
   const supabase = createClient();
 
+  const epage = Math.max(1, Number(searchParams?.epage ?? 1) || 1);
+  const estatus = (searchParams?.estatus ?? "").toString();
+  const efrom = (epage - 1) * EPAGE_SIZE;
+  const eto = efrom + EPAGE_SIZE - 1;
+
+  // Tableau : requête PAGINÉE (25/page) + filtre statut optionnel — évite de
+  // charger toute la table côté serveur (le défaut signalé à l'audit).
+  let enrollQuery = supabase
+    .from("enrollments")
+    .select(
+      "*, user:profiles!user_id(full_name, email), funder:funders(name, kind)",
+      { count: "exact" }
+    )
+    .order("created_at", { ascending: false })
+    .range(efrom, eto);
+  if (estatus) enrollQuery = enrollQuery.eq("status", estatus);
+
   const [
-    { data: enrollments },
+    { data: enrollments, count: enrollCount },
     { data: funders },
     { data: overview },
     { data: requests },
+    { data: aggRows },
   ] = await Promise.all([
-    supabase
-      .from("enrollments")
-      .select(
-        "*, user:profiles!user_id(full_name, email), funder:funders(name, kind)"
-      )
-      .order("created_at", { ascending: false }),
+    enrollQuery,
     supabase.from("funders").select("*").order("name"),
     supabase.from("funder_overview").select("*"),
     supabase
@@ -50,13 +69,19 @@ export default async function AdminEnrollmentsPage() {
       .select("*")
       .order("created_at", { ascending: false })
       .limit(30),
+    // Agrégats KPI + répartition par statut : léger (3 colonnes, toutes lignes),
+    // pour garder des totaux justes malgré la pagination du tableau.
+    supabase
+      .from("enrollments")
+      .select("status, total_amount_cents, paid_amount_cents"),
   ]);
 
   const openReq = (requests ?? []).filter(
     (r: any) => !["inscrit", "refuse"].includes(r.status)
   );
 
-  const totals = (enrollments ?? []).reduce(
+  const agg = (aggRows ?? []) as any[];
+  const totals = agg.reduce(
     (acc: any, e: any) => {
       acc.total += e.total_amount_cents ?? 0;
       acc.paid += e.paid_amount_cents ?? 0;
@@ -64,6 +89,20 @@ export default async function AdminEnrollmentsPage() {
     },
     { total: 0, paid: 0 }
   );
+  const enCoursCount = agg.filter((e) => e.status === "en_cours").length;
+
+  // Répartition par statut → alimente les puces de filtre (data-driven).
+  const statusCounts = new Map<string, number>();
+  for (const e of agg) {
+    const s = e.status ?? "—";
+    statusCounts.set(s, (statusCounts.get(s) ?? 0) + 1);
+  }
+  const totalPages = Math.max(1, Math.ceil((enrollCount ?? 0) / EPAGE_SIZE));
+
+  const pageHref = (p: number) =>
+    `?epage=${p}${estatus ? `&estatus=${encodeURIComponent(estatus)}` : ""}`;
+  const statusHref = (s: string) =>
+    s ? `?estatus=${encodeURIComponent(s)}` : `?`;
 
   return (
     <div className="space-y-10">
@@ -90,7 +129,7 @@ export default async function AdminEnrollmentsPage() {
 
       {/* KPIs */}
       <section className="grid md:grid-cols-4 gap-4">
-        <Kpi label="Dossiers actifs" value={(enrollments ?? []).filter((e: any) => e.status === "en_cours").length} />
+        <Kpi label="Dossiers actifs" value={enCoursCount} />
         <Kpi label="Demandes à traiter" value={openReq.length} />
         <Kpi label="Budget engagé" value={fmtEuros(totals.total)} />
         <Kpi label="Encaissé" value={fmtEuros(totals.paid)} accent />
@@ -115,13 +154,60 @@ export default async function AdminEnrollmentsPage() {
 
       {/* Enrollments */}
       <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="eyebrow text-gold-700">Dossiers</h2>
+        <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+          <h2 className="eyebrow text-gold-700">
+            Dossiers{" "}
+            <span className="font-normal normal-case tracking-normal text-slate-400">
+              ({enrollCount ?? 0})
+            </span>
+          </h2>
           <Link href="/admin/enrollments/new">
             <Button size="sm">+ Nouveau dossier</Button>
           </Link>
         </div>
+
+        {/* Filtres par statut (pilotés par les données) */}
+        <div className="mb-4 flex flex-wrap gap-1.5">
+          <StatusChip href={statusHref("")} active={!estatus} label="Tous" count={agg.length} />
+          {[...statusCounts.entries()]
+            .sort((a, b) => b[1] - a[1])
+            .map(([s, n]) => (
+              <StatusChip
+                key={s}
+                href={statusHref(s)}
+                active={estatus === s}
+                label={s}
+                count={n}
+              />
+            ))}
+        </div>
+
         <EnrollmentsTable enrollments={enrollments ?? []} />
+
+        {/* Pagination serveur */}
+        {totalPages > 1 && (
+          <div className="mt-4 flex items-center justify-between gap-3 text-sm">
+            <span className="text-slate-500">
+              Page {epage} / {totalPages}
+            </span>
+            <div className="flex items-center gap-2">
+              {epage > 1 && (
+                <Link href={pageHref(epage - 1)}>
+                  <Button size="sm" variant="secondary">
+                    Précédent
+                  </Button>
+                </Link>
+              )}
+              {epage < totalPages && (
+                <Link href={pageHref(epage + 1)}>
+                  <Button size="sm" variant="secondary">
+                    Suivant
+                  </Button>
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Funders */}
@@ -237,5 +323,35 @@ function Kpi({
         {value}
       </div>
     </div>
+  );
+}
+
+function StatusChip({
+  href,
+  active,
+  label,
+  count,
+}: {
+  href: string;
+  active: boolean;
+  label: string;
+  count: number;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+        active
+          ? "border-navy-900 bg-navy-900 text-white"
+          : "border-navy-200 bg-white text-navy-700 hover:border-navy-400 hover:bg-navy-50"
+      }`}
+    >
+      {label}
+      <span
+        className={`tabular-nums ${active ? "text-white/70" : "text-slate-400"}`}
+      >
+        {count}
+      </span>
+    </Link>
   );
 }
