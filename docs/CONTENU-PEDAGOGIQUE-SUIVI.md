@@ -112,8 +112,21 @@ demande explicite). Jamais d'activation automatique.
 | F4 | FIMO/FCO — T3 Santé/sécurité/sûreté : 4 leçons, quiz, 30 questions | `fimo_module_t3_v1.sql` | ✅ livré, **à appliquer + valider** |
 | F5 | FIMO/FCO — T4 Service/image : 3 leçons, quiz, 30 questions | `fimo_module_t4_v1.sql` | ✅ livré, **à appliquer + valider** |
 | F6 | FIMO/FCO — M5 Évaluation : 1 leçon, 10 questions transversales, **2 évaluations blanches** (20 QCM ; 10 QCM + 5 QR) | `fimo_module_m5_v1.sql` | ✅ livré, **à appliquer EN DERNIER + valider** |
-| … | Taxi-VTC, ECSR, ERTV, Commissionnaire | — | ⏳ |
+| T1-9 | **Taxi-VTC complet** : 9 modules (cadre T3P, taxi vs VTC, gestion, sécurité, français/anglais, territoire, spécifique taxi, spécifique VTC, préparation), 29 leçons, 8 quiz + 2 examens blancs, 250 questions | `taxi_module_1..9_v1.sql` | ✅ livré (production multi-agents + QA orchestrateur), **à appliquer (1→8 puis 9) + valider** |
+| … | ECSR, ERTV, Commissionnaire | — | 🔄 en production (workflow) |
 | UI | Étape 10 — refonte admin banque/validation/imports | — | ⏳ |
+
+## ✅ FORMATION TAXI-VTC : PRODUCTION TERMINÉE
+9 modules, 29 leçons, 8 quiz + 2 examens blancs (24 QCM ; 16 QCM + 8 QR),
+**250 questions** à valider. Production par agents parallèles sur fiches
+de faits vérifiées, puis QA déterministe de l orchestrateur (12/12 QCM
+par module à réponse unique, 48 refs d examens blancs toutes présentes,
+tirets cadratins corrigés) et relecture factuelle adversariale par agent.
+Points « à vérifier » systématiquement marqués dans les leçons :
+PSC1/exigences locales, montants REVTC, conditions techniques véhicules
+VTC, définitions locales des tarifs A/B/C/D, taux TVA transport, seuils
+micro : le formateur tranche avec les textes en vigueur.
+Cumul global (3 formations complètes) : **660 questions, 0 doublon**.
 
 ## ✅ FORMATION FIMO/FCO : PRODUCTION TERMINÉE
 6 modules (M0, T1-T4, M5), 20 leçons, 5 quiz de module + 2 évaluations
