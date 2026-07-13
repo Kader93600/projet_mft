@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ShieldCheck, Mail, Database, Clock, Scale, Cookie } from "lucide-react";
-import { LEGAL } from "@/lib/legal-config";
+import { LEGAL, LEGAL_DATE_FR, LEGAL_LAST_UPDATE } from "@/lib/legal-config";
 
 export const metadata = {
   title: "Politique de confidentialité",
@@ -243,7 +243,7 @@ export default function ConfidentialitePage() {
         </Section>
 
         <div className="border-t border-navy-100 pt-6 text-sm text-slate-500">
-          Dernière mise à jour : {new Date().toLocaleDateString("fr-FR")}.
+          Dernière mise à jour : {LEGAL_DATE_FR.format(new Date(LEGAL_LAST_UPDATE))}.
         </div>
       </main>
     </div>

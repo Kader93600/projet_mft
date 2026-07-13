@@ -97,7 +97,7 @@ export default function FinancementsPage() {
         }
       />
 
-      <main className="max-w-6xl mx-auto px-6 py-16 md:py-20 space-y-10">
+      <main id="main-content" tabIndex={-1} className="max-w-6xl mx-auto px-6 py-16 md:py-20 space-y-10">
         <div className="grid md:grid-cols-2 gap-5">
           {FUNDING.map((f) => (
             <article

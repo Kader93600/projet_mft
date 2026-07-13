@@ -30,7 +30,7 @@ export default function ContactPage() {
         }
       />
 
-      <main className="max-w-7xl mx-auto px-6 py-16 md:py-20 grid lg:grid-cols-3 gap-10">
+      <main id="main-content" tabIndex={-1} className="max-w-7xl mx-auto px-6 py-16 md:py-20 grid lg:grid-cols-3 gap-10">
         {/* Coordonnées */}
         <aside className="space-y-6 min-w-0">
           <div className="rounded-2xl border border-white/10 bg-night-100 p-6">

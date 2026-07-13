@@ -70,7 +70,7 @@ export default function TemoignagesPage({
         </div>
       </section>
 
-      <main className="max-w-6xl mx-auto px-6 py-12 md:py-16">
+      <main id="main-content" tabIndex={-1} className="max-w-6xl mx-auto px-6 py-12 md:py-16">
         {/* Stats */}
         <section className="grid sm:grid-cols-3 gap-4 mb-12">
           <Stat label="Note moyenne" value={`${avg.toFixed(1)}/5`} icon={Star} />

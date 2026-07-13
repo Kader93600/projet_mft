@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { LEGAL_DATE_FR } from "@/lib/legal-config";
 
 export function LegalPage({
   eyebrow,
@@ -38,11 +39,11 @@ export function LegalPage({
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-6 py-12 space-y-10 prose-legal">
+      <main id="main-content" tabIndex={-1} className="max-w-3xl mx-auto px-6 py-12 space-y-10 prose-legal">
         {children}
         {lastUpdate && (
           <div className="border-t border-navy-100 pt-6 text-sm text-slate-500">
-            Dernière mise à jour : {lastUpdate}.
+            Dernière mise à jour : {LEGAL_DATE_FR.format(new Date(lastUpdate))}.
           </div>
         )}
       </main>

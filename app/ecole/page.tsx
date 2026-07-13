@@ -41,7 +41,7 @@ export default function EcolePage() {
         }
       />
 
-      <main className="max-w-5xl mx-auto px-6 py-16 md:py-20 space-y-16">
+      <main id="main-content" tabIndex={-1} className="max-w-5xl mx-auto px-6 py-16 md:py-20 space-y-16">
         {/* Notre mission */}
         <section>
           <h2 className="font-display text-2xl md:text-3xl font-semibold mb-5">

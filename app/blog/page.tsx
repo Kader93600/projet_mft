@@ -67,7 +67,7 @@ export default function BlogIndexPage() {
         }
       />
 
-      <main className="max-w-6xl mx-auto px-6 py-16 md:py-20">
+      <main id="main-content" tabIndex={-1} className="max-w-6xl mx-auto px-6 py-16 md:py-20">
         {articles.length === 0 ? (
           <div className="rounded-2xl border border-white/10 bg-night-100 p-12 text-center text-white/70">
             Nos premiers guides arrivent très bientôt.

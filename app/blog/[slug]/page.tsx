@@ -139,7 +139,7 @@ export default function ArticlePage({ params }: { params: { slug: string } }) {
           réutilise la prose déjà réglée pour fond clair (tableaux, citations,
           listes, lead). Le -mt + rounded-t + ombre montante = effet "feuille". */}
       <div className="relative -mt-12 rounded-t-[1.75rem] bg-ivory shadow-[0_-12px_50px_-20px_rgba(2,3,6,0.75)]">
-        <main className="mx-auto max-w-3xl px-6 pt-14 pb-16 md:pt-16 md:pb-20">
+        <main id="main-content" tabIndex={-1} className="mx-auto max-w-3xl px-6 pt-14 pb-16 md:pt-16 md:pb-20">
           <article
             className="prose-lesson"
             dangerouslySetInnerHTML={{ __html: html }}

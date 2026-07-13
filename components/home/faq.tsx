@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, HelpCircle } from "lucide-react";
 
-const FAQ_ITEMS = [
+export const FAQ_ITEMS = [
   {
     q: "Vos formations sont-elles reconnues par l'État ?",
     a: "Oui. Nos parcours préparent à des titres ou attestations officielles : titres professionnels inscrits au RNCP (GOTRM, ECSR), attestations de capacité de transport, FIMO/FCO réglementaires. Nous sommes certifiés Qualiopi, ce qui conditionne l'accès aux financements publics.",

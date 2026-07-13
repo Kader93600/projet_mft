@@ -53,6 +53,12 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: LEGAL.brand }],
   creator: LEGAL.legalName,
+  // Vérification de propriété (Google Search Console / Bing).
+  // Renseigner NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION dans Vercel avec le
+  // jeton fourni par GSC ; sinon la balise est simplement omise.
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+  },
   publisher: LEGAL.legalName,
   openGraph: {
     type: "website",

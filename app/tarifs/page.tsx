@@ -39,7 +39,7 @@ export default async function TarifsPage({ searchParams }: PageProps) {
   return (
     <SiteShell>
       {/* Hero dark */}
-      <section className="relative px-6 pt-24 pb-12 md:pt-32 md:pb-16 overflow-hidden">
+      <section id="main-content" tabIndex={-1} className="relative px-6 pt-24 pb-12 md:pt-32 md:pb-16 overflow-hidden">
         {/* Halo radial signal-lime */}
         <div
           aria-hidden

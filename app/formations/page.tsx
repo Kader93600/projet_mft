@@ -158,7 +158,7 @@ export default function FormationsPage({
         </div>
       </section>
 
-      <main className="max-w-7xl mx-auto px-6 py-12 md:py-16 space-y-16">
+      <main id="main-content" tabIndex={-1} className="max-w-7xl mx-auto px-6 py-12 md:py-16 space-y-16">
         {groups.length === 0 ? (
           <div className="rounded-2xl border border-white/10 bg-night-100 p-12 text-center">
             <div className="text-white/60">

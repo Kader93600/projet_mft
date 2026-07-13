@@ -14,7 +14,8 @@ import {
 import { Logo } from "@/components/ui/logo";
 import { SiteMobileMenu } from "@/components/site/site-mobile-menu";
 import { Crossroads } from "@/components/home/crossroads";
-import { FaqSection } from "@/components/home/faq";
+import { FaqSection, FAQ_ITEMS } from "@/components/home/faq";
+import { JsonLd, faqSchema, localBusinessSchema } from "@/components/seo/json-ld";
 import { FormationsCarousel } from "@/components/home/formations-carousel";
 import { RecognizedBy } from "@/components/home/recognized-by";
 import { LegalFooter } from "@/components/legal/legal-footer";
@@ -37,6 +38,8 @@ export default async function HomePage() {
   const t = await getTranslations("home");
   return (
     <div className="min-h-screen bg-night text-white">
+      <JsonLd schema={faqSchema(FAQ_ITEMS)} />
+      <JsonLd schema={localBusinessSchema()} />
       <Header t={t} />
       <Hero t={t} />
       <RecognizedBy />
@@ -127,7 +130,7 @@ function Hero({ t }: { t: HomeT }) {
   ];
 
   return (
-    <section className="relative overflow-hidden pt-14 pb-24 md:pt-24 md:pb-32 lg:pt-28 lg:pb-36">
+    <section id="main-content" tabIndex={-1} className="relative overflow-hidden pt-14 pb-24 md:pt-24 md:pb-32 lg:pt-28 lg:pb-36">
       {/* Backgrounds — mesh signal + grille tech, masquée vers le bas */}
       <div className="absolute inset-0 bg-mesh-night opacity-95 pointer-events-none" />
       <div

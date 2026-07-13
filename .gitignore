@@ -79,3 +79,6 @@ playwright-report/
 tmp/
 temp/
 peaceful-dirac-8c9b87/
+
+# Lighthouse CI (rapports locaux)
+.lighthouseci/
