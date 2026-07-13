@@ -5,6 +5,26 @@ import { useTranslations } from "next-intl";
 import { Cookie } from "lucide-react";
 
 const STORAGE_KEY = "gotrm.cookie.consent.v1";
+const VISITOR_KEY = "mft.visitor.id";
+const POLICY_VERSION = "v1";
+
+/** Identifiant visiteur stable (1re partie) pour la preuve de consentement
+ *  côté serveur, y compris pour les visiteurs anonymes (exigence CNIL). */
+function getVisitorId(): string {
+  try {
+    let id = localStorage.getItem(VISITOR_KEY);
+    if (!id) {
+      id =
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `v_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`;
+      localStorage.setItem(VISITOR_KEY, id);
+    }
+    return id;
+  } catch {
+    return "unknown";
+  }
+}
 
 /** Événement émis à chaque enregistrement de choix (detail = Choice). */
 export const CONSENT_CHANGED_EVENT = "mft:consent-changed";
@@ -146,6 +166,17 @@ export function CookieBanner() {
         body: JSON.stringify({ kind, granted }),
       }).catch(() => {});
     });
+    // Journal de PREUVE de consentement (CNIL) — fonctionne pour tous les
+    // visiteurs, anonymes inclus (un seul événement par choix, snapshot complet).
+    fetch("/api/consent/log", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        choices: c,
+        visitorId: getVisitorId(),
+        version: POLICY_VERSION,
+      }),
+    }).catch(() => {});
   }
 
   if (!open) return null;

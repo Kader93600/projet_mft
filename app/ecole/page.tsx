@@ -178,10 +178,15 @@ export default function EcolePage() {
               Qualité reconnue par l'État
             </h2>
             <p className="mt-4 text-white/80 max-w-2xl leading-relaxed">
-              {LEGAL.brand} est certifié Qualiopi pour la catégorie « Actions
-              de formation ». Cette certification atteste de la qualité du
-              processus mis en œuvre par notre organisme et conditionne l'accès
-              aux financements publics et mutualisés.
+              La certification qualité a été délivrée au titre de la catégorie
+              d'action suivante : actions de formation. Elle atteste de la
+              qualité du processus mis en œuvre par {LEGAL.brand} et conditionne
+              l'accès aux financements publics et mutualisés (CPF, OPCO, France
+              Travail).
+            </p>
+            <p className="mt-2 text-sm text-white/60">
+              Certificat n° {LEGAL.qualiopiNumber} délivré par{" "}
+              {LEGAL.qualiopiBody}.
             </p>
             <div className="mt-6 grid sm:grid-cols-2 gap-3">
               <Bullet>
