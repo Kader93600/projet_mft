@@ -2,7 +2,7 @@
 
 > Généré le 2026-07-13 par `scripts/gen-migrations-index.mjs`.
 > La structure des **tables** fait foi dans `supabase/schema.sql` (baseline introspecté).
-> Ce fichier documente l'historique : **194 migrations** (vues, fonctions, RLS, triggers, données).
+> Ce fichier documente l'historique : **195 migrations** (vues, fonctions, RLS, triggers, données).
 
 ## ⚠️ Provisioning d'une base neuve
 1. Jouer les migrations horodatées dans l'ordre chronologique ci-dessous.
@@ -11,7 +11,7 @@
 
 ---
 
-## Migrations horodatées (53)
+## Migrations horodatées (54)
 
 | Fichier | Description |
 |---|---|
@@ -68,6 +68,7 @@
 | `2026_05_30_fix_qcm_is_correct_key.sql` | Correctif — QCM sans bonne réponse + champs de réponse vides en édition. |
 | `2026_05_30_profiles_first_last_name.sql` | Profiles : Prénom / Nom séparés (en plus de full_name). |
 | `2026_06_02_acquisition_click_ids.sql` | Marketing acquisition — Phase 0 : capture des click-IDs publicitaires |
+| `2026_07_13_security_consent_and_view_grants.sql` | CORRECTIFS SÉCURITÉ (audit 13/07/2026) — 2 points |
 
 ## Fichiers thématiques / contenu (141)
 
