@@ -155,7 +155,7 @@ Toute simulation vaut ce que valent ses hypothèses : on les pose noir sur blanc
 - **Coût horaire complet** : 50 000 / 2 000 = **25 € par heure** travaillée. Une heure d'attente non facturée coûte, elle ne rapporte pas.
 
 > 🔍 **Zoom : les kilomètres à vide**
-> Le client paie les kilomètres en charge ; vous supportez aussi les kilomètres d'approche et de retour. Si un tiers de vos kilomètres sont à vide, le coût réel du kilomètre FACTURÉ grimpe d'autant : suivez ce ratio de près (via votre application ou un simple relevé).
+> Le client paie les kilomètres en charge ; vous supportez aussi les kilomètres d'approche et de retour. Si un tiers de vos kilomètres sont à vide, le même coût total se répartit sur les deux tiers restants : le coût réel du kilomètre FACTURÉ grimpe de moitié. Suivez ce ratio de près (via votre application ou un simple relevé).
 
 ## Le point mort en courses par jour
 

@@ -1,6 +1,6 @@
 -- =====================================================================
--- CAPACITÉ DE TRANSPORT > 3,5 T (LOURD) — MODULE B : DROIT COMMERCIAL
--- v1 (juillet 2026) — LOT 3
+-- CAPACITÉ DE TRANSPORT > 3,5 T (LOURD) : MODULE B : DROIT COMMERCIAL
+-- v1 (juillet 2026) : LOT 3
 --
 -- Domaine B de l'annexe I du règlement (CE) n° 1071/2009 : le commerçant
 -- et ses obligations, le fonds de commerce, les sociétés commerciales,
@@ -41,7 +41,7 @@ BEGIN
 
   INSERT INTO public.modules (title, slug, bloc_id, summary, difficulty, duration_min, "order")
   VALUES (
-    'Module B — Droit commercial',
+    'Module B : Droit commercial',
     'capa-lourd-droit-commercial',
     v_bloc,
     'Le commerçant et ses obligations, le fonds de commerce et sa reprise, le choix de la forme sociale, les effets de commerce et le financement du poste clients, les entreprises en difficulté.',
@@ -53,7 +53,7 @@ BEGIN
   INSERT INTO public.formation_modules (formation_id, module_id, display_order, required)
   VALUES (v_formation, v_module, 20, true);
 
-  -- ─── Leçon 1 — Le commerçant et ses obligations ─────────────────────
+  -- ─── Leçon 1 : Le commerçant et ses obligations ─────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'commercant-actes-obligations',
     'Le commerçant, les actes de commerce et ses obligations',
@@ -103,7 +103,7 @@ Le dirigeant d'une entreprise de transport combine trois casquettes juridiques :
     $mft$Le commerçant et les actes de commerce (dont le transport), les obligations d'immatriculation, de comptabilité et de facturation, et les règles propres aux litiges entre commerçants.$mft$,
     1, 40) RETURNING id INTO v_l1;
 
-  -- ─── Leçon 2 — Le fonds de commerce ────────────────────────────────
+  -- ─── Leçon 2 : Le fonds de commerce ────────────────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'fonds-de-commerce',
     'Le fonds de commerce : composition, cession, location-gérance',
@@ -157,7 +157,7 @@ Le fonds peut être donné en **garantie** (nantissement) au profit d'un créanc
     $mft$Composition du fonds de commerce, incessibilité des autorisations de transport lors d'une cession, formalités et clause de non-concurrence, location-gérance et nantissement.$mft$,
     2, 45) RETURNING id INTO v_l2;
 
-  -- ─── Leçon 3 — Les sociétés commerciales ───────────────────────────
+  -- ─── Leçon 3 : Les sociétés commerciales ───────────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'societes-commerciales',
     'Choisir sa société : SARL, SAS et les autres',
@@ -192,11 +192,11 @@ La responsabilité « limitée aux apports » connaît des limites pratiques : *
 ## Constitution : les étapes
 
 :::timeline
-1. **Rédaction des statuts** — forme, objet (transport public routier de marchandises), siège, capital, dirigeants.
-2. **Dépôt du capital** — attestation de dépôt des fonds.
-3. **Publicité** — annonce légale de constitution.
-4. **Immatriculation** — dossier via le guichet unique ; RCS et RNE ; la société acquiert la personnalité morale.
-5. **Après immatriculation** — demande d'autorisation d'exercer à la DREAL au nom de la société, assurances, comptes bancaires.
+1. **Rédaction des statuts** : forme, objet (transport public routier de marchandises), siège, capital, dirigeants.
+2. **Dépôt du capital** : attestation de dépôt des fonds.
+3. **Publicité** : annonce légale de constitution.
+4. **Immatriculation** : dossier via le guichet unique ; RCS et RNE ; la société acquiert la personnalité morale.
+5. **Après immatriculation** : demande d'autorisation d'exercer à la DREAL au nom de la société, assurances, comptes bancaires.
 :::
 
 > 📌 **À retenir**
@@ -210,7 +210,7 @@ La responsabilité « limitée aux apports » connaît des limites pratiques : *
     $mft$Comparatif SARL/SAS/SA/SNC (responsabilité, statut social du dirigeant), limites de la responsabilité limitée, étapes de constitution et autorisation de transport au nom de la société.$mft$,
     3, 45) RETURNING id INTO v_l3;
 
-  -- ─── Leçon 4 — Effets de commerce et entreprises en difficulté ─────
+  -- ─── Leçon 4 : Effets de commerce et entreprises en difficulté ─────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'effets-commerce-procedures-collectives',
     'Effets de commerce, affacturage et entreprises en difficulté',
@@ -252,10 +252,10 @@ La **cessation des paiements** : impossibilité de faire face au **passif exigib
 ## Le créancier face à la procédure
 
 :::timeline
-1. **Jugement d'ouverture publié au BODACC** — point de départ des délais.
-2. **Déclaration des créances** — dans les **2 mois** de la publication, auprès du mandataire judiciaire ; à défaut, créance inopposable.
-3. **Interdiction des paiements des créances antérieures** — plus de poursuite individuelle.
-4. **Créances postérieures utiles** — payées à échéance ou par privilège.
+1. **Jugement d'ouverture publié au BODACC** : point de départ des délais.
+2. **Déclaration des créances** : dans les **2 mois** de la publication, auprès du mandataire judiciaire ; à défaut, créance inopposable.
+3. **Interdiction des paiements des créances antérieures** : plus de poursuite individuelle.
+4. **Créances postérieures utiles** : payées à échéance ou par privilège.
 :::
 
 Réflexes du transporteur créancier : surveiller ses encours clients, déclarer dans les délais, mobiliser au bon moment son **droit de rétention** (module A) sur les marchandises détenues au titre du transport impayé, et vérifier une éventuelle clause de réserve de propriété pour les fournisseurs.
@@ -271,12 +271,12 @@ Réflexes du transporteur créancier : surveiller ses encours clients, déclarer
   -- ─── Quiz d'entraînement ────────────────────────────────────────────
   INSERT INTO public.quizzes (module_id, title, description, "type", pass_threshold, timer_enabled)
   VALUES (v_module,
-    'Quiz — Droit commercial',
+    'Quiz : Droit commercial',
     'Validez les fondamentaux du module B : commerçant, fonds de commerce, sociétés, financement du poste clients et entreprises en difficulté.',
     'entrainement', 70, false)
   RETURNING id INTO v_quiz;
 
-  -- ─── QCM (12) — 4 faciles / 5 moyens / 3 difficiles ────────────────
+  -- ─── QCM (12) : 4 faciles / 5 moyens / 3 difficiles ────────────────
   INSERT INTO public.question_bank (formation_id, module_id, lesson_id, "type", statement, choices, max_score, difficulty, tags, source_ref, active, explanation)
   VALUES (v_formation, v_module, v_l1, 'qcm',
     $mft$Pourquoi l'exploitant d'une entreprise de transport routier de marchandises a-t-il la qualité de commerçant ?$mft$,
@@ -519,7 +519,7 @@ Réflexes du transporteur créancier : surveiller ses encours clients, déclarer
    2, 'difficile', ARRAY['capa-lourd','module-b','question-courte'], 'CAPA-LOURD-B-QC-10', false,
    $mft$Idée clé : caractère personnel des titres administratifs, par opposition aux éléments cessibles du fonds.$mft$);
 
-  -- ─── QUESTIONS RÉDIGÉES (8) — barème /5 ────────────────────────────
+  -- ─── QUESTIONS RÉDIGÉES (8) : barème /5 ────────────────────────────
   INSERT INTO public.question_bank (formation_id, module_id, lesson_id, "type", statement, expected_answer, scoring_grid, max_score, difficulty, tags, source_ref, active, explanation) VALUES
   (v_formation, v_module, v_l1, 'qr',
    $mft$Présentez les principales obligations professionnelles du commerçant et expliquez, pour chacune, son utilité concrète pour une entreprise de transport.$mft$,

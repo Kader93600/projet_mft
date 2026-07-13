@@ -1,6 +1,6 @@
 -- =====================================================================
--- FIMO / FCO MARCHANDISES — MODULE 0 : LA QUALIFICATION DES
--- CONDUCTEURS (FIMO, FCO, CARTE) — v1 (juillet 2026) — LOT FIMO-1
+-- FIMO / FCO MARCHANDISES : MODULE 0 : LA QUALIFICATION DES
+-- CONDUCTEURS (FIMO, FCO, CARTE) : v1 (juillet 2026) : LOT FIMO-1
 --
 -- Référentiels : directive 2003/59/CE modifiée (2018/645), arrêté du
 -- 3 janvier 2008 modifié (qualification initiale et continue des
@@ -31,7 +31,7 @@ BEGIN
 
   INSERT INTO public.blocs (id, code, title, description, "order")
   VALUES (40, 'FIMO-FCO',
-          'FIMO / FCO — Qualification des conducteurs marchandises',
+          'FIMO / FCO : Qualification des conducteurs marchandises',
           'Référentiel de la qualification initiale (FIMO) et continue (FCO) des conducteurs du transport routier de marchandises : directive 2003/59/CE modifiée et arrêté du 3 janvier 2008.',
           40)
   ON CONFLICT DO NOTHING;
@@ -42,7 +42,7 @@ BEGIN
 
   INSERT INTO public.modules (title, slug, bloc_id, summary, difficulty, duration_min, "order")
   VALUES (
-    'Module 0 — FIMO, FCO et carte de qualification',
+    'Module 0 : FIMO, FCO et carte de qualification',
     'fimo-cadre-qualification',
     v_bloc,
     'Qui doit être qualifié pour conduire un poids lourd, comment s''obtient la FIMO, comment la FCO maintient la qualification tous les 5 ans, et comment fonctionne la carte de qualification de conducteur.',
@@ -54,7 +54,7 @@ BEGIN
   INSERT INTO public.formation_modules (formation_id, module_id, display_order, required)
   VALUES (v_formation, v_module, 10, true);
 
-  -- ─── Leçon 1 — Qui doit être qualifié ? ────────────────────────────
+  -- ─── Leçon 1 : Qui doit être qualifié ? ────────────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'qui-doit-etre-qualifie',
     'Qui doit être qualifié ? Champ et exemptions',
@@ -104,7 +104,7 @@ Certaines conduites échappent à l'obligation de qualification :
     $mft$Champ de la qualification obligatoire (marchandises > 3,5 t), les cinq exemptions principales avec le piège de la conduite accessoire, et les risques encourus sans qualification.$mft$,
     1, 30) RETURNING id INTO v_l1;
 
-  -- ─── Leçon 2 — La FIMO : entrer dans le métier ─────────────────────
+  -- ─── Leçon 2 : La FIMO : entrer dans le métier ─────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'fimo-entrer-dans-le-metier',
     'La FIMO : entrer dans le métier',
@@ -158,7 +158,7 @@ Réussite à l'évaluation → **attestation de qualification** → demande de l
     $mft$FIMO 140 h en 4 thèmes avec évaluation finale, accès au métier dès 18 ans, équivalences (titre pro, CAP/bac pro conduite), passerelle 35 h entre spécialités et enchaînement vers la carte puis la FCO.$mft$,
     2, 35) RETURNING id INTO v_l2;
 
-  -- ─── Leçon 3 — La FCO : rester qualifié ────────────────────────────
+  -- ─── Leçon 3 : La FCO : rester qualifié ────────────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'fco-rester-qualifie',
     'La FCO : rester qualifié tous les 5 ans',
@@ -206,7 +206,7 @@ Exemple : Nadia a conduit jusqu'en 2019, sa FCO expirait en 2021 ; elle veut rep
     $mft$FCO 35 h tous les 5 ans, gestion des échéances côté conducteur et employeur, conséquences d'une FCO expirée et retour au métier après interruption par simple FCO.$mft$,
     3, 30) RETURNING id INTO v_l3;
 
-  -- ─── Leçon 4 — La carte de qualification ───────────────────────────
+  -- ─── Leçon 4 : La carte de qualification ───────────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'carte-de-qualification-conducteur',
     'La carte de qualification de conducteur (CQC)',
@@ -251,12 +251,12 @@ Déclaration (perte/vol), demande de **duplicata** en ligne, attestation proviso
   -- ─── Quiz d'entraînement ────────────────────────────────────────────
   INSERT INTO public.quizzes (module_id, title, description, "type", pass_threshold, timer_enabled)
   VALUES (v_module,
-    'Quiz — FIMO, FCO et carte de qualification',
+    'Quiz : FIMO, FCO et carte de qualification',
     'Vérifiez le socle : qui doit être qualifié, FIMO, FCO et carte de qualification.',
     'entrainement', 70, false)
   RETURNING id INTO v_quiz;
 
-  -- ─── QCM (12) — 4 faciles / 5 moyens / 3 difficiles ────────────────
+  -- ─── QCM (12) : 4 faciles / 5 moyens / 3 difficiles ────────────────
   INSERT INTO public.question_bank (formation_id, module_id, lesson_id, "type", statement, choices, max_score, difficulty, tags, source_ref, active, explanation)
   VALUES (v_formation, v_module, v_l2, 'qcm',
     $mft$Quelle est la durée de la FIMO marchandises ?$mft$,
@@ -499,7 +499,7 @@ Déclaration (perte/vol), demande de **duplicata** en ligne, attestation proviso
    2, 'difficile', ARRAY['fimo-fco','module-0','question-courte'], 'FIMO-M0-QC-10', false,
    $mft$Exiger la condition (activité accessoire) ET sa limite.$mft$);
 
-  -- ─── QUESTIONS RÉDIGÉES (8) — barème /5 ────────────────────────────
+  -- ─── QUESTIONS RÉDIGÉES (8) : barème /5 ────────────────────────────
   INSERT INTO public.question_bank (formation_id, module_id, lesson_id, "type", statement, expected_answer, scoring_grid, max_score, difficulty, tags, source_ref, active, explanation) VALUES
   (v_formation, v_module, v_l1, 'qr',
    $mft$Expliquez la différence entre le permis de conduire et la qualification professionnelle du conducteur, puis présentez les deux volets de cette qualification (initiale et continue).$mft$,

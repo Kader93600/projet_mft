@@ -1,6 +1,6 @@
 -- =====================================================================
--- CAPACITÉ DE TRANSPORT > 3,5 T (LOURD) — MODULE G : NORMES TECHNIQUES
--- ET EXPLOITATION — v1 (juillet 2026) — LOT 7
+-- CAPACITÉ DE TRANSPORT > 3,5 T (LOURD) : MODULE G : NORMES TECHNIQUES
+-- ET EXPLOITATION : v1 (juillet 2026) : LOT 7
 --
 -- Domaine G de l'annexe I du règlement (CE) n° 1071/2009 : masses et
 -- dimensions des véhicules, surcharge, contrôle technique, équipements,
@@ -41,7 +41,7 @@ BEGIN
 
   INSERT INTO public.modules (title, slug, bloc_id, summary, difficulty, duration_min, "order")
   VALUES (
-    'Module G — Normes techniques et exploitation',
+    'Module G : Normes techniques et exploitation',
     'capa-lourd-normes-techniques-exploitation',
     v_bloc,
     'Le véhicule et son chargement : masses et dimensions réglementaires, surcharge et pesée, contrôle technique et équipements, répartition des charges et arrimage (contrats types, EN 12195), notions essentielles de l''ADR.',
@@ -53,7 +53,7 @@ BEGIN
   INSERT INTO public.formation_modules (formation_id, module_id, display_order, required)
   VALUES (v_formation, v_module, 70, true);
 
-  -- ─── Leçon 1 — Masses et dimensions ────────────────────────────────
+  -- ─── Leçon 1 : Masses et dimensions ────────────────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'masses-dimensions-surcharge',
     'Masses, dimensions et surcharge',
@@ -112,7 +112,7 @@ L'**expéditeur** engage aussi sa responsabilité lorsqu'il fournit une **décla
     $mft$PV/PTAC/PTRA et charge utile (exemple 44 − 15 = 29 t), masses maximales (19/26/38/44 t, 13 t par essieu), dimensions (2,55 m, 16,50 m, 18,75 m), sanctions de la surcharge et responsabilité de l'expéditeur.$mft$,
     1, 50) RETURNING id INTO v_l1;
 
-  -- ─── Leçon 2 — Véhicule en règle : CT, équipements, entretien ──────
+  -- ─── Leçon 2 : Véhicule en règle : CT, équipements, entretien ──────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'controle-technique-equipements-entretien',
     'Un véhicule en règle : contrôle technique, équipements, entretien',
@@ -163,7 +163,7 @@ Norme **Euro** du moteur (accès aux **zones à faibles émissions**, péages di
     $mft$Contrôle technique annuel des PL, limiteur 90 km/h, équipements et pneumatiques (1 mm), plan d'entretien préventif/prédictif/correctif, dossier par véhicule et critères de choix (Euro, ZFE, TCO).$mft$,
     2, 45) RETURNING id INTO v_l2;
 
-  -- ─── Leçon 3 — Charger et arrimer ──────────────────────────────────
+  -- ─── Leçon 3 : Charger et arrimer ──────────────────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'chargement-repartition-arrimage',
     'Charger, répartir, arrimer',
@@ -213,7 +213,7 @@ Matériel : sangles avec étiquette (capacité **LC**, tension STF), points d'an
     $mft$Répartition des charges (13 t/essieu, centre de gravité, re-répartition en tournée), règle des contrats types (3 tonnes), forces EN 12195 (0,8/0,5 G), méthodes d'arrimage et réserves.$mft$,
     3, 50) RETURNING id INTO v_l3;
 
-  -- ─── Leçon 4 — Les bases de l'ADR ──────────────────────────────────
+  -- ─── Leçon 4 : Les bases de l'ADR ──────────────────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'bases-adr-matieres-dangereuses',
     'Matières dangereuses : les bases de l''ADR',
@@ -270,12 +270,12 @@ Manquements ADR : amendes, immobilisation, responsabilité pénale en cas d'acci
   -- ─── Quiz d'entraînement ────────────────────────────────────────────
   INSERT INTO public.quizzes (module_id, title, description, "type", pass_threshold, timer_enabled)
   VALUES (v_module,
-    'Quiz — Normes techniques et exploitation',
+    'Quiz : Normes techniques et exploitation',
     'Validez les fondamentaux du module G : masses et dimensions, contrôle technique, arrimage et ADR.',
     'entrainement', 70, false)
   RETURNING id INTO v_quiz;
 
-  -- ─── QCM (12) — 4 faciles / 5 moyens / 3 difficiles ────────────────
+  -- ─── QCM (12) : 4 faciles / 5 moyens / 3 difficiles ────────────────
   INSERT INTO public.question_bank (formation_id, module_id, lesson_id, "type", statement, choices, max_score, difficulty, tags, source_ref, active, explanation)
   VALUES (v_formation, v_module, v_l1, 'qcm',
     $mft$Quelle est la masse maximale autorisée en France pour un ensemble articulé d'au moins 5 essieux ?$mft$,
@@ -518,7 +518,7 @@ Manquements ADR : amendes, immobilisation, responsabilité pénale en cas d'acci
    2, 'difficile', ARRAY['capa-lourd','module-g','question-courte'], 'CAPA-LOURD-G-QC-10', false,
    $mft$Accepter « 1 000 points » ; la sensibilisation du personnel et le document de transport restent dus.$mft$);
 
-  -- ─── QUESTIONS RÉDIGÉES (8) — barème /5 ────────────────────────────
+  -- ─── QUESTIONS RÉDIGÉES (8) : barème /5 ────────────────────────────
   INSERT INTO public.question_bank (formation_id, module_id, lesson_id, "type", statement, expected_answer, scoring_grid, max_score, difficulty, tags, source_ref, active, explanation) VALUES
   (v_formation, v_module, v_l1, 'qr',
    $mft$Définissez PV, PTAC, PTRA et charge utile, puis calculez : un tracteur de 7,9 t à vide attelé à une semi-remorque de 7,1 t à vide, ensemble autorisé à 44 t. Quelle charge utile ? Quel poids total si l'on charge 27 t ?$mft$,

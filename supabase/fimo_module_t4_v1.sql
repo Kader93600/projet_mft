@@ -1,6 +1,6 @@
 -- =====================================================================
--- FIMO / FCO MARCHANDISES — THÈME 4 : SERVICE, LOGISTIQUE ET IMAGE
--- v1 (juillet 2026) — LOT FIMO-5
+-- FIMO / FCO MARCHANDISES : THÈME 4 : SERVICE, LOGISTIQUE ET IMAGE
+-- v1 (juillet 2026) : LOT FIMO-5
 -- Angle conducteur : ambassadeur de l'entreprise, livraison sans
 -- litige, compréhension du marché du transport et de sa propre valeur.
 -- ⚠ STATUT : active = false (« à valider »). Idempotent.
@@ -22,7 +22,7 @@ BEGIN
   DELETE FROM public.modules WHERE slug = 'fimo-t4-service-image';
 
   INSERT INTO public.modules (title, slug, bloc_id, summary, difficulty, duration_min, "order")
-  VALUES ('Thème 4 — Service, logistique et image du métier',
+  VALUES ('Thème 4 : Service, logistique et image du métier',
     'fimo-t4-service-image', v_bloc,
     'Le conducteur, premier visage de l''entreprise : posture professionnelle, relation client, livraison sans litige, et compréhension du marché du transport pour situer sa propre valeur.',
     'debutant', 240, 50) RETURNING id INTO v_module;
@@ -30,7 +30,7 @@ BEGIN
   INSERT INTO public.formation_modules (formation_id, module_id, display_order, required)
   VALUES (v_formation, v_module, 50, true);
 
-  -- ─── Leçon 1 — Le conducteur ambassadeur ───────────────────────────
+  -- ─── Leçon 1 : Le conducteur ambassadeur ───────────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'conducteur-ambassadeur',
     'Vous êtes le visage de l''entreprise',
@@ -72,7 +72,7 @@ Un client satisfait renouvelle et recommande ; un client froissé consulte la co
     $mft$L'impact commercial du conducteur (seul salarié vu à chaque livraison), les codes professionnels par moment, la méthode en quatre temps face à l'interlocuteur difficile et la valeur de la réputation.$mft$,
     1, 30) RETURNING id INTO v_l1;
 
-  -- ─── Leçon 2 — La livraison sans litige ────────────────────────────
+  -- ─── Leçon 2 : La livraison sans litige ────────────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'livraison-sans-litige',
     'La livraison sans litige',
@@ -116,7 +116,7 @@ Un litige moyen mobilise l'exploitation, le commercial et parfois un juriste sur
     $mft$La livraison en six gestes (compter ensemble, faire émarger), les quatre cas dégradés (absent, refus, écart, dommage) traités par l'écrit, et le coût réel d'un litige.$mft$,
     2, 35) RETURNING id INTO v_l2;
 
-  -- ─── Leçon 3 — Le marché du transport et votre place ───────────────
+  -- ─── Leçon 3 : Le marché du transport et votre place ───────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'marche-transport-votre-place',
     'Le marché du transport et votre place dedans',
@@ -164,7 +164,7 @@ Rappel utile : le camion qui roule coûte (gazole, péages, entretien) et ne gag
 
   -- ─── Quiz ────────────────────────────────────────────────────────────
   INSERT INTO public.quizzes (module_id, title, description, "type", pass_threshold, timer_enabled)
-  VALUES (v_module, 'Quiz — Service et image',
+  VALUES (v_module, 'Quiz : Service et image',
     'Vérifiez le thème 4 : posture professionnelle, livraison sans litige, marché du transport.',
     'entrainement', 70, false) RETURNING id INTO v_quiz;
 
@@ -411,7 +411,7 @@ Rappel utile : le camion qui roule coûte (gazole, péages, entretien) et ne gag
    2, 'difficile', ARRAY['fimo-fco','theme-4','question-courte'], 'FIMO-T4-QC-10', false,
    $mft$Faits oui, conclusions non : même logique que le constat.$mft$);
 
-  -- ─── QUESTIONS RÉDIGÉES (8) — barème /5 ────────────────────────────
+  -- ─── QUESTIONS RÉDIGÉES (8) : barème /5 ────────────────────────────
   INSERT INTO public.question_bank (formation_id, module_id, lesson_id, "type", statement, expected_answer, scoring_grid, max_score, difficulty, tags, source_ref, active, explanation) VALUES
   (v_formation, v_module, v_l1, 'qr',
    $mft$« Le commercial gagne le contrat, le conducteur le garde. » Développez cette affirmation : par quels comportements concrets le conducteur fait-il renouveler (ou perdre) un client ?$mft$,

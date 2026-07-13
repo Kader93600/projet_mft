@@ -1,6 +1,6 @@
 -- =====================================================================
--- CAPACITÉ DE TRANSPORT > 3,5 T (LOURD) — MODULE D : DROIT FISCAL — v1
--- (juillet 2026) — LOT 5
+-- CAPACITÉ DE TRANSPORT > 3,5 T (LOURD) : MODULE D : DROIT FISCAL : v1
+-- (juillet 2026) : LOT 5
 --
 -- Domaine D de l'annexe I du règlement (CE) n° 1071/2009 : TVA des
 -- prestations de transport, fiscalité des carburants (TICPE) et des
@@ -42,7 +42,7 @@ BEGIN
 
   INSERT INTO public.modules (title, slug, bloc_id, summary, difficulty, duration_min, "order")
   VALUES (
-    'Module D — Droit fiscal',
+    'Module D : Droit fiscal',
     'capa-lourd-droit-fiscal',
     v_bloc,
     'La fiscalité de l''entreprise de transport : TVA des prestations nationales et intracommunautaires, TICPE et remboursement gazole professionnel, taxe à l''essieu, imposition des bénéfices (IR/IS), CFE/CVAE et calendrier fiscal.',
@@ -54,7 +54,7 @@ BEGIN
   INSERT INTO public.formation_modules (formation_id, module_id, display_order, required)
   VALUES (v_formation, v_module, 40, true);
 
-  -- ─── Leçon 1 — La TVA du transporteur ──────────────────────────────
+  -- ─── Leçon 1 : La TVA du transporteur ──────────────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'tva-du-transporteur',
     'La TVA du transporteur',
@@ -102,7 +102,7 @@ Au régime réel normal, l'entreprise dépose une déclaration **CA3 mensuelle**
     $mft$Mécanisme collectée/déductible, taux 20 %, déductibilité du gazole PL à 100 %, autoliquidation intracommunautaire B2B, exonération des transports liés à l'export, CA3 et facturation électronique.$mft$,
     1, 50) RETURNING id INTO v_l1;
 
-  -- ─── Leçon 2 — Carburants et fiscalité du véhicule ─────────────────
+  -- ─── Leçon 2 : Carburants et fiscalité du véhicule ─────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'ticpe-taxe-essieu-vehicules',
     'TICPE, taxe à l''essieu : la fiscalité du véhicule',
@@ -149,7 +149,7 @@ Elle est déclarée et payée auprès de l'administration fiscale (gestion DGFiP
 - **Certificats et cartes grises** : taxes régionales à l'immatriculation.
 
 > 💡 **Astuce**
-> Chaque euro de fiscalité véhicule doit se retrouver dans le **coût de revient kilométrique** (module E — gestion) : TICPE nette de remboursement, taxe à l'essieu annualisée, péages affectés par ligne. Une tarification qui ignore ces postes vend à perte sans le savoir.
+> Chaque euro de fiscalité véhicule doit se retrouver dans le **coût de revient kilométrique** (module E : gestion) : TICPE nette de remboursement, taxe à l'essieu annualisée, péages affectés par ligne. Une tarification qui ignore ces postes vend à perte sans le savoir.
 
 ## ✅ Synthèse
 
@@ -159,7 +159,7 @@ Elle est déclarée et payée auprès de l'administration fiscale (gestion DGFiP
     $mft$TICPE et remboursement gazole professionnel (PL ≥ 7,5 t, demande périodique, tarif évolutif), taxe à l'essieu (≥ 12 t, suspension pneumatique, DGFiP), taxes véhicules de tourisme et péages.$mft$,
     2, 45) RETURNING id INTO v_l2;
 
-  -- ─── Leçon 3 — L'imposition des bénéfices ──────────────────────────
+  -- ─── Leçon 3 : L'imposition des bénéfices ──────────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'imposition-des-benefices',
     'IR ou IS : l''imposition des bénéfices',
@@ -207,7 +207,7 @@ L'IS se paie par **acomptes trimestriels**, avec un solde à la liquidation apr�
     $mft$BIC/IR pour l'entreprise individuelle vs IS pour les sociétés, taux 15 % jusqu'à 42 500 € (PME) puis 25 %, charges déductibles, amortissements du matériel roulant et non-déductibilité des amendes.$mft$,
     3, 45) RETURNING id INTO v_l3;
 
-  -- ─── Leçon 4 — Impôts locaux, calendrier et contrôle ───────────────
+  -- ─── Leçon 4 : Impôts locaux, calendrier et contrôle ───────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'impots-locaux-calendrier-controle',
     'Impôts locaux, calendrier fiscal et contrôle',
@@ -226,10 +226,10 @@ L'IS se paie par **acomptes trimestriels**, avec un solde à la liquidation apr�
 ## Le calendrier fiscal type du transporteur
 
 :::timeline
-1. **Mensuel** — CA3 (TVA) : déclaration et télérèglement.
-2. **Trimestriel** — Acomptes d'IS ; le cas échéant demandes périodiques de remboursement TICPE.
-3. **Annuel (printemps)** — Liasse fiscale et déclaration de résultats ; solde d'IS ; déclarations CFE/CVAE selon situation.
-4. **Annuel (fin d'année)** — Paiement CFE ; taxe à l'essieu selon échéance ; revue fiscale de clôture.
+1. **Mensuel** : CA3 (TVA) : déclaration et télérèglement.
+2. **Trimestriel** : Acomptes d'IS ; le cas échéant demandes périodiques de remboursement TICPE.
+3. **Annuel (printemps)** : Liasse fiscale et déclaration de résultats ; solde d'IS ; déclarations CFE/CVAE selon situation.
+4. **Annuel (fin d'année)** : Paiement CFE ; taxe à l'essieu selon échéance ; revue fiscale de clôture.
 :::
 
 > 💡 **Astuce**
@@ -262,12 +262,12 @@ Droits et garanties du contribuable : avis de vérification préalable, assistan
   -- ─── Quiz d'entraînement ────────────────────────────────────────────
   INSERT INTO public.quizzes (module_id, title, description, "type", pass_threshold, timer_enabled)
   VALUES (v_module,
-    'Quiz — Droit fiscal',
+    'Quiz : Droit fiscal',
     'Validez les fondamentaux du module D : TVA, TICPE, taxe à l''essieu, IS et impôts locaux.',
     'entrainement', 70, false)
   RETURNING id INTO v_quiz;
 
-  -- ─── QCM (12) — 4 faciles / 5 moyens / 3 difficiles ────────────────
+  -- ─── QCM (12) : 4 faciles / 5 moyens / 3 difficiles ────────────────
   INSERT INTO public.question_bank (formation_id, module_id, lesson_id, "type", statement, choices, max_score, difficulty, tags, source_ref, active, explanation)
   VALUES (v_formation, v_module, v_l1, 'qcm',
     $mft$Quel taux de TVA s'applique aux prestations de transport routier de marchandises réalisées en France ?$mft$,
@@ -510,7 +510,7 @@ Droits et garanties du contribuable : avis de vérification préalable, assistan
    2, 'difficile', ARRAY['capa-lourd','module-d','question-courte'], 'CAPA-LOURD-D-QC-10', false,
    $mft$Délais étendus en cas d'activité occulte ou de fraude.$mft$);
 
-  -- ─── QUESTIONS RÉDIGÉES (8) — barème /5 ────────────────────────────
+  -- ─── QUESTIONS RÉDIGÉES (8) : barème /5 ────────────────────────────
   INSERT INTO public.question_bank (formation_id, module_id, lesson_id, "type", statement, expected_answer, scoring_grid, max_score, difficulty, tags, source_ref, active, explanation) VALUES
   (v_formation, v_module, v_l1, 'qr',
    $mft$Expliquez le mécanisme de la TVA pour une entreprise de transport, en illustrant par un exemple chiffré simple (ventes, achats, TVA due).$mft$,

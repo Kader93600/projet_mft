@@ -234,7 +234,7 @@ Un client qui récupère son téléphone dans l'heure raconte l'histoire autour 
 > 🔍 **Zoom**
 > Le chauffeur qui demande la compagnie AVANT d'entrer dans la zone aéroportuaire évite le tour des terminaux : minutes gagnées, client détendu, et une file de dépose abordée du premier coup.
 
-## Les 66 mots et expressions indispensables
+## La liste des mots et expressions indispensables
 
 **Accueil et politesse**
 
@@ -333,7 +333,7 @@ Un client qui récupère son téléphone dans l'heure raconte l'histoire autour 
 - Imprévus : excuse brève + cause (**traffic jam, roadworks**) + durée estimée : l'information rassure.
 - Objet oublié : **You left your... I will bring it back** : l'occasion de fidéliser.
 - Aéroport : **which airline, terminal, drop-off area** : la compagnie d'abord, la dépose ensuite.$mft$,
-    $mft$Le paiement en anglais (prix, carte ou espèces, monnaie, reçu), la gestion des imprévus (traffic jam, roadworks, detour), les objets oubliés, le vocabulaire de l'aéroport et la liste des 66 mots et expressions indispensables classés par thèmes.$mft$,
+    $mft$Le paiement en anglais (prix, carte ou espèces, monnaie, reçu), la gestion des imprévus (traffic jam, roadworks, detour), les objets oubliés, le vocabulaire de l'aéroport et la liste des mots et expressions indispensables classés par thèmes.$mft$,
     3, 35) RETURNING id INTO v_l3;
 
   -- ─── Quiz ────────────────────────────────────────────────────────────

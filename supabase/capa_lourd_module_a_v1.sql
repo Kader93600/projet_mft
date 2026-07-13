@@ -1,6 +1,6 @@
 -- =====================================================================
--- CAPACITÉ DE TRANSPORT > 3,5 T (LOURD) — MODULE A : DROIT CIVIL — v1
--- (juillet 2026) — LOT 2
+-- CAPACITÉ DE TRANSPORT > 3,5 T (LOURD) : MODULE A : DROIT CIVIL : v1
+-- (juillet 2026) : LOT 2
 --
 -- Domaine A de l'annexe I du règlement (CE) n° 1071/2009 : éléments
 -- de droit civil nécessaires à l'exercice de la profession (contrats,
@@ -45,7 +45,7 @@ BEGIN
 
   INSERT INTO public.modules (title, slug, bloc_id, summary, difficulty, duration_min, "order")
   VALUES (
-    'Module A — Droit civil',
+    'Module A : Droit civil',
     'capa-lourd-droit-civil',
     v_bloc,
     'Les bases du droit civil pour diriger une entreprise de transport : personnes et patrimoine, formation et exécution des contrats, responsabilité civile, mandat et commission, prescriptions et garanties.',
@@ -57,7 +57,7 @@ BEGIN
   INSERT INTO public.formation_modules (formation_id, module_id, display_order, required)
   VALUES (v_formation, v_module, 10, true);
 
-  -- ─── Leçon 1 — Personnes, patrimoine et capacité ────────────────────
+  -- ─── Leçon 1 : Personnes, patrimoine et capacité ────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'personnes-patrimoine-capacite',
     'Personnes, patrimoine et capacité',
@@ -116,7 +116,7 @@ Avant de contracter avec un nouveau partenaire (client donneur d'ordre, sous-tra
     $mft$Personnes physiques et morales, attributs de la personnalité, patrimoine et protection de l'entrepreneur individuel (loi 2022), capacité juridique et vérifications avant de contracter.$mft$,
     1, 40) RETURNING id INTO v_l1;
 
-  -- ─── Leçon 2 — Le contrat : formation, validité, exécution ─────────
+  -- ─── Leçon 2 : Le contrat : formation, validité, exécution ─────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'contrat-formation-validite-execution',
     'Le contrat : formation, validité et exécution',
@@ -163,9 +163,9 @@ Un vice du consentement ouvre la **nullité relative** du contrat (seule la vict
 ## L'inexécution et ses remèdes
 
 :::timeline
-1. **Constat du manquement** — retard, prestation non conforme, impayé.
-2. **Mise en demeure** — lettre recommandée sommant d'exécuter : point de départ des dommages-intérêts et de la plupart des sanctions.
-3. **Remèdes** — exception d'inexécution (suspendre sa propre prestation), exécution forcée, réduction du prix, résolution du contrat, dommages-intérêts.
+1. **Constat du manquement** : retard, prestation non conforme, impayé.
+2. **Mise en demeure** : lettre recommandée sommant d'exécuter : point de départ des dommages-intérêts et de la plupart des sanctions.
+3. **Remèdes** : exception d'inexécution (suspendre sa propre prestation), exécution forcée, réduction du prix, résolution du contrat, dommages-intérêts.
 :::
 
 ### La force majeure
@@ -183,7 +183,7 @@ L'article 1218 du code civil exonère le débiteur quand un événement **échap
     $mft$Conditions de validité (art. 1128), vices du consentement et nullités, force obligatoire, clauses pénale/résolutoire/limitative, mise en demeure, remèdes à l'inexécution et force majeure.$mft$,
     2, 50) RETURNING id INTO v_l2;
 
-  -- ─── Leçon 3 — La responsabilité civile ────────────────────────────
+  -- ─── Leçon 3 : La responsabilité civile ────────────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'responsabilite-civile',
     'La responsabilité civile',
@@ -234,7 +234,7 @@ Sur le terrain **contractuel**, le transporteur routier est présumé responsabl
     $mft$Responsabilité contractuelle vs délictuelle, non-cumul, les trois conditions et les exonérations, la responsabilité du commettant du fait des préposés et la présomption pesant sur le transporteur.$mft$,
     3, 45) RETURNING id INTO v_l3;
 
-  -- ─── Leçon 4 — Mandat, commission, prescription et garanties ───────
+  -- ─── Leçon 4 : Mandat, commission, prescription et garanties ───────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'mandat-commission-prescription-garanties',
     'Mandat, commission, prescription et garanties',
@@ -280,10 +280,10 @@ Pour se prémunir contre l'impayé, le créancier peut mobiliser :
 ## Recouvrer une créance : la gradation
 
 :::timeline
-1. **Relance amiable** — appel, courriel, puis lettre de relance.
-2. **Mise en demeure** — recommandé avec AR : fait courir intérêts et délais.
-3. **Injonction de payer** — procédure rapide et peu coûteuse pour créance certaine.
-4. **Assignation au fond** — si la créance est contestée sérieusement.
+1. **Relance amiable** : appel, courriel, puis lettre de relance.
+2. **Mise en demeure** : recommandé avec AR : fait courir intérêts et délais.
+3. **Injonction de payer** : procédure rapide et peu coûteuse pour créance certaine.
+4. **Assignation au fond** : si la créance est contestée sérieusement.
 :::
 
 Entre professionnels, tout retard de paiement déclenche de plein droit des **pénalités de retard** et l'**indemnité forfaitaire de recouvrement de 40 €** par facture.
@@ -299,12 +299,12 @@ Entre professionnels, tout retard de paiement déclenche de plein droit des **p�
   -- ─── Quiz d'entraînement ────────────────────────────────────────────
   INSERT INTO public.quizzes (module_id, title, description, "type", pass_threshold, timer_enabled)
   VALUES (v_module,
-    'Quiz — Droit civil',
+    'Quiz : Droit civil',
     'Validez les fondamentaux du module A : contrats, responsabilité, mandat, prescriptions, garanties.',
     'entrainement', 70, false)
   RETURNING id INTO v_quiz;
 
-  -- ─── QCM (12) — 4 faciles / 5 moyens / 3 difficiles ────────────────
+  -- ─── QCM (12) : 4 faciles / 5 moyens / 3 difficiles ────────────────
   INSERT INTO public.question_bank (formation_id, module_id, lesson_id, "type", statement, choices, max_score, difficulty, tags, source_ref, active, explanation)
   VALUES (v_formation, v_module, v_l2, 'qcm',
     $mft$Quelles sont les trois conditions de validité d'un contrat depuis la réforme du droit des contrats (art. 1128 du code civil) ?$mft$,
@@ -547,7 +547,7 @@ Entre professionnels, tout retard de paiement déclenche de plein droit des **p�
    2, 'difficile', ARRAY['capa-lourd','module-a','question-courte'], 'CAPA-LOURD-A-QC-10', false,
    $mft$Trois causes attendues ; un exemple concret est un plus. La présomption pèse sur le transporteur entre prise en charge et livraison.$mft$);
 
-  -- ─── QUESTIONS RÉDIGÉES (8) — barème /5 ────────────────────────────
+  -- ─── QUESTIONS RÉDIGÉES (8) : barème /5 ────────────────────────────
   INSERT INTO public.question_bank (formation_id, module_id, lesson_id, "type", statement, expected_answer, scoring_grid, max_score, difficulty, tags, source_ref, active, explanation) VALUES
   (v_formation, v_module, v_l2, 'qr',
    $mft$Expliquez les trois conditions de validité d'un contrat et illustrez chacune par un exemple tiré de l'activité d'une entreprise de transport.$mft$,
@@ -587,7 +587,7 @@ Entre professionnels, tout retard de paiement déclenche de plein droit des **p�
   (v_formation, v_module, v_l4, 'qr',
    $mft$Votre entreprise hésite à passer par un commissionnaire de transport ou à mandater un intermédiaire pour organiser ses flux. Expliquez la différence entre les deux statuts et ses conséquences en matière de responsabilité pour votre entreprise cliente.$mft$,
    $mft$Réponse modèle. Le mandataire agit au nom et pour le compte du mandant : les contrats qu'il conclut engagent directement le client, qui devient partie aux contrats de transport et supporte les recours correspondants ; le mandataire ne répond que de ses fautes de mandat (mauvais choix manifeste, dépassement de pouvoir). Le commissionnaire agit en son nom propre pour le compte du commettant : il conclut lui-même les contrats avec les transporteurs, assume une obligation de résultat sur l'acheminement et répond à la fois de son fait personnel et du fait des transporteurs substitués ; le client dispose ainsi d'un interlocuteur unique contre lequel agir, le commissionnaire exerçant ensuite ses recours. Conséquences pratiques : la commission offre une garantie plus large (responsabilité du fait des substitués) souvent avec plafonds propres ; le mandat laisse au client la maîtrise et les risques des contrats de transport. Le choix dépend du besoin de garantie, du volume et de la capacité du client à gérer les recours.$mft$,
-   $mft$Barème /5 : définition exacte des deux statuts (2 pts) ; conséquence clé — responsabilité du commissionnaire du fait des substitués vs transparence du mandat (2 pts) ; conclusion opérationnelle argumentée (1 pt). Erreurs fréquentes : faire du commissionnaire un simple courtier ; croire que le mandataire garantit l'acheminement.$mft$,
+   $mft$Barème /5 : définition exacte des deux statuts (2 pts) ; conséquence clé : responsabilité du commissionnaire du fait des substitués vs transparence du mandat (2 pts) ; conclusion opérationnelle argumentée (1 pt). Erreurs fréquentes : faire du commissionnaire un simple courtier ; croire que le mandataire garantit l'acheminement.$mft$,
    5, 'difficile', ARRAY['capa-lourd','module-a','question-redigee'], 'CAPA-LOURD-A-QR-06', false,
    $mft$Distinction structurante pour le domaine A et passerelle vers la formation Commissionnaire.$mft$),
 
@@ -601,7 +601,7 @@ Entre professionnels, tout retard de paiement déclenche de plein droit des **p�
   (v_formation, v_module, v_l2, 'qr',
    $mft$Un contrat cadre de messagerie stipule : « L'indemnité due par le transporteur, quelle que soit la cause du dommage, ne pourra excéder le prix du transport. » Le client, qui avait payé une option « livraison garantie avant 9 h » pour des pièces bloquant une chaîne de production, subit un retard de 2 jours. Analysez la portée de cette clause.$mft$,
    $mft$Réponse modèle. Qualification : clause limitative de responsabilité, en principe valable entre professionnels. Limites : elle est écartée en cas de faute lourde ou dolosive du transporteur ; surtout, lorsqu'elle contredit la portée de l'obligation essentielle souscrite, elle est réputée non écrite : ici, l'option « garantie avant 9 h », payée spécifiquement, érige le délai en obligation essentielle ; limiter l'indemnité au seul prix du transport vide cette garantie de sa substance. Le client peut donc soutenir que la clause est réputée non écrite pour le manquement à la garantie de délai et réclamer la réparation de son préjudice prouvé (dans les conditions du droit commun et des textes applicables au transport ; les plafonds légaux des contrats types, d'origine réglementaire, obéissent à leur régime propre et ne tombent pas devant la même analyse). Méthode attendue : qualifier la clause, identifier l'obligation essentielle, confronter les deux, conclure sur l'indemnisation.$mft$,
-   $mft$Barème /5 : qualification correcte de la clause (0,5 pt) ; validité de principe entre pros et exceptions faute lourde/dolosive (1 pt) ; identification de l'obligation essentielle créée par l'option payée (1,5 pt) ; conclusion motivée — clause réputée non écrite pour ce manquement (1,5 pt) ; distinction avec les plafonds réglementaires des contrats types (0,5 pt). Erreurs fréquentes : déclarer toute clause limitative nulle par principe ; confondre clause contractuelle et plafond réglementaire.$mft$,
+   $mft$Barème /5 : qualification correcte de la clause (0,5 pt) ; validité de principe entre pros et exceptions faute lourde/dolosive (1 pt) ; identification de l'obligation essentielle créée par l'option payée (1,5 pt) ; conclusion motivée : clause réputée non écrite pour ce manquement (1,5 pt) ; distinction avec les plafonds réglementaires des contrats types (0,5 pt). Erreurs fréquentes : déclarer toute clause limitative nulle par principe ; confondre clause contractuelle et plafond réglementaire.$mft$,
    5, 'difficile', ARRAY['capa-lourd','module-a','question-redigee'], 'CAPA-LOURD-A-QR-08', false,
    $mft$Analyse critique inspirée de la jurisprudence messagerie sur l'obligation essentielle.$mft$);
 

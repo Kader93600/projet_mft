@@ -1,6 +1,6 @@
 -- =====================================================================
--- CAPACITÉ DE TRANSPORT > 3,5 T (LOURD) — MODULE H : SÉCURITÉ ROUTIÈRE
--- v1 (juillet 2026) — LOT 8
+-- CAPACITÉ DE TRANSPORT > 3,5 T (LOURD) : MODULE H : SÉCURITÉ ROUTIÈRE
+-- v1 (juillet 2026) : LOT 8
 --
 -- Domaine H de l'annexe I du règlement (CE) n° 1071/2009 : permis du
 -- groupe lourd et aptitude, règles de circulation des PL (vitesses,
@@ -43,7 +43,7 @@ BEGIN
 
   INSERT INTO public.modules (title, slug, bloc_id, summary, difficulty, duration_min, "order")
   VALUES (
-    'Module H — Sécurité routière',
+    'Module H : Sécurité routière',
     'capa-lourd-securite-routiere',
     v_bloc,
     'Le conducteur et la route : permis du groupe lourd et aptitude médicale, vitesses et restrictions de circulation des PL, alcool et stupéfiants, prévention des accidents du travail et protocole de sécurité chargement/déchargement.',
@@ -55,7 +55,7 @@ BEGIN
   INSERT INTO public.formation_modules (formation_id, module_id, display_order, required)
   VALUES (v_formation, v_module, 80, true);
 
-  -- ─── Leçon 1 — Le conducteur et son permis ─────────────────────────
+  -- ─── Leçon 1 : Le conducteur et son permis ─────────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'permis-groupe-lourd-aptitude',
     'Le permis du groupe lourd et l''aptitude du conducteur',
@@ -104,7 +104,7 @@ Capital de **12 points** (6 en période probatoire). Les infractions retirent de
     $mft$Catégories C1/C1E/C/CE avec âges (18 ans si qualification), validité médicale 5/2/1 ans selon l'âge, permis à 12 points et obligation de désignation par l'employeur.$mft$,
     1, 40) RETURNING id INTO v_l1;
 
-  -- ─── Leçon 2 — Vitesses et restrictions de circulation ─────────────
+  -- ─── Leçon 2 : Vitesses et restrictions de circulation ─────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'vitesses-restrictions-circulation-pl',
     'Circuler en poids lourd : vitesses et restrictions',
@@ -151,7 +151,7 @@ Les véhicules de transport de marchandises de **plus de 7,5 t** de PTAC sont in
     $mft$Vitesses PL (90/80/80/50), interdictions de circulation > 7,5 t (samedi 22 h → dimanche 22 h, fériés) et dérogations, interdistance 50 m, signalisation des angles morts, obligations hivernales.$mft$,
     2, 40) RETURNING id INTO v_l2;
 
-  -- ─── Leçon 3 — Alcool, stupéfiants, comportements ──────────────────
+  -- ─── Leçon 3 : Alcool, stupéfiants, comportements ──────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'alcool-stupefiants-comportements',
     'Alcool, stupéfiants et comportements à risque',
@@ -204,7 +204,7 @@ Un accident causé par un conducteur alcoolisé dont l'employeur tolérait les d
     $mft$Seuils alcool 0,5/0,8 g/L (piège du 0,2 réservé au transport de personnes), stupéfiants = délit tolérance zéro, téléphone 135 € + 3 points, et rôle de prévention encadré de l'employeur.$mft$,
     3, 40) RETURNING id INTO v_l3;
 
-  -- ─── Leçon 4 — Accidents du travail et protocole de sécurité ───────
+  -- ─── Leçon 4 : Accidents du travail et protocole de sécurité ───────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'accidents-travail-protocole-securite',
     'Prévenir les accidents du travail : le protocole de sécurité',
@@ -234,9 +234,9 @@ Sans protocole, en cas d'accident du conducteur sur le site (chute de quai, engi
 **Sur la route (PAS)** :
 
 :::timeline
-1. **Protéger** — allumer les feux de détresse, gilet, triangle à distance utile, couper le contact, protéger la zone.
-2. **Alerter** — 112 (ou 15/17/18), localisation précise (PK autoroute), nature des blessures, risques (matières dangereuses : consignes écrites ADR).
-3. **Secourir** — gestes de premiers secours dans la limite de ses compétences, ne pas déplacer un blessé sauf danger immédiat.
+1. **Protéger** : allumer les feux de détresse, gilet, triangle à distance utile, couper le contact, protéger la zone.
+2. **Alerter** : 112 (ou 15/17/18), localisation précise (PK autoroute), nature des blessures, risques (matières dangereuses : consignes écrites ADR).
+3. **Secourir** : gestes de premiers secours dans la limite de ses compétences, ne pas déplacer un blessé sauf danger immédiat.
 :::
 
 Ensuite : constat amiable précis (croquis, réserves), photos, déclaration à l'assureur dans les délais contractuels, information de l'exploitation.
@@ -258,12 +258,12 @@ Indicateurs : **taux de fréquence** et **taux de gravité** des AT, sinistralit
   -- ─── Quiz d'entraînement ────────────────────────────────────────────
   INSERT INTO public.quizzes (module_id, title, description, "type", pass_threshold, timer_enabled)
   VALUES (v_module,
-    'Quiz — Sécurité routière',
+    'Quiz : Sécurité routière',
     'Validez les fondamentaux du module H : permis, vitesses, alcool et stupéfiants, protocole de sécurité et accidents du travail.',
     'entrainement', 70, false)
   RETURNING id INTO v_quiz;
 
-  -- ─── QCM (12) — 4 faciles / 5 moyens / 3 difficiles ────────────────
+  -- ─── QCM (12) : 4 faciles / 5 moyens / 3 difficiles ────────────────
   INSERT INTO public.question_bank (formation_id, module_id, lesson_id, "type", statement, choices, max_score, difficulty, tags, source_ref, active, explanation)
   VALUES (v_formation, v_module, v_l1, 'qcm',
     $mft$Quel permis est exigé pour conduire un ensemble tracteur + semi-remorque de 44 tonnes ?$mft$,
@@ -506,7 +506,7 @@ Indicateurs : **taux de fréquence** et **taux de gravité** des AT, sinistralit
    2, 'difficile', ARRAY['capa-lourd','module-h','question-courte'], 'CAPA-LOURD-H-QC-10', false,
    $mft$5 ans avant 60 ans, 1 an après 76 ans.$mft$);
 
-  -- ─── QUESTIONS RÉDIGÉES (8) — barème /5 ────────────────────────────
+  -- ─── QUESTIONS RÉDIGÉES (8) : barème /5 ────────────────────────────
   INSERT INTO public.question_bank (formation_id, module_id, lesson_id, "type", statement, expected_answer, scoring_grid, max_score, difficulty, tags, source_ref, active, explanation) VALUES
   (v_formation, v_module, v_l1, 'qr',
    $mft$Présentez les catégories de permis du groupe lourd (C1, C1E, C, CE) avec leurs conditions d'âge, puis expliquez le dispositif de validité limitée et son suivi en entreprise.$mft$,

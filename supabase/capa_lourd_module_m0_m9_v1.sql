@@ -1,7 +1,7 @@
 -- =====================================================================
--- CAPACITÉ DE TRANSPORT > 3,5 T (LOURD) — LOT 9 (FINAL) :
+-- CAPACITÉ DE TRANSPORT > 3,5 T (LOURD) : LOT 9 (FINAL) :
 -- M0 MÉTHODO & DÉCOUVERTE DE L'EXAMEN + M9 PRÉPARATION EXAMEN
--- + 2 EXAMENS BLANCS — v1 (juillet 2026)
+-- + 2 EXAMENS BLANCS : v1 (juillet 2026)
 --
 -- ⚠ PRÉREQUIS : appliquer d'abord les lots 1 à 8 (modules A à H).
 --   Les examens blancs sont composés de questions EXISTANTES de la
@@ -46,10 +46,10 @@ BEGIN
   DELETE FROM public.question_bank WHERE source_ref LIKE 'CAPA-LOURD-M9-%';
   DELETE FROM public.modules WHERE slug IN ('capa-lourd-methodo-examen', 'capa-lourd-preparation-examen');
 
-  -- ═══════════════════════ M0 — MÉTHODO & DÉCOUVERTE ═══════════════════
+  -- ═══════════════════════ M0 : MÉTHODO & DÉCOUVERTE ═══════════════════
   INSERT INTO public.modules (title, slug, bloc_id, summary, difficulty, duration_min, "order")
   VALUES (
-    'Module 0 — Bien démarrer : l''examen et la méthode',
+    'Module 0 : Bien démarrer : l''examen et la méthode',
     'capa-lourd-methodo-examen',
     v_bloc,
     'Comprendre l''examen d''attestation de capacité lourde (épreuves, notation, inscription, dispenses) et organiser une préparation efficace sur la plateforme.',
@@ -61,7 +61,7 @@ BEGIN
   INSERT INTO public.formation_modules (formation_id, module_id, display_order, required)
   VALUES (v_formation, v_m0, 5, true);
 
-  -- ─── M0 Leçon 1 — L'examen mode d'emploi ───────────────────────────
+  -- ─── M0 Leçon 1 : L'examen mode d'emploi ───────────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_m0, 'examen-attestation-lourde-mode-emploi',
     'L''examen de l''attestation lourde : mode d''emploi',
@@ -106,7 +106,7 @@ Les **8 modules A à H** suivent exactement l'annexe I du règlement 1071/2009 (
     $mft$Les trois voies d'accès à l'attestation lourde, la structure de l'écrit national (QCM + épreuve rédigée avec calculs), l'inscription DREAL et l'articulation avec les modules A-H de la formation.$mft$,
     1, 30) RETURNING id INTO v_l;
 
-  -- ─── M0 Leçon 2 — Organiser sa préparation ─────────────────────────
+  -- ─── M0 Leçon 2 : Organiser sa préparation ─────────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_m0, 'organiser-sa-preparation',
     'Organiser sa préparation : la méthode qui marche',
@@ -154,10 +154,10 @@ Sur 8 à 12 semaines (adapter au temps disponible) :
     $mft$Méthode active (se tester avant de relire), plan de travail type sur 8-12 semaines, usage de chaque contenu (leçons, QC, QR, examens blancs) et les trois pièges classiques de la préparation.$mft$,
     2, 25) RETURNING id INTO v_l;
 
-  -- ═══════════════════════ M9 — PRÉPARATION EXAMEN ═════════════════════
+  -- ═══════════════════════ M9 : PRÉPARATION EXAMEN ═════════════════════
   INSERT INTO public.modules (title, slug, bloc_id, summary, difficulty, duration_min, "order")
   VALUES (
-    'Module 9 — Préparation à l''examen',
+    'Module 9 : Préparation à l''examen',
     'capa-lourd-preparation-examen',
     v_bloc,
     'La méthodologie des deux épreuves (QCM et rédigé), la synthèse des chiffres clés des domaines A à H, les questions transversales de synthèse et deux examens blancs en conditions réelles.',
@@ -169,7 +169,7 @@ Sur 8 à 12 semaines (adapter au temps disponible) :
   INSERT INTO public.formation_modules (formation_id, module_id, display_order, required)
   VALUES (v_formation, v_m9, 90, true);
 
-  -- ─── M9 Leçon 1 — Méthodologie des épreuves ────────────────────────
+  -- ─── M9 Leçon 1 : Méthodologie des épreuves ────────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_m9, 'methodologie-des-epreuves',
     'Méthodologie : gagner des points au QCM et au rédigé',
@@ -211,7 +211,7 @@ Le correcteur note avec une grille. Chaque réponse suit la même ossature :
     $mft$Stratégie QCM (trois passes, pièges d'unités et de seuils voisins), ossature du rédigé (règle → application → conclusion), calculs posés et gestion du temps au prorata des points.$mft$,
     1, 40) RETURNING id INTO v_l91;
 
-  -- ─── M9 Leçon 2 — Les chiffres clés A-H ────────────────────────────
+  -- ─── M9 Leçon 2 : Les chiffres clés A-H ────────────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_m9, 'chiffres-cles-derniere-ligne-droite',
     'La dernière ligne droite : tous les chiffres clés A-H',
@@ -223,14 +223,14 @@ Le correcteur note avec une grille. Chaque réponse suit la même ossature :
 
 | Domaine | Chiffres à connaître par cœur |
 | --- | --- |
-| A — Droit civil | Prescription **5 ans** (droit commun), **1 an** (contrat de transport) ; force majeure : 3 critères |
-| B — Droit commercial | Cessation des paiements : déclaration **45 jours** ; créances : **2 mois** après BODACC ; garantie ≤ **50 %** de la capacité financière |
-| C — Droit social | Conduite **9 h** (2 × 10 h), **56 h**/sem, **90 h**/2 sem ; pause **45 min (15 + 30)** après 4 h 30 ; repos **11 h** (réduit 9 h × 3, fractionné 3 + 9) ; hebdo **45 h** (réduit ≥ 24 h) ; carte tachy **5 ans** ; téléchargements **28 j / 90 j** ; travail **48 h** moyenne / **60 h** max ; FIMO **140 h**, FCO **35 h / 5 ans** ; retour conducteur **4 sem** (3 si 2 réduits) |
-| D — Droit fiscal | TVA **20 %** ; gazole PL déductible **100 %** (VP 80 %) ; TICPE : remboursement **≥ 7,5 t** ; essieu : **≥ 12 t** ; IS **25 %** (15 % ≤ **42 500 €**) ; reprise fiscale **3 ans** |
-| E — Gestion | Trinôme : **km × TK + h × TH + j × TJ** ; SR = **CF / taux de MCV** ; CAF = **résultat + dotations** ; paiement transport **30 jours** ; indemnité **40 €** ; BFR = clients − fournisseurs |
-| F — Accès profession | Capacité financière : **9 000 / 5 000 €** (VUL int. : 1 800/900) ; gestionnaire externe : **4 entreprises / 50 véhicules** ; licences **10 ans** ; cabotage : **3 en 7 jours** (1 en 3 j à vide), carence **4 jours** ; retour véhicules **8 semaines** |
-| G — Technique | **44 t** (≥ 5 essieux), 19/26/38 t ; essieu **13 t** ; largeur **2,55 m** ; longueurs **16,50 / 18,75 m** ; CT **annuel** ; limiteur **90 km/h** ; arrimage **0,8 / 0,5 G** ; contrats types : seuil **3 t** ; ADR : **9 classes**, exemption **1 000 points** |
-| H — Sécurité routière | Vitesses PL **90 / 80 / 50** ; interdiction > 7,5 t **sam 22 h → dim 22 h** ; interdistance **50 m** ; alcool **0,5 / 0,8 g/L** ; téléphone **135 € + 3 pts** ; permis **12 points**, validité **5/2/1 ans** ; AT : **48 h** (employeur) |
+| A : Droit civil | Prescription **5 ans** (droit commun), **1 an** (contrat de transport) ; force majeure : 3 critères |
+| B : Droit commercial | Cessation des paiements : déclaration **45 jours** ; créances : **2 mois** après BODACC ; garantie ≤ **50 %** de la capacité financière |
+| C : Droit social | Conduite **9 h** (2 × 10 h), **56 h**/sem, **90 h**/2 sem ; pause **45 min (15 + 30)** après 4 h 30 ; repos **11 h** (réduit 9 h × 3, fractionné 3 + 9) ; hebdo **45 h** (réduit ≥ 24 h) ; carte tachy **5 ans** ; téléchargements **28 j / 90 j** ; travail **48 h** moyenne / **60 h** max ; FIMO **140 h**, FCO **35 h / 5 ans** ; retour conducteur **4 sem** (3 si 2 réduits) |
+| D : Droit fiscal | TVA **20 %** ; gazole PL déductible **100 %** (VP 80 %) ; TICPE : remboursement **≥ 7,5 t** ; essieu : **≥ 12 t** ; IS **25 %** (15 % ≤ **42 500 €**) ; reprise fiscale **3 ans** |
+| E : Gestion | Trinôme : **km × TK + h × TH + j × TJ** ; SR = **CF / taux de MCV** ; CAF = **résultat + dotations** ; paiement transport **30 jours** ; indemnité **40 €** ; BFR = clients − fournisseurs |
+| F : Accès profession | Capacité financière : **9 000 / 5 000 €** (VUL int. : 1 800/900) ; gestionnaire externe : **4 entreprises / 50 véhicules** ; licences **10 ans** ; cabotage : **3 en 7 jours** (1 en 3 j à vide), carence **4 jours** ; retour véhicules **8 semaines** |
+| G : Technique | **44 t** (≥ 5 essieux), 19/26/38 t ; essieu **13 t** ; largeur **2,55 m** ; longueurs **16,50 / 18,75 m** ; CT **annuel** ; limiteur **90 km/h** ; arrimage **0,8 / 0,5 G** ; contrats types : seuil **3 t** ; ADR : **9 classes**, exemption **1 000 points** |
+| H : Sécurité routière | Vitesses PL **90 / 80 / 50** ; interdiction > 7,5 t **sam 22 h → dim 22 h** ; interdistance **50 m** ; alcool **0,5 / 0,8 g/L** ; téléphone **135 € + 3 pts** ; permis **12 points**, validité **5/2/1 ans** ; AT : **48 h** (employeur) |
 
 > 📌 **À retenir**
 > Les paires piégeuses à ne plus confondre : **7,5 t** (TICPE) / **12 t** (essieu) : **28 j** (carte) / **30 j** (paiement) : **56-90 h** (conduite) / **48-60 h** (travail) : **8 semaines** (véhicules) / **4 semaines** (conducteurs) : **45 h** (repos hebdo) / **45 jours** (cessation des paiements).
@@ -238,11 +238,11 @@ Le correcteur note avec une grille. Chaque réponse suit la même ossature :
 ## Les trente derniers jours
 
 :::timeline
-1. **J-30 à J-15** — Examen blanc 1 (QCM) ; retour ciblé sur les deux domaines les plus faibles ; une série de questions courtes par jour.
-2. **J-14 à J-7** — Examen blanc 2 (mixte) en conditions réelles ; refaire PAR ÉCRIT les questions rédigées ratées ; fiches chiffres relues chaque soir.
-3. **J-6 à J-2** — Révision légère : tableau des chiffres, erreurs répertoriées, pas de nouveau contenu.
-4. **J-1** — Repos, logistique du jour J (trajet, convocation, matériel), coucher tôt.
-5. **Jour J** — Arriver en avance ; QCM en trois passes ; rédigé : règle → application → conclusion ; relecture.
+1. **J-30 à J-15** : Examen blanc 1 (QCM) ; retour ciblé sur les deux domaines les plus faibles ; une série de questions courtes par jour.
+2. **J-14 à J-7** : Examen blanc 2 (mixte) en conditions réelles ; refaire PAR ÉCRIT les questions rédigées ratées ; fiches chiffres relues chaque soir.
+3. **J-6 à J-2** : Révision légère : tableau des chiffres, erreurs répertoriées, pas de nouveau contenu.
+4. **J-1** : Repos, logistique du jour J (trajet, convocation, matériel), coucher tôt.
+5. **Jour J** : Arriver en avance ; QCM en trois passes ; rédigé : règle → application → conclusion ; relecture.
 :::
 
 ## ✅ Synthèse
@@ -320,11 +320,11 @@ Le correcteur note avec une grille. Chaque réponse suit la même ossature :
    5, 'difficile', ARRAY['capa-lourd','module-9','question-redigee','transversal'], 'CAPA-LOURD-M9-QR-04', false,
    $mft$Négociation tarifaire sous contrainte de marge, transversal E : cas très réaliste.$mft$);
 
-  -- ═══════════════ EXAMEN BLANC 1 — QCM (24 questions, 40 min) ════════
+  -- ═══════════════ EXAMEN BLANC 1 : QCM (24 questions, 40 min) ════════
   -- Composé de questions EXISTANTES des modules A-H (3 par domaine),
   -- liées par source_ref : aucune duplication de contenu.
   INSERT INTO public.quizzes (module_id, title, description, "type", time_limit_s, pass_threshold, is_mock_exam, shuffle_questions)
-  VALUES (v_m9, 'Examen blanc 1 — QCM des 8 domaines',
+  VALUES (v_m9, 'Examen blanc 1 : QCM des 8 domaines',
     'Conditions proches de l''épreuve : 24 QCM couvrant les domaines A à H (3 par domaine), 40 minutes, seuil 60 %. À faire sans documents.',
     'examen', 2400, 60, true, true)
   RETURNING id INTO v_eb1;
@@ -345,9 +345,9 @@ Le correcteur note avec une grille. Chaque réponse suit la même ossature :
   GET DIAGNOSTICS v_count = ROW_COUNT;
   RAISE NOTICE 'Examen blanc 1 : % questions liées sur 24 attendues (si < 24 : appliquer les lots 1-8).', v_count;
 
-  -- ══════ EXAMEN BLANC 2 — Épreuve mixte (16 QCM + 8 QR, 2 h) ═════════
+  -- ══════ EXAMEN BLANC 2 : Épreuve mixte (16 QCM + 8 QR, 2 h) ═════════
   INSERT INTO public.quizzes (module_id, title, description, "type", time_limit_s, pass_threshold, is_mock_exam, shuffle_questions)
-  VALUES (v_m9, 'Examen blanc 2 — Épreuve mixte (QCM + rédigé)',
+  VALUES (v_m9, 'Examen blanc 2 : Épreuve mixte (QCM + rédigé)',
     'Simulation du format complet : 16 QCM (2 par domaine) puis 8 questions rédigées avec calculs (1 par domaine), 2 heures, seuil 60 %. Rédigez réellement vos réponses : la correction s''appuie sur les barèmes.',
     'examen', 7200, 60, true, false)
   RETURNING id INTO v_eb2;

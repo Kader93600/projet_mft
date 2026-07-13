@@ -1,6 +1,6 @@
 -- =====================================================================
--- FIMO / FCO MARCHANDISES — THÈME 1 : CONDUITE RATIONNELLE AXÉE
--- SÉCURITÉ — v1 (juillet 2026) — LOT FIMO-2
+-- FIMO / FCO MARCHANDISES : THÈME 1 : CONDUITE RATIONNELLE AXÉE
+-- SÉCURITÉ : v1 (juillet 2026) : LOT FIMO-2
 --
 -- Objectifs 1.1 à 1.4 du référentiel (directive 2003/59/CE annexe I) :
 -- chaîne cinématique, organes de freinage et aides électroniques,
@@ -32,7 +32,7 @@ BEGIN
 
   INSERT INTO public.blocs (id, code, title, description, "order")
   VALUES (40, 'FIMO-FCO',
-          'FIMO / FCO — Qualification des conducteurs marchandises',
+          'FIMO / FCO : Qualification des conducteurs marchandises',
           'Référentiel de la qualification initiale (FIMO) et continue (FCO) des conducteurs du transport routier de marchandises : directive 2003/59/CE modifiée et arrêté du 3 janvier 2008.',
           40)
   ON CONFLICT DO NOTHING;
@@ -43,7 +43,7 @@ BEGIN
 
   INSERT INTO public.modules (title, slug, bloc_id, summary, difficulty, duration_min, "order")
   VALUES (
-    'Thème 1 — Conduite rationnelle axée sécurité',
+    'Thème 1 : Conduite rationnelle axée sécurité',
     'fimo-t1-conduite-rationnelle',
     v_bloc,
     'Comprendre et exploiter la chaîne cinématique (couple, puissance, consommation), maîtriser freins, ralentisseurs et aides électroniques, adopter l''éco-conduite et sécuriser le chargement : les gestes techniques du conducteur professionnel.',
@@ -55,7 +55,7 @@ BEGIN
   INSERT INTO public.formation_modules (formation_id, module_id, display_order, required)
   VALUES (v_formation, v_module, 20, true);
 
-  -- ─── Leçon 1 — La chaîne cinématique ───────────────────────────────
+  -- ─── Leçon 1 : La chaîne cinématique ───────────────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'chaine-cinematique-comprendre-son-camion',
     'La chaîne cinématique : comprendre son camion',
@@ -107,7 +107,7 @@ Rouler au couple, c'est : moins de bruit, moins de gazole (le premier poste de c
     $mft$Courbes de couple/puissance/consommation, conduite au couple dans la zone verte du compte-tours, usage de la boîte (monter tôt, recouvrement des rapports, rétrograder avant la difficulté).$mft$,
     1, 45) RETURNING id INTO v_l1;
 
-  -- ─── Leçon 2 — Freins, ralentisseurs et aides électroniques ────────
+  -- ─── Leçon 2 : Freins, ralentisseurs et aides électroniques ────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'freins-ralentisseurs-aides-electroniques',
     'Freins, ralentisseurs et aides électroniques',
@@ -155,7 +155,7 @@ Perte de pression, alerte au tableau de bord : réduire immédiatement l'allure,
     $mft$Les quatre moyens de ralentir, la règle de la descente longue (rapport bas avant, ralentisseur principal, freins par touches), le fading, et le vrai rôle des aides (ABS directivité, ESP, AEBS, régulateur).$mft$,
     2, 45) RETURNING id INTO v_l2;
 
-  -- ─── Leçon 3 — L'éco-conduite ──────────────────────────────────────
+  -- ─── Leçon 3 : L'éco-conduite ──────────────────────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'eco-conduite-rouler-pro',
     'L''éco-conduite : rouler pro, consommer moins',
@@ -202,7 +202,7 @@ La **télématique** restitue vos indicateurs : consommation, anticipation (frei
     $mft$Les six techniques d'éco-conduite (anticipation, inertie, couple, vitesse stabilisée, pointe modérée, chasse au ralenti), la coupure d'injection rapport engagé, le lien éco-conduite/sécurité et le mythe du temps perdu.$mft$,
     3, 40) RETURNING id INTO v_l3;
 
-  -- ─── Leçon 4 — Charger et arrimer : les gestes du conducteur ───────
+  -- ─── Leçon 4 : Charger et arrimer : les gestes du conducteur ───────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'charger-arrimer-gestes-conducteur',
     'Charger et arrimer : les gestes du conducteur',
@@ -238,10 +238,10 @@ En mouvement, la marchandise « veut » continuer tout droit : au **freinage app
 ## Vos contrôles, du quai à la livraison
 
 :::timeline
-1. **Avant de partir** — Tour du véhicule : répartition visible, sangles tendues, portes et hayon verrouillés ; réserves écrites si l'expéditeur a mal chargé : vous êtes le dernier contrôle avant la route.
-2. **Après quelques kilomètres** — Re-tension : le chargement se tasse, les sangles se détendent.
-3. **À chaque livraison partielle** — Re-répartir et re-arrimer ce qui reste : une remorque à moitié vide mal répartie devient instable.
-4. **À l'arrivée** — Ouvrir prudemment : une charge déplacée peut tomber à l'ouverture des portes.
+1. **Avant de partir** : Tour du véhicule : répartition visible, sangles tendues, portes et hayon verrouillés ; réserves écrites si l'expéditeur a mal chargé : vous êtes le dernier contrôle avant la route.
+2. **Après quelques kilomètres** : Re-tension : le chargement se tasse, les sangles se détendent.
+3. **À chaque livraison partielle** : Re-répartir et re-arrimer ce qui reste : une remorque à moitié vide mal répartie devient instable.
+4. **À l'arrivée** : Ouvrir prudemment : une charge déplacée peut tomber à l'ouverture des portes.
 :::
 
 > 📌 **À retenir**
@@ -258,12 +258,12 @@ En mouvement, la marchandise « veut » continuer tout droit : au **freinage app
   -- ─── Quiz d'entraînement ────────────────────────────────────────────
   INSERT INTO public.quizzes (module_id, title, description, "type", pass_threshold, timer_enabled)
   VALUES (v_module,
-    'Quiz — Conduite rationnelle',
+    'Quiz : Conduite rationnelle',
     'Vérifiez le thème 1 : chaîne cinématique, freinage et ralentisseurs, éco-conduite, chargement et arrimage.',
     'entrainement', 70, false)
   RETURNING id INTO v_quiz;
 
-  -- ─── QCM (12) — 4 faciles / 5 moyens / 3 difficiles ────────────────
+  -- ─── QCM (12) : 4 faciles / 5 moyens / 3 difficiles ────────────────
   INSERT INTO public.question_bank (formation_id, module_id, lesson_id, "type", statement, choices, max_score, difficulty, tags, source_ref, active, explanation)
   VALUES (v_formation, v_module, v_l1, 'qcm',
     $mft$Que représente la « zone verte » du compte-tours d'un poids lourd ?$mft$,
@@ -506,7 +506,7 @@ En mouvement, la marchandise « veut » continuer tout droit : au **freinage app
    2, 'difficile', ARRAY['fimo-fco','theme-1','question-courte'], 'FIMO-T1-QC-10', false,
    $mft$Trois défauts distincts attendus.$mft$);
 
-  -- ─── QUESTIONS RÉDIGÉES (8) — barème /5 ────────────────────────────
+  -- ─── QUESTIONS RÉDIGÉES (8) : barème /5 ────────────────────────────
   INSERT INTO public.question_bank (formation_id, module_id, lesson_id, "type", statement, expected_answer, scoring_grid, max_score, difficulty, tags, source_ref, active, explanation) VALUES
   (v_formation, v_module, v_l1, 'qr',
    $mft$Expliquez ce que représentent le couple, la puissance et la consommation spécifique d'un moteur de poids lourd, et ce que ces trois courbes impliquent concrètement pour votre façon de conduire.$mft$,

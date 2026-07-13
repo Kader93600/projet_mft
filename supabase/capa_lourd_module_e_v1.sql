@@ -1,6 +1,6 @@
 -- =====================================================================
--- CAPACITÉ DE TRANSPORT > 3,5 T (LOURD) — MODULE E : GESTION
--- COMMERCIALE ET FINANCIÈRE — v1 (juillet 2026) — LOT 6
+-- CAPACITÉ DE TRANSPORT > 3,5 T (LOURD) : MODULE E : GESTION
+-- COMMERCIALE ET FINANCIÈRE : v1 (juillet 2026) : LOT 6
 --
 -- Domaine E de l'annexe I du règlement (CE) n° 1071/2009 : coût de
 -- revient (méthode du trinôme), tarification et indexation gazole,
@@ -44,7 +44,7 @@ BEGIN
 
   INSERT INTO public.modules (title, slug, bloc_id, summary, difficulty, duration_min, "order")
   VALUES (
-    'Module E — Gestion commerciale et financière',
+    'Module E : Gestion commerciale et financière',
     'capa-lourd-gestion-commerciale-financiere',
     v_bloc,
     'Piloter la rentabilité : coût de revient par la méthode du trinôme, tarification et indexation gazole, seuil de rentabilité, lecture du bilan et du compte de résultat, CAF, BFR, trésorerie et financement du matériel roulant.',
@@ -56,7 +56,7 @@ BEGIN
   INSERT INTO public.formation_modules (formation_id, module_id, display_order, required)
   VALUES (v_formation, v_module, 50, true);
 
-  -- ─── Leçon 1 — Le coût de revient : la méthode du trinôme ──────────
+  -- ─── Leçon 1 : Le coût de revient : la méthode du trinôme ──────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'cout-de-revient-trinome',
     'Le coût de revient : charges et méthode du trinôme',
@@ -112,7 +112,7 @@ Le coût moyen d'entreprise cache des écarts : calculer le trinôme **par type 
     $mft$Classement charges fixes/variables, méthode du trinôme (terme kilométrique, horaire conducteur, journalier véhicule+structure) avec exemple chiffré complet, indices CNR et analyse par ligne.$mft$,
     1, 55) RETURNING id INTO v_l1;
 
-  -- ─── Leçon 2 — Du coût au prix : tarifer, indexer, vendre ──────────
+  -- ─── Leçon 2 : Du coût au prix : tarifer, indexer, vendre ──────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'tarification-indexation-gazole-seuil',
     'Du coût au prix : tarification, gazole et seuil de rentabilité',
@@ -163,7 +163,7 @@ Exemple : CA prévisionnel 1 800 000 €, charges variables 1 170 000 € (65 % 
     $mft$Passage du coût au prix avec marge, indexation gazole légale (clause ou révision de plein droit), délai de paiement spécial transport 30 jours, seuil de rentabilité calculé et interprété.$mft$,
     2, 50) RETURNING id INTO v_l2;
 
-  -- ─── Leçon 3 — Lire bilan et compte de résultat ────────────────────
+  -- ─── Leçon 3 : Lire bilan et compte de résultat ────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'bilan-compte-resultat-caf',
     'Lire le bilan, le compte de résultat et la CAF',
@@ -223,7 +223,7 @@ Compte de résultat simplifié : produits 2 400 000 € ; carburant 480 000 ; sa
     $mft$Bilan (actif/passif, capitaux propres = capacité financière), compte de résultat et repères sectoriels, soldes intermédiaires (VA, EBE), CAF = résultat + dotations, exemple chiffré complet.$mft$,
     3, 50) RETURNING id INTO v_l3;
 
-  -- ─── Leçon 4 — Trésorerie, BFR et financement du matériel ──────────
+  -- ─── Leçon 4 : Trésorerie, BFR et financement du matériel ──────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'tresorerie-bfr-financement',
     'Trésorerie, BFR et financement du matériel',
@@ -280,12 +280,12 @@ Critères de choix : coût total comparé, impact sur la trésorerie (apport ini
   -- ─── Quiz d'entraînement ────────────────────────────────────────────
   INSERT INTO public.quizzes (module_id, title, description, "type", pass_threshold, timer_enabled)
   VALUES (v_module,
-    'Quiz — Gestion commerciale et financière',
+    'Quiz : Gestion commerciale et financière',
     'Validez les fondamentaux du module E : coût de revient, tarification, seuil de rentabilité, bilan, CAF, BFR et financement.',
     'entrainement', 70, false)
   RETURNING id INTO v_quiz;
 
-  -- ─── QCM (12) — 4 faciles / 5 moyens / 3 difficiles ────────────────
+  -- ─── QCM (12) : 4 faciles / 5 moyens / 3 difficiles ────────────────
   INSERT INTO public.question_bank (formation_id, module_id, lesson_id, "type", statement, choices, max_score, difficulty, tags, source_ref, active, explanation)
   VALUES (v_formation, v_module, v_l1, 'qcm',
     $mft$Parmi ces charges d'une entreprise de transport, laquelle est une charge variable (liée aux kilomètres parcourus) ?$mft$,
@@ -528,7 +528,7 @@ Critères de choix : coût total comparé, impact sur la trésorerie (apport ini
    2, 'difficile', ARRAY['capa-lourd','module-e','question-courte'], 'CAPA-LOURD-E-QC-10', false,
    $mft$Pas de propriété (ni d'amortissement) pendant le contrat ; comparer le coût total avec l'achat à crédit.$mft$);
 
-  -- ─── QUESTIONS RÉDIGÉES (8) — barème /5 ────────────────────────────
+  -- ─── QUESTIONS RÉDIGÉES (8) : barème /5 ────────────────────────────
   INSERT INTO public.question_bank (formation_id, module_id, lesson_id, "type", statement, expected_answer, scoring_grid, max_score, difficulty, tags, source_ref, active, explanation) VALUES
   (v_formation, v_module, v_l1, 'qr',
    $mft$Classez les postes suivants en charges variables (au kilomètre), charges horaires (personnel) ou charges journalières/fixes, en justifiant brièvement : carburant, assurance flotte, salaires et charges des conducteurs, pneumatiques, amortissement du tracteur, péages, loyer du dépôt, entretien-réparations.$mft$,

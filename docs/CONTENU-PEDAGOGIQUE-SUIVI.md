@@ -5,6 +5,34 @@
 > (`question_bank.active = false`) et une relecture formateur avant mise
 > en production.** Ce document est LA source de vérité du chantier.
 
+## 🎉 CHANTIER TERMINÉ — 6 formations vides comblées (13/07/2026)
+
+Les **6 formations** qui étaient vides ont désormais un contenu complet :
+
+| Formation | Modules | Questions | Examens blancs | Vérif. |
+|---|---|---|---|---|
+| Capacité > 3,5 t | 10 | 250 | 2 | QA + calculs script |
+| FIMO / FCO | 6 | 160 | 2 | QA + calculs script |
+| Taxi-VTC | 9 | 250 | 2 | QA + relecture agent (M1-M4) |
+| ECSR | 6 | 160 | 2 | QA structurelle seule* |
+| ERTV | 6 | 160 | 2 | QA structurelle seule* |
+| Commissionnaire | 6 | 160 | 2 | QA structurelle seule* |
+| **TOTAL produit** | **43** | **1 140** | **12** | — |
+
+**QA globale finale : 432/432 QCM à réponse unique, 0 doublon sur les
+1 140 énoncés, 0 tiret cadratin, 0 apostrophe fautive.**
+
+\* **Important pour la validation** : ECSR, ERTV et Commissionnaire ont
+passé ma **QA structurelle déterministe** (JSON, unicité, statuts,
+examens blancs) mais **PAS la seconde relecture factuelle par agent**
+(le workflow a manqué de crédits en fin de course). Ces 18 modules
+reposent donc sur : les fiches de faits vérifiées fournies aux
+rédacteurs + les marqueurs « à vérifier » sur les points mouvants + la
+**validation formateur (obligatoire de toute façon)**. Priorité de
+relecture : ces 3 formations, en particulier les chiffres réglementaires
+(montants capacité financière voyageurs, plafonds DTS multimodal,
+Incoterms, seuils VTC). Rien n'est actif sans validation humaine.
+
 ## 1. Audit de l'existant (12/07/2026, base de production)
 
 | Formation | Modules | Leçons | QCM actifs | QR actives | Inscriptions |

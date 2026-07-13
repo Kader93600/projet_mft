@@ -1,6 +1,6 @@
 -- =====================================================================
--- FIMO / FCO MARCHANDISES — MODULE 5 : PRÉPARATION À L'ÉVALUATION
--- + 2 EXAMENS BLANCS — v1 (juillet 2026) — LOT FIMO-6 (FINAL)
+-- FIMO / FCO MARCHANDISES : MODULE 5 : PRÉPARATION À L'ÉVALUATION
+-- + 2 EXAMENS BLANCS : v1 (juillet 2026) : LOT FIMO-6 (FINAL)
 --
 -- ⚠ PRÉREQUIS : appliquer d'abord les lots FIMO-1 à FIMO-5 (M0, T1-T4) :
 --   les examens blancs lient des questions EXISTANTES par source_ref.
@@ -24,7 +24,7 @@ BEGIN
   DELETE FROM public.modules WHERE slug = 'fimo-m5-evaluation';
 
   INSERT INTO public.modules (title, slug, bloc_id, summary, difficulty, duration_min, "order")
-  VALUES ('Module 5 — Préparation à l''évaluation',
+  VALUES ('Module 5 : Préparation à l''évaluation',
     'fimo-m5-evaluation', v_bloc,
     'La méthode pour réussir l''évaluation finale, la synthèse des chiffres clés du conducteur, des questions transversales de synthèse et deux évaluations blanches en conditions.',
     'avance', 180, 60) RETURNING id INTO v_module;
@@ -32,7 +32,7 @@ BEGIN
   INSERT INTO public.formation_modules (formation_id, module_id, display_order, required)
   VALUES (v_formation, v_module, 60, true);
 
-  -- ─── Leçon unique — Réussir l'évaluation + chiffres clés ───────────
+  -- ─── Leçon unique : Réussir l'évaluation + chiffres clés ───────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'reussir-evaluation-chiffres-cles',
     'Réussir l''évaluation : méthode et chiffres clés',
@@ -141,9 +141,9 @@ L'**évaluation blanche 1** (questionnaire, 20 questions, 30 minutes) balaie les
    5, 'difficile', ARRAY['fimo-fco','module-5','question-redigee','transversal'], 'FIMO-M5-QR-04', false,
    $mft$Le ROI de la formation conducteur, agrégé et prudent. Calcul carburant vérifié (3×1100=3300 L ; ×1,60=5 280 €).$mft$);
 
-  -- ═══ ÉVALUATION BLANCHE 1 — Questionnaire 20 questions, 30 min ═════
+  -- ═══ ÉVALUATION BLANCHE 1 : Questionnaire 20 questions, 30 min ═════
   INSERT INTO public.quizzes (module_id, title, description, "type", time_limit_s, pass_threshold, is_mock_exam, shuffle_questions)
-  VALUES (v_module, 'Évaluation blanche 1 — Questionnaire',
+  VALUES (v_module, 'Évaluation blanche 1 : Questionnaire',
     'Vingt questions couvrant les cinq modules (qualification, conduite rationnelle, réglementations, santé/sécurité, service), 30 minutes, sans documents.',
     'examen', 1800, 60, true, true)
   RETURNING id INTO v_eb1;
@@ -161,9 +161,9 @@ L'**évaluation blanche 1** (questionnaire, 20 questions, 30 minutes) balaie les
   GET DIAGNOSTICS v_count = ROW_COUNT;
   RAISE NOTICE 'Évaluation blanche 1 : % questions liées sur 20 attendues (si < 20 : appliquer les lots FIMO-1 à 5).', v_count;
 
-  -- ═══ ÉVALUATION BLANCHE 2 — Mixte 10 QCM + 5 QR, 90 min ════════════
+  -- ═══ ÉVALUATION BLANCHE 2 : Mixte 10 QCM + 5 QR, 90 min ════════════
   INSERT INTO public.quizzes (module_id, title, description, "type", time_limit_s, pass_threshold, is_mock_exam, shuffle_questions)
-  VALUES (v_module, 'Évaluation blanche 2 — Mixte (questionnaire + rédigé)',
+  VALUES (v_module, 'Évaluation blanche 2 : Mixte (questionnaire + rédigé)',
     'Format complet : dix questions de questionnaire puis cinq questions à réponse construite (une par module), 90 minutes. Rédigez réellement : la correction s''appuie sur les barèmes.',
     'examen', 5400, 60, true, false)
   RETURNING id INTO v_eb2;

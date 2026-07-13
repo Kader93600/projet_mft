@@ -1,6 +1,6 @@
 -- =====================================================================
--- CAPACITÉ DE TRANSPORT > 3,5 T (LOURD) — MODULE F : ACCÈS À LA
--- PROFESSION ET AU MARCHÉ — v1 (juillet 2026) — MODULE PILOTE
+-- CAPACITÉ DE TRANSPORT > 3,5 T (LOURD) : MODULE F : ACCÈS À LA
+-- PROFESSION ET AU MARCHÉ : v1 (juillet 2026) : MODULE PILOTE
 --
 -- Contenu créé en l'absence des supports client, sur la base des
 -- référentiels officiels :
@@ -61,7 +61,7 @@ BEGIN
   -- ─── 4. Module F ────────────────────────────────────────────────────
   INSERT INTO public.modules (title, slug, bloc_id, summary, difficulty, duration_min, "order")
   VALUES (
-    'Module F — Accès à la profession et au marché',
+    'Module F : Accès à la profession et au marché',
     'capa-lourd-acces-profession-marche',
     v_bloc,
     'Les quatre exigences d''accès à la profession de transporteur lourd (établissement, honorabilité, capacités financière et professionnelle), le gestionnaire de transport, le registre et les licences, le transport international et le cabotage, les contrôles et sanctions.',
@@ -73,7 +73,7 @@ BEGIN
   INSERT INTO public.formation_modules (formation_id, module_id, display_order, required)
   VALUES (v_formation, v_module, 60, true);
 
-  -- ─── 5. Leçon 1 — Les quatre exigences d'accès ─────────────────────
+  -- ─── 5. Leçon 1 : Les quatre exigences d'accès ─────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'quatre-exigences-acces-profession',
     'Les quatre exigences d''accès à la profession',
@@ -145,7 +145,7 @@ Il doit avoir un **lien réel** avec l'entreprise : salarié, directeur, propri�
     $mft$Les quatre exigences cumulatives d'accès à la profession (règlement CE 1071/2009), les montants de capacité financière du lourd et le statut du gestionnaire de transport.$mft$,
     1, 45) RETURNING id INTO v_l1;
 
-  -- ─── 6. Leçon 2 — Autorisation, registre et titres de transport ────
+  -- ─── 6. Leçon 2 : Autorisation, registre et titres de transport ────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'autorisation-registre-licences',
     'Autorisation d''exercer, registre et licences',
@@ -157,11 +157,11 @@ Il doit avoir un **lien réel** avec l'entreprise : salarié, directeur, propri�
 ## Le parcours d'entrée dans la profession
 
 :::timeline
-1. **Réunir les quatre exigences** — établissement, honorabilité, capacité financière, capacité professionnelle (gestionnaire désigné).
-2. **Déposer la demande d'autorisation** — dossier auprès de la DREAL de la région du siège (DRIEAT en Île-de-France, DEAL outre-mer).
-3. **Inscription au registre** — l'entreprise est inscrite au registre électronique national des entreprises de transport par route.
-4. **Délivrance de la licence** — licence de transport intérieur ou licence communautaire, avec ses copies conformes numérotées.
-5. **Exploitation et obligations continues** — mise à jour de la flotte, signalement des changements (siège, gestionnaire), preuve annuelle de capacité financière.
+1. **Réunir les quatre exigences** : établissement, honorabilité, capacité financière, capacité professionnelle (gestionnaire désigné).
+2. **Déposer la demande d'autorisation** : dossier auprès de la DREAL de la région du siège (DRIEAT en Île-de-France, DEAL outre-mer).
+3. **Inscription au registre** : l'entreprise est inscrite au registre électronique national des entreprises de transport par route.
+4. **Délivrance de la licence** : licence de transport intérieur ou licence communautaire, avec ses copies conformes numérotées.
+5. **Exploitation et obligations continues** : mise à jour de la flotte, signalement des changements (siège, gestionnaire), preuve annuelle de capacité financière.
 :::
 
 ## Le registre électronique national
@@ -206,7 +206,7 @@ Lorsqu'une entreprise établie dans l'UE emploie un conducteur **ressortissant d
     $mft$Le parcours DREAL et le registre électronique national, la licence intérieure et la licence communautaire avec leurs copies conformes, et les documents de bord obligatoires.$mft$,
     2, 40) RETURNING id INTO v_l2;
 
-  -- ─── 7. Leçon 3 — International et cabotage ────────────────────────
+  -- ─── 7. Leçon 3 : International et cabotage ────────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'transport-international-cabotage',
     'Transport international et cabotage',
@@ -258,7 +258,7 @@ Depuis la directive (UE) 2020/1057, le cabotage et le transport triangulaire rel
     $mft$La licence communautaire, les règles de cabotage 3 opérations en 7 jours, l'entrée à vide, la carence de 4 jours du paquet mobilité et les preuves CMR à conserver.$mft$,
     3, 45) RETURNING id INTO v_l3;
 
-  -- ─── 8. Leçon 4 — Contrôles, sanctions, perte des exigences ────────
+  -- ─── 8. Leçon 4 : Contrôles, sanctions, perte des exigences ────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'controles-sanctions-perte-exigences',
     'Contrôles, sanctions et perte des exigences',
@@ -321,12 +321,12 @@ Un délai de régularisation est généralement accordé : par exemple, remplace
   -- devient réellement jouable qu'après validation des questions.
   INSERT INTO public.quizzes (module_id, title, description, "type", pass_threshold, timer_enabled)
   VALUES (v_module,
-    'Quiz — Accès à la profession et au marché',
+    'Quiz : Accès à la profession et au marché',
     'Vérifiez les fondamentaux du module F : exigences d''accès, gestionnaire, licences, cabotage, sanctions.',
     'entrainement', 70, false)
   RETURNING id INTO v_quiz;
 
-  -- ─── 10. QCM (12) — répartition 4 faciles / 5 moyens / 3 difficiles ─
+  -- ─── 10. QCM (12) : répartition 4 faciles / 5 moyens / 3 difficiles ─
   INSERT INTO public.question_bank (formation_id, module_id, lesson_id, "type", statement, choices, max_score, difficulty, tags, source_ref, active, explanation)
   VALUES (v_formation, v_module, v_l1, 'qcm',
     $mft$Quelles sont les quatre exigences cumulatives d'accès à la profession de transporteur routier lourd fixées par le règlement (CE) n° 1071/2009 ?$mft$,
@@ -507,7 +507,7 @@ Un délai de régularisation est généralement accordé : par exemple, remplace
   v_ord := v_ord + 10;
   INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order) VALUES (v_quiz, v_q, v_ord);
 
-  -- ─── 11. QUESTIONS COURTES (10) — type qr, tag question-courte ─────
+  -- ─── 11. QUESTIONS COURTES (10) : type qr, tag question-courte ─────
   -- Réponse attendue en quelques mots ; max_score 2 ; correction rapide.
   INSERT INTO public.question_bank (formation_id, module_id, lesson_id, "type", statement, expected_answer, max_score, difficulty, tags, source_ref, active, explanation) VALUES
   (v_formation, v_module, v_l1, 'qr',
@@ -570,7 +570,7 @@ Un délai de régularisation est généralement accordé : par exemple, remplace
    2, 'difficile', ARRAY['capa-lourd','module-f','question-courte'], 'CAPA-LOURD-F-QC-10', false,
    $mft$Arrêté du 3 février 2012. Exiger la notion de moitié/50 %.$mft$);
 
-  -- ─── 12. QUESTIONS RÉDIGÉES (8) — type qr, barème détaillé ─────────
+  -- ─── 12. QUESTIONS RÉDIGÉES (8) : type qr, barème détaillé ─────────
   -- Réponse construite attendue ; max_score 5 ; scoring_grid = barème.
   INSERT INTO public.question_bank (formation_id, module_id, lesson_id, "type", statement, expected_answer, scoring_grid, max_score, difficulty, tags, source_ref, active, explanation) VALUES
   (v_formation, v_module, v_l1, 'qr',

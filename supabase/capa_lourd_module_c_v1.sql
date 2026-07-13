@@ -1,6 +1,6 @@
 -- =====================================================================
--- CAPACITÉ DE TRANSPORT > 3,5 T (LOURD) — MODULE C : DROIT SOCIAL — v1
--- (juillet 2026) — LOT 4
+-- CAPACITÉ DE TRANSPORT > 3,5 T (LOURD) : MODULE C : DROIT SOCIAL : v1
+-- (juillet 2026) : LOT 4
 --
 -- Domaine C de l'annexe I du règlement (CE) n° 1071/2009 : contrat de
 -- travail et embauche du conducteur, durées de conduite et de repos
@@ -41,7 +41,7 @@ BEGIN
 
   INSERT INTO public.modules (title, slug, bloc_id, summary, difficulty, duration_min, "order")
   VALUES (
-    'Module C — Droit social',
+    'Module C : Droit social',
     'capa-lourd-droit-social',
     v_bloc,
     'Embaucher et gérer les conducteurs : contrat de travail et convention collective, durées de conduite et de repos du règlement 561/2006, chronotachygraphe, temps de travail des roulants, paie, formation obligatoire et rupture du contrat.',
@@ -53,7 +53,7 @@ BEGIN
   INSERT INTO public.formation_modules (formation_id, module_id, display_order, required)
   VALUES (v_formation, v_module, 30, true);
 
-  -- ─── Leçon 1 — Contrat de travail et embauche du conducteur ────────
+  -- ─── Leçon 1 : Contrat de travail et embauche du conducteur ────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'contrat-travail-embauche-conducteur',
     'Le contrat de travail et l''embauche du conducteur',
@@ -78,12 +78,12 @@ Les entreprises de transport routier relèvent de la **convention collective nat
 ## Embaucher un conducteur PL : la procédure
 
 :::timeline
-1. **Vérifications préalables** — permis de conduire en cours de validité (C/CE), carte de qualification de conducteur (FIMO/FCO à jour), carte de conducteur (chronotachygraphe).
-2. **DPAE** — déclaration préalable à l'embauche auprès de l'URSSAF, avant la prise de poste.
-3. **Contrat écrit** — poste, coefficient conventionnel, lieu de rattachement, durée du travail, clauses utiles (mobilité).
-4. **Formalités internes** — inscription au registre unique du personnel, affiliations (mutuelle, prévoyance), remise des documents d'entreprise.
-5. **Suivi médical** — visite d'information et de prévention, ou suivi renforcé selon le poste ; aptitude à surveiller dans le temps.
-6. **Intégration** — accueil sécurité, consignes d'exploitation, procédure en cas d'accident.
+1. **Vérifications préalables** : permis de conduire en cours de validité (C/CE), carte de qualification de conducteur (FIMO/FCO à jour), carte de conducteur (chronotachygraphe).
+2. **DPAE** : déclaration préalable à l'embauche auprès de l'URSSAF, avant la prise de poste.
+3. **Contrat écrit** : poste, coefficient conventionnel, lieu de rattachement, durée du travail, clauses utiles (mobilité).
+4. **Formalités internes** : inscription au registre unique du personnel, affiliations (mutuelle, prévoyance), remise des documents d'entreprise.
+5. **Suivi médical** : visite d'information et de prévention, ou suivi renforcé selon le poste ; aptitude à surveiller dans le temps.
+6. **Intégration** : accueil sécurité, consignes d'exploitation, procédure en cas d'accident.
 :::
 
 > ⚠️ **Attention**
@@ -103,7 +103,7 @@ Les entreprises de transport routier relèvent de la **convention collective nat
     $mft$CDI/CDD et cas de recours, période d'essai, convention collective des transports routiers, procédure complète d'embauche d'un conducteur PL (permis, CQC, carte conducteur, DPAE, visite).$mft$,
     1, 45) RETURNING id INTO v_l1;
 
-  -- ─── Leçon 2 — Durées de conduite et de repos (561/2006) ───────────
+  -- ─── Leçon 2 : Durées de conduite et de repos (561/2006) ───────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'durees-conduite-repos-561-2006',
     'Durées de conduite et de repos : le règlement 561/2006',
@@ -157,7 +157,7 @@ Un conducteur prend son service lundi 6 h. Il peut conduire 9 h (10 h ce jour s'
     $mft$Plafonds 9h/56h/90h, pause 45 min (15+30) après 4h30, repos journalier 11h (réduit 9h, fractionné 3+9) et hebdomadaire 45h (réduit 24h + compensation), interdiction du 45h en cabine et droit au retour.$mft$,
     2, 55) RETURNING id INTO v_l2;
 
-  -- ─── Leçon 3 — Chronotachygraphe et temps de travail ───────────────
+  -- ─── Leçon 3 : Chronotachygraphe et temps de travail ───────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'chronotachygraphe-temps-travail',
     'Chronotachygraphe et temps de travail des roulants',
@@ -213,7 +213,7 @@ Sur route : carte + données des **28 jours courants** (le conducteur doit pouvo
     $mft$Chronotachygraphe et cartes (conducteur 5 ans), téléchargements 28/90 jours, distinction conduite/travail/service, plafonds 48h moyenne et 60h max, infractions et honorabilité.$mft$,
     3, 50) RETURNING id INTO v_l3;
 
-  -- ─── Leçon 4 — Paie, formation, rupture et relations collectives ───
+  -- ─── Leçon 4 : Paie, formation, rupture et relations collectives ───
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'paie-formation-rupture-irp',
     'Paie, formation obligatoire, rupture et relations collectives',
@@ -269,12 +269,12 @@ La suspension ou l'invalidation du permis d'un conducteur, même pour des faits 
   -- ─── Quiz d'entraînement ────────────────────────────────────────────
   INSERT INTO public.quizzes (module_id, title, description, "type", pass_threshold, timer_enabled)
   VALUES (v_module,
-    'Quiz — Droit social',
+    'Quiz : Droit social',
     'Validez les fondamentaux du module C : contrat de travail, règlement 561/2006, chronotachygraphe, paie et rupture.',
     'entrainement', 70, false)
   RETURNING id INTO v_quiz;
 
-  -- ─── QCM (12) — 4 faciles / 5 moyens / 3 difficiles ────────────────
+  -- ─── QCM (12) : 4 faciles / 5 moyens / 3 difficiles ────────────────
   INSERT INTO public.question_bank (formation_id, module_id, lesson_id, "type", statement, choices, max_score, difficulty, tags, source_ref, active, explanation)
   VALUES (v_formation, v_module, v_l2, 'qcm',
     $mft$Quelle est la durée maximale de conduite journalière, et combien de fois par semaine peut-elle être portée à son plafond dérogatoire ?$mft$,
@@ -517,7 +517,7 @@ La suspension ou l'invalidation du permis d'un conducteur, même pour des faits 
    2, 'difficile', ARRAY['capa-lourd','module-c','question-courte'], 'CAPA-LOURD-C-QC-10', false,
    $mft$L'ordre est imposé (3 h d'abord, 9 h ensuite) ; ce repos fractionné reste un repos « normal ».$mft$);
 
-  -- ─── QUESTIONS RÉDIGÉES (8) — barème /5 ────────────────────────────
+  -- ─── QUESTIONS RÉDIGÉES (8) : barème /5 ────────────────────────────
   INSERT INTO public.question_bank (formation_id, module_id, lesson_id, "type", statement, expected_answer, scoring_grid, max_score, difficulty, tags, source_ref, active, explanation) VALUES
   (v_formation, v_module, v_l2, 'qr',
    $mft$Présentez l'ensemble des règles de conduite et de pause du règlement 561/2006 : plafonds journalier, hebdomadaire et bi-hebdomadaire, et régime de la pause.$mft$,

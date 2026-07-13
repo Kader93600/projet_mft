@@ -1,6 +1,6 @@
 -- =====================================================================
--- FIMO / FCO MARCHANDISES — THÈME 2 : RÉGLEMENTATIONS DU TRANSPORT
--- v1 (juillet 2026) — LOT FIMO-3
+-- FIMO / FCO MARCHANDISES : THÈME 2 : RÉGLEMENTATIONS DU TRANSPORT
+-- v1 (juillet 2026) : LOT FIMO-3
 -- Angle conducteur : les règles APPLIQUÉES au volant (scénarios),
 -- le chronotachygraphe au quotidien, les documents et le contrôle.
 -- ⚠ STATUT : active = false (« à valider »). Idempotent.
@@ -23,7 +23,7 @@ BEGIN
   DELETE FROM public.modules WHERE slug = 'fimo-t2-reglementations';
 
   INSERT INTO public.modules (title, slug, bloc_id, summary, difficulty, duration_min, "order")
-  VALUES ('Thème 2 — Réglementations du transport',
+  VALUES ('Thème 2 : Réglementations du transport',
     'fimo-t2-reglementations', v_bloc,
     'Vos temps de conduite et de repos appliqués à la journée réelle, le chronotachygraphe au quotidien (sélecteur, carte, incidents), les documents de bord et le bon déroulement d''un contrôle routier.',
     'intermediaire', 420, 30) RETURNING id INTO v_module;
@@ -31,7 +31,7 @@ BEGIN
   INSERT INTO public.formation_modules (formation_id, module_id, display_order, required)
   VALUES (v_formation, v_module, 30, true);
 
-  -- ─── Leçon 1 — Vos temps de conduite et de repos, en vrai ──────────
+  -- ─── Leçon 1 : Vos temps de conduite et de repos, en vrai ──────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'temps-conduite-repos-au-quotidien',
     'Vos temps de conduite et de repos, appliqués à la journée',
@@ -71,7 +71,7 @@ Prise de service 6 h 00. Vous pouvez conduire **4 h 30** au maximum d'affilée :
     $mft$La journée type 4h30/45min/4h30, les scénarios de fin de journée (rallonges épuisées, 56h→34h), la distinction pause/travail/repos et les fenêtres de 24h et 6×24h.$mft$,
     1, 45) RETURNING id INTO v_l1;
 
-  -- ─── Leçon 2 — Le chronotachygraphe au quotidien ───────────────────
+  -- ─── Leçon 2 : Le chronotachygraphe au quotidien ───────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'chronotachygraphe-au-quotidien',
     'Le chronotachygraphe au quotidien',
@@ -83,10 +83,10 @@ Prise de service 6 h 00. Vous pouvez conduire **4 h 30** au maximum d'affilée :
 ## Les gestes de la journée
 
 :::timeline
-1. **Prise de service** — Insérer VOTRE carte, saisir le pays, vérifier l'heure (le tachy est en temps universel : l'heure locale se convertit).
-2. **En roulant** — La conduite s'enregistre automatiquement dès que le véhicule bouge.
-3. **À l'arrêt** — Basculer le sélecteur : **autres travaux** (chargement, plein, administratif), **disponibilité** (attente sans obligation de rester au poste), **repos/pause** (temps libre). Le sélecteur ne se règle pas « plus tard » : il se règle au moment.
-4. **Fin de service** — Saisir le pays de fin, retirer la carte. Votre repos commence quand l'activité s'arrête vraiment.
+1. **Prise de service** : Insérer VOTRE carte, saisir le pays, vérifier l'heure (le tachy est en temps universel : l'heure locale se convertit).
+2. **En roulant** : La conduite s'enregistre automatiquement dès que le véhicule bouge.
+3. **À l'arrêt** : Basculer le sélecteur : **autres travaux** (chargement, plein, administratif), **disponibilité** (attente sans obligation de rester au poste), **repos/pause** (temps libre). Le sélecteur ne se règle pas « plus tard » : il se règle au moment.
+4. **Fin de service** : Saisir le pays de fin, retirer la carte. Votre repos commence quand l'activité s'arrête vraiment.
 :::
 
 > ❌ **Piège à éviter**
@@ -114,7 +114,7 @@ Vous devez pouvoir justifier la journée en cours et les **28 jours précédents
     $mft$Les gestes tachy de la journée (carte, sélecteur au bon moment, pays), les incidents (carte oubliée/perdue, panne, attestation d'activités, saisies manuelles) et le contrôle des 28 jours.$mft$,
     2, 45) RETURNING id INTO v_l2;
 
-  -- ─── Leçon 3 — Documents de bord et contrôle ───────────────────────
+  -- ─── Leçon 3 : Documents de bord et contrôle ───────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'documents-de-bord-controle',
     'Vos documents de bord et le contrôle routier',
@@ -165,7 +165,7 @@ Sur route (forces de l'ordre, contrôleurs des transports) : ralentir, suivre le
     $mft$Les trois familles de documents de bord, la lettre de voiture aux trois moments clés (réserves précises, émargement), et le comportement professionnel en contrôle routier.$mft$,
     3, 40) RETURNING id INTO v_l3;
 
-  -- ─── Leçon 4 — Le cadre du transport, vu du volant ─────────────────
+  -- ─── Leçon 4 : Le cadre du transport, vu du volant ─────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'cadre-du-transport-vu-du-volant',
     'Le cadre du transport, vu du volant',
@@ -209,7 +209,7 @@ Le poids annoncé figure sur la lettre de voiture ; la charge utile de VOTRE ens
 
   -- ─── Quiz ────────────────────────────────────────────────────────────
   INSERT INTO public.quizzes (module_id, title, description, "type", pass_threshold, timer_enabled)
-  VALUES (v_module, 'Quiz — Réglementations du transport',
+  VALUES (v_module, 'Quiz : Réglementations du transport',
     'Vérifiez le thème 2 : temps de conduite appliqués, chronotachygraphe, documents et contrôle.',
     'entrainement', 70, false) RETURNING id INTO v_quiz;
 
@@ -456,7 +456,7 @@ Le poids annoncé figure sur la lettre de voiture ; la charge utile de VOTRE ens
    2, 'difficile', ARRAY['fimo-fco','theme-2','question-courte'], 'FIMO-T2-QC-10', false,
    $mft$Source classique d'erreurs de saisie manuelle.$mft$);
 
-  -- ─── QUESTIONS RÉDIGÉES (8) — barème /5 ────────────────────────────
+  -- ─── QUESTIONS RÉDIGÉES (8) : barème /5 ────────────────────────────
   INSERT INTO public.question_bank (formation_id, module_id, lesson_id, "type", statement, expected_answer, scoring_grid, max_score, difficulty, tags, source_ref, active, explanation) VALUES
   (v_formation, v_module, v_l1, 'qr',
    $mft$Déroulez une journée complète conforme pour cette mission : prise de service 5 h, trajet aller 4 h de conduite, déchargement 1 h, trajet retour 4 h 30 de conduite. Placez pauses et repos avec les horaires.$mft$,

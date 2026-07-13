@@ -72,7 +72,7 @@ Refuser avec élégance renforce d'ailleurs votre image : « je ne bois jamais e
 
 ## Stupéfiants : tolérance zéro
 
-Pour les stupéfiants, il n'existe aucun seuil toléré au volant : c'est la tolérance zéro. Le dépistage salivaire au bord de la route détecte des traces plusieurs jours après la consommation : le « joint du samedi soir » peut être positif au contrôle du lundi matin, alors même que les effets ressentis ont disparu. Pour un professionnel dont la carte est le gagne-pain, l'enjeu dépasse la sanction routière : c'est l'activité elle-même qui est en jeu.
+Pour les stupéfiants, il n'existe aucun seuil toléré au volant : c'est la tolérance zéro. Le dépistage salivaire au bord de la route peut détecter des traces bien après la disparition des effets, parfois plusieurs jours après la consommation selon le produit et la fréquence d'usage (durées exactes variables, à vérifier) : le « joint du samedi soir » peut encore être positif au contrôle du lundi matin, alors même que les effets ressentis ont disparu. Pour un professionnel dont la carte est le gagne-pain, l'enjeu dépasse la sanction routière : c'est l'activité elle-même qui est en jeu.
 
 ## Médicaments : lire la boîte avant de prendre le volant
 
@@ -98,7 +98,7 @@ Le téléphone est votre outil de travail : courses, guidage, messages clients. 
 ## ✅ Synthèse
 
 - Fatigue : signaux (bâillements, paupières, trajectoire) = **arrêt immédiat** ; seule la pause repose, pas le café.
-- Alcool : les seuils s'appliquent au professionnel **en toutes circonstances** (contravention dès 0,5 g/L, délit à 0,8 g/L) ; stupéfiants : **tolérance zéro**, détection plusieurs jours après.
+- Alcool : les seuils s'appliquent au professionnel **en toutes circonstances** (contravention dès 0,5 g/L, délit à 0,8 g/L) ; stupéfiants : **tolérance zéro**, détection possible plusieurs jours après.
 - Médicaments : pictogrammes lus, métier annoncé au prescripteur.
 - Téléphone : support fixe, guidage vocal, **tout réglage à l'arrêt**.$mft$,
     $mft$La fatigue nocturne du chauffeur en scénario (signaux, pauses, décision d'arrêt), le refus du dernier verre malgré la pression du client (seuils 0,5 et 0,8 g/L), la tolérance zéro stupéfiants, les médicaments à pictogrammes et la maîtrise du téléphone connecté.$mft$,
@@ -415,13 +415,13 @@ Trousse de premiers secours, gilet et triangle, extincteur, constats vierges et 
   VALUES (v_formation, v_module, v_l1, 'qcm',
     $mft$Un collègue affirme qu'un « joint fumé samedi soir » est sans risque pour reprendre le volant lundi matin. Qu'en est-il ?$mft$,
     $mft$[
-      {"id":"a","label":"C'est faux : les stupéfiants se dépistent plusieurs jours après la consommation et la règle au volant est la tolérance zéro, sans seuil","is_correct":true},
+      {"id":"a","label":"C'est faux : les stupéfiants peuvent se dépister plusieurs jours après la consommation et la règle au volant est la tolérance zéro, sans seuil","is_correct":true},
       {"id":"b","label":"C'est vrai si plus de vingt-quatre heures se sont écoulées","is_correct":false},
       {"id":"c","label":"C'est vrai : seul l'alcool est recherché lors des contrôles routiers","is_correct":false},
       {"id":"d","label":"C'est vrai tant qu'aucun effet n'est ressenti","is_correct":false}
     ]$mft$::jsonb,
     1, 'difficile', ARRAY['taxi-vtc','module-4','qcm-v1'], 'TAXI-M4-QCM-12', false,
-    $mft$La règle est la tolérance zéro et le dépistage salivaire détecte des traces plusieurs jours après : l'absence d'effet ressenti ne garantit en rien un test négatif, l'alcool n'est pas la seule substance recherchée, et la carte professionnelle est en jeu.$mft$)
+    $mft$La règle est la tolérance zéro et le dépistage peut détecter des traces plusieurs jours après la consommation, selon le produit et la fréquence d'usage : l'absence d'effet ressenti ne garantit en rien un test négatif, l'alcool n'est pas la seule substance recherchée, et la carte professionnelle est en jeu.$mft$)
   RETURNING id INTO v_q;
   v_ord := v_ord + 10;
   INSERT INTO public.quiz_question_bank (quiz_id, question_id, display_order) VALUES (v_quiz, v_q, v_ord);

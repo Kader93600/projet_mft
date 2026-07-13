@@ -1,6 +1,6 @@
 -- =====================================================================
--- FIMO / FCO MARCHANDISES — THÈME 3 : SANTÉ, SÉCURITÉ ROUTIÈRE ET
--- ENVIRONNEMENTALE — v1 (juillet 2026) — LOT FIMO-4
+-- FIMO / FCO MARCHANDISES : THÈME 3 : SANTÉ, SÉCURITÉ ROUTIÈRE ET
+-- ENVIRONNEMENTALE : v1 (juillet 2026) : LOT FIMO-4
 -- Angle conducteur : vigilance et hygiène de vie, gestes et postures,
 -- réaction à l'accident, sûreté du fret et passagers clandestins.
 -- ⚠ STATUT : active = false (« à valider »). Idempotent.
@@ -22,7 +22,7 @@ BEGIN
   DELETE FROM public.modules WHERE slug = 'fimo-t3-sante-securite';
 
   INSERT INTO public.modules (title, slug, bloc_id, summary, difficulty, duration_min, "order")
-  VALUES ('Thème 3 — Santé, sécurité routière et environnementale',
+  VALUES ('Thème 3 : Santé, sécurité routière et environnementale',
     'fimo-t3-sante-securite', v_bloc,
     'Rester apte et vigilant (fatigue, substances, hygiène de vie), préserver son corps (gestes, postures, chutes), réagir correctement à l''accident, et protéger le fret comme le véhicule (vols, passagers clandestins).',
     'intermediaire', 420, 40) RETURNING id INTO v_module;
@@ -30,7 +30,7 @@ BEGIN
   INSERT INTO public.formation_modules (formation_id, module_id, display_order, required)
   VALUES (v_formation, v_module, 40, true);
 
-  -- ─── Leçon 1 — Vigilance, hygiène de vie et substances ─────────────
+  -- ─── Leçon 1 : Vigilance, hygiène de vie et substances ─────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'vigilance-hygiene-de-vie',
     'Vigilance au volant : fatigue, substances, hygiène de vie',
@@ -74,7 +74,7 @@ En dessous de 0,5 g/L la loi tolère : votre métier, lui, tolère mal : deux ve
     $mft$Signes de fatigue et sieste flash, élimination lente de l'alcool (la veille compte), tolérance zéro stupéfiants, pictogrammes médicaments 2/3, et l'hygiène de vie du conducteur.$mft$,
     1, 40) RETURNING id INTO v_l1;
 
-  -- ─── Leçon 2 — Votre corps est votre outil ─────────────────────────
+  -- ─── Leçon 2 : Votre corps est votre outil ─────────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'gestes-postures-risques-physiques',
     'Votre corps est votre outil : gestes, postures, chutes',
@@ -123,7 +123,7 @@ Votre aptitude est suivie (visite du permis lourd, suivi en entreprise). Douleur
     $mft$Les deux accidents types (chute, lombalgie), la descente trois points d'appui, la technique de levage, les règles hayon/transpalette, les EPI et le suivi d'aptitude.$mft$,
     2, 40) RETURNING id INTO v_l2;
 
-  -- ─── Leçon 3 — L'accident : éviter, réagir ─────────────────────────
+  -- ─── Leçon 3 : L'accident : éviter, réagir ─────────────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'accident-eviter-reagir',
     'L''accident : l''éviter, y réagir',
@@ -142,10 +142,10 @@ Votre aptitude est suivie (visite du permis lourd, suivi en entreprise). Douleur
 ## Les premières minutes d'un accident
 
 :::timeline
-1. **Se protéger** — Feux de détresse, moteur coupé, gilet AVANT de descendre, ne pas s'exposer au trafic.
-2. **Protéger la zone** — Triangle à distance utile (sauf exposition dangereuse sur autoroute : priorité à la mise à l'abri derrière la glissière), passagers et témoins écartés de la chaussée.
-3. **Alerter** — 112 (ou borne d'urgence qui localise) : lieu précis, blessés, nombre de véhicules, risques particuliers (fuite, marchandise).
-4. **Secourir** — Sans déplacer les blessés (sauf danger immédiat type incendie), couvrir, parler, rester.
+1. **Se protéger** : Feux de détresse, moteur coupé, gilet AVANT de descendre, ne pas s'exposer au trafic.
+2. **Protéger la zone** : Triangle à distance utile (sauf exposition dangereuse sur autoroute : priorité à la mise à l'abri derrière la glissière), passagers et témoins écartés de la chaussée.
+3. **Alerter** : 112 (ou borne d'urgence qui localise) : lieu précis, blessés, nombre de véhicules, risques particuliers (fuite, marchandise).
+4. **Secourir** : Sans déplacer les blessés (sauf danger immédiat type incendie), couvrir, parler, rester.
 :::
 
 ## Le constat qui protège
@@ -167,7 +167,7 @@ Un accident, même bénin, s'analyse à froid : qu'est-ce qui l'a rendu possible
     $mft$Situations à risque du PL (angles morts, interdistances, manœuvres, météo), la séquence des premières minutes, le constat qui protège sans aveu de responsabilité, et les délais AT 24/48 h.$mft$,
     3, 40) RETURNING id INTO v_l3;
 
-  -- ─── Leçon 4 — Sûreté : fret, véhicule, clandestins ────────────────
+  -- ─── Leçon 4 : Sûreté : fret, véhicule, clandestins ────────────────
   INSERT INTO public.lessons (module_id, slug, title, content_md, summary_md, "order", duration_min)
   VALUES (v_module, 'surete-fret-vehicule-clandestins',
     'Sûreté : protéger le fret, le véhicule et éviter les passagers clandestins',
@@ -213,7 +213,7 @@ Carte carburant et code jamais ensemble, cabine vidée des objets visibles (tél
 
   -- ─── Quiz ────────────────────────────────────────────────────────────
   INSERT INTO public.quizzes (module_id, title, description, "type", pass_threshold, timer_enabled)
-  VALUES (v_module, 'Quiz — Santé et sécurité',
+  VALUES (v_module, 'Quiz : Santé et sécurité',
     'Vérifiez le thème 3 : vigilance, gestes et postures, réaction à l''accident, sûreté.',
     'entrainement', 70, false) RETURNING id INTO v_quiz;
 
@@ -460,7 +460,7 @@ Carte carburant et code jamais ensemble, cabine vidée des objets visibles (tél
    2, 'difficile', ARRAY['fimo-fco','theme-3','question-courte'], 'FIMO-T3-QC-10', false,
    $mft$Sécurité, autorités, exploitation : jamais seul.$mft$);
 
-  -- ─── QUESTIONS RÉDIGÉES (8) — barème /5 ────────────────────────────
+  -- ─── QUESTIONS RÉDIGÉES (8) : barème /5 ────────────────────────────
   INSERT INTO public.question_bank (formation_id, module_id, lesson_id, "type", statement, expected_answer, scoring_grid, max_score, difficulty, tags, source_ref, active, explanation) VALUES
   (v_formation, v_module, v_l1, 'qr',
    $mft$Décrivez les signes annonciateurs de l'endormissement au volant, les fausses solutions couramment utilisées, et la seule stratégie efficace (avec les créneaux horaires les plus dangereux).$mft$,
