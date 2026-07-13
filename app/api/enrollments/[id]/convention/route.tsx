@@ -419,10 +419,11 @@ function Doc({ refLabel, stagiaire, funder, e }: DocProps) {
 
         <Text style={styles.sectionTitle}>Article 9 — Litiges</Text>
         <Text style={styles.smallP}>
-          Tout litige fera l'objet d'une tentative de résolution amiable. Le
-          consommateur peut saisir gratuitement le médiateur :{" "}
-          {LEGAL.mediator.name}. À défaut, les tribunaux français sont
-          compétents.
+          Tout litige fera l'objet d'une tentative de résolution amiable.{" "}
+          {!LEGAL.mediator.name.includes("COMPLÉTER")
+            ? `Le consommateur peut saisir gratuitement le médiateur de la consommation : ${LEGAL.mediator.name} (${LEGAL.mediator.website}).`
+            : `Conformément à l'article L. 612-1 du Code de la consommation, le consommateur peut recourir gratuitement à un médiateur de la consommation ; ses coordonnées sont communiquées sur demande à ${LEGAL.email}.`}{" "}
+          À défaut, les tribunaux français sont compétents.
         </Text>
 
         <Text style={styles.sectionTitle}>Article 10 — Acceptation</Text>

@@ -72,7 +72,23 @@ export const LEGAL = {
   shortDescription:
     "Centre de formation spécialisé dans les métiers du transport routier de marchandises et de voyageurs. Préparation aux titres pros, capacité de transport, FIMO/FCO, taxi/VTC.",
 
-  // Médiateur de la consommation (B2C — obligatoire si vente à des particuliers)
+  // Médiateur de la consommation (B2C — OBLIGATOIRE dès le 1er client
+  // particulier : art. L.612-1 & R.616-1 du Code de la consommation).
+  //
+  // ⚠️ ACTION CLIENT : adhérer à UN médiateur agréé, puis remplacer les
+  //    2 lignes ci-dessous par le nom et l'URL communiqués à l'adhésion.
+  //    Tant que "COMPLÉTER" est présent, le site affiche une mention
+  //    transitoire conforme (coordonnées « sur demande ») et n'expose
+  //    jamais ce placeholder aux visiteurs.
+  //
+  // Médiateurs agréés courants (~120 €/an, choisir-en UN) :
+  //   - CM2C          : https://www.cm2c.net
+  //   - MEDICYS       : https://www.medicys-consommation.fr
+  //   - ANM Conso     : https://anm-conso.com
+  //   - Médiation de la consommation (AME) : https://www.mediationconso-ame.com
+  // Exemple une fois adhéré :
+  //   name: "CM2C — Centre de la médiation de la consommation de conciliateurs de justice",
+  //   website: "https://www.cm2c.net",
   mediator: {
     name: "[À COMPLÉTER : nom du médiateur — ex. CM2C]",
     website: "[À COMPLÉTER : URL]",
