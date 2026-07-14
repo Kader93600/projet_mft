@@ -92,7 +92,7 @@ export default async function ModuleDetail({
     .eq("slug", params.slug)
     .single();
   if (!moduleRow) notFound();
-  const module = moduleRow as ModuleRow;
+  const mod = moduleRow as ModuleRow;
 
   // Gate par formation : ce module est-il rattaché à une formation
   // où l'utilisateur est inscrit ? Sinon, 404. Staff = accès libre.
@@ -115,7 +115,7 @@ export default async function ModuleDetail({
     const { count } = await reader
       .from("formation_modules")
       .select("module_id", { count: "exact", head: true })
-      .eq("module_id", module.id)
+      .eq("module_id", mod.id)
       .in("formation_id", enrolledIds);
     if (!count) notFound();
   }
@@ -124,9 +124,9 @@ export default async function ModuleDetail({
     reader
       .from("lessons")
       .select("*")
-      .eq("module_id", module.id)
+      .eq("module_id", mod.id)
       .order("order"),
-    reader.from("quizzes").select("*").eq("module_id", module.id),
+    reader.from("quizzes").select("*").eq("module_id", mod.id),
     user
       ? reader
           .from("lesson_progress")
@@ -186,7 +186,7 @@ export default async function ModuleDetail({
     summaryByQuiz.set(a.quiz_id, cur);
   }
 
-  const formationSlug = await resolveFormationFromModule(module.id);
+  const formationSlug = await resolveFormationFromModule(mod.id);
   const formation = formationSlug ? findFormation(formationSlug) : null;
   const accent = formation?.accent ?? "#9FE220";
 
@@ -240,7 +240,7 @@ export default async function ModuleDetail({
       const ordered = (orderedModules ?? [])
         .map((r) => r.module)
         .filter((m): m is ModuleRef => Boolean(m));
-      const idx = ordered.findIndex((m) => m.id === module.id);
+      const idx = ordered.findIndex((m) => m.id === mod.id);
       if (idx >= 0 && idx < ordered.length - 1) {
         const next = ordered[idx + 1];
         nextModuleData = {
@@ -302,15 +302,15 @@ export default async function ModuleDetail({
             textWrap: "balance",
           }}
         >
-          {module.title}
+          {mod.title}
         </h1>
 
-        {module.summary && (
+        {mod.summary && (
           <p
             className="text-slate-600 leading-relaxed max-w-2xl"
             style={{ fontSize: "clamp(0.95rem, 0.9rem + 0.2vw, 1.0625rem)" }}
           >
-            {module.summary}
+            {mod.summary}
           </p>
         )}
 
@@ -318,11 +318,11 @@ export default async function ModuleDetail({
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-slate-600">
           <span className="inline-flex items-center gap-1.5">
             <Clock className="h-4 w-4 text-slate-400" />
-            {module.duration_min} min
+            {mod.duration_min} min
           </span>
           <span className="inline-flex items-center gap-1.5 capitalize">
             <Target className="h-4 w-4 text-slate-400" />
-            {module.difficulty}
+            {mod.difficulty}
           </span>
           <span className="inline-flex items-center gap-1.5">
             <BookOpen className="h-4 w-4 text-slate-400" />
@@ -340,7 +340,7 @@ export default async function ModuleDetail({
         {nextLesson && (
           <div className="pt-2">
             <Link
-              href={`/modules/${module.slug}/${nextLesson.slug}`}
+              href={`/modules/${mod.slug}/${nextLesson.slug}`}
               className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-[14px] font-semibold text-night-900 shadow-soft transition-[transform,background-color,border-color,box-shadow,color] duration-200 ease-premium hover:scale-[1.01] hover:shadow-raised"
               style={{
                 background: accent,
@@ -360,9 +360,9 @@ export default async function ModuleDetail({
           attachée à ce module. Pour GOTRM, la vidéo intro du CCP est
           aussi affichée en tête de la section CCP sur /modules. */}
       <ModuleIntroVideo
-        videoPath={module.intro_video_path ?? null}
-        label={module.intro_video_label ?? null}
-        durationS={module.intro_video_duration_s ?? null}
+        videoPath={mod.intro_video_path ?? null}
+        label={mod.intro_video_label ?? null}
+        durationS={mod.intro_video_duration_s ?? null}
       />
 
       {/* Progression */}
@@ -484,7 +484,7 @@ export default async function ModuleDetail({
                   }}
                 >
                   <Link
-                    href={`/modules/${module.slug}/${l.slug}`}
+                    href={`/modules/${mod.slug}/${l.slug}`}
                     className="group relative flex items-center gap-4 rounded-2xl border border-navy-100 bg-white p-4 md:p-5 shadow-soft transition-[transform,background-color,border-color,box-shadow,color] duration-200 ease-premium hover:-translate-y-0.5 hover:shadow-raised hover:border-navy-200 motion-reduce:hover:translate-y-0"
                   >
                     {/* Pastille statut */}

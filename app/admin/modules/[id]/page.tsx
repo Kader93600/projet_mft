@@ -49,8 +49,8 @@ export default async function EditModulePage({
       .limit(1)
       .maybeSingle(),
   ]);
-  const module = rawModule as ModuleRow | null;
-  if (!module) notFound();
+  const mod = rawModule as ModuleRow | null;
+  if (!mod) notFound();
 
   const blocs = rawBlocs as Tables<"blocs">[] | null;
   const lessons = rawLessons as LessonRow[] | null;
@@ -68,14 +68,14 @@ export default async function EditModulePage({
         >
           <ArrowLeft className="h-4 w-4" /> Retour aux modules
         </Link>
-        <Badge tone="navy">{module.blocs?.code}</Badge>
+        <Badge tone="navy">{mod.blocs?.code}</Badge>
       </div>
 
       <div>
         <h1 className="font-display text-2xl font-semibold text-navy-950">
-          {module.title}
+          {mod.title}
         </h1>
-        <p className="text-sm text-slate-500 font-mono mt-1">{module.slug}</p>
+        <p className="text-sm text-slate-500 font-mono mt-1">{mod.slug}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -89,7 +89,7 @@ export default async function EditModulePage({
               <ModuleForm
                 blocs={blocs ?? []}
                 formations={formations}
-                module={module}
+                module={mod}
                 initialFormationSlug={initialFormationSlug}
               />
             </CardBody>
@@ -100,7 +100,7 @@ export default async function EditModulePage({
               <CardTitle className="text-base">
                 Leçons ({lessons?.length ?? 0})
               </CardTitle>
-              <Link href={`/admin/modules/${module.id}/lessons/new`}>
+              <Link href={`/admin/modules/${mod.id}/lessons/new`}>
                 <Button variant="gold" size="sm">
                   <Plus className="h-4 w-4" /> Nouvelle leçon
                 </Button>
@@ -115,7 +115,7 @@ export default async function EditModulePage({
                 {lessons!.map((l, i) => (
                   <Link
                     key={l.id}
-                    href={`/admin/modules/${module.id}/lessons/${l.id}`}
+                    href={`/admin/modules/${mod.id}/lessons/${l.id}`}
                     className="flex items-center gap-3 px-6 py-3.5 hover:bg-navy-50/30 group"
                   >
                     <div className="h-8 w-8 rounded-lg bg-navy-50 text-navy-700 flex items-center justify-center text-xs font-semibold">
@@ -154,7 +154,7 @@ export default async function EditModulePage({
               </div>
             </CardBody>
           </Card>
-          <ModuleDangerZone moduleId={module.id} />
+          <ModuleDangerZone moduleId={mod.id} />
         </div>
       </div>
     </div>
