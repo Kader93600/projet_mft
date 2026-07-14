@@ -10,9 +10,32 @@ import {
   formatBytes,
   DOC_STATUS,
 } from "@/lib/student-documents";
+import type { Tables } from "@/lib/database.types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+/** Ligne renvoyée par le `select` ci-dessous (colonnes + 2 embeds to-one). */
+type DocRow = Pick<
+  Tables<"student_documents">,
+  | "title"
+  | "reason"
+  | "custom_reason"
+  | "status"
+  | "file_name"
+  | "size_bytes"
+  | "created_at"
+  | "admin_note"
+> & {
+  profiles: Pick<Tables<"profiles">, "full_name" | "email"> | null;
+  formations: Pick<Tables<"formations">, "title"> | null;
+};
+
+/** DOC_STATUS est indexé par un statut libre côté BDD (colonne `text`). */
+const DOC_STATUS_BY_KEY: Record<
+  string,
+  { label: string; tone: string } | undefined
+> = DOC_STATUS;
 
 export async function GET(req: NextRequest) {
   const supabase = createClient();
@@ -25,7 +48,7 @@ export async function GET(req: NextRequest) {
     .select("role")
     .eq("id", user.id)
     .maybeSingle();
-  const role = (me as any)?.role;
+  const role = (me as Pick<Tables<"profiles">, "role"> | null)?.role;
   if (!isStaff(role) && role !== "trainer") {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
@@ -43,8 +66,11 @@ export async function GET(req: NextRequest) {
   if (sp.get("motif")) query = query.eq("reason", sp.get("motif")!);
   if (sp.get("statut")) query = query.eq("status", sp.get("statut")!);
 
-  const { data } = await query;
-  let docs = (data ?? []) as any[];
+  // `overrideTypes` (API officielle supabase-js, compile-time uniquement) :
+  // le client n'étant pas typé globalement, les embeds `profiles`/`formations`
+  // sont inférés comme des tableaux alors qu'il s'agit de relations to-one.
+  const { data } = await query.overrideTypes<DocRow[], { merge: false }>();
+  let docs: DocRow[] = data ?? [];
   const q = sp.get("q")?.trim().toLowerCase();
   if (q) {
     docs = docs.filter((d) =>
@@ -61,7 +87,7 @@ export async function GET(req: NextRequest) {
     Motif: reasonLabel(d.reason, d.custom_reason),
     Type: fileKind(d.file_name).toUpperCase(),
     Taille: formatBytes(d.size_bytes ?? 0),
-    Statut: (DOC_STATUS as any)[d.status]?.label ?? d.status,
+    Statut: DOC_STATUS_BY_KEY[d.status]?.label ?? d.status,
     "Importé le": new Date(d.created_at).toLocaleString("fr-FR", {
       timeZone: "Europe/Paris",
     }),

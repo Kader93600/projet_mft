@@ -9,6 +9,7 @@ import { Select } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toast";
 import { AddressAutocomplete } from "@/components/address-autocomplete";
 import { createStudent } from "../actions";
+import type { LucideIcon } from "lucide-react";
 import {
   User,
   GraduationCap,
@@ -24,6 +25,21 @@ import {
   Mail,
   RefreshCw,
 } from "lucide-react";
+
+/** Valeurs acceptées par `funding_kind` côté server action (zod enum). */
+const FUNDING_KINDS = [
+  "opco",
+  "cpf",
+  "employeur",
+  "pole_emploi",
+  "auto",
+  "autre",
+] as const;
+type FundingKind = (typeof FUNDING_KINDS)[number];
+
+function isFundingKind(value: string): value is FundingKind {
+  return (FUNDING_KINDS as readonly string[]).includes(value);
+}
 
 interface Formation {
   slug: string;
@@ -122,16 +138,11 @@ export function CreateStudentForm({
   const prefilledFormationExists =
     initialValues?.formation_slug &&
     formations.some((fo) => fo.slug === initialValues.formation_slug);
-  const prefilledFundingKind = (
-    ["opco", "cpf", "employeur", "pole_emploi", "auto", "autre"] as const
-  ).includes((initialValues?.funding_kind ?? "") as any)
-    ? (initialValues!.funding_kind as
-        | "opco"
-        | "cpf"
-        | "employeur"
-        | "pole_emploi"
-        | "auto"
-        | "autre")
+  const initialFundingKind = initialValues?.funding_kind ?? "";
+  const prefilledFundingKind: FundingKind | null = isFundingKind(
+    initialFundingKind
+  )
+    ? initialFundingKind
     : null;
 
   // Form state
@@ -156,13 +167,7 @@ export function CreateStudentForm({
 
     // Administratif
     funder_id: "",
-    funding_kind: (prefilledFundingKind ?? "auto") as
-      | "opco"
-      | "cpf"
-      | "employeur"
-      | "pole_emploi"
-      | "auto"
-      | "autre",
+    funding_kind: (prefilledFundingKind ?? "auto") as FundingKind,
     enrollment_status: "en_cours" as
       | "prospect"
       | "devis"
@@ -178,8 +183,12 @@ export function CreateStudentForm({
     initial_password: "",
   });
 
-  const up = (k: keyof typeof f) => (e: any) =>
-    setF((s) => ({ ...s, [k]: e.target.value }));
+  // `k` est générique : la valeur du champ contrôlé (toujours `string` côté
+  // DOM) est réinjectée dans la clé correspondante de l'état.
+  const up =
+    <K extends keyof typeof f>(k: K) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+      setF((s) => ({ ...s, [k]: e.target.value as (typeof f)[K] }));
 
   const submit = () => {
     if (!f.full_name.trim() || !f.email.trim() || !f.formation_slug) {
@@ -188,7 +197,9 @@ export function CreateStudentForm({
     }
     start(async () => {
       try {
-        const payload: any = {
+        // `createStudent` valide son entrée avec zod (`raw: unknown`) : le
+        // type inféré de l'objet littéral suffit, aucun cast nécessaire.
+        const payload = {
           full_name: f.full_name.trim(),
           email: f.email.trim().toLowerCase(),
           phone: f.phone.trim() || null,
@@ -226,10 +237,11 @@ export function CreateStudentForm({
             f.access_mode === "password" ? f.initial_password : undefined,
         });
         toast("Stagiaire créé avec succès", "success");
-      } catch (e: any) {
+      } catch (e) {
         // Filet de sécurité : devrait être rare puisque l'action ne
         // throw plus, mais on garde au cas où (network error, etc.)
-        toast(e?.message ?? "Erreur de création", "error");
+        const message = e instanceof Error ? e.message : null;
+        toast(message ?? "Erreur de création", "error");
       }
     });
   };
@@ -364,9 +376,8 @@ export function CreateStudentForm({
     const lead = leads.find((l) => l.id === leadId);
     if (!lead) return;
     const formationOk = formations.some((fo) => fo.slug === lead.formation_slug);
-    const fundingOk = (
-      ["opco", "cpf", "employeur", "pole_emploi", "auto", "autre"] as const
-    ).includes((lead.funding_kind ?? "") as any);
+    const leadFundingKind = lead.funding_kind ?? "";
+    const fundingOk = isFundingKind(leadFundingKind);
     setF((prev) => ({
       ...prev,
       full_name: lead.full_name ?? prev.full_name,
@@ -379,9 +390,7 @@ export function CreateStudentForm({
         formationOk && lead.formation_slug
           ? lead.formation_slug
           : prev.formation_slug,
-      funding_kind: fundingOk
-        ? (lead.funding_kind as typeof prev.funding_kind)
-        : prev.funding_kind,
+      funding_kind: fundingOk ? leadFundingKind : prev.funding_kind,
     }));
     toast(`Données du lead "${lead.full_name}" importées`, "success");
   }
@@ -775,11 +784,11 @@ function Section({
   index,
   stagger,
 }: {
-  icon: any;
+  icon: LucideIcon;
   title: string;
   children: React.ReactNode;
   index: number;
-  stagger: (i: number) => any;
+  stagger: (i: number) => React.CSSProperties;
 }) {
   return (
     <section style={stagger(index)}>

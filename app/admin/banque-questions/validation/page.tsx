@@ -13,10 +13,23 @@ import {
 import { findFormation } from "@/lib/formations-config";
 import { getQuestionFilterConfig } from "@/lib/question-filters";
 import { ValidationForm } from "./validation-form";
+import type { Tables } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
 
 const PAGE_SIZE = 20;
+
+/**
+ * Ligne de `question_bank` telle que sélectionnée ici. `choices` est une
+ * colonne JSONB (type `Json` en base) : on documente ici sa forme réelle,
+ * qui est le contrat d'import des QCM (cf. lib/question-import).
+ */
+type QuestionRow = Pick<
+  Tables<"question_bank">,
+  "id" | "statement" | "tags" | "source_ref" | "difficulty" | "type"
+> & {
+  choices: { id: string; label: string; is_correct: boolean }[];
+};
 
 export default async function ValidationPage({
   searchParams,
@@ -82,14 +95,17 @@ export default async function ValidationPage({
   const groupCounts: Record<string, number> = {};
   for (const k of filterConfig.keys) groupCounts[k] = 0;
   const extraKeys = new Set<string>();
-  for (const row of tagRows ?? []) {
-    const tags: string[] = (row as any).tags ?? [];
+  for (const row of (tagRows ?? []) as Pick<
+    Tables<"question_bank">,
+    "tags"
+  >[]) {
+    const tags: string[] = row.tags ?? [];
     for (const t of tags) {
       if (!t.startsWith(filterConfig.tagPrefix)) continue;
       const k = t.slice(filterConfig.tagPrefix.length);
       if (!(k in groupCounts)) {
         groupCounts[k] = 0;
-        if (!filterConfig.keys.includes(k as any)) extraKeys.add(k);
+        if (!filterConfig.keys.includes(k)) extraKeys.add(k);
       }
       groupCounts[k] += 1;
     }
@@ -184,7 +200,7 @@ export default async function ValidationPage({
         <>
           {/* Liste */}
           <section className="space-y-4">
-            {(questions ?? []).map((q: any, idx: number) => (
+            {((questions ?? []) as QuestionRow[]).map((q, idx) => (
               <ValidationForm
                 key={q.id}
                 question={q}

@@ -13,9 +13,32 @@ import {
   Target,
   Sparkles,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { isStaff } from "@/lib/permissions";
+import type { Views } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
+
+// Les vues Postgres perdent les contraintes NOT NULL → l'introspection génère
+// toutes leurs colonnes en `| null`. Les colonnes de regroupement ci-dessous
+// (source / medium / campaign / day) sont issues d'agrégats COALESCE côté SQL
+// et sont donc toujours renseignées : on les resserre en non-null (contrat déjà
+// assumé par <DailyChart /> et <SourceBadge />).
+type FunnelRow = Views<"vw_admin_funnel_by_utm"> & {
+  source: string;
+  medium: string;
+  campaign: string;
+};
+type CampaignRow = Views<"vw_admin_top_campaigns"> & {
+  source: string;
+  campaign: string;
+  last_seen_at: string;
+};
+type DailyRow = Views<"vw_admin_acquisition_daily"> & {
+  day: string;
+  source: string;
+  visitors: number;
+};
 
 const SOURCE_LABEL: Record<string, string> = {
   direct: "Direct",
@@ -75,9 +98,9 @@ export default async function AdminAcquisitionPage() {
       .select("id", { count: "exact", head: true }),
   ]);
 
-  const funnel = (funnelRaw ?? []) as any[];
-  const campaigns = (campaignsRaw ?? []) as any[];
-  const daily = (dailyRaw ?? []) as any[];
+  const funnel = (funnelRaw ?? []) as FunnelRow[];
+  const campaigns = (campaignsRaw ?? []) as CampaignRow[];
+  const daily = (dailyRaw ?? []) as DailyRow[];
 
   // KPIs agrégés
   const totals = {
@@ -357,7 +380,7 @@ function Kpi({
   hint,
   tone = "default",
 }: {
-  icon: any;
+  icon: LucideIcon;
   label: string;
   value: string;
   hint?: string;

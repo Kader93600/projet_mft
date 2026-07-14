@@ -16,9 +16,41 @@ import {
   Download,
   FileJson,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { getFunderAccess } from "@/lib/funder/access";
+import type { Views } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
+
+/**
+ * Colonnes retournées par la RPC `funder_dashboard_kpis`
+ * (RETURNS TABLE — cf. supabase/2026_05_19_funder_dashboard.sql).
+ * Les fonctions ne sont pas introspectées dans `database.types.ts`, on décrit
+ * donc la signature ici. `avg_score` peut être NULL (avg sur ensemble vide).
+ */
+type FunderKpis = {
+  enrollments_total: number;
+  enrollments_active: number;
+  enrollments_done: number;
+  enrollments_at_risk: number;
+  certified_count: number;
+  avg_progress_pct: number;
+  avg_score: number | null;
+  total_budget_cents: number;
+  total_paid_cents: number;
+};
+
+/**
+ * Ligne de la vue `funder_recent_events`. Les vues perdent les NOT NULL à
+ * l'introspection : `event_kind`, `ref_id` et `occurred_at` sont des colonnes
+ * de construction de la vue (UNION ALL de littéraux + dates d'événement) et
+ * sont toujours renseignées.
+ */
+type FunderEvent = Views<"funder_recent_events"> & {
+  event_kind: string;
+  ref_id: string;
+  occurred_at: string;
+};
 
 const fmtEuros = (cents: number) =>
   (cents / 100).toLocaleString("fr-FR", {
@@ -55,7 +87,9 @@ export default async function FinanceurPage() {
   const { data: kpis } = await supabase
     .rpc("funder_dashboard_kpis", { p_funder_id: access.funder_id })
     .single();
-  const k = (kpis as any) ?? {};
+  // `.single()` peut renvoyer null (RPC en erreur) → tous les champs sont
+  // consommés avec un fallback ci-dessous.
+  const k: Partial<FunderKpis> = (kpis as FunderKpis | null) ?? {};
 
   // Événements récents (timeline)
   let eventsQuery = supabase
@@ -118,8 +152,8 @@ export default async function FinanceurPage() {
           label="Certifiés"
           value={String(k.certified_count ?? 0)}
           hint={
-            k.enrollments_total > 0
-              ? `${Math.round(((k.certified_count ?? 0) / k.enrollments_total) * 100)}% du total`
+            (k.enrollments_total ?? 0) > 0
+              ? `${Math.round(((k.certified_count ?? 0) / (k.enrollments_total ?? 0)) * 100)}% du total`
               : "—"
           }
           tone="success"
@@ -129,7 +163,7 @@ export default async function FinanceurPage() {
           label="En vigilance"
           value={String(k.enrollments_at_risk ?? 0)}
           hint="Inactifs depuis > 14 jours"
-          tone={k.enrollments_at_risk > 0 ? "warning" : "default"}
+          tone={(k.enrollments_at_risk ?? 0) > 0 ? "warning" : "default"}
         />
       </section>
 
@@ -191,7 +225,7 @@ export default async function FinanceurPage() {
             </div>
           ) : (
             <ul className="divide-y divide-navy-50">
-              {(events as any[]).map((e) => {
+              {((events ?? []) as FunderEvent[]).map((e) => {
                 const isCert = e.event_kind === "certificate";
                 const Icon = isCert ? Award : GraduationCap;
                 const eventTone = isCert ? "success" : "navy";
@@ -252,7 +286,7 @@ function Kpi({
   hint,
   tone = "default",
 }: {
-  icon: any;
+  icon: LucideIcon;
   label: string;
   value: string;
   hint?: string;
@@ -295,7 +329,7 @@ function Stat({
   label,
   value,
 }: {
-  icon: any;
+  icon: LucideIcon;
   label: string;
   value: string;
 }) {

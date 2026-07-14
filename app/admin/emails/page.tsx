@@ -7,10 +7,40 @@ import { Card } from "@/components/ui/card";
 import { Mail } from "lucide-react";
 import { NewEmailButton } from "./new-email-button";
 import { InboxTable } from "./inbox-table";
+import type { Tables } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
 
 type Tab = "inbox" | "sent" | "all";
+
+/**
+ * Ligne d'`email_log` telle qu'attendue par <InboxTable />.
+ *
+ * Les colonnes de la boîte de réception (`direction`, `from_name`, `labels`,
+ * `assigned_to`, `read_at`) sont apportées par la migration
+ * `supabase/2026_05_30_email_inbox.sql` et ne figurent pas encore dans
+ * `Tables<"email_log">` (types générés avant application de la migration —
+ * d'où le garde-fou `tableMissing` plus bas). On les déclare explicitement.
+ */
+type EmailRow = Pick<
+  Tables<"email_log">,
+  "id" | "sender_id" | "sender_email" | "subject" | "status" | "created_at" | "context" | "error"
+> & {
+  direction: "inbound" | "outbound";
+  from_name: string | null;
+  recipients: string[] | null;
+  cc: string[] | null;
+  bcc: string[] | null;
+  body_html: string;
+  labels: string[] | null;
+  assigned_to: string | null;
+  read_at: string | null;
+};
+
+/** Assignables : `select("id, full_name, email, role")` sur `profiles`. */
+type AdminRow = Pick<Tables<"profiles">, "id" | "full_name" | "email" | "role">;
+/** Ligne renvoyée par le `select("role")` sur `profiles`. */
+type RoleRow = Pick<Tables<"profiles">, "role">;
 
 export default async function EmailsPage({
   searchParams,
@@ -22,12 +52,13 @@ export default async function EmailsPage({
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
-  const { data: me } = await supabase
+  const { data: meData } = await supabase
     .from("profiles")
     .select("role")
     .eq("id", user.id)
     .maybeSingle();
-  if (!isStaff((me as any)?.role)) redirect("/dashboard");
+  const me = meData as RoleRow | null;
+  if (!isStaff(me?.role)) redirect("/dashboard");
 
   const tab: Tab = (["inbox", "sent", "all"] as Tab[]).includes(searchParams?.tab as Tab)
     ? (searchParams!.tab as Tab)
@@ -56,7 +87,7 @@ export default async function EmailsPage({
   ]);
 
   const tableMissing = !!listRes.error && /relation .* does not exist|email_log/i.test(listRes.error.message);
-  const rows = (listRes.data ?? []) as any[];
+  const rows = (listRes.data ?? []) as EmailRow[];
 
   const tabs: { id: Tab; label: string; count: number | null; badge?: number }[] = [
     { id: "inbox", label: "Reçus", count: inboxCount ?? 0, badge: unreadCount ?? 0 },
@@ -120,7 +151,7 @@ export default async function EmailsPage({
           </div>
         </Card>
       ) : (
-        <InboxTable rows={rows} admins={(admins ?? []) as any[]} tab={tab} />
+        <InboxTable rows={rows} admins={(admins ?? []) as AdminRow[]} tab={tab} />
       )}
     </div>
   );

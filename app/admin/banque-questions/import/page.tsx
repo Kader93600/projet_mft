@@ -12,8 +12,24 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, FileUp, Clock, CheckCircle2, AlertTriangle } from "lucide-react";
 import { ImportFlow } from "./import-flow";
+import type { Tables } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
+
+/** `formations` — colonnes du select ci-dessous. */
+type FormationOpt = Pick<Tables<"formations">, "id" | "slug" | "code" | "title">;
+
+/** `formation_modules` — colonnes du select ci-dessous. */
+type FormationModuleRow = Pick<
+  Tables<"formation_modules">,
+  "formation_id" | "module_id" | "display_order"
+>;
+
+/** `question_imports` + embed `formation:formations(code)`. */
+type RecentImportRow = Pick<
+  Tables<"question_imports">,
+  "id" | "file_name" | "status" | "questions_count" | "created_at" | "formation_id"
+> & { formation: Pick<Tables<"formations">, "code"> | null };
 
 const STATUS_TONE: Record<string, { bg: string; fg: string; label: string }> = {
   extracted: { bg: "bg-slate-100", fg: "text-slate-700", label: "Extrait" },
@@ -55,7 +71,9 @@ export default async function ImportPage() {
       .order("order"),
     supabase
       .from("question_imports")
-      .select(
+      // Type de résultat explicite : la chaîne du `select` est concaténée,
+      // or l'inférence supabase-js exige un littéral (cf. CLAUDE.md).
+      .select<string, RecentImportRow>(
         "id, file_name, status, questions_count, created_at, formation_id, " +
           "formation:formations(code)",
       )
@@ -63,7 +81,7 @@ export default async function ImportPage() {
       .limit(10),
   ]);
 
-  const formationsOpts = (formations ?? []).map((f: any) => ({
+  const formationsOpts = ((formations ?? []) as FormationOpt[]).map((f) => ({
     id: f.id,
     slug: f.slug,
     code: f.code,
@@ -85,9 +103,9 @@ export default async function ImportPage() {
     string,
     { id: string; slug: string; title: string }[]
   > = {};
-  for (const fm of formationModules ?? []) {
-    const formationId = (fm as any).formation_id;
-    const moduleId = (fm as any).module_id;
+  for (const fm of (formationModules ?? []) as FormationModuleRow[]) {
+    const formationId = fm.formation_id;
+    const moduleId = fm.module_id;
     const m = moduleById.get(moduleId);
     if (!formationId || !m) continue;
     if (!modulesByFormation[formationId]) modulesByFormation[formationId] = [];
@@ -172,7 +190,7 @@ export default async function ImportPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {recentImports.map((r: any) => {
+                  {recentImports.map((r) => {
                     const tone = STATUS_TONE[r.status] ?? STATUS_TONE.aborted;
                     return (
                       <tr key={r.id} className="border-t border-navy-50">

@@ -6,13 +6,44 @@ import {
   type MultiPdfData,
 } from "@/lib/pdf/multi-conversation-pdf";
 import type {
+  PdfConversation,
   PdfData,
   PdfMessage,
   PdfParticipant,
 } from "@/lib/pdf/conversation-pdf";
+import type { Tables } from "@/lib/database.types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+// ── Formes exactes des lignes lues (miroir des `.select(...)` ci-dessous) ──
+type ConvLinkRow = Pick<Tables<"conversation_participants">, "conversation_id">;
+type ParticipantLinkRow = Pick<Tables<"conversation_participants">, "user_id">;
+type ConvRow = Pick<
+  Tables<"conversations">,
+  "id" | "kind" | "scope" | "title" | "created_at" | "last_message_at"
+>;
+type MessageRow = Pick<
+  Tables<"messages">,
+  | "id"
+  | "sender_id"
+  | "sender_role"
+  | "body"
+  | "reply_to_id"
+  | "edited_at"
+  | "deleted_at"
+  | "created_at"
+>;
+type ProfileRow = Pick<
+  Tables<"profiles">,
+  "id" | "full_name" | "email" | "role"
+>;
+type AttachmentRow = Pick<
+  Tables<"message_attachments">,
+  "message_id" | "mime_type" | "size_bytes" | "original_name"
+>;
+type ReactionRow = Pick<Tables<"message_reactions">, "message_id" | "emoji">;
+type PinnedRow = Pick<Tables<"pinned_messages">, "message_id">;
 
 /** Limite par conv pour éviter un PDF démesuré. */
 const MESSAGES_PER_CONV_LIMIT = 500;
@@ -76,7 +107,9 @@ export async function GET(req: NextRequest) {
     .select("conversation_id")
     .eq("user_id", targetUserId);
 
-  const convIds = (convLinks ?? []).map((c: any) => c.conversation_id);
+  const convIds = ((convLinks ?? []) as ConvLinkRow[]).map(
+    (c) => c.conversation_id
+  );
   if (convIds.length === 0) {
     return NextResponse.json(
       { error: "no_conversations_for_user" },
@@ -101,7 +134,7 @@ export async function GET(req: NextRequest) {
 
   // ── Pour chaque conv : participants + messages + attachments + reactions + pinned ──
   const conversations: PdfData[] = [];
-  for (const conv of convs as any[]) {
+  for (const conv of convs as ConvRow[]) {
     const [partsRes, msgsRes, totalCountRes] = await Promise.all([
       supabase
         .from("conversation_participants")
@@ -121,8 +154,10 @@ export async function GET(req: NextRequest) {
         .eq("conversation_id", conv.id),
     ]);
 
-    const partIds = (partsRes.data ?? []).map((p: any) => p.user_id);
-    const messages = (msgsRes.data ?? []) as any[];
+    const partIds = ((partsRes.data ?? []) as ParticipantLinkRow[]).map(
+      (p) => p.user_id
+    );
+    const messages = (msgsRes.data ?? []) as MessageRow[];
     const totalMessageCount = totalCountRes.count ?? messages.length;
 
     // Profils des participants
@@ -132,7 +167,7 @@ export async function GET(req: NextRequest) {
         .from("profiles")
         .select("id, full_name, email, role")
         .in("id", partIds);
-      participants = (profs ?? []).map((p: any) => ({
+      participants = ((profs ?? []) as ProfileRow[]).map((p) => ({
         user_id: p.id,
         full_name: p.full_name ?? null,
         email: p.email,
@@ -141,7 +176,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Charge attachments + reactions + pinned en parallèle
-    const messageIds = messages.map((m: any) => m.id);
+    const messageIds = messages.map((m) => m.id);
     const attsByMsg: Record<string, PdfMessage["attachments"]> = {};
     const reactsByMsg: Record<string, PdfMessage["reactions"]> = {};
     const pinnedSet = new Set<string>();
@@ -162,7 +197,7 @@ export async function GET(req: NextRequest) {
           .eq("conversation_id", conv.id),
       ]);
 
-      for (const a of (attsRes.data ?? []) as any[]) {
+      for (const a of (attsRes.data ?? []) as AttachmentRow[]) {
         (attsByMsg[a.message_id] ??= []).push({
           mime_type: a.mime_type,
           original_name: a.original_name,
@@ -170,7 +205,7 @@ export async function GET(req: NextRequest) {
         });
       }
       const reactCount = new Map<string, Map<string, number>>();
-      for (const r of (reactsRes.data ?? []) as any[]) {
+      for (const r of (reactsRes.data ?? []) as ReactionRow[]) {
         let perMsg = reactCount.get(r.message_id);
         if (!perMsg) {
           perMsg = new Map();
@@ -183,15 +218,17 @@ export async function GET(req: NextRequest) {
           ([emoji, count]) => ({ emoji, count })
         );
       }
-      for (const p of (pinnedRes.data ?? []) as any[]) {
+      for (const p of (pinnedRes.data ?? []) as PinnedRow[]) {
         pinnedSet.add(p.message_id);
       }
     }
 
-    const pdfMessages: PdfMessage[] = messages.map((m: any) => ({
+    const pdfMessages: PdfMessage[] = messages.map((m) => ({
       id: m.id,
       sender_id: m.sender_id,
-      sender_role: m.sender_role,
+      // `messages.sender_role` est un `text` en base (contraint côté métier) :
+      // on le restreint ici à l'union attendue par le PDF.
+      sender_role: m.sender_role as PdfMessage["sender_role"],
       body: m.body ?? "",
       reply_to_id: m.reply_to_id ?? null,
       edited_at: m.edited_at ?? null,
@@ -224,8 +261,10 @@ export async function GET(req: NextRequest) {
     conversations.push({
       conversation: {
         id: conv.id,
-        kind: conv.kind,
-        scope: conv.scope,
+        // `conversations.kind` / `.scope` sont des `text` en base : on les
+        // restreint aux unions attendues par le PDF.
+        kind: conv.kind as PdfConversation["kind"],
+        scope: conv.scope as PdfConversation["scope"],
         title,
         created_at: conv.created_at,
       },
@@ -252,11 +291,11 @@ export async function GET(req: NextRequest) {
   let buffer: Buffer;
   try {
     buffer = await renderToBuffer(<MultiConversationPDF data={data} />);
-  } catch (err: any) {
+  } catch (err) {
     return NextResponse.json(
       {
         error: "pdf_render_failed",
-        detail: err?.message ?? String(err),
+        detail: err instanceof Error ? err.message : String(err),
       },
       { status: 500 }
     );

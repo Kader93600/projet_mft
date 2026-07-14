@@ -19,6 +19,37 @@ import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
 import { fmtEuros, type PackSlug } from "@/lib/packs";
+import type { Tables } from "@/lib/database.types";
+
+// ---------------------------------------------------------------------
+// Formes exactes des lignes renvoyées par les `select` de ce module.
+// Le client Supabase n'étant pas câblé sur `Database` globalement, on
+// décrit ici le résultat du select (colonnes + embed `formations!inner`).
+// ---------------------------------------------------------------------
+
+/**
+ * Embed `formations!inner(slug)` : objet ou tableau selon la version du
+ * client. Le `!inner` garantit la présence d'au moins une formation liée
+ * (jointure interne) → tableau non vide, jamais null.
+ */
+type FormationSlugEmbed =
+  | Pick<Tables<"formations">, "slug">
+  | [Pick<Tables<"formations">, "slug">, ...Pick<Tables<"formations">, "slug">[]];
+
+/** Select sans la colonne `pack` (getPackPrice : le pack vient du filtre `.eq`). */
+type PackPriceRowNoPack = Pick<
+  Tables<"formation_pack_prices">,
+  | "price_cents"
+  | "compare_at_cents"
+  | "active"
+  | "notes"
+  | "updated_at"
+  | "formation_id"
+> & { formations: FormationSlugEmbed };
+
+/** Select complet (fetchPackPrices / upsertPackPrice). */
+type PackPriceRow = PackPriceRowNoPack &
+  Pick<Tables<"formation_pack_prices">, "pack">;
 
 export interface PackPrice {
   /** Slug de la formation (ex: 'gotrm', 'capacite-3-5t'). */
@@ -82,22 +113,24 @@ export async function getPackPrice(
   }
   if (!data) return null;
 
+  const row = data as PackPriceRowNoPack;
+
   // Supabase peut renvoyer formations sous forme d'array ou d'objet selon
   // la version du client. On gère les deux.
-  const formationsRel = (data as any).formations;
+  const formationsRel = row.formations;
   const slug = Array.isArray(formationsRel)
     ? formationsRel[0]?.slug
     : formationsRel?.slug;
 
   return {
     formationSlug: slug ?? formationSlug,
-    formationId: (data as any).formation_id,
+    formationId: row.formation_id,
     pack,
-    priceCents: data.price_cents,
-    compareAtCents: data.compare_at_cents,
-    active: data.active,
-    notes: data.notes,
-    updatedAt: data.updated_at,
+    priceCents: row.price_cents,
+    compareAtCents: row.compare_at_cents,
+    active: row.active,
+    notes: row.notes,
+    updatedAt: row.updated_at,
   };
 }
 
@@ -155,11 +188,11 @@ async function fetchPackPrices(opts: {
     return [];
   }
 
-  return (data ?? []).map((row: any) => {
+  return ((data ?? []) as PackPriceRow[]).map((row) => {
     const formationsRel = row.formations;
     const slug = Array.isArray(formationsRel)
-      ? formationsRel[0]?.slug
-      : formationsRel?.slug;
+      ? formationsRel[0].slug
+      : formationsRel.slug;
     return {
       formationSlug: slug,
       formationId: row.formation_id,
@@ -250,20 +283,21 @@ export async function upsertPackPrice(
     return { error: error.message };
   }
 
-  const formationsRel = (data as any).formations;
+  const row = data as PackPriceRow;
+  const formationsRel = row.formations;
   const slug = Array.isArray(formationsRel)
-    ? formationsRel[0]?.slug
-    : formationsRel?.slug;
+    ? formationsRel[0].slug
+    : formationsRel.slug;
 
   return {
     formationSlug: slug,
-    formationId: (data as any).formation_id,
-    pack: data.pack as PackSlug,
-    priceCents: data.price_cents,
-    compareAtCents: data.compare_at_cents,
-    active: data.active,
-    notes: data.notes,
-    updatedAt: data.updated_at,
+    formationId: row.formation_id,
+    pack: row.pack as PackSlug,
+    priceCents: row.price_cents,
+    compareAtCents: row.compare_at_cents,
+    active: row.active,
+    notes: row.notes,
+    updatedAt: row.updated_at,
   };
 }
 

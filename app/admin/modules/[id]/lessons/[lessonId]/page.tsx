@@ -7,8 +7,36 @@ import { LessonForm } from "./lesson-form";
 import { ResourcesManager } from "./resources-manager";
 import { AiGenerateQuestions } from "./ai-generate-questions";
 import { Badge } from "@/components/ui/badge";
+import type { Tables } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
+
+/** `lessons` — select("*") */
+type LessonRow = Tables<"lessons">;
+
+/** `lesson_resources` — select("*") (sous-ensemble consommé par le manager) */
+type LessonResourceRow = Pick<
+  Tables<"lesson_resources">,
+  | "id"
+  | "lesson_id"
+  | "kind"
+  | "title"
+  | "url"
+  | "description"
+  | "size_kb"
+  | "order"
+>;
+
+/**
+ * `lesson_versions` — select("id, version, edited_at, edited_by, change_note,
+ * editor:profiles!lesson_versions_edited_by_fkey(full_name, email)")
+ */
+type LessonVersionRow = Pick<
+  Tables<"lesson_versions">,
+  "id" | "version" | "edited_at" | "edited_by" | "change_note"
+> & {
+  editor: Pick<Tables<"profiles">, "full_name" | "email"> | null;
+};
 
 export default async function EditLessonPage({
   params,
@@ -16,8 +44,12 @@ export default async function EditLessonPage({
   params: { id: string; lessonId: string };
 }) {
   const supabase = createClient();
-  const [{ data: module }, { data: lesson }, { data: resources }, { data: versions }] =
-    await Promise.all([
+  const [
+    { data: module },
+    { data: lessonData },
+    { data: resourcesData },
+    { data: versionsData },
+  ] = await Promise.all([
       supabase.from("modules").select("id, title").eq("id", params.id).single(),
       supabase.from("lessons").select("*").eq("id", params.lessonId).single(),
       supabase
@@ -32,8 +64,14 @@ export default async function EditLessonPage({
         )
         .eq("lesson_id", params.lessonId)
         .order("version", { ascending: false })
-        .limit(20),
+        .limit(20)
+        // Embed many-to-one `editor` : PostgREST renvoie un objet (ou null),
+        // mais sans schéma typé supabase-js infère un tableau.
+        .overrideTypes<LessonVersionRow[], { merge: false }>(),
     ]);
+  const lesson: LessonRow | null = lessonData;
+  const resources: LessonResourceRow[] = resourcesData ?? [];
+  const versions: LessonVersionRow[] = versionsData ?? [];
   if (!module || !lesson) notFound();
 
   return (
@@ -75,10 +113,7 @@ export default async function EditLessonPage({
           <CardTitle className="text-base">Ressources complémentaires</CardTitle>
         </div>
         <CardBody>
-          <ResourcesManager
-            lessonId={lesson.id}
-            initial={(resources ?? []) as any}
-          />
+          <ResourcesManager lessonId={lesson.id} initial={resources} />
         </CardBody>
       </Card>
 
@@ -91,18 +126,18 @@ export default async function EditLessonPage({
             </CardTitle>
           </div>
           <Badge tone="navy" size="sm">
-            v{(lesson as any).current_version ?? 1} en cours
+            v{lesson.current_version ?? 1} en cours
           </Badge>
         </div>
         <CardBody className="p-0">
-          {(versions ?? []).length === 0 ? (
+          {versions.length === 0 ? (
             <div className="px-6 py-6 text-sm text-slate-500">
               Aucun historique disponible. Les prochaines modifications seront
               versionnées automatiquement.
             </div>
           ) : (
             <ul className="divide-y divide-navy-50">
-              {(versions ?? []).map((v: any) => (
+              {versions.map((v) => (
                 <li
                   key={v.id}
                   className="px-6 py-3 flex items-center gap-4 text-sm"

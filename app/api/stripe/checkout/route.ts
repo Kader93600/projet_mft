@@ -14,10 +14,37 @@ import { captureException } from "@/lib/observability";
 import {
   getUserLoyaltyTier,
   computeLoyaltyDiscount,
+  type LoyaltyTier,
 } from "@/lib/loyalty";
+import type { Views } from "@/lib/database.types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+/**
+ * Corps JSON de la requête : entrée externe NON validée. Chaque champ est
+ * volontairement `unknown` — le code le coerce lui-même (String(), !!…) juste
+ * en dessous, ce qui reste la seule garantie de type à l'exécution.
+ */
+type CheckoutBody = Partial<
+  Record<
+    | "email"
+    | "installments"
+    | "formationSlug"
+    | "packSlug"
+    | "referrer_code"
+    | "organization_id"
+    | "planId",
+    unknown
+  >
+>;
+
+/** Retour de la RPC `validate_referral_code` (RETURNS TABLE, cf. migration). */
+type ReferralValidation = {
+  valid: boolean;
+  referrer_id: string | null;
+  reason: string | null;
+};
 
 /**
  * POST /api/stripe/checkout
@@ -52,7 +79,7 @@ export async function POST(req: Request) {
     });
   }
 
-  let body: any;
+  let body: CheckoutBody;
   try {
     body = await req.json();
   } catch {
@@ -109,10 +136,10 @@ export async function POST(req: Request) {
     // Plafond : 200 € (cf. lib/loyalty.ts).
     let amountCents = price.priceCents;
     let loyaltyDiscountCents = 0;
-    let loyaltyTier: string = "none";
+    let loyaltyTier: LoyaltyTier = "none";
     if (user?.id) {
       loyaltyTier = await getUserLoyaltyTier(user.id);
-      const ld = computeLoyaltyDiscount(loyaltyTier as any, price.priceCents);
+      const ld = computeLoyaltyDiscount(loyaltyTier, price.priceCents);
       loyaltyDiscountCents = ld.amount_cents;
       amountCents -= loyaltyDiscountCents;
     }
@@ -128,14 +155,15 @@ export async function POST(req: Request) {
       : null;
 
     if (rawReferrerCode && user?.id) {
-      const { data: validation } = await supabase
+      const { data: validationRaw } = await supabase
         .rpc("validate_referral_code", {
           p_code: rawReferrerCode,
           p_new_user: user.id,
         })
         .single();
+      const validation = validationRaw as ReferralValidation | null;
 
-      if (validation && (validation as any).valid) {
+      if (validation && validation.valid) {
         referrerCode = rawReferrerCode;
         // -10 % sur le prix de base (cumulable avec la réduction loyalty),
         // arrondi à l'euro inférieur
@@ -171,7 +199,8 @@ export async function POST(req: Request) {
         .select("balance_cents")
         .eq("user_id", user.id)
         .maybeSingle();
-      const balanceCents = (balance as any)?.balance_cents ?? 0;
+      const balanceCents =
+        (balance as Views<"user_credit_balance"> | null)?.balance_cents ?? 0;
       if (balanceCents > 0) {
         creditToApplyCents = Math.min(balanceCents, amountCents);
         amountCents -= creditToApplyCents;

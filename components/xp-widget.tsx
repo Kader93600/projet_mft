@@ -1,6 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { xpLevelFromTotal } from "@/lib/gamification/ranks";
 import { XpWidgetView } from "@/components/xp-widget-view";
+import type { Tables } from "@/lib/database.types";
+
+/** Ligne renvoyée par l'RPC `user_streak` (setof). */
+type StreakRow = { current_streak: number; longest_streak: number };
 
 export async function XpWidget() {
   const supabase = createClient();
@@ -17,10 +21,8 @@ export async function XpWidget() {
     supabase.rpc("user_streak", { p_user: user.id }),
   ]);
 
-  const totalXp = (xpRows ?? []).reduce(
-    (s: number, r: any) => s + (r.points ?? 0),
-    0
-  );
+  const xpPoints: Pick<Tables<"xp_events">, "points">[] = xpRows ?? [];
+  const totalXp = xpPoints.reduce((s, r) => s + (r.points ?? 0), 0);
   const level = xpLevelFromTotal(totalXp);
   const curStart = (((level - 1) * level) / 2) * 100;
   const nextStart = ((level * (level + 1)) / 2) * 100;
@@ -28,8 +30,9 @@ export async function XpWidget() {
     100,
     Math.round(((totalXp - curStart) / Math.max(1, nextStart - curStart)) * 100)
   );
-  const currentStreak = (streak as any)?.[0]?.current_streak ?? 0;
-  const longestStreak = (streak as any)?.[0]?.longest_streak ?? 0;
+  const streakRows: StreakRow[] | null = streak;
+  const currentStreak = streakRows?.[0]?.current_streak ?? 0;
+  const longestStreak = streakRows?.[0]?.longest_streak ?? 0;
 
   return (
     <XpWidgetView

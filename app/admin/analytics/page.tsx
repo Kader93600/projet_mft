@@ -21,7 +21,9 @@ import {
   Smartphone,
   MapPin,
   Mail,
+  type LucideIcon,
 } from "lucide-react";
+import type { Tables, Views } from "@/lib/database.types";
 import { AnalyticsToolbar } from "./analytics-toolbar";
 import { DeleteAttemptButton } from "./analytics-row-actions";
 import { TrendsChart } from "./trends-chart";
@@ -46,19 +48,59 @@ import { Tv } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-interface KpiSnapshot {
-  active_students_7d: number;
-  at_risk_students: number;
-  quiz_attempts_7d: number;
-  live_sessions_scheduled: number;
-  live_sessions_completed_30d: number;
-  active_enrollments: number;
-  revenue_30d_cents: number;
-  new_users_7d: number;
-  pass_rate_30d: number;
-  mock_exams_30d: number;
-  pending_corrections: number;
-  computed_at: string;
+/**
+ * L'introspection type toutes les colonnes de vue en `| null` (Postgres ne
+ * garantit pas la non-nullité d'une expression). Ces vues sont des agrégats
+ * (`count`, `coalesce`) qui n'émettent jamais NULL : on lit donc les lignes
+ * via ce mapping « non-null », qui correspond au contrat des composants.
+ */
+type NonNullRow<T> = { [K in keyof T]-?: NonNullable<T[K]> };
+
+type KpiSnapshot = NonNullRow<Views<"vw_admin_kpis_realtime">>;
+type TrendsRow = NonNullRow<Views<"vw_admin_trends_30d">>;
+type CompletionRow = NonNullRow<Views<"vw_admin_completion_by_formation">>;
+type AtRiskRow = NonNullRow<Views<"vw_admin_at_risk_students">>;
+type TopStudentRow = NonNullRow<Views<"vw_admin_top_students">>;
+type QualiopiRow = NonNullRow<Views<"vw_admin_qualiopi_indicators">>;
+type QuizOutlierRow = Omit<
+  NonNullRow<Views<"vw_admin_quiz_outliers">>,
+  "difficulty_flag"
+> & { difficulty_flag: "too_hard" | "too_easy" | "normal" | "unknown" };
+type RevenueRow = Omit<
+  NonNullRow<Views<"vw_admin_revenue_by_formation_pack">>,
+  "pack"
+> & { pack: "initial" | "medium" | "premium" };
+type FunnelRow = NonNullRow<Views<"vw_admin_funnel_conversion">>;
+type HeatmapRow = NonNullRow<Views<"vw_admin_activity_heatmap">>;
+type FormationTrendRow = NonNullRow<Views<"vw_admin_trends_by_formation">>;
+type UpcomingSessionRow = Omit<
+  NonNullRow<Views<"vw_admin_upcoming_sessions_14d">>,
+  "kind"
+> & { kind: "presentiel" | "distanciel" | "hybride" };
+type UtmRow = Pick<
+  Views<"vw_admin_funnel_by_utm">,
+  "source" | "visitors" | "signups" | "enrollments"
+>;
+type AcquisitionEventRow = Pick<
+  Tables<"acquisition_events">,
+  "user_agent" | "ip_country" | "kind"
+>;
+type QuizOption = Pick<Tables<"quizzes">, "id" | "title">;
+type AttemptRow = Tables<"quiz_attempts"> & {
+  profiles: Pick<Tables<"profiles">, "id" | "full_name" | "email"> | null;
+  quizzes: Pick<Tables<"quizzes">, "title"> | null;
+};
+
+/** Retour du RPC `get_admin_kpis_for_period` (absent des types générés). */
+interface PeriodKpis {
+  signups: number;
+  quiz_attempts: number;
+  payments: number;
+  revenue_cents: number;
+  signups_prev: number;
+  quiz_attempts_prev: number;
+  payments_prev: number;
+  revenue_cents_prev: number;
 }
 
 function fmtEuro(cents: number): string {
@@ -191,8 +233,9 @@ export default async function AdminAnalytics({
     medium: { count: 0, revenue: 0 },
     premium: { count: 0, revenue: 0 },
   };
-  for (const r of (revenueMatrix ?? []) as any[]) {
-    const p = packAgg[r.pack as string];
+  const revenueRows = (revenueMatrix ?? []) as RevenueRow[];
+  for (const r of revenueRows) {
+    const p = packAgg[r.pack];
     if (p) {
       p.count += Number(r.enrollments_count) || 0;
       p.revenue += Number(r.revenue_cents) || 0;
@@ -219,14 +262,14 @@ export default async function AdminAnalytics({
   const devices = { mobile: 0, desktop: 0, tablet: 0 };
   const countries: Record<string, number> = {};
   let contactForms = 0;
-  for (const e of (rawEvents ?? []) as any[]) {
+  for (const e of (rawEvents ?? []) as AcquisitionEventRow[]) {
     const ua = String(e.user_agent ?? "").toLowerCase();
     const d = /ipad|tablet|playbook|silk/.test(ua)
       ? "tablet"
       : /mobi|iphone|ipod|android/.test(ua)
         ? "mobile"
         : "desktop";
-    devices[d as keyof typeof devices]++;
+    devices[d]++;
     if (e.ip_country) countries[e.ip_country] = (countries[e.ip_country] ?? 0) + 1;
     if (e.kind === "contact_form") contactForms++;
   }
@@ -238,7 +281,7 @@ export default async function AdminAnalytics({
   const maxCountry = Math.max(1, ...topCountries.map(([, c]) => c));
 
   // Agrégats Vitrine (acquisition).
-  const utm = (utmFunnel ?? []) as any[];
+  const utm = (utmFunnel ?? []) as UtmRow[];
   const vitrine = {
     visitors: utm.reduce((s, r) => s + (Number(r.visitors) || 0), 0),
     signups: utm.reduce((s, r) => s + (Number(r.signups) || 0), 0),
@@ -256,7 +299,7 @@ export default async function AdminAnalytics({
     ...vitrine.topSources.map((r) => Number(r.visitors) || 0)
   );
 
-  const pk = (periodKpis as any) ?? {
+  const pk: PeriodKpis = (periodKpis as PeriodKpis | null) ?? {
     signups: 0,
     quiz_attempts: 0,
     payments: 0,
@@ -511,7 +554,7 @@ export default async function AdminAnalytics({
                       </p>
                     </div>
                   </div>
-                  <TrendsChart data={(trends ?? []) as any[]} />
+                  <TrendsChart data={(trends ?? []) as TrendsRow[]} />
                 </CardBody>
               </Card>
 
@@ -527,7 +570,7 @@ export default async function AdminAnalytics({
                       </p>
                     </div>
                   </div>
-                  <CompletionBars data={(completion ?? []) as any[]} />
+                  <CompletionBars data={(completion ?? []) as CompletionRow[]} />
                 </CardBody>
               </Card>
             </section>
@@ -586,7 +629,7 @@ export default async function AdminAnalytics({
                 Top provenances
               </div>
               <div className="space-y-2.5">
-                {vitrine.topSources.map((srcRow: any) => {
+                {vitrine.topSources.map((srcRow) => {
                   const v = Number(srcRow.visitors) || 0;
                   const pct = Math.round((v / maxSourceVisitors) * 100);
                   return (
@@ -754,16 +797,16 @@ export default async function AdminAnalytics({
       </section>
 
       {/* ─────────── Section Qualiopi / RNCP ─────────── */}
-      <QualiopiSection data={(qualiopi as any) ?? null} />
+      <QualiopiSection data={(qualiopi as QualiopiRow | null) ?? null} />
 
       {/* ─────────── Section À risque + Top 10 (côte à côte) ─────────── */}
       <section className="grid lg:grid-cols-2 gap-5">
-        <AtRiskSection rows={(atRisk ?? []) as any[]} />
-        <TopStudentsSection rows={(topStudents ?? []) as any[]} />
+        <AtRiskSection rows={(atRisk ?? []) as AtRiskRow[]} />
+        <TopStudentsSection rows={(topStudents ?? []) as TopStudentRow[]} />
       </section>
 
       {/* ─────────── Quiz à difficulté anormale ─────────── */}
-      <QuizOutliersSection rows={(quizOutliers ?? []) as any[]} />
+      <QuizOutliersSection rows={(quizOutliers ?? []) as QuizOutlierRow[]} />
 
       {/* ─────────── Funnel + Sessions à venir (Lot 2) ─────────── */}
       <section className="grid lg:grid-cols-2 gap-5">
@@ -778,11 +821,13 @@ export default async function AdminAnalytics({
             <p className="text-[11px] text-slate-500 dark:text-white/50 mb-4">
               Signup → 1ère leçon → 1er quiz tenté → 1er quiz réussi → 1er paiement
             </p>
-            <FunnelChart data={(funnel as any) ?? null} />
+            <FunnelChart data={(funnel as FunnelRow | null) ?? null} />
           </CardBody>
         </Card>
 
-        <UpcomingSessionsSection sessions={(upcomingSessions ?? []) as any[]} />
+        <UpcomingSessionsSection
+          sessions={(upcomingSessions ?? []) as UpcomingSessionRow[]}
+        />
       </section>
 
       {/* ─────────── Heatmap activité hebdomadaire (Lot 2) ─────────── */}
@@ -797,7 +842,7 @@ export default async function AdminAnalytics({
           <p className="text-[11px] text-slate-500 dark:text-white/50 mb-4">
             Quand vos stagiaires sont-ils le plus actifs ? Tentatives de quiz par jour × heure (90 derniers jours)
           </p>
-          <HeatmapGrid cells={(heatmap ?? []) as any[]} />
+          <HeatmapGrid cells={(heatmap ?? []) as HeatmapRow[]} />
         </CardBody>
       </Card>
 
@@ -812,7 +857,9 @@ export default async function AdminAnalytics({
             30 derniers jours · top 6 formations
           </span>
         </div>
-        <FormationTrendsGrid rows={(trendsByFormation ?? []) as any[]} />
+        <FormationTrendsGrid
+          rows={(trendsByFormation ?? []) as FormationTrendRow[]}
+        />
       </section>
 
       {/* ─────────── Tableau dernières tentatives ─────────── */}
@@ -830,7 +877,7 @@ export default async function AdminAnalytics({
           </span>
         </div>
 
-        <AnalyticsToolbar quizzes={quizzes ?? []} />
+        <AnalyticsToolbar quizzes={(quizzes ?? []) as QuizOption[]} />
 
         <Card className="mt-3">
           <div className="overflow-x-auto">
@@ -846,7 +893,7 @@ export default async function AdminAnalytics({
                 </tr>
               </thead>
               <tbody>
-                {attempts?.map((a: any) => (
+                {((attempts ?? []) as AttemptRow[]).map((a) => (
                   <tr
                     key={a.id}
                     className="border-t border-navy-50 dark:border-white/10 hover:bg-navy-50/30 dark:hover:bg-white/[0.04]"
@@ -1038,7 +1085,7 @@ export default async function AdminAnalytics({
         </div>
       </section>
             {/* CA par formation × pack */}
-            <RevenueMatrixSection rows={(revenueMatrix ?? []) as any[]} />
+            <RevenueMatrixSection rows={revenueRows} />
           </>
         }
       />
@@ -1057,7 +1104,7 @@ function Kpi({
   tone,
   href,
 }: {
-  icon: any;
+  icon: LucideIcon;
   label: string;
   value: string;
   hint?: string;

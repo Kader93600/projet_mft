@@ -38,6 +38,12 @@ type Segment =
   | { kind: "md"; content: string }
   | { kind: "block"; name: string; attrs: Record<string, string>; body: string };
 
+/** Variantes acceptées par <Callout /> (union de littéraux, non exportée
+ *  par le composant → on la dérive de ses props). */
+type CalloutVariant = NonNullable<
+  React.ComponentProps<typeof Callout>["variant"]
+>;
+
 // "key=value" ou key="quoted value"
 function parseAttrs(s: string): Record<string, string> {
   const attrs: Record<string, string> = {};
@@ -177,7 +183,7 @@ function renderRichBlock(
     <div dangerouslySetInnerHTML={{ __html: renderMarkdown(body) }} />
   );
   if (seg.name === "callout") {
-    const variant = (seg.attrs.type ?? "info") as any;
+    const variant = (seg.attrs.type ?? "info") as CalloutVariant;
     return (
       <Callout key={idx} variant={variant} title={seg.attrs.title}>
         {md(seg.body)}
@@ -262,7 +268,7 @@ function _legacyRender({ source }: { source: string }) {
         }
         // Blocks
         if (seg.name === "callout") {
-          const variant = (seg.attrs.type ?? "info") as any;
+          const variant = (seg.attrs.type ?? "info") as CalloutVariant;
           return (
             <Callout key={idx} variant={variant} title={seg.attrs.title}>
               <div

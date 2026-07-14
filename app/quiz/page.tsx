@@ -26,8 +26,55 @@ import {
   Lock,
   Sparkles,
 } from "lucide-react";
+import type { QuizAttemptRow } from "@/lib/quiz-progress";
+import type { Tables } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
+
+/** Inscription du stagiaire (cf. select sur `enrollments`). */
+type EnrollmentRow = Pick<
+  Tables<"enrollments">,
+  "formation_id" | "formation_slug" | "status" | "created_at"
+>;
+
+/** Lien formation ↔ module + formation embarquée (cf. select). */
+type FormationModuleLink = Pick<
+  Tables<"formation_modules">,
+  "module_id" | "display_order"
+> & {
+  formation: Pick<Tables<"formations">, "slug"> | null;
+};
+
+/** Quiz + module embarqué (cf. select `modules(title, slug)`). */
+type QuizRow = Pick<
+  Tables<"quizzes">,
+  | "id"
+  | "title"
+  | "description"
+  | "type"
+  | "is_mock_exam"
+  | "pass_threshold"
+  | "time_limit_s"
+  | "max_attempts"
+  | "retake_delay_hours"
+  | "module_id"
+> & {
+  modules: Pick<Tables<"modules">, "title" | "slug"> | null;
+};
+
+type ModuleRow = Pick<Tables<"modules">, "id" | "slug" | "title" | "summary">;
+type LessonRow = Pick<Tables<"lessons">, "id" | "module_id">;
+
+/** Quiz enrichi (données carte + progression) manipulé dans toute la page. */
+type EnrichedQuiz = {
+  quiz: QuizCardData & {
+    module_id: string | null;
+    module_title: string | null;
+    module_slug: string | null;
+    module_order: number;
+  };
+  progress: QuizProgress;
+};
 
 /**
  * Quiz & Examens — refonte 2026-05.
@@ -70,17 +117,18 @@ export default async function QuizListPage() {
   let enrolledFormationIds: string[] = [];
   let activeFormationSlug: string | null = null;
   if (user) {
-    const { data: enrollments } = await supabase
+    const { data: enrollmentsRaw } = await supabase
       .from("enrollments")
       .select("formation_id, formation_slug, status, created_at")
       .eq("user_id", user.id)
       .neq("status", "refuse")
       .neq("status", "abandon")
       .order("created_at", { ascending: false });
-    enrolledFormationIds = (enrollments ?? [])
-      .map((e: any) => e.formation_id as string)
-      .filter(Boolean);
-    const sorted = [...(enrollments ?? [])].sort((a: any, b: any) => {
+    const enrollments = (enrollmentsRaw ?? []) as EnrollmentRow[];
+    enrolledFormationIds = enrollments
+      .map((e) => e.formation_id)
+      .filter((id): id is string => Boolean(id));
+    const sorted = [...enrollments].sort((a, b) => {
       const ar = a.status === "en_cours" ? 0 : 1;
       const br = b.status === "en_cours" ? 0 : 1;
       if (ar !== br) return ar - br;
@@ -88,34 +136,35 @@ export default async function QuizListPage() {
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
     });
-    activeFormationSlug = (sorted[0] as any)?.formation_slug ?? null;
+    activeFormationSlug = sorted[0]?.formation_slug ?? null;
   }
 
   // Filtrage par formations du stagiaire
   let allowedModuleIds: string[] = [];
-  let links: any[] = [];
+  let links: FormationModuleLink[] = [];
   if (enrolledFormationIds.length > 0) {
     const { data: linkRows } = await supabase
       .from("formation_modules")
       .select("module_id, display_order, formation:formations(slug)")
-      .in("formation_id", enrolledFormationIds);
+      .in("formation_id", enrolledFormationIds)
+      // Client non typé globalement : supabase-js infère l'embed to-one comme
+      // un tableau. On rétablit la vraie forme (objet | null).
+      .overrideTypes<FormationModuleLink[], { merge: false }>();
     links = linkRows ?? [];
-    allowedModuleIds = Array.from(
-      new Set(links.map((l: any) => l.module_id as string))
-    );
+    allowedModuleIds = Array.from(new Set(links.map((l) => l.module_id)));
   }
 
   // Données catalogue (filtrées)
   const noModules = allowedModuleIds.length === 0;
   const [
-    { data: quizzesRaw },
-    { data: modulesRaw },
-    { data: lessonsRaw },
+    { data: quizzesData },
+    { data: modulesData },
+    { data: lessonsData },
   ] = noModules
     ? [
-        { data: [] as any[] },
-        { data: [] as any[] },
-        { data: [] as any[] },
+        { data: [] as QuizRow[] },
+        { data: [] as ModuleRow[] },
+        { data: [] as LessonRow[] },
       ]
     : await Promise.all([
         supabase
@@ -136,8 +185,12 @@ export default async function QuizListPage() {
           .in("module_id", allowedModuleIds),
       ]);
 
+  const quizzesRaw = (quizzesData ?? []) as QuizRow[];
+  const modulesRaw = (modulesData ?? []) as ModuleRow[];
+  const lessonsRaw = (lessonsData ?? []) as LessonRow[];
+
   // Tentatives utilisateur (1 requête, agrégée côté JS)
-  let userAttempts: any[] = [];
+  let userAttempts: QuizAttemptRow[] = [];
   let userLessonViews: { lesson_id: string; completed: boolean }[] = [];
   // Source secondaire : lesson_progress (clic explicite "Marquer terminé")
   // Cf. /modules — on fait l'union des 2 tables pour éviter le désaccord
@@ -164,17 +217,25 @@ export default async function QuizListPage() {
         .eq("user_id", user.id)
         .eq("completed", true),
     ]);
-    userAttempts = attempts ?? [];
-    userLessonViews = views ?? [];
+    userAttempts = (attempts ?? []) as QuizAttemptRow[];
+    userLessonViews = (views ?? []) as Pick<
+      Tables<"lesson_views">,
+      "lesson_id" | "completed"
+    >[];
     lessonProgressDoneIds = new Set(
-      (progressRows ?? []).map((r: any) => r.lesson_id as string)
+      (
+        (progressRows ?? []) as Pick<
+          Tables<"lesson_progress">,
+          "lesson_id" | "completed"
+        >[]
+      ).map((r) => r.lesson_id)
     );
   }
 
   // Index module → formation, module → ordre
   const formationByModule = new Map<string, string>();
   const orderByModule = new Map<string, number>();
-  (links ?? []).forEach((l: any) => {
+  links.forEach((l) => {
     if (l.formation?.slug && !formationByModule.has(l.module_id)) {
       formationByModule.set(l.module_id, l.formation.slug);
     }
@@ -185,7 +246,7 @@ export default async function QuizListPage() {
 
   // Index module → lessons (pour calculer module state pour le verrouillage)
   const lessonsByModule = new Map<string, string[]>();
-  (lessonsRaw ?? []).forEach((l: any) => {
+  lessonsRaw.forEach((l) => {
     if (!lessonsByModule.has(l.module_id)) lessonsByModule.set(l.module_id, []);
     lessonsByModule.get(l.module_id)!.push(l.id);
   });
@@ -196,8 +257,10 @@ export default async function QuizListPage() {
   ]);
 
   // Index module → quizzes
-  const quizzesByModule = new Map<string, any[]>();
-  (quizzesRaw ?? []).forEach((q: any) => {
+  // (clé `string | null` : un quiz global n'a pas de module_id — comportement
+  // inchangé, la Map accepte la clé `null` comme avant)
+  const quizzesByModule = new Map<string | null, QuizRow[]>();
+  quizzesRaw.forEach((q) => {
     if (!quizzesByModule.has(q.module_id))
       quizzesByModule.set(q.module_id, []);
     quizzesByModule.get(q.module_id)!.push(q);
@@ -212,27 +275,25 @@ export default async function QuizListPage() {
   // Quiz essayés (au moins 1 attempt) — utilisé en mode 'flexible' (Capacité ≤ 3,5 t)
   const attemptedQuizIds = new Set(userAttempts.map((a) => a.quiz_id));
 
-  const modulesProgress: ModuleProgress[] = (modulesRaw ?? []).map((m: any) => {
+  const modulesProgress: ModuleProgress[] = modulesRaw.map((m) => {
     const lessonIds = lessonsByModule.get(m.id) ?? [];
-    const quizIds = (quizzesByModule.get(m.id) ?? []).map((q: any) => q.id);
+    const quizIds = (quizzesByModule.get(m.id) ?? []).map((q) => q.id);
     const lessonsTotal = lessonIds.length;
     const lessonsDone = lessonIds.filter((id) =>
       completedLessonIds.has(id)
     ).length;
     const quizzesTotal = quizIds.length;
-    const quizzesPassed = quizIds.filter((id: string) =>
+    const quizzesPassed = quizIds.filter((id) =>
       passedQuizIds.has(id)
     ).length;
-    const quizzesAttempted = quizIds.filter((id: string) =>
+    const quizzesAttempted = quizIds.filter((id) =>
       attemptedQuizIds.has(id)
     ).length;
     const hasAnyAttempt =
       lessonsDone > 0 ||
       quizzesPassed > 0 ||
       lessonIds.some((id) => completedLessonIds.has(id)) ||
-      quizIds.some((id: string) =>
-        userAttempts.some((a) => a.quiz_id === id)
-      );
+      quizIds.some((id) => userAttempts.some((a) => a.quiz_id === id));
 
     // Mode de déverrouillage : 'flexible' pour Capacité ≤ 3,5 t,
     // 'strict' ailleurs (révision client 2026-05).
@@ -284,17 +345,7 @@ export default async function QuizListPage() {
 
   // Maintenant on construit, pour chaque quiz, son QuizCardData + QuizProgress
   // en sachant si l'examen synthèse/final est verrouillé (parcours).
-  type EnrichedQuiz = {
-    quiz: QuizCardData & {
-      module_id: string | null;
-      module_title: string | null;
-      module_slug: string | null;
-      module_order: number;
-    };
-    progress: QuizProgress;
-  };
-
-  const enrichedQuizzes: EnrichedQuiz[] = (quizzesRaw ?? []).map((q: any) => {
+  const enrichedQuizzes: EnrichedQuiz[] = quizzesRaw.map((q) => {
     const moduleSlug: string | null = q.modules?.slug ?? null;
     const moduleId: string | null = q.module_id ?? null;
     const formationSlug = moduleId ? formationByModule.get(moduleId) ?? null : null;
@@ -540,12 +591,12 @@ function FormationQuizSection({
   t,
 }: {
   formationSlug: string;
-  examFinal: { quiz: any; progress: QuizProgress }[];
+  examFinal: EnrichedQuiz[];
   trainingModules: {
     moduleId: string;
     moduleTitle: string;
     moduleSlug: string;
-    items: { quiz: any; progress: QuizProgress }[];
+    items: EnrichedQuiz[];
   }[];
   totalQuizzes: number;
   passedQuizzes: number;

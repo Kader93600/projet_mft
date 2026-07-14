@@ -42,8 +42,17 @@ import type {
   MessageReaction,
   PinnedMessage,
 } from "@/lib/messaging-types";
+import type { Tables } from "@/lib/database.types";
 
 const ATTACH_BUCKET = "message-attachments";
+
+/** `conversation_participants` — select("user_id, last_read_at") */
+type ParticipantRow = Pick<
+  Tables<"conversation_participants">,
+  "user_id" | "last_read_at"
+>;
+/** `messages` — select("id") */
+type MessageIdRow = Pick<Tables<"messages">, "id">;
 
 /** Lit width/height d'une image en mémoire (pour stocker en BDD). */
 function readImageDimensions(
@@ -143,10 +152,11 @@ export function MessagingShell({
       .eq("conversation_id", convId)
       .order("created_at", { ascending: true })
       .limit(500);
-    if (!error && data) setMessages(data as MessageRow[]);
+    const rows = (data ?? []) as MessageRow[];
+    if (!error && data) setMessages(rows);
 
     // Charge les profils des sender uniques
-    const ids = Array.from(new Set((data ?? []).map((m: any) => m.sender_id)));
+    const ids = Array.from(new Set(rows.map((m) => m.sender_id)));
     if (ids.length > 0) {
       const { data: profs } = await supabase
         .from("profiles")
@@ -154,7 +164,7 @@ export function MessagingShell({
         .in("id", ids);
       if (profs) {
         const map: Record<string, MinimalProfile> = {};
-        for (const p of profs as any[]) map[p.id] = p as MinimalProfile;
+        for (const p of profs as MinimalProfile[]) map[p.id] = p;
         setParticipants((prev) => ({ ...prev, ...map }));
       }
     }
@@ -163,21 +173,22 @@ export function MessagingShell({
   // ── Charge les participants (avec last_read_at) de la conv sélectionnée ──
   const loadLiveParticipants = useCallback(async (convId: string) => {
     const supabase = createClient();
-    const { data: parts } = await supabase
+    const { data: partsData } = await supabase
       .from("conversation_participants")
       .select("user_id, last_read_at")
       .eq("conversation_id", convId);
-    if (!parts) return;
+    if (!partsData) return;
+    const parts = partsData as ParticipantRow[];
 
-    const ids = parts.map((p: any) => p.user_id);
+    const ids = parts.map((p) => p.user_id);
     const { data: profs } = await supabase
       .from("profiles")
       .select("id, full_name, email, role")
       .in("id", ids);
-    const profMap: Record<string, any> = {};
-    for (const p of profs ?? []) profMap[(p as any).id] = p;
+    const profMap: Record<string, MinimalProfile> = {};
+    for (const p of (profs ?? []) as MinimalProfile[]) profMap[p.id] = p;
 
-    const merged: ParticipantWithReadState[] = parts.map((p: any) => ({
+    const merged: ParticipantWithReadState[] = parts.map((p) => ({
       user_id: p.user_id,
       last_read_at: p.last_read_at,
       full_name: profMap[p.user_id]?.full_name ?? null,
@@ -206,7 +217,7 @@ export function MessagingShell({
       .select("id")
       .eq("conversation_id", convId)
       .limit(500);
-    const ids = (msgs ?? []).map((m: any) => m.id);
+    const ids = ((msgs ?? []) as MessageIdRow[]).map((m) => m.id);
     if (ids.length === 0) {
       setAttachmentsByMsg({});
       setReactionsByMsg({});

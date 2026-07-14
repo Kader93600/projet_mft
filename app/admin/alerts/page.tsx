@@ -3,8 +3,25 @@ import { Card, CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, ExternalLink, Mail } from "lucide-react";
 import Link from "next/link";
+import type { Tables } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
+
+/** `inactivity_alerts` est une table de report alimentée par
+ *  /api/cron/inactivity : ses colonnes sont déclarées nullable côté schéma,
+ *  mais le job n'y écrit que des lignes complètes → on resserre le type. */
+type AlertRow = Tables<"inactivity_alerts"> & {
+  user_id: string;
+  email: string;
+  last_activity_at: string;
+  days_inactive: number;
+};
+
+/** inactivity_pings(user_id, last_pinged_at, ping_count) */
+type PingRow = Pick<
+  Tables<"inactivity_pings">,
+  "user_id" | "last_pinged_at" | "ping_count"
+>;
 
 function fmtDateTime(iso: string) {
   return new Intl.DateTimeFormat("fr-FR", {
@@ -27,8 +44,10 @@ export default async function AdminAlertsPage() {
       .select("user_id, last_pinged_at, ping_count"),
   ]);
 
-  const pingMap = new Map(
-    (pings ?? []).map((p: any) => [p.user_id, p])
+  const alertRows = (alerts ?? []) as AlertRow[];
+  const pingRows = (pings ?? []) as PingRow[];
+  const pingMap = new Map<string, PingRow>(
+    pingRows.map((p) => [p.user_id, p])
   );
 
   return (
@@ -46,7 +65,7 @@ export default async function AdminAlertsPage() {
 
       <Card>
         <CardBody className="p-0">
-          {(alerts ?? []).length === 0 ? (
+          {alertRows.length === 0 ? (
             <div className="p-10 text-center text-sm text-slate-500">
               ✅ Tous les stagiaires actifs sont à jour.
             </div>
@@ -63,9 +82,9 @@ export default async function AdminAlertsPage() {
                 </tr>
               </thead>
               <tbody>
-                {(alerts ?? []).map((a: any) => {
+                {alertRows.map((a) => {
                   const days = Math.round(Number(a.days_inactive));
-                  const ping = pingMap.get(a.user_id) as any;
+                  const ping = pingMap.get(a.user_id);
                   const tone =
                     days >= 21 ? "rose" : days >= 14 ? "gold" : "navy";
                   return (
@@ -80,7 +99,7 @@ export default async function AdminAlertsPage() {
                         {fmtDateTime(a.last_activity_at)}
                       </td>
                       <td className="px-6 py-3">
-                        <Badge tone={tone as any} size="sm">
+                        <Badge tone={tone} size="sm">
                           <AlertTriangle className="h-3 w-3" /> {days} j
                         </Badge>
                       </td>

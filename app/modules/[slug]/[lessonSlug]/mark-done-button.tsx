@@ -10,6 +10,14 @@ import {
   type RewardRankUp,
 } from "@/components/celebration/reward-celebration";
 import { getRank } from "@/lib/gamification/ranks";
+import type { Tables } from "@/lib/database.types";
+
+/** `select("total_xp, level")` sur user_gamification. */
+type GamificationRow = Pick<Tables<"user_gamification">, "total_xp" | "level">;
+/** `select("badge_id")` sur user_badges. */
+type UserBadgeRow = Pick<Tables<"user_badges">, "badge_id">;
+/** `select("name, description, icon, tier")` sur badges. */
+type BadgeRow = Pick<Tables<"badges">, "name" | "description" | "icon" | "tier">;
 
 export function MarkDoneButton({
   lessonId,
@@ -47,7 +55,7 @@ export function MarkDoneButton({
 
       // État gamification AVANT (uniquement à la complétion) — pour calculer
       // l'XP gagnée, le passage de rang et les nouveaux badges.
-      let before: { total_xp: number; level: number } | null = null;
+      let before: GamificationRow | null = null;
       let beforeBadgeIds = new Set<string>();
       if (newDone) {
         const [g, b] = await Promise.all([
@@ -58,8 +66,10 @@ export function MarkDoneButton({
             .maybeSingle(),
           supabase.from("user_badges").select("badge_id").eq("user_id", user.id),
         ]);
-        before = (g.data as any) ?? null;
-        beforeBadgeIds = new Set((b.data ?? []).map((r: any) => r.badge_id));
+        before = (g.data as GamificationRow | null) ?? null;
+        beforeBadgeIds = new Set(
+          ((b.data ?? []) as UserBadgeRow[]).map((r) => r.badge_id)
+        );
       }
 
       // Upsert (déclenche XP + recompute badges via triggers Postgres).
@@ -103,7 +113,7 @@ export function MarkDoneButton({
               .select("badge_id")
               .eq("user_id", user.id),
           ]);
-          const after = (g2.data as any) ?? null;
+          const after = (g2.data as GamificationRow | null) ?? null;
           if (before && after) {
             xpGained = Math.max(
               0,
@@ -114,14 +124,16 @@ export function MarkDoneButton({
             if (ra.index > rb.index)
               rankUp = { label: ra.rank.label, emoji: ra.rank.emoji };
           }
-          const afterIds = (b2.data ?? []).map((r: any) => r.badge_id);
-          const newIds = afterIds.filter((id: string) => !beforeBadgeIds.has(id));
+          const afterIds = ((b2.data ?? []) as UserBadgeRow[]).map(
+            (r) => r.badge_id
+          );
+          const newIds = afterIds.filter((id) => !beforeBadgeIds.has(id));
           if (newIds.length) {
             const { data: bd } = await supabase
               .from("badges")
               .select("name, description, icon, tier")
               .in("id", newIds);
-            badges = (bd ?? []) as RewardBadge[];
+            badges = (bd ?? []) as BadgeRow[];
           }
         } catch {
           /* non-bloquant : on célèbre avec ce qu'on a pu lire */

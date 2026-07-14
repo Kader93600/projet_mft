@@ -13,8 +13,26 @@ import {
   Clock,
   Coins,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 export const dynamic = "force-dynamic";
+
+/** Ligne de `recettes_par_financeur` renvoyée par la RPC `bpf_summary`
+ *  (JSON agrégé : les montants numériques peuvent arriver en string). */
+type BpfRevenueRow = {
+  kind: string | null;
+  name: string | null;
+  stagiaires: number | null;
+  recette_eur: number | string | null;
+};
+
+/** Retour JSON de la RPC `bpf_summary(p_year)`. */
+type BpfSummary = {
+  stagiaires_total?: number | string | null;
+  heures_realisees?: number | string | null;
+  recette_totale_eur?: number | string | null;
+  recettes_par_financeur?: BpfRevenueRow[] | null;
+};
 
 function fmtEuros(eur: number) {
   return new Intl.NumberFormat("fr-FR", {
@@ -43,8 +61,8 @@ export default async function BpfPage({
 
   // 1) Synthèse principale (KPI tier 1)
   const summaryRes = await supabase.rpc("bpf_summary", { p_year: year });
-  const s = (summaryRes.data ?? {}) as any;
-  const revenues = (s.recettes_par_financeur ?? []) as any[];
+  const s = (summaryRes.data ?? {}) as BpfSummary;
+  const revenues = s.recettes_par_financeur ?? [];
   const stagiairesTotal = Number(s.stagiaires_total ?? 0);
   const heuresRealisees = Number(s.heures_realisees ?? 0);
   const recetteEur = Number(s.recette_totale_eur ?? 0);
@@ -288,7 +306,7 @@ function Kpi({
   value,
   sub,
 }: {
-  icon: any;
+  icon: LucideIcon;
   label: string;
   value: string;
   sub: string;

@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/toast";
 import { Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createQuiz, updateQuiz } from "./actions";
+import type { Tables } from "@/lib/database.types";
 
 interface Module {
   id: string;
@@ -20,6 +21,31 @@ interface FormationOpt {
   title: string;
 }
 
+/** Valeurs métier des colonnes `text` correspondantes de `quizzes`. */
+export type QuizType = "entrainement" | "examen";
+export type ShowExplanationsMode = "always" | "after_pass" | "never";
+
+/** Quiz existant en cours d'édition (sous-ensemble utilisé par ce formulaire). */
+export type QuizSettings = Pick<
+  Tables<"quizzes">,
+  | "id"
+  | "title"
+  | "description"
+  | "module_id"
+  | "timer_enabled"
+  | "time_limit_s"
+  | "pass_threshold"
+  | "is_mock_exam"
+  | "max_attempts"
+  | "retake_delay_hours"
+  | "shuffle_questions"
+  | "shuffle_choices"
+  | "require_fullscreen"
+> & {
+  type: QuizType;
+  show_explanations_mode: ShowExplanationsMode;
+};
+
 export function QuizSettingsForm({
   modules,
   formations,
@@ -28,7 +54,7 @@ export function QuizSettingsForm({
 }: {
   modules: Module[];
   formations: FormationOpt[];
-  quiz?: any;
+  quiz?: QuizSettings;
   initialFormationSlug?: string | null;
 }) {
   const router = useRouter();
@@ -37,9 +63,7 @@ export function QuizSettingsForm({
 
   const [title, setTitle] = useState(quiz?.title ?? "");
   const [description, setDescription] = useState(quiz?.description ?? "");
-  const [type, setType] = useState<"entrainement" | "examen">(
-    quiz?.type ?? "entrainement"
-  );
+  const [type, setType] = useState<QuizType>(quiz?.type ?? "entrainement");
   const [moduleId, setModuleId] = useState<string>(quiz?.module_id ?? "");
   const [timerEnabled, setTimerEnabled] = useState<boolean>(
     quiz?.timer_enabled ?? true
@@ -60,7 +84,7 @@ export function QuizSettingsForm({
   const [shuffleQ, setShuffleQ] = useState<boolean>(quiz?.shuffle_questions ?? false);
   const [shuffleC, setShuffleC] = useState<boolean>(quiz?.shuffle_choices ?? false);
   const [requireFs, setRequireFs] = useState<boolean>(quiz?.require_fullscreen ?? false);
-  const [showExp, setShowExp] = useState<"always" | "after_pass" | "never">(
+  const [showExp, setShowExp] = useState<ShowExplanationsMode>(
     quiz?.show_explanations_mode ?? "always"
   );
   const [formationSlug, setFormationSlug] = useState<string>(
@@ -93,14 +117,14 @@ export function QuizSettingsForm({
           show_explanations_mode: showExp,
         };
         if (quiz?.id) {
-          await updateQuiz(quiz.id, payload as any);
+          await updateQuiz(quiz.id, payload);
           toast("Quiz mis à jour", "success");
           router.refresh();
         } else {
           await createQuiz(payload);
         }
-      } catch (e: any) {
-        toast(e.message, "error");
+      } catch (e) {
+        toast(e instanceof Error ? e.message : String(e), "error");
       }
     });
   }
@@ -148,7 +172,10 @@ export function QuizSettingsForm({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <label className="block">
           <span className="block text-xs font-medium text-slate-600 mb-1.5">Type</span>
-          <Select value={type} onChange={(e) => setType(e.target.value as any)}>
+          <Select
+            value={type}
+            onChange={(e) => setType(e.target.value as QuizType)}
+          >
             <option value="entrainement">Entraînement</option>
             <option value="examen">Examen blanc</option>
           </Select>
@@ -285,7 +312,12 @@ export function QuizSettingsForm({
               <span className="block text-xs font-medium text-slate-600 mb-1.5">
                 Affichage de la correction
               </span>
-              <Select value={showExp} onChange={(e) => setShowExp(e.target.value as any)}>
+              <Select
+                value={showExp}
+                onChange={(e) =>
+                  setShowExp(e.target.value as ShowExplanationsMode)
+                }
+              >
                 <option value="always">Toujours visible</option>
                 <option value="after_pass">Seulement si seuil atteint</option>
                 <option value="never">Jamais (copie opaque)</option>

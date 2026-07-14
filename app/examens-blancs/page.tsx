@@ -24,8 +24,77 @@ import {
 import { ExamensTabs } from "./examens-tabs";
 import { AttemptsHistory } from "./attempts-history";
 import { computeUnlockedModuleIds } from "@/lib/module-unlock";
+import type { Tables } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
+
+// ── Formes exactes des lignes lues (miroir des `.select(...)` ci-dessous) ──
+type FormationLink = { formation: Pick<Tables<"formations">, "slug"> | null };
+type FormationModuleRow = Pick<Tables<"formation_modules">, "module_id"> &
+  FormationLink;
+type FormationQuizRow = Pick<Tables<"formation_quizzes">, "quiz_id"> &
+  FormationLink;
+
+/** Quiz + module embarqué (select `..., modules(id, title, slug, order)`). */
+type ExamQuizRow = Pick<
+  Tables<"quizzes">,
+  | "id"
+  | "title"
+  | "description"
+  | "type"
+  | "is_mock_exam"
+  | "pass_threshold"
+  | "time_limit_s"
+  | "timer_enabled"
+  | "max_attempts"
+  | "retake_delay_hours"
+  | "module_id"
+> & {
+  modules: Pick<Tables<"modules">, "id" | "title" | "slug" | "order"> | null;
+};
+
+/**
+ * Tentative + titre du quiz embarqué.
+ * NB : `completed_at` est demandé par le `.select(...)` ci-dessous mais
+ * n'existe PAS dans `supabase/schema.sql` (quiz_attempts n'a que
+ * `started_at` / `finished_at`). On garde la forme telle qu'elle est lue
+ * pour ne rien changer au comportement — à corriger séparément.
+ */
+type ExamAttemptRow = Pick<
+  Tables<"quiz_attempts">,
+  "id" | "quiz_id" | "percentage" | "finished_at" | "passed" | "duration_s" | "status"
+> & {
+  completed_at: string | null;
+  quizzes: Pick<Tables<"quizzes">, "title"> | null;
+};
+
+/** Carte d'examen enrichie transmise aux composants clients. */
+type EnrichedExam = {
+  id: string;
+  title: string;
+  description: string | null;
+  formation_slug: string | null;
+  module_id: string | null;
+  module_title: string | null;
+  module_order: number;
+  scope: "module" | "global";
+  time_limit_s: number | null;
+  timer_enabled: boolean;
+  max_attempts: number | null;
+  retake_delay_hours: number;
+  pass_threshold: number;
+  is_mock_exam: boolean;
+  question_count: number;
+  user_stats: UserExamStats | null;
+  locked: boolean;
+};
+
+type UserExamStats = {
+  bestPercent: number;
+  lastAt: string;
+  count: number;
+  passed: boolean;
+};
 
 export default async function ExamensBlancsPage({
   searchParams,
@@ -75,7 +144,9 @@ export default async function ExamensBlancsPage({
         .from("formations")
         .select("id")
         .eq("active", true);
-      enrolledFormationIds = (allFormations ?? []).map((f: any) => f.id);
+      enrolledFormationIds = (
+        (allFormations ?? []) as Pick<Tables<"formations">, "id">[]
+      ).map((f) => f.id);
     } else {
       const { data: enrollments } = await supabase
         .from("enrollments")
@@ -84,9 +155,14 @@ export default async function ExamensBlancsPage({
         .not("formation_id", "is", null)
         .neq("status", "refuse")
         .neq("status", "abandon");
-      enrolledFormationIds = (enrollments ?? [])
-        .map((e: any) => e.formation_id)
-        .filter(Boolean);
+      enrolledFormationIds = (
+        (enrollments ?? []) as Pick<
+          Tables<"enrollments">,
+          "formation_id" | "status"
+        >[]
+      )
+        .map((e) => e.formation_id)
+        .filter((id): id is string => !!id);
     }
   }
   // Lectures catalogue via client session (RLS scopées réparées)
@@ -96,12 +172,16 @@ export default async function ExamensBlancsPage({
   let allowedModuleIds: string[] = [];
   const moduleToFormation = new Map<string, string>();
   if (enrolledFormationIds.length > 0) {
+    // `overrideTypes` : sans le générique `Database` sur le client, supabase-js
+    // ne connaît pas la cardinalité des embeds et les infère en tableau, alors
+    // que PostgREST renvoie bien un objet (relation *-vers-un).
     const { data: fm } = await reader
       .from("formation_modules")
       .select("module_id, formation:formations(slug)")
-      .in("formation_id", enrolledFormationIds);
+      .in("formation_id", enrolledFormationIds)
+      .overrideTypes<FormationModuleRow[], { merge: false }>();
     for (const row of fm ?? []) {
-      const slug = (row as any).formation?.slug;
+      const slug = row.formation?.slug;
       if (slug) moduleToFormation.set(row.module_id, slug);
     }
     allowedModuleIds = Array.from(moduleToFormation.keys());
@@ -114,9 +194,10 @@ export default async function ExamensBlancsPage({
     const { data: fq } = await reader
       .from("formation_quizzes")
       .select("quiz_id, formation:formations(slug)")
-      .in("formation_id", enrolledFormationIds);
+      .in("formation_id", enrolledFormationIds)
+      .overrideTypes<FormationQuizRow[], { merge: false }>();
     for (const row of fq ?? []) {
-      const slug = (row as any).formation?.slug;
+      const slug = row.formation?.slug;
       if (slug) quizIdsByFormation.set(row.quiz_id, slug);
     }
   }
@@ -136,7 +217,7 @@ export default async function ExamensBlancsPage({
           )
           .in("module_id", allowedModuleIds)
           .or(orFilter)
-      : Promise.resolve({ data: [] as any[] });
+      : Promise.resolve({ data: [] as ExamQuizRow[] });
 
   const globalPromise =
     globalQuizIds.length > 0
@@ -150,17 +231,19 @@ export default async function ExamensBlancsPage({
           .in("id", globalQuizIds)
           .is("module_id", null)
           .or(orFilter)
-      : Promise.resolve({ data: [] as any[] });
+      : Promise.resolve({ data: [] as ExamQuizRow[] });
 
-  const [{ data: modScoped }, { data: globalRaw }] = await Promise.all([
+  const [{ data: modScopedData }, { data: globalData }] = await Promise.all([
     moduleScopedPromise,
     globalPromise,
   ]);
+  const modScoped = (modScopedData ?? []) as ExamQuizRow[];
+  const globalRaw = (globalData ?? []) as ExamQuizRow[];
 
   // Comptage de questions
   const allQuizIds = [
-    ...(modScoped ?? []).map((q: any) => q.id),
-    ...(globalRaw ?? []).map((q: any) => q.id),
+    ...modScoped.map((q) => q.id),
+    ...globalRaw.map((q) => q.id),
   ];
   const [{ data: bankLinks }, { data: inlineQs }] =
     allQuizIds.length > 0
@@ -179,16 +262,19 @@ export default async function ExamensBlancsPage({
           { data: [] as { quiz_id: string }[] },
         ];
   const questionCount = new Map<string, number>();
-  for (const row of bankLinks ?? [])
+  for (const row of (bankLinks ?? []) as Pick<
+    Tables<"quiz_question_bank">,
+    "quiz_id"
+  >[])
     questionCount.set(row.quiz_id, (questionCount.get(row.quiz_id) ?? 0) + 1);
-  for (const row of inlineQs ?? [])
+  for (const row of (inlineQs ?? []) as Pick<
+    Tables<"questions">,
+    "quiz_id"
+  >[])
     questionCount.set(row.quiz_id, (questionCount.get(row.quiz_id) ?? 0) + 1);
 
   // Stats user agrégées + historique complet (10 dernières tentatives)
-  let userAttempts = new Map<
-    string,
-    { bestPercent: number; lastAt: string; count: number; passed: boolean }
-  >();
+  let userAttempts = new Map<string, UserExamStats>();
   type AttemptHistoryRow = {
     id: string;
     quiz_id: string;
@@ -200,15 +286,17 @@ export default async function ExamensBlancsPage({
   };
   let attemptHistory: AttemptHistoryRow[] = [];
   if (user && allQuizIds.length > 0) {
-    const { data: attempts } = await reader
+    const { data: attemptsData } = await reader
       .from("quiz_attempts")
       .select(
         "id, quiz_id, percentage, completed_at, finished_at, passed, duration_s, status, quizzes(title)",
       )
       .eq("user_id", user.id)
       .in("quiz_id", allQuizIds)
-      .order("finished_at", { ascending: false });
-    for (const a of attempts ?? []) {
+      .order("finished_at", { ascending: false })
+      .overrideTypes<ExamAttemptRow[], { merge: false }>();
+    const attempts = attemptsData ?? [];
+    for (const a of attempts) {
       const prev = userAttempts.get(a.quiz_id);
       // Une copie en attente de correction (awaiting_review) a
       // percentage = null : on ne la compte PAS comme 0 % dans le best
@@ -231,10 +319,12 @@ export default async function ExamensBlancsPage({
         passed: prev?.passed || (isGraded && !!a.passed),
       });
     }
-    attemptHistory = (attempts ?? [])
-      .filter((a: any) => a.finished_at)
+    attemptHistory = attempts
+      .filter(
+        (a): a is ExamAttemptRow & { finished_at: string } => !!a.finished_at,
+      )
       .slice(0, 10)
-      .map((a: any) => ({
+      .map((a) => ({
         id: a.id,
         quiz_id: a.quiz_id,
         quiz_title: a.quizzes?.title ?? "Examen",
@@ -266,10 +356,13 @@ export default async function ExamensBlancsPage({
     return !unlockedModuleIds.has(moduleId);
   };
 
-  const enrichExam = (q: any, scope: "module" | "global") => {
+  const enrichExam = (
+    q: ExamQuizRow,
+    scope: "module" | "global",
+  ): EnrichedExam => {
     const formationSlug =
       scope === "module"
-        ? moduleToFormation.get(q.module_id) ?? null
+        ? (q.module_id ? moduleToFormation.get(q.module_id) : undefined) ?? null
         : quizIdsByFormation.get(q.id) ?? null;
     return {
       id: q.id,
@@ -292,32 +385,32 @@ export default async function ExamensBlancsPage({
     };
   };
 
-  let moduleExams = (modScoped ?? [])
-    .map((q: any) => enrichExam(q, "module"))
-    .filter((q: any) => !!q.formation_slug);
-  let globalExams = (globalRaw ?? [])
-    .map((q: any) => enrichExam(q, "global"))
-    .filter((q: any) => !!q.formation_slug);
+  let moduleExams: EnrichedExam[] = modScoped
+    .map((q) => enrichExam(q, "module"))
+    .filter((q) => !!q.formation_slug);
+  let globalExams: EnrichedExam[] = globalRaw
+    .map((q) => enrichExam(q, "global"))
+    .filter((q) => !!q.formation_slug);
 
   if (filterFormation) {
     moduleExams = moduleExams.filter(
-      (q: any) => q.formation_slug === filterFormation,
+      (q) => q.formation_slug === filterFormation,
     );
     globalExams = globalExams.filter(
-      (q: any) => q.formation_slug === filterFormation,
+      (q) => q.formation_slug === filterFormation,
     );
   }
 
   const totalExams = moduleExams.length + globalExams.length;
   const passedExams = [...moduleExams, ...globalExams].filter(
-    (q: any) => q.user_stats?.passed,
+    (q) => q.user_stats?.passed,
   ).length;
 
   // Formations affichables dans les chips
   const availableFormations = FORMATIONS.filter((f) => {
     return (
-      moduleExams.some((q: any) => q.formation_slug === f.slug) ||
-      globalExams.some((q: any) => q.formation_slug === f.slug) ||
+      moduleExams.some((q) => q.formation_slug === f.slug) ||
+      globalExams.some((q) => q.formation_slug === f.slug) ||
       moduleScopedExistsForFormation(modScoped, moduleToFormation, f.slug) ||
       globalExistsForFormation(globalRaw, quizIdsByFormation, f.slug)
     );
@@ -460,19 +553,20 @@ function extractFirstName(fullName: string | null): string | null {
 }
 
 function moduleScopedExistsForFormation(
-  rows: any[] | null,
+  rows: ExamQuizRow[] | null,
   moduleToFormation: Map<string, string>,
   slug: string,
 ): boolean {
   return (rows ?? []).some(
-    (q: any) => moduleToFormation.get(q.module_id) === slug,
+    (q) =>
+      (q.module_id ? moduleToFormation.get(q.module_id) : undefined) === slug,
   );
 }
 
 function globalExistsForFormation(
-  rows: any[] | null,
+  rows: ExamQuizRow[] | null,
   quizToFormation: Map<string, string>,
   slug: string,
 ): boolean {
-  return (rows ?? []).some((q: any) => quizToFormation.get(q.id) === slug);
+  return (rows ?? []).some((q) => quizToFormation.get(q.id) === slug);
 }

@@ -13,7 +13,10 @@ import {
   ChevronRight,
   RotateCcw,
   Trash2,
+  type LucideIcon,
 } from "lucide-react";
+import type { Tables, Views } from "@/lib/database.types";
+// `crm_my_queue` est exposée comme table (vue updatable) dans les types générés.
 import { isStaff } from "@/lib/permissions";
 import { ConfirmAction } from "@/components/ui/confirm-action";
 import {
@@ -46,6 +49,21 @@ const STATUS_TONE: Record<string, "gold" | "navy" | "success" | "slate" | "rose"
   refuse: "slate",
 };
 
+/**
+ * Ligne de lead telle que consommée par cette page. Les trois sources
+ * (vue `crm_my_queue`, pool `enrollment_requests`, leads clôturés) exposent
+ * des sous-ensembles différents des colonnes de `enrollment_requests` :
+ * on modélise donc le socle commun + les colonnes calculées par la vue.
+ */
+type CrmLead = Partial<Tables<"enrollment_requests">> &
+  Pick<
+    Tables<"enrollment_requests">,
+    "id" | "full_name" | "email" | "status" | "created_at"
+  > &
+  Partial<Pick<Tables<"crm_my_queue">, "is_snoozed" | "followup_due">>;
+
+type PipelineCounter = Views<"crm_pipeline_counters">;
+
 export default async function AdminCrmPage({
   searchParams,
 }: {
@@ -66,7 +84,7 @@ export default async function AdminCrmPage({
 
   // Recherche transversale (nom / email), appliquée aux trois listes.
   const q = (searchParams?.q ?? "").trim().toLowerCase();
-  const matchesSearch = (l: any) =>
+  const matchesSearch = (l: CrmLead) =>
     !q ||
     (l.full_name ?? "").toLowerCase().includes(q) ||
     (l.email ?? "").toLowerCase().includes(q);
@@ -75,13 +93,13 @@ export default async function AdminCrmPage({
   const { data: myQueueRaw } = await supabase
     .from("crm_my_queue")
     .select("*");
-  const myQueue = ((myQueueRaw ?? []) as any[]).filter(matchesSearch);
+  const myQueue = ((myQueueRaw ?? []) as CrmLead[]).filter(matchesSearch);
 
   // Pipeline counters
   const { data: countersRaw } = await supabase
     .from("crm_pipeline_counters")
     .select("*");
-  const counters = (countersRaw ?? []) as any[];
+  const counters = (countersRaw ?? []) as PipelineCounter[];
 
   // Leads non-assignés (pool global) — limité aux 3 statuts actifs
   const { data: poolRaw } = await supabase
@@ -94,7 +112,7 @@ export default async function AdminCrmPage({
     .in("status", PIPELINE_ORDER)
     .order("created_at", { ascending: false })
     .limit(60);
-  const pool = ((poolRaw ?? []) as any[]).filter(matchesSearch);
+  const pool = ((poolRaw ?? []) as CrmLead[]).filter(matchesSearch);
 
   // Leads convertis ou refusés (statut terminal). Sans ce bloc, un lead
   // "inscrit" disparaît de toutes les vues admin alors qu'il n'a peut-être
@@ -108,7 +126,7 @@ export default async function AdminCrmPage({
     .in("status", ["inscrit", "refuse"])
     .order("created_at", { ascending: false })
     .limit(60);
-  const closed = ((closedRaw ?? []) as any[]).filter(matchesSearch);
+  const closed = ((closedRaw ?? []) as CrmLead[]).filter(matchesSearch);
 
   // Stats globales
   const totalNew = counters.find((c) => c.status === "nouveau")?.count ?? 0;
@@ -171,12 +189,12 @@ export default async function AdminCrmPage({
           label="Ma file"
           value={String(myQueue.length)}
           hint={
-            myQueue.filter((l: any) => l.followup_due).length > 0
-              ? `${myQueue.filter((l: any) => l.followup_due).length} relances dues`
+            myQueue.filter((l) => l.followup_due).length > 0
+              ? `${myQueue.filter((l) => l.followup_due).length} relances dues`
               : "Tout est à jour"
           }
           tone={
-            myQueue.filter((l: any) => l.followup_due).length > 0
+            myQueue.filter((l) => l.followup_due).length > 0
               ? "warning"
               : "default"
           }
@@ -296,7 +314,7 @@ function LeadRow({
   showFollowup = false,
   showCreateCta = false,
 }: {
-  lead: any;
+  lead: CrmLead;
   showFollowup?: boolean;
   /** Affiche un CTA secondaire "Créer le compte stagiaire" — pour les
    *  leads "inscrit" qui n'ont pas encore leur profil créé. */
@@ -434,7 +452,7 @@ function Kpi({
   hint,
   tone = "default",
 }: {
-  icon: any;
+  icon: LucideIcon;
   label: string;
   value: string;
   hint?: string;

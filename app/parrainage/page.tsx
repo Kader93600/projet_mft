@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import type { Tables, Views } from "@/lib/database.types";
 import { Card, CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -11,10 +12,25 @@ import {
   Wallet,
   Sparkles,
   Info,
+  type LucideIcon,
 } from "lucide-react";
 import { ShareCard } from "@/components/referral/share-card";
 
 export const dynamic = "force-dynamic";
+
+/** Résultat du select `referrals` + embed `referred:profiles!…(full_name, email)`. */
+type ReferralRow = Pick<
+  Tables<"referrals">,
+  "id" | "status" | "reward_cents" | "created_at" | "rewarded_at" | "rejection_reason"
+> & {
+  referred: Pick<Tables<"profiles">, "full_name" | "email"> | null;
+};
+
+/** Résultat du select `user_credits`. */
+type CreditRow = Pick<
+  Tables<"user_credits">,
+  "amount_cents" | "kind" | "description" | "created_at"
+>;
 
 const STATUS_META = {
   pending: {
@@ -72,8 +88,11 @@ export default async function ParrainagePage() {
       referred:profiles!referrals_referred_user_id_fkey ( full_name, email )
     `)
     .eq("referrer_id", user.id)
-    .order("created_at", { ascending: false });
-  const referrals = (referralsRaw ?? []) as any[];
+    .order("created_at", { ascending: false })
+    // Le client n'étant pas câblé sur `Database`, postgrest infère l'embed
+    // to-one comme un tableau : on impose la forme réelle renvoyée par l'API.
+    .overrideTypes<ReferralRow[], { merge: false }>();
+  const referrals = referralsRaw ?? [];
 
   // 3. Solde de mon crédit + historique
   const { data: balance } = await supabase
@@ -81,7 +100,9 @@ export default async function ParrainagePage() {
     .select("balance_cents")
     .eq("user_id", user.id)
     .maybeSingle();
-  const balanceCents = (balance as any)?.balance_cents ?? 0;
+  const balanceCents =
+    (balance as Pick<Views<"user_credit_balance">, "balance_cents"> | null)
+      ?.balance_cents ?? 0;
 
   const { data: creditHistoryRaw } = await supabase
     .from("user_credits")
@@ -89,7 +110,7 @@ export default async function ParrainagePage() {
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(10);
-  const creditHistory = (creditHistoryRaw ?? []) as any[];
+  const creditHistory = (creditHistoryRaw ?? []) as CreditRow[];
 
   // 4. Stats
   const stats = {
@@ -310,7 +331,7 @@ function Stat({
   hint,
   tone = "default",
 }: {
-  icon: any;
+  icon: LucideIcon;
   label: string;
   value: string;
   hint?: string;

@@ -14,10 +14,38 @@ import {
   Award,
   Layers,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { findFormation } from "@/lib/formations-config";
 import { cn } from "@/lib/utils";
+import type { Tables, Views } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
+
+/** Vue `trainer_formation_overview` : les colonnes sont déclarées nullable
+ *  (vue), mais la jointure sur `formations` garantit l'identité de la
+ *  formation → on resserre les champs réellement non-null. */
+type HabRow = Views<"trainer_formation_overview"> & {
+  formation_id: string;
+  slug: string;
+  code: string;
+  title: string;
+};
+
+type StudentRow = Views<"trainer_my_students">;
+
+/** live_sessions(id, title, kind, start_at, end_at, location,
+ *  meeting_provider, formation_id, formations!inner(title)) */
+type SessionRow = Pick<
+  Tables<"live_sessions">,
+  | "id"
+  | "title"
+  | "kind"
+  | "start_at"
+  | "end_at"
+  | "location"
+  | "meeting_provider"
+  | "formation_id"
+> & { formations: Pick<Tables<"formations">, "title"> | null };
 
 export default async function FormateurDashboard({
   searchParams,
@@ -36,7 +64,7 @@ export default async function FormateurDashboard({
     .select("*")
     .eq("trainer_id", user.id);
 
-  const habList = (habilitations ?? []) as any[];
+  const habList = (habilitations ?? []) as HabRow[];
 
   // Copies en attente de correction (vue créée en S7.2)
   const { count: pendingCorrections } = await supabase
@@ -44,7 +72,7 @@ export default async function FormateurDashboard({
     .select("*", { count: "exact", head: true });
 
   // Sessions à venir (7 jours) sur les formations habilitées
-  const habFormationIds = (habilitations ?? []).map((h: any) => h.formation_id);
+  const habFormationIds = habList.map((h) => h.formation_id);
   const sevenDaysFromNow = new Date(
     Date.now() + 7 * 24 * 3600_000
   ).toISOString();
@@ -60,13 +88,15 @@ export default async function FormateurDashboard({
         .neq("status", "cancelled")
         .order("start_at", { ascending: true })
         .limit(5)
-    : { data: [] as any[] };
+    : { data: [] as SessionRow[] };
+
+  const sessionRows = (upcomingSessions ?? []) as SessionRow[];
 
   // Onglet actif (slug ou "all")
   const activeSlug = searchParams?.f ?? "all";
   const activeHab =
     activeSlug !== "all"
-      ? habList.find((h: any) => h.slug === activeSlug)
+      ? habList.find((h) => h.slug === activeSlug)
       : null;
 
   // Mes stagiaires (filtrés par formation si onglet actif)
@@ -79,23 +109,23 @@ export default async function FormateurDashboard({
   }
   const { data: students } = await studentsQuery;
 
-  const list = (students ?? []) as any[];
+  const list = (students ?? []) as StudentRow[];
 
   // Métriques
   const total = list.length;
   const actifs = list.filter(
-    (s: any) =>
+    (s) =>
       s.last_activity_at &&
       Date.now() - new Date(s.last_activity_at).getTime() <
         7 * 24 * 60 * 60 * 1000
   ).length;
   const inactifs = total - actifs;
   const totalLessonsDone = list.reduce(
-    (sum: number, s: any) => sum + (s.lessons_done ?? 0),
+    (sum: number, s) => sum + (s.lessons_done ?? 0),
     0
   );
   const totalQuizzesPassed = list.reduce(
-    (sum: number, s: any) => sum + (s.quizzes_passed ?? 0),
+    (sum: number, s) => sum + (s.quizzes_passed ?? 0),
     0
   );
 
@@ -115,7 +145,7 @@ export default async function FormateurDashboard({
       </header>
 
       {/* Bandeau : sessions à venir (7 jours) */}
-      {upcomingSessions && upcomingSessions.length > 0 && (
+      {sessionRows.length > 0 && (
         <section className="rounded-2xl border border-navy-100 bg-white overflow-hidden">
           <header className="px-5 py-3.5 border-b border-navy-100 bg-ivory flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-2">
@@ -127,8 +157,8 @@ export default async function FormateurDashboard({
                   Sessions à venir cette semaine
                 </h2>
                 <p className="text-[11.5px] text-slate-500">
-                  {upcomingSessions.length} session
-                  {upcomingSessions.length > 1 ? "s" : ""} dans les 7 prochains
+                  {sessionRows.length} session
+                  {sessionRows.length > 1 ? "s" : ""} dans les 7 prochains
                   jours
                 </p>
               </div>
@@ -142,7 +172,7 @@ export default async function FormateurDashboard({
             </Link>
           </header>
           <ul className="divide-y divide-navy-100">
-            {upcomingSessions.map((s: any) => {
+            {sessionRows.map((s) => {
               const start = new Date(s.start_at);
               const dayLabel = start.toLocaleDateString("fr-FR", {
                 weekday: "short",
@@ -172,7 +202,7 @@ export default async function FormateurDashboard({
                         {s.title}
                       </div>
                       <div className="text-[11.5px] text-slate-500 truncate flex items-center gap-2">
-                        <span>{(s.formations as any)?.title}</span>
+                        <span>{s.formations?.title}</span>
                         <span>·</span>
                         <span className="capitalize">{s.kind}</span>
                         {s.meeting_provider && (
@@ -253,7 +283,7 @@ export default async function FormateurDashboard({
               active={activeSlug === "all"}
               accent="#2530D9"
             />
-            {habList.map((h: any) => {
+            {habList.map((h) => {
               const f = findFormation(h.slug);
               return (
                 <TabPill
@@ -262,7 +292,7 @@ export default async function FormateurDashboard({
                   label={`${h.code} (${h.active_students ?? 0})`}
                   active={activeSlug === h.slug}
                   accent={f?.accent ?? "#2530D9"}
-                  isLead={h.is_lead}
+                  isLead={h.is_lead ?? undefined}
                 />
               );
             })}
@@ -364,7 +394,7 @@ export default async function FormateurDashboard({
               </div>
             ) : (
               <ul className="divide-y divide-navy-50">
-                {list.map((s: any) => {
+                {list.map((s) => {
                   const lastAt = s.last_activity_at
                     ? new Date(s.last_activity_at)
                     : null;
@@ -533,7 +563,7 @@ function Kpi({
   value,
   tone,
 }: {
-  icon: any;
+  icon: LucideIcon;
   label: string;
   value: number | string;
   tone: "brand" | "success" | "rose";

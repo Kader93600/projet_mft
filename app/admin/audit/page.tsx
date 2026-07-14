@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import type { Json, Tables } from "@/lib/database.types";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDateTime } from "@/lib/utils";
@@ -96,13 +97,17 @@ const STATUS_LABELS: Record<string, string> = {
   a_payer: "Paiement à effectuer", en_cours: "Formation en cours", termine: "Formation terminée", abandon: "Abandon",
 };
 const ACCESS_LABELS: Record<string, string> = { invite: "invitation par e-mail", password: "mot de passe défini" };
-const pack = (v: any) => PACK_LABELS[String(v)] ?? String(v);
-const status = (v: any) => STATUS_LABELS[String(v)] ?? String(v);
-const formation = (v: any) => findFormation(String(v))?.code ?? String(v);
+/** Les valeurs viennent de `audit_log.metadata` (jsonb) → `Json`. */
+type JsonValue = Json | undefined;
+const pack = (v: JsonValue) => PACK_LABELS[String(v)] ?? String(v);
+const status = (v: JsonValue) => STATUS_LABELS[String(v)] ?? String(v);
+const formation = (v: JsonValue) => findFormation(String(v))?.code ?? String(v);
 
 // ── Métadonnées JSON → phrase lisible ──────────────────────────────────
-function humanizeDetails(action: string, m: any): string | null {
-  if (!m || typeof m !== "object" || Array.isArray(m) || Object.keys(m).length === 0) return null;
+function humanizeDetails(action: string, metadata: Json | null): string | null {
+  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata) || Object.keys(metadata).length === 0) return null;
+  // Après ces gardes, `metadata` est bien l'objet JSON de la métadonnée.
+  const m = metadata;
 
   if (action === "enrollment_update") {
     if (m.pack_changed) return `Pack modifié : ${pack(m.previous_pack)} → ${pack(m.new_pack)}`;
@@ -143,6 +148,14 @@ function humanizeDetails(action: string, m: any): string | null {
   return parts.length ? parts.slice(0, 4).join(" · ") : null;
 }
 
+// ── Types des lignes lues (dérivés des `select` ci-dessous) ────────────
+type AuditRow = Tables<"audit_log">;
+type ProfileRow = Pick<Tables<"profiles">, "id" | "full_name" | "email">;
+type EnrollmentRow = Pick<Tables<"enrollments">, "id"> & {
+  user: Pick<Tables<"profiles">, "full_name" | "email"> | null;
+};
+type LeadRow = Pick<Tables<"enrollment_requests">, "id" | "full_name" | "email">;
+
 export default async function AuditLogPage() {
   const supabase = createClient();
   const { data: logs } = await supabase
@@ -151,29 +164,29 @@ export default async function AuditLogPage() {
     .order("created_at", { ascending: false })
     .limit(200);
 
-  const rows = (logs ?? []) as any[];
+  const rows = (logs ?? []) as AuditRow[];
 
   // ── Résolution des cibles en noms lisibles (lecture service-role :
   //    page déjà réservée au staff). Requêtes batchées, pas de N+1. ──────
   const idsByType: Record<string, Set<string>> = { profile: new Set(), enrollment: new Set(), enrollment_request: new Set() };
   for (const l of rows) {
-    if (l.target_id && idsByType[l.target_type]) idsByType[l.target_type].add(l.target_id);
+    if (l.target_id && l.target_type && idsByType[l.target_type]) idsByType[l.target_type].add(l.target_id);
   }
   const admin = createAdminClient();
   const pIds = [...idsByType.profile], eIds = [...idsByType.enrollment], rIds = [...idsByType.enrollment_request];
   const [profRes, enrRes, leadRes] = await Promise.all([
-    pIds.length ? admin.from("profiles").select("id, full_name, email").in("id", pIds) : Promise.resolve({ data: [] as any[] }),
-    eIds.length ? admin.from("enrollments").select("id, user:profiles!user_id(full_name, email)").in("id", eIds) : Promise.resolve({ data: [] as any[] }),
-    rIds.length ? admin.from("enrollment_requests").select("id, full_name, email").in("id", rIds) : Promise.resolve({ data: [] as any[] }),
+    pIds.length ? admin.from("profiles").select("id, full_name, email").in("id", pIds) : Promise.resolve({ data: [] as ProfileRow[] }),
+    eIds.length ? admin.from("enrollments").select("id, user:profiles!user_id(full_name, email)").in("id", eIds) : Promise.resolve({ data: [] as EnrollmentRow[] }),
+    rIds.length ? admin.from("enrollment_requests").select("id, full_name, email").in("id", rIds) : Promise.resolve({ data: [] as LeadRow[] }),
   ]);
   const profileMap = new Map<string, string>();
-  (profRes.data ?? []).forEach((p: any) => profileMap.set(p.id, p.full_name || p.email));
+  ((profRes.data ?? []) as ProfileRow[]).forEach((p) => profileMap.set(p.id, p.full_name || p.email));
   const enrollMap = new Map<string, string>();
-  (enrRes.data ?? []).forEach((e: any) => enrollMap.set(e.id, e.user?.full_name || e.user?.email || ""));
+  ((enrRes.data ?? []) as EnrollmentRow[]).forEach((e) => enrollMap.set(e.id, e.user?.full_name || e.user?.email || ""));
   const leadMap = new Map<string, string>();
-  (leadRes.data ?? []).forEach((r: any) => leadMap.set(r.id, r.full_name || r.email));
+  ((leadRes.data ?? []) as LeadRow[]).forEach((r) => leadMap.set(r.id, r.full_name || r.email));
 
-  function resolveName(l: any): string | null {
+  function resolveName(l: AuditRow): string | null {
     if (!l.target_id) return null;
     if (l.target_type === "profile") return profileMap.get(l.target_id) || null;
     if (l.target_type === "enrollment") return enrollMap.get(l.target_id) || null;
@@ -207,9 +220,9 @@ export default async function AuditLogPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((log: any) => {
+              {rows.map((log) => {
                 const name = resolveName(log);
-                const typeLabel = TYPE_LABELS[log.target_type] ?? log.target_type ?? "—";
+                const typeLabel = (log.target_type ? TYPE_LABELS[log.target_type] : null) ?? log.target_type ?? "—";
                 const detail = humanizeDetails(log.action, log.metadata);
                 return (
                   <tr key={log.id} className="border-t border-navy-50">
@@ -222,7 +235,7 @@ export default async function AuditLogPage() {
                       </div>
                     </td>
                     <td className="px-5 py-3">
-                      <Badge tone={actionTone(log.action) as any} size="sm">
+                      <Badge tone={actionTone(log.action)} size="sm">
                         {actionLabel(log.action)}
                       </Badge>
                     </td>

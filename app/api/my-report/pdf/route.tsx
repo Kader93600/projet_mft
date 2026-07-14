@@ -10,9 +10,33 @@ import {
 } from "@react-pdf/renderer";
 import React from "react";
 import { PdfLogoMark } from "@/lib/pdf-logo";
+import type { Tables } from "@/lib/database.types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+// ── Types de lecture (les select() ci-dessous sont la source de vérité) ──
+type ProfileRow = Pick<Tables<"profiles">, "full_name" | "email">;
+type SummaryRow = Tables<"user_training_summary">;
+type BlocRow = Pick<Tables<"blocs">, "id" | "code" | "title">;
+type ModuleRow = Pick<Tables<"modules">, "id" | "bloc_id">;
+type LessonRow = Pick<Tables<"lessons">, "id" | "module_id">;
+type ProgressRow = Pick<Tables<"lesson_progress">, "lesson_id" | "completed">;
+type AttemptRow = Pick<
+  Tables<"quiz_attempts">,
+  "percentage" | "passed" | "finished_at"
+> & {
+  quizzes: Pick<Tables<"quizzes">, "title" | "type" | "module_id"> | null;
+};
+
+/** Ligne agrégée « progression par bloc » calculée dans le GET. */
+type BlocProgress = {
+  code: string;
+  title: string;
+  lessonsDone: number;
+  lessonsTotal: number;
+  avgScore: number | null;
+};
 
 const S = StyleSheet.create({
   page: { padding: 44, fontSize: 10, fontFamily: "Helvetica", color: "#0f172a" },
@@ -102,7 +126,7 @@ function fmtHours(s: number) {
   return h ? `${h}h${String(m).padStart(2, "0")}` : `${m} min`;
 }
 
-function fmtDate(d: any) {
+function fmtDate(d: string | null | undefined) {
   if (!d) return "—";
   return new Date(d).toLocaleDateString("fr-FR", {
     day: "2-digit",
@@ -123,7 +147,13 @@ function Report({
   byBloc,
   recent,
   generatedAt,
-}: any) {
+}: {
+  user: ProfileRow | null;
+  summary: Partial<SummaryRow>;
+  byBloc: BlocProgress[];
+  recent: AttemptRow[];
+  generatedAt: string;
+}) {
   const C = React.createElement;
   return C(
     Document,
@@ -198,7 +228,7 @@ function Report({
       ),
 
       C(Text, { style: S.h2 }, "Progression par bloc de compétence"),
-      ...byBloc.map((b: any, i: number) =>
+      ...byBloc.map((b: BlocProgress, i: number) =>
         C(
           View,
           { key: i, style: S.blocRow },
@@ -231,7 +261,7 @@ function Report({
         C(Text, { style: [S.td, { textAlign: "right" }] }, "Score"),
         C(Text, { style: [S.td, { textAlign: "right" }] }, "Date")
       ),
-      ...recent.map((a: any, i: number) =>
+      ...recent.map((a: AttemptRow, i: number) =>
         C(
           View,
           { key: i, style: S.tr },
@@ -242,10 +272,13 @@ function Report({
             {
               style: [
                 S.td,
-                { textAlign: "right", color: scoreColor(a.percentage) },
+                // `?? 0` : scoreColor(null) et scoreColor(0) renvoient la même
+                // couleur (tous les seuils sont faux) → rendu inchangé.
+                { textAlign: "right", color: scoreColor(a.percentage ?? 0) },
               ],
             },
-            a.percentage + " %"
+            // String(x) reproduit exactement l'ancienne concaténation implicite.
+            String(a.percentage) + " %"
           ),
           C(
             Text,
@@ -301,35 +334,50 @@ export async function GET() {
       .eq("user_id", authUser.id),
     supabase
       .from("quiz_attempts")
-      .select("percentage, passed, finished_at, quizzes(title, type, module_id)")
+      // `select<Query, Result>` : sans client générique <Database>,
+      // postgrest-js infère l'embed `quizzes` en tableau ; on donne le type réel.
+      .select<string, AttemptRow>(
+        "percentage, passed, finished_at, quizzes(title, type, module_id)"
+      )
       .eq("user_id", authUser.id)
       .order("finished_at", { ascending: false })
       .limit(50),
   ]);
 
+  const lessonRows = (lessons ?? []) as LessonRow[];
+  const progressRows = (progress ?? []) as ProgressRow[];
+  const blocRows = (blocs ?? []) as BlocRow[];
+  const moduleRows = (modules ?? []) as ModuleRow[];
+  const attemptRows = attempts ?? [];
+
   const lessonsByModule = new Map<string, string[]>();
-  (lessons ?? []).forEach((l: any) => {
+  lessonRows.forEach((l) => {
     const arr = lessonsByModule.get(l.module_id) ?? [];
     arr.push(l.id);
     lessonsByModule.set(l.module_id, arr);
   });
   const completed = new Set(
-    (progress ?? []).filter((p: any) => p.completed).map((p: any) => p.lesson_id)
+    progressRows.filter((p) => p.completed).map((p) => p.lesson_id)
   );
 
-  const byBloc = (blocs ?? []).map((b: any) => {
-    const modsOfBloc = (modules ?? []).filter((m: any) => m.bloc_id === b.id);
-    const modIds = new Set(modsOfBloc.map((m: any) => m.id));
+  const byBloc: BlocProgress[] = blocRows.map((b) => {
+    const modsOfBloc = moduleRows.filter((m) => m.bloc_id === b.id);
+    const modIds = new Set(modsOfBloc.map((m) => m.id));
     const lessonsOfBloc = modsOfBloc.flatMap(
-      (m: any) => lessonsByModule.get(m.id) ?? []
+      (m) => lessonsByModule.get(m.id) ?? []
     );
     const done = lessonsOfBloc.filter((id) => completed.has(id)).length;
-    const atts = (attempts ?? []).filter((a: any) =>
+    const atts = attemptRows.filter((a) =>
       a.quizzes?.module_id ? modIds.has(a.quizzes.module_id) : false
     );
     const avg =
       atts.length > 0
-        ? Math.round(atts.reduce((s: number, a: any) => s + a.percentage, 0) / atts.length)
+        ? Math.round(
+            // `?? 0` : strictement équivalent à l'ancien `s + a.percentage`
+            // (JS coerce `null` en 0 dans une addition numérique).
+            atts.reduce((s: number, a) => s + (a.percentage ?? 0), 0) /
+              atts.length
+          )
         : null;
     return {
       code: b.code,
@@ -340,7 +388,7 @@ export async function GET() {
     };
   });
 
-  const recent = (attempts ?? []).slice(0, 20);
+  const recent = attemptRows.slice(0, 20);
   const generatedAt = new Date().toLocaleDateString("fr-FR", {
     day: "2-digit",
     month: "long",
@@ -348,15 +396,22 @@ export async function GET() {
   });
 
   const buffer = await renderToBuffer(
-    React.createElement(Report, {
-      user: profile,
-      summary: summary ?? {},
-      byBloc,
-      recent,
-      generatedAt,
-    }) as any
+    // JSX plutôt que React.createElement : l'élément obtenu est un
+    // JSX.Element (ReactElement<any>), directement accepté par la signature
+    // `renderToBuffer(document: ReactElement<DocumentProps>)` de @react-pdf.
+    <Report
+      user={(profile ?? null) as ProfileRow | null}
+      summary={(summary ?? {}) as Partial<SummaryRow>}
+      byBloc={byBloc}
+      recent={recent}
+      generatedAt={generatedAt}
+    />
   );
 
+  // `as any` conservé : quirk de typage tiers. `renderToBuffer` renvoie un
+  // `Buffer<ArrayBufferLike>` (Node) que lib.dom refuse comme `BodyInit`
+  // (qui attend un `ArrayBufferView<ArrayBuffer>`). Toute alternative typée
+  // (copie en Uint8Array) modifierait le runtime.
   return new NextResponse(buffer as any, {
     headers: {
       "Content-Type": "application/pdf",

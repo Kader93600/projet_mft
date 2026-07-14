@@ -3,8 +3,12 @@ import { Card, CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { QuestionEditor } from "./question-editor";
 import { Target } from "lucide-react";
+import type { Tables } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
+
+/** Options de formation passées au QuestionEditor (select "slug, code, title"). */
+type FormationOption = Pick<Tables<"formations">, "slug" | "code" | "title">;
 
 export default async function AdminPlacementPage() {
   const supabase = createClient();
@@ -33,7 +37,7 @@ export default async function AdminPlacementPage() {
       .order("code"),
   ]);
 
-  const formations = dbFormations ?? [];
+  const formations = (dbFormations ?? []) as FormationOption[];
 
   return (
     <div className="space-y-8">
@@ -60,7 +64,7 @@ export default async function AdminPlacementPage() {
           </div>
           <QuestionEditor
             blocs={blocs ?? []}
-            formations={formations as any}
+            formations={formations}
             mode="create"
           />
         </CardBody>
@@ -79,6 +83,11 @@ export default async function AdminPlacementPage() {
           </Card>
         )}
 
+        {/* `q` reste en `any` : le prop `question` de QuestionEditor déclare
+            `formation_slug?: string` alors que la page transmet `null` (et
+            `choices: string[]` là où la colonne est `Json`). Typer la ligne
+            ici casserait la compilation ; le vrai correctif est de relâcher
+            le type dans question-editor.tsx (hors périmètre de ce passage). */}
         {questions?.map((q: any) => (
           <Card key={q.id} className={q.active ? "" : "opacity-60"}>
             <CardBody>
@@ -89,7 +98,7 @@ export default async function AdminPlacementPage() {
               </div>
               <QuestionEditor
                 blocs={blocs ?? []}
-                formations={formations as any}
+                formations={formations}
                 mode="edit"
                 question={{
                   ...q,

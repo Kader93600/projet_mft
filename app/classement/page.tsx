@@ -4,8 +4,32 @@ import { Card, CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Crown, Medal, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { Tables } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
+
+/**
+ * Colonnes de la fonction Postgres `public.leaderboard(p_period, p_limit)`
+ * — cf. supabase/leaderboard_periods.sql :
+ *   RETURNS TABLE (rank int, user_id uuid, display_name text,
+ *                  total_xp int, level int)
+ * (les `Functions` ne sont pas encore typées dans lib/database.types.ts)
+ */
+type LeaderboardRow = {
+  rank: number;
+  user_id: string;
+  display_name: string;
+  total_xp: number;
+  level: number;
+};
+
+/** `public.my_period_xp(p_period)` RETURNS int */
+type MyPeriodXp = number;
+
+type MyGamification = Pick<
+  Tables<"user_gamification">,
+  "total_xp" | "level" | "active_days"
+>;
 
 const PERIODS = [
   { value: "week", label: "Cette semaine" },
@@ -40,8 +64,10 @@ export default async function ClassementPage({
       .maybeSingle(),
   ]);
 
-  const list = (rows ?? []) as any[];
-  const myRank = list.find((r: any) => r.user_id === user.id)?.rank;
+  const list = (rows ?? []) as LeaderboardRow[];
+  const myXpValue = (myXp ?? 0) as MyPeriodXp;
+  const mineRow = mine as MyGamification | null;
+  const myRank = list.find((r) => r.user_id === user.id)?.rank;
   const periodLabel =
     PERIODS.find((p) => p.value === period)?.label ?? "Cette semaine";
 
@@ -89,10 +115,10 @@ export default async function ClassementPage({
       {/* Récap perso */}
       <Card variant="gold">
         <CardBody className="grid grid-cols-3 gap-3 sm:gap-6">
-          <Stat label="Mon niveau" value={(mine as any)?.level ?? 1} />
+          <Stat label="Mon niveau" value={mineRow?.level ?? 1} />
           <Stat
             label={`XP — ${periodLabel.toLowerCase()}`}
-            value={`${(myXp as any) ?? 0}`}
+            value={`${myXpValue}`}
           />
           <Stat label="Mon rang" value={myRank ? `#${myRank}` : "—"} />
         </CardBody>
@@ -101,7 +127,7 @@ export default async function ClassementPage({
       <Card>
         <CardBody className="p-0">
           <ul className="divide-y divide-navy-50">
-            {list.map((r: any) => {
+            {list.map((r) => {
               const me = r.user_id === user.id;
               const Icon =
                 r.rank === 1

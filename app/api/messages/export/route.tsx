@@ -3,16 +3,45 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { createClient } from "@/lib/supabase/server";
 import {
   ConversationPDF,
+  type PdfConversation,
   type PdfData,
   type PdfMessage,
   type PdfParticipant,
 } from "@/lib/pdf/conversation-pdf";
+import type { Tables } from "@/lib/database.types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /** Limite haute pour éviter les PDF démesurés. */
 const MESSAGE_HARD_LIMIT = 1000;
+
+// ── Types des lignes lues (dérivés des `select` réels ci-dessous) ────
+// Le client Supabase n'est pas câblé sur `Database` (cf. CLAUDE.md) :
+// les `data` sont donc `any` et on les annote explicitement ici.
+// `kind`, `scope` et `sender_role` sont des `text` en base, contraints aux
+// mêmes valeurs que celles attendues par le composant PDF.
+type ConversationRow = Pick<Tables<"conversations">, "id" | "title" | "created_at"> &
+  Pick<PdfConversation, "kind" | "scope">;
+type ParticipantRow = Pick<Tables<"conversation_participants">, "user_id">;
+type ProfileRow = Pick<Tables<"profiles">, "id" | "full_name" | "email" | "role">;
+type MessageRow = Pick<
+  Tables<"messages">,
+  | "id"
+  | "sender_id"
+  | "body"
+  | "reply_to_id"
+  | "edited_at"
+  | "deleted_at"
+  | "created_at"
+> &
+  Pick<PdfMessage, "sender_role">;
+type AttachmentRow = Pick<
+  Tables<"message_attachments">,
+  "message_id" | "mime_type" | "size_bytes" | "original_name"
+>;
+type ReactionRow = Pick<Tables<"message_reactions">, "message_id" | "emoji">;
+type PinnedRow = Pick<Tables<"pinned_messages">, "message_id">;
 
 /**
  * GET /api/messages/export?c=<conversation_id>
@@ -46,11 +75,12 @@ export async function GET(req: NextRequest) {
   }
 
   // ── 1) Conv (RLS = participant ou staff) ─────────────────────
-  const { data: conv, error: convErr } = await supabase
+  const { data: convRow, error: convErr } = await supabase
     .from("conversations")
     .select("id, kind, scope, title, created_at")
     .eq("id", conversationId)
     .maybeSingle();
+  const conv: ConversationRow | null = convRow;
 
   if (convErr) {
     return NextResponse.json({ error: convErr.message }, { status: 500 });
@@ -68,7 +98,8 @@ export async function GET(req: NextRequest) {
     .select("user_id")
     .eq("conversation_id", conversationId);
 
-  const participantIds = (parts ?? []).map((p: any) => p.user_id);
+  const participantRows: ParticipantRow[] = parts ?? [];
+  const participantIds = participantRows.map((p) => p.user_id);
   if (!participantIds.includes(user.id)) {
     // Le caller n'est pas participant : staff via is_staff peut tout de même
     // accéder grâce à la RLS plus haut, mais on bloque pour les autres rôles.
@@ -89,8 +120,9 @@ export async function GET(req: NextRequest) {
     .select("id, full_name, email, role")
     .in("id", participantIds.length > 0 ? participantIds : [user.id]);
 
+  const profileRows: ProfileRow[] = profs ?? [];
   const profMap = new Map<string, PdfParticipant>();
-  for (const p of (profs ?? []) as any[]) {
+  for (const p of profileRows) {
     profMap.set(p.id, {
       user_id: p.id,
       full_name: p.full_name ?? null,
@@ -115,7 +147,7 @@ export async function GET(req: NextRequest) {
     .eq("conversation_id", conversationId)
     .order("created_at", { ascending: true })
     .limit(MESSAGE_HARD_LIMIT);
-  const messages = (msgs ?? []) as any[];
+  const messages: MessageRow[] = msgs ?? [];
 
   // ── 5) Attachments + reactions + pinned (en parallèle) ───────
   const messageIds = messages.map((m) => m.id);
@@ -139,7 +171,11 @@ export async function GET(req: NextRequest) {
         .eq("conversation_id", conversationId),
     ]);
 
-    for (const a of (attsRes.data ?? []) as any[]) {
+    const attachmentRows: AttachmentRow[] = attsRes.data ?? [];
+    const reactionRows: ReactionRow[] = reactsRes.data ?? [];
+    const pinnedRows: PinnedRow[] = pinnedRes.data ?? [];
+
+    for (const a of attachmentRows) {
       (attsByMsg[a.message_id] ??= []).push({
         mime_type: a.mime_type,
         original_name: a.original_name,
@@ -149,7 +185,7 @@ export async function GET(req: NextRequest) {
 
     // Aggrégation des réactions par emoji
     const reactCount = new Map<string, Map<string, number>>();
-    for (const r of (reactsRes.data ?? []) as any[]) {
+    for (const r of reactionRows) {
       let perMsg = reactCount.get(r.message_id);
       if (!perMsg) {
         perMsg = new Map();
@@ -164,7 +200,7 @@ export async function GET(req: NextRequest) {
       }));
     }
 
-    for (const p of (pinnedRes.data ?? []) as any[]) {
+    for (const p of pinnedRows) {
       pinnedSet.add(p.message_id);
     }
   }
@@ -228,9 +264,10 @@ export async function GET(req: NextRequest) {
   let buffer: Buffer;
   try {
     buffer = await renderToBuffer(<ConversationPDF data={data} />);
-  } catch (err: any) {
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
-      { error: "pdf_render_failed", detail: err?.message ?? String(err) },
+      { error: "pdf_render_failed", detail },
       { status: 500 }
     );
   }

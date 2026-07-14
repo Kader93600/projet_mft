@@ -20,8 +20,33 @@ import { LeadActionsBar } from "./actions-bar";
 import { NoteForm } from "./note-form";
 import { LeadTimeline } from "./timeline";
 import { TagsEditor } from "./tags-editor";
+import type { Tables } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
+
+/** Lead + admin assigné embarqué (cf. select `*, assigned_admin:profiles!…`). */
+type LeadRow = Tables<"enrollment_requests"> & {
+  assigned_admin: Pick<
+    Tables<"profiles">,
+    "id" | "full_name" | "email"
+  > | null;
+};
+
+/** Note + auteur embarqué (cf. select `author:profiles!…`). */
+type LeadNoteRow = Pick<
+  Tables<"lead_notes">,
+  "id" | "kind" | "body" | "occurred_at" | "created_at"
+> & {
+  author: Pick<Tables<"profiles">, "full_name" | "email"> | null;
+};
+
+/** Activité + auteur embarqué (cf. select `author:profiles!…`). */
+type LeadActivityRow = Pick<
+  Tables<"lead_activities">,
+  "id" | "kind" | "details" | "created_at"
+> & {
+  author: Pick<Tables<"profiles">, "full_name"> | null;
+};
 
 const STATUS_LABEL: Record<string, string> = {
   nouveau: "Nouveau",
@@ -85,8 +110,11 @@ export default async function CrmLeadDetailPage({
     `)
     .eq("enrollment_request_id", params.id)
     .order("occurred_at", { ascending: false })
-    .limit(50);
-  const notes = (notesRaw ?? []) as any[];
+    .limit(50)
+    // Le client n'est pas typé globalement : supabase-js infère les embeds
+    // to-one comme des tableaux. On rétablit la vraie forme (objet | null).
+    .overrideTypes<LeadNoteRow[], { merge: false }>();
+  const notes = notesRaw ?? [];
 
   // Activités (audit trail)
   const { data: activitiesRaw } = await supabase
@@ -97,10 +125,11 @@ export default async function CrmLeadDetailPage({
     `)
     .eq("enrollment_request_id", params.id)
     .order("created_at", { ascending: false })
-    .limit(50);
-  const activities = (activitiesRaw ?? []) as any[];
+    .limit(50)
+    .overrideTypes<LeadActivityRow[], { merge: false }>();
+  const activities = activitiesRaw ?? [];
 
-  const l = lead as any;
+  const l = lead as LeadRow;
   const isMine = l.assigned_to_admin_id === user.id;
 
   // Valeurs pré-remplies du devis (depuis la formation du lead si connue).
@@ -186,7 +215,7 @@ export default async function CrmLeadDetailPage({
                 Relance due
               </Badge>
             )}
-            {isSnoozed && (
+            {isSnoozed && l.snoozed_until && (
               <Badge tone="slate" size="sm">
                 <Clock className="h-3 w-3" />
                 En pause jusqu'au{" "}
@@ -353,7 +382,13 @@ export default async function CrmLeadDetailPage({
   );
 }
 
-function Row({ label, value }: { label: string; value: any }) {
+function Row({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | null | undefined;
+}) {
   return (
     <div className="flex justify-between gap-3">
       <dt className="text-slate-500">{label}</dt>
@@ -362,7 +397,7 @@ function Row({ label, value }: { label: string; value: any }) {
   );
 }
 
-function NoteItem({ note }: { note: any }) {
+function NoteItem({ note }: { note: LeadNoteRow }) {
   const KIND_LABEL: Record<string, string> = {
     call: "Appel",
     email: "Email",

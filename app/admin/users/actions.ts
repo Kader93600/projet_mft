@@ -6,6 +6,7 @@ import { updateProfileSchema, uuid } from "@/lib/validations";
 import { appUrl } from "@/lib/app-url";
 import { captureException } from "@/lib/observability";
 import { z } from "zod";
+import type { Tables, TablesInsert } from "@/lib/database.types";
 
 // ─── Schéma de création stagiaire ──────────────────────────────────────
 const createStudentSchema = z.object({
@@ -185,7 +186,7 @@ export async function createStudent(raw: unknown): Promise<CreateStudentResult> 
 
   // 2) Profil stagiaire complet (le trigger handle_new_user a peut-être déjà
   //    créé une ligne minimale ; on fait un upsert pour compléter)
-  const profilePayload: Record<string, any> = {
+  const profilePayload: TablesInsert<"profiles"> = {
     id: userId,
     email: data.email,
     full_name: data.full_name,
@@ -221,7 +222,7 @@ export async function createStudent(raw: unknown): Promise<CreateStudentResult> 
   const isCapaLight = formation.slug === "capacite-3-5t";
   const safePack = isCapaLight ? "initial" : data.pack;
 
-  const enrollmentPayload: Record<string, any> = {
+  const enrollmentPayload: TablesInsert<"enrollments"> = {
     user_id: userId,
     formation_slug: formation.slug,
     formation_id: formation.id,
@@ -283,7 +284,10 @@ export async function createStudent(raw: unknown): Promise<CreateStudentResult> 
 export async function updateUserProfile(userId: string, raw: unknown) {
   const { supabase, admin } = await requireAdmin();
   validate(uuid, userId);
-  const patch = validate(updateProfileSchema, raw) as Record<string, any>;
+  const patch: z.infer<typeof updateProfileSchema> = validate(
+    updateProfileSchema,
+    raw
+  );
 
   // Recompose full_name à partir de prénom/nom dès que l'un des deux est
   // fourni — full_name reste la source d'affichage (recherche, tri,
@@ -357,8 +361,7 @@ export async function deleteUser(
   if (authErr) {
     const msg = authErr.message ?? "";
     const isNotFound =
-      /not[\s_-]?found|does not exist/i.test(msg) ||
-      (authErr as any).status === 404;
+      /not[\s_-]?found|does not exist/i.test(msg) || authErr.status === 404;
 
     if (isNotFound) {
       // Orphan : profil présent mais auth user déjà disparu → on nettoie
@@ -588,7 +591,11 @@ export async function createTrainer(raw: unknown): Promise<StaffCreateResult> {
       .from("formations")
       .select("id, slug")
       .in("slug", data.formation_slugs);
-    const rows = (foundFormations ?? []).map((f: any) => ({
+    const formations = (foundFormations ?? []) as Pick<
+      Tables<"formations">,
+      "id" | "slug"
+    >[];
+    const rows: TablesInsert<"trainer_formations">[] = formations.map((f) => ({
       trainer_id: userId,
       formation_id: f.id,
       can_grade: data.can_grade,
@@ -621,10 +628,10 @@ export async function createAdminUser(raw: unknown): Promise<StaffCreateResult> 
     return { ok: false, error, step };
   };
 
-  let adminProfile: { id: string; role: string };
+  let adminProfile: Pick<Tables<"profiles">, "id" | "role">;
   try {
     const r = await requireAdmin();
-    adminProfile = r.admin as any;
+    adminProfile = r.admin;
   } catch (e: any) {
     return fail("requireAdmin", e?.message ?? "Authentification requise");
   }

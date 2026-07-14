@@ -6,8 +6,41 @@ import { findFormation, FORMATIONS } from "@/lib/formations-config";
 import { getQuestionFilterConfig } from "@/lib/question-filters";
 import { QrEditor } from "./qr-editor";
 import { ActivateAllButton } from "./activate-all-button";
+import type { Tables } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
+
+/** Colonnes réellement sélectionnées pour la liste des QR. */
+type QrRow = Pick<
+  Tables<"question_bank">,
+  | "id"
+  | "statement"
+  | "expected_answer"
+  | "scoring_grid"
+  | "max_score"
+  | "difficulty"
+  | "tags"
+  | "source_ref"
+  | "active"
+  | "annex_pages"
+  | "annex_labels"
+  | "import_id"
+>;
+
+type AttachmentRow = Pick<
+  Tables<"question_attachments">,
+  | "id"
+  | "question_id"
+  | "storage_path"
+  | "file_name"
+  | "mime_type"
+  | "size_bytes"
+  | "kind"
+  | "label"
+  | "display_order"
+>;
+
+type ImportRow = Pick<Tables<"question_imports">, "id" | "pdf_storage_path">;
 
 export default async function ValidationQrPage({
   searchParams,
@@ -46,7 +79,7 @@ export default async function ValidationQrPage({
   }
 
   const { data: questions } = await query;
-  const list = (questions ?? []) as any[];
+  const list = (questions ?? []) as QrRow[];
   const inactiveCount = list.filter((q) => !q.active).length;
 
   // Fetch les annexes attachées (image, PDF…) à chaque question affichée
@@ -76,17 +109,17 @@ export default async function ValidationQrPage({
       )
       .order("display_order");
 
-    const rows = attRows ?? [];
+    const rows = (attRows ?? []) as AttachmentRow[];
     if (rows.length > 0) {
       // Batch : 1 appel storage au lieu de N (createSignedUrls pluriel)
       const { data: signedList } = await supabase.storage
         .from("question-attachments")
         .createSignedUrls(
-          rows.map((a: any) => a.storage_path as string),
+          rows.map((a) => a.storage_path),
           60 * 60,
         );
       const urlByPath = new Map(
-        (signedList ?? []).map((s: any) => [s.path, s.signedUrl]),
+        (signedList ?? []).map((s) => [s.path, s.signedUrl] as const),
       );
       for (const a of rows) {
         const arr = attachmentsByQuestion[a.question_id] ?? [];
@@ -107,11 +140,15 @@ export default async function ValidationQrPage({
   // Stats par groupe (Chapitre / Module selon la formation)
   // On agrège côté JS en une seule passe pour éviter N requêtes parallèles.
   // Fetch dédié léger : juste tags + active de toutes les QR de la formation.
-  const { data: allTagRows } = await supabase
+  const { data: allTagRowsRaw } = await supabase
     .from("question_bank")
     .select("tags, active")
     .eq("formation_id", dbF.id)
     .eq("type", "qr");
+  const allTagRows = (allTagRowsRaw ?? []) as Pick<
+    Tables<"question_bank">,
+    "tags" | "active"
+  >[];
 
   const groupCounts: Record<string, { total: number; inactive: number }> = {};
   for (const key of filterConfig.keys) {
@@ -120,17 +157,17 @@ export default async function ValidationQrPage({
   // Plus quelques clés "extra" trouvées dans les tags mais hors config
   // (utile si le client ajoute un Chapitre 13 ou un Module G plus tard).
   const extraKeys = new Set<string>();
-  for (const row of allTagRows ?? []) {
-    const tags: string[] = (row as any).tags ?? [];
+  for (const row of allTagRows) {
+    const tags: string[] = row.tags ?? [];
     for (const t of tags) {
       if (!t.startsWith(filterConfig.tagPrefix)) continue;
       const k = t.slice(filterConfig.tagPrefix.length);
       if (!groupCounts[k]) {
         groupCounts[k] = { total: 0, inactive: 0 };
-        if (!filterConfig.keys.includes(k as any)) extraKeys.add(k);
+        if (!filterConfig.keys.includes(k)) extraKeys.add(k);
       }
       groupCounts[k].total += 1;
-      if (!(row as any).active) groupCounts[k].inactive += 1;
+      if (!row.active) groupCounts[k].inactive += 1;
     }
   }
 
@@ -144,22 +181,24 @@ export default async function ValidationQrPage({
   }
   const pdfUrlByImport = new Map<string, string>();
   if (importIds.size > 0) {
-    const { data: importRows } = await supabase
+    const { data: importRowsRaw } = await supabase
       .from("question_imports")
       .select("id, pdf_storage_path")
       .in("id", [...importIds]);
-    const withPath = (importRows ?? []).filter(
-      (ir: any) => ir.pdf_storage_path,
+    const importRows = (importRowsRaw ?? []) as ImportRow[];
+    const withPath = importRows.filter(
+      (ir): ir is ImportRow & { pdf_storage_path: string } =>
+        !!ir.pdf_storage_path,
     );
     if (withPath.length > 0) {
       const { data: signedList } = await supabase.storage
         .from("question-imports")
         .createSignedUrls(
-          withPath.map((ir: any) => ir.pdf_storage_path as string),
+          withPath.map((ir) => ir.pdf_storage_path),
           60 * 60,
         );
       const urlByPath = new Map(
-        (signedList ?? []).map((s: any) => [s.path, s.signedUrl]),
+        (signedList ?? []).map((s) => [s.path, s.signedUrl] as const),
       );
       for (const ir of withPath) {
         const u = urlByPath.get(ir.pdf_storage_path);
@@ -263,7 +302,7 @@ export default async function ValidationQrPage({
         </Card>
       ) : (
         <div className="space-y-4">
-          {list.map((q: any, i: number) => {
+          {list.map((q, i) => {
             // Calcule l'URL de la page d'origine du PDF (preview admin)
             const pdfUrl = q.import_id
               ? pdfUrlByImport.get(q.import_id) ?? null

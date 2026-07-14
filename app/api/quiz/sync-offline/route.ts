@@ -149,8 +149,8 @@ export async function POST(req: NextRequest) {
     console.error("[quiz/sync-offline] insert error", {
       message: error.message,
       code: error.code,
-      details: (error as any).details,
-      hint: (error as any).hint,
+      details: error.details,
+      hint: error.hint,
     });
     return NextResponse.json(
       { error: "insert_failed", message: error.message },

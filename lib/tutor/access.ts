@@ -21,6 +21,14 @@
 
 import { createClient } from "@/lib/supabase/server";
 import type { PackSlug } from "@/lib/packs";
+import type { Tables } from "@/lib/database.types";
+
+/** profiles(role, current_formation_slug) — `current_formation_slug` n'est pas
+ *  présent dans le schéma introspecté : le type reflète le `select` tel qu'il
+ *  est écrit (si la colonne manque, la requête renvoie `null`). */
+type TutorProfileRow = Pick<Tables<"profiles">, "role"> & {
+  current_formation_slug: string | null;
+};
 
 export interface TutorAccess {
   allowed: boolean;
@@ -48,18 +56,19 @@ export async function getTutorAccess(
 
   // Override admin/super_admin : peut accéder à l'IA pour tester ou
   // assister un stagiaire qui n'a pas le pack Premium.
-  const { data: profile } = await supabase
+  const { data: profileData } = await supabase
     .from("profiles")
     .select("role, current_formation_slug")
     .eq("id", user.id)
     .maybeSingle();
+  const profile = (profileData ?? null) as TutorProfileRow | null;
 
-  const role = (profile as any)?.role;
+  const role = profile?.role;
   if (role === "admin" || role === "super_admin" || role === "trainer") {
     return { allowed: true, pack: "premium", reason: null };
   }
 
-  const slug = formationSlug ?? (profile as any)?.current_formation_slug;
+  const slug = formationSlug ?? profile?.current_formation_slug;
   if (!slug) {
     return {
       allowed: false,

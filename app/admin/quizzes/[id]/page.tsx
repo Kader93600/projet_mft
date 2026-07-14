@@ -9,8 +9,55 @@ import { QuestionsEditor } from "./questions-editor";
 import { QuizDangerZone } from "./quiz-danger-zone";
 import { BankQuestionsPicker } from "./bank-questions-picker";
 import { getQuestionFilterConfig } from "@/lib/question-filters";
+import type { Tables } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
+
+/** Embed `formation:formations(slug, id)` sur `formation_quizzes` / `formation_modules` */
+type FormationRef = Pick<Tables<"formations">, "id" | "slug">;
+type FormationLinkRow = { formation: FormationRef | null };
+
+/** `formations` — select("slug, code, title") */
+type FormationOption = Pick<Tables<"formations">, "slug" | "code" | "title">;
+
+/** `quiz_question_bank` — select("question_id, display_order") */
+type LinkedBankRow = Pick<
+  Tables<"quiz_question_bank">,
+  "question_id" | "display_order"
+>;
+
+/**
+ * `question_bank` — select("id, type, statement, choices, difficulty, tags,
+ * max_score, active, module_id"). `type` et `choices` sont resserrés au
+ * domaine réellement stocké (contrainte CHECK côté Postgres + JSON tableau
+ * de choix) pour correspondre au contrat du <BankQuestionsPicker>.
+ */
+type BankQuestionRow = Omit<
+  Pick<
+    Tables<"question_bank">,
+    | "id"
+    | "type"
+    | "statement"
+    | "choices"
+    | "difficulty"
+    | "tags"
+    | "max_score"
+    | "active"
+    | "module_id"
+  >,
+  "type" | "choices"
+> & {
+  type: "qcm" | "qr";
+  choices: unknown[] | null;
+};
+
+/** `questions` — select("*, choices(*)") */
+type QuestionWithChoices = Pick<
+  Tables<"questions">,
+  "id" | "statement" | "explanation" | "image_url" | "order"
+> & {
+  choices: Pick<Tables<"choices">, "id" | "label" | "is_correct" | "order">[];
+};
 
 export default async function EditQuizPage({
   params,
@@ -43,7 +90,10 @@ export default async function EditQuizPage({
       .select("formation:formations(slug, id)")
       .eq("quiz_id", params.id)
       .limit(1)
-      .maybeSingle(),
+      .maybeSingle()
+      // Embed many-to-one : PostgREST renvoie un objet, mais sans schéma
+      // typé supabase-js infère un tableau → on rétablit la cardinalité.
+      .overrideTypes<FormationLinkRow, { merge: false }>(),
     supabase
       .from("quiz_question_bank")
       .select("question_id, display_order")
@@ -53,10 +103,10 @@ export default async function EditQuizPage({
   if (!quiz) notFound();
 
   // 1. D'abord via formation_quizzes (lien direct quiz ↔ formation)
+  const currentLinkRow: FormationLinkRow | null = currentLink;
   let initialFormationSlug: string | null =
-    (currentLink?.formation as any)?.slug ?? null;
-  let formationId: string | null =
-    (currentLink?.formation as any)?.id ?? null;
+    currentLinkRow?.formation?.slug ?? null;
+  let formationId: string | null = currentLinkRow?.formation?.id ?? null;
 
   // 2. Fallback via le module rattaché : si le quiz n'a pas de lien
   //    direct, on remonte module → formation_modules → formation.
@@ -68,8 +118,10 @@ export default async function EditQuizPage({
       .select("formation:formations(id, slug)")
       .eq("module_id", quiz.module_id)
       .limit(1)
-      .maybeSingle();
-    const f = (fmRow?.formation as any) ?? null;
+      .maybeSingle()
+      .overrideTypes<FormationLinkRow, { merge: false }>();
+    const fmLink: FormationLinkRow | null = fmRow;
+    const f = fmLink?.formation ?? null;
     if (f) {
       initialFormationSlug = f.slug;
       formationId = f.id;
@@ -79,7 +131,7 @@ export default async function EditQuizPage({
   // Fetch les questions de la banque rattachées à la même formation
   // (et idéalement au même module si le quiz en a un) pour permettre
   // à l'admin de les piocher.
-  let bankQuestions: any[] = [];
+  let bankQuestions: BankQuestionRow[] = [];
   if (formationId) {
     let bankQuery = supabase
       .from("question_bank")
@@ -101,7 +153,7 @@ export default async function EditQuizPage({
   }
 
   const linkedIds = new Set(
-    (linkedBank ?? []).map((r: any) => r.question_id as string),
+    ((linkedBank ?? []) as LinkedBankRow[]).map((r) => r.question_id),
   );
   const filterConfig = getQuestionFilterConfig(initialFormationSlug);
 
@@ -189,7 +241,7 @@ export default async function EditQuizPage({
               <CardBody>
                 <QuestionsEditor
                   quizId={quiz.id}
-                  initialQuestions={(questions ?? []) as any[]}
+                  initialQuestions={(questions ?? []) as QuestionWithChoices[]}
                 />
               </CardBody>
             </Card>
@@ -203,7 +255,7 @@ export default async function EditQuizPage({
             <CardBody>
               <QuizSettingsForm
                 modules={modules ?? []}
-                formations={(dbFormations ?? []) as any}
+                formations={(dbFormations ?? []) as FormationOption[]}
                 quiz={quiz}
                 initialFormationSlug={initialFormationSlug}
               />

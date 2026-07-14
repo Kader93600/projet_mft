@@ -3,9 +3,20 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { isStaff } from "@/lib/permissions";
 import { renderAttestationPdf, type AttestationRow } from "@/lib/attestation-pdf";
+import type { Tables } from "@/lib/database.types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+// ── Types des lignes lues (dérivés des `select` ci-dessous) ────────────
+type TargetRow = Pick<Tables<"profiles">, "full_name" | "email">;
+type AcceptanceRow = Pick<
+  Tables<"document_acceptances">,
+  "accepted_at" | "document_version" | "ip_address"
+> & {
+  onboarding_documents: Pick<Tables<"onboarding_documents">, "title"> | null;
+};
+type SignatureRow = Pick<Tables<"user_signatures">, "signature_data">;
 
 export async function GET(
   _req: Request,
@@ -26,7 +37,7 @@ export async function GET(
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 
-  const [{ data: target }, { data: acceptances }, { data: sig }] =
+  const [{ data: targetData }, { data: acceptancesData }, { data: sigData }] =
     await Promise.all([
       supabase
         .from("profiles")
@@ -47,9 +58,13 @@ export async function GET(
         .maybeSingle(),
     ]);
 
+  const target = targetData as TargetRow | null;
+  const acceptances = acceptancesData as AcceptanceRow[] | null;
+  const sig = sigData as SignatureRow | null;
+
   if (!target) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
-  const rows: AttestationRow[] = (acceptances ?? []).map((a: any) => ({
+  const rows: AttestationRow[] = (acceptances ?? []).map((a) => ({
     title: a.onboarding_documents?.title ?? "Document",
     version: a.document_version,
     acceptedAt: a.accepted_at,
@@ -65,10 +80,13 @@ export async function GET(
     name: target.full_name ?? target.email ?? "Stagiaire",
     email: target.email ?? "",
     rows,
-    signatureImage: (sig as any)?.signature_data ?? null,
+    signatureImage: sig?.signature_data ?? null,
   });
 
-  return new NextResponse(buffer as any, {
+  // `renderAttestationPdf` renvoie un `Buffer` Node (Uint8Array<ArrayBufferLike>),
+  // que les types DOM de `BodyInit` n'acceptent pas tels quels — cast de type
+  // uniquement, la valeur transmise est bien le buffer d'origine.
+  return new NextResponse(buffer as BodyInit, {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",

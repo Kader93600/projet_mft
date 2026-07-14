@@ -4,6 +4,19 @@ import { Card, CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ProgressBar } from "@/components/ui/progress";
 import { Target, ArrowRight } from "lucide-react";
+import type { Tables } from "@/lib/database.types";
+
+// Formes exactes des lignes lues (miroir des `.select(...)` ci-dessous).
+type PlacementRow = Pick<
+  Tables<"placement_results">,
+  "scores" | "level_per_bloc" | "recommended_bloc_id" | "taken_at"
+>;
+type BlocRow = Pick<Tables<"blocs">, "id" | "code" | "title">;
+
+/** `placement_results.scores` : jsonb { [code de bloc]: pourcentage }. */
+type ScoreMap = Record<string, number>;
+/** `placement_results.level_per_bloc` : jsonb { [code de bloc]: niveau }. */
+type LevelMap = Record<string, string>;
 
 function levelLabel(level?: string) {
   return level === "avance"
@@ -20,20 +33,25 @@ export async function PlacementSummary() {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data: result } = await supabase
+  const { data: rawResult } = await supabase
     .from("placement_results")
     .select("scores, level_per_bloc, recommended_bloc_id, taken_at")
     .eq("user_id", user.id)
     .maybeSingle();
 
+  const result = rawResult as PlacementRow | null;
   if (!result) return null;
 
-  const { data: blocs } = await supabase
+  const { data: rawBlocs } = await supabase
     .from("blocs")
     .select("id, code, title")
     .order("order");
+  const blocs = rawBlocs as BlocRow[] | null;
 
-  const recommended = blocs?.find((b: any) => b.id === result.recommended_bloc_id);
+  const scores = result.scores as ScoreMap | null;
+  const levels = result.level_per_bloc as LevelMap | null;
+
+  const recommended = blocs?.find((b) => b.id === result.recommended_bloc_id);
 
   return (
     <Card>
@@ -63,9 +81,9 @@ export async function PlacementSummary() {
         </div>
 
         <div className="mt-4 grid sm:grid-cols-3 gap-3">
-          {blocs?.map((b: any) => {
-            const pct = (result.scores as any)?.[b.code] ?? 0;
-            const lvl = (result.level_per_bloc as any)?.[b.code] ?? "debutant";
+          {blocs?.map((b) => {
+            const pct = scores?.[b.code] ?? 0;
+            const lvl = levels?.[b.code] ?? "debutant";
             return (
               <div key={b.id} className="rounded-xl border border-navy-100 p-3 bg-ivory/40">
                 <div className="flex items-center justify-between">

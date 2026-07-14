@@ -16,9 +16,36 @@ import {
   PdfFooter,
   fmtDatePdf,
 } from "@/lib/pdf-shared";
+import type { Tables } from "@/lib/database.types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+/** enrollments("*", user:profiles!user_id(id, full_name, email)) */
+type EnrollmentRow = Tables<"enrollments"> & {
+  user: Pick<Tables<"profiles">, "id" | "full_name" | "email"> | null;
+};
+
+/** Champs de l'inscription réellement rendus dans le PDF. */
+type EnrollmentPdfFields = Pick<
+  Tables<"enrollments">,
+  "session_label" | "start_date" | "end_date" | "hours_total" | "modality"
+>;
+
+/** lesson_progress(completed, duration_seconds) — `duration_seconds` n'est pas
+ *  dans le schéma courant (colonne historique) : la requête peut donc échouer
+ *  et renvoyer `null`. Le type reflète le `select` tel qu'il est écrit. */
+type LessonProgressRow = Pick<Tables<"lesson_progress">, "completed"> & {
+  duration_seconds: number | null;
+};
+
+/** attendance_attendees(session_id, signed:attendance_signatures(id)) */
+type AttendanceRow = Pick<Tables<"attendance_attendees">, "session_id"> & {
+  signed: Pick<Tables<"attendance_signatures">, "id">[] | null;
+};
+
+/** quiz_attempts(passed) */
+type QuizAttemptRow = Pick<Tables<"quiz_attempts">, "passed">;
 
 const MODALITY_LABEL: Record<string, string> = {
   presentiel: "Présentiel",
@@ -29,7 +56,7 @@ const MODALITY_LABEL: Record<string, string> = {
 interface Props {
   refLabel: string;
   stagiaire: { fullName: string; email: string };
-  e: any;
+  e: EnrollmentPdfFields;
   hoursDone: number;
   attendanceRate: number; // 0..1
   successRate: number; // 0..1 (quiz passés / total)
@@ -180,18 +207,19 @@ export async function GET(
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "unauth" }, { status: 401 });
 
-  const { data: enrollment } = await supabase
+  const { data: enrollmentData } = await supabase
     .from("enrollments")
     .select("*, user:profiles!user_id(id, full_name, email)")
     .eq("id", params.id)
     .maybeSingle();
+  const enrollment = (enrollmentData ?? null) as EnrollmentRow | null;
   if (!enrollment) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
-  if (!(await canAccessEnrollment(user.id, (enrollment as any).user_id))) {
+  if (!(await canAccessEnrollment(user.id, enrollment.user_id))) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
-  const stagiaire = (enrollment as any).user;
+  const stagiaire = enrollment.user;
   if (!stagiaire) {
     return NextResponse.json({ error: "stagiaire_missing" }, { status: 500 });
   }
@@ -202,13 +230,12 @@ export async function GET(
     .from("lesson_progress")
     .select("completed, duration_seconds")
     .eq("user_id", stagiaire.id);
-  const hoursDone =
-    (lp ?? []).reduce(
-      (sum: number, r: any) =>
-        sum +
-        (r.duration_seconds ? r.duration_seconds / 3600 : r.completed ? 0.5 : 0),
-      0
-    );
+  const hoursDone = ((lp ?? []) as LessonProgressRow[]).reduce(
+    (sum: number, r) =>
+      sum +
+      (r.duration_seconds ? r.duration_seconds / 3600 : r.completed ? 0.5 : 0),
+    0
+  );
 
   // Émargements signés / total attendus
   const { data: att } = await supabase
@@ -217,9 +244,10 @@ export async function GET(
       "session_id, signed:attendance_signatures!attendance_signatures_session_id_fkey(id)"
     )
     .eq("user_id", stagiaire.id);
-  const totalSessions = (att ?? []).length;
-  const signedSessions = (att ?? []).filter(
-    (r: any) => (r.signed ?? []).length > 0
+  const attRows = (att ?? []) as AttendanceRow[];
+  const totalSessions = attRows.length;
+  const signedSessions = attRows.filter(
+    (r) => (r.signed ?? []).length > 0
   ).length;
   const attendanceRate = totalSessions
     ? signedSessions / totalSessions
@@ -231,8 +259,9 @@ export async function GET(
     .select("passed")
     .eq("user_id", stagiaire.id)
     .not("finished_at", "is", null);
-  const total = (qa ?? []).length;
-  const passed = (qa ?? []).filter((r: any) => r.passed).length;
+  const qaRows = (qa ?? []) as QuizAttemptRow[];
+  const total = qaRows.length;
+  const passed = qaRows.filter((r) => r.passed).length;
   const successRate = total ? passed / total : 0;
 
   const ref = String(params.id).slice(0, 8).toUpperCase();
@@ -250,6 +279,9 @@ export async function GET(
     />
   );
 
+  // `renderToBuffer` renvoie un `Buffer<ArrayBufferLike>` (Node) que la lib
+  // DOM ne reconnaît pas comme `BodyInit` (quirk TS ≥ 5.7 sur le générique de
+  // Uint8Array). Cast conservé : le Buffer est un body valide à l'exécution.
   return new NextResponse(buffer as any, {
     status: 200,
     headers: {

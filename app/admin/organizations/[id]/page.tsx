@@ -13,11 +13,21 @@ import {
   ShieldCheck,
   Eye,
   GraduationCap,
+  type LucideIcon,
 } from "lucide-react";
 import { isStaff } from "@/lib/permissions";
 import { BrandingForm } from "./branding-form";
+import type { Tables } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
+
+/** Membre + embed `user:profiles(...)` (cf. select). */
+type MemberRow = Pick<
+  Tables<"organization_members">,
+  "id" | "role" | "joined_at"
+> & {
+  user: Pick<Tables<"profiles">, "id" | "full_name" | "email"> | null;
+};
 
 const fmtEuros = (cents: number) =>
   (cents / 100).toLocaleString("fr-FR", {
@@ -57,18 +67,23 @@ export default async function AdminOrgDetailPage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
+  const { data: profileRow } = await supabase
     .from("profiles")
     .select("role")
     .eq("id", user.id)
     .maybeSingle();
+  const profile = (profileRow ?? null) as Pick<
+    Tables<"profiles">,
+    "role"
+  > | null;
   if (!profile?.role || !isStaff(profile.role)) redirect("/dashboard");
 
-  const { data: org } = await supabase
+  const { data: orgRow } = await supabase
     .from("organizations")
     .select("*")
     .eq("id", params.id)
     .maybeSingle();
+  const org = (orgRow ?? null) as Tables<"organizations"> | null;
   if (!org) notFound();
 
   const { data: dashboard } = await supabase
@@ -76,16 +91,21 @@ export default async function AdminOrgDetailPage({
     .select("*")
     .eq("organization_id", params.id)
     .maybeSingle();
-  const d = (dashboard as any) ?? {};
+  const d = (dashboard ?? {}) as Partial<Tables<"organization_dashboard">>;
 
-  const { data: members } = await supabase
+  // `overrideTypes` (API supabase-js) : client non paramétré par `Database`
+  // → l'embed to-one `user:profiles` est inféré en tableau alors que
+  // PostgREST renvoie un objet.
+  const { data: memberRows } = await supabase
     .from("organization_members")
     .select(`
       id, role, joined_at,
       user:profiles!organization_members_user_id_fkey ( id, full_name, email )
     `)
     .eq("organization_id", params.id)
-    .order("role");
+    .order("role")
+    .overrideTypes<MemberRow[], { merge: false }>();
+  const members = memberRows ?? [];
 
   return (
     <div className="space-y-8">
@@ -169,11 +189,11 @@ export default async function AdminOrgDetailPage({
       <section>
         <h2 className="font-display text-xl font-semibold text-navy-900 mb-4 inline-flex items-center gap-2">
           <Users className="h-5 w-5 text-gold-700" />
-          Membres ({(members ?? []).length})
+          Membres ({members.length})
         </h2>
         <Card>
           <CardBody className="p-0">
-            {(members ?? []).length === 0 ? (
+            {members.length === 0 ? (
               <p className="text-sm text-slate-500 px-5 py-6">
                 Aucun membre rattaché. Le contact principal n'a pas encore de
                 compte MFT existant — créez-le via /admin/users puis rattachez-le
@@ -181,7 +201,7 @@ export default async function AdminOrgDetailPage({
               </p>
             ) : (
               <ul className="divide-y divide-navy-50">
-                {(members as any[]).map((m) => (
+                {members.map((m) => (
                   <li
                     key={m.id}
                     className="px-5 py-3 flex items-center justify-between gap-3"
@@ -250,7 +270,7 @@ function Field({
   label,
   value,
 }: {
-  icon: any;
+  icon: LucideIcon;
   label: string;
   value: string;
 }) {
@@ -272,7 +292,7 @@ function Stat({
   label,
   value,
 }: {
-  icon: any;
+  icon: LucideIcon;
   label: string;
   value: string;
 }) {

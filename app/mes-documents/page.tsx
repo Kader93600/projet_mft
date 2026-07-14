@@ -27,9 +27,11 @@ import {
   Image as ImageIcon,
   File as FileIcon,
   Eye,
+  type LucideIcon,
 } from "lucide-react";
+import type { Tables } from "@/lib/database.types";
 
-const KIND_ICON: Record<FileKind, { Icon: any; cls: string }> = {
+const KIND_ICON: Record<FileKind, { Icon: LucideIcon; cls: string }> = {
   pdf: { Icon: FileText, cls: "bg-rose-100 text-rose-600" },
   word: { Icon: FileText, cls: "bg-sky-100 text-sky-700" },
   excel: { Icon: FileSpreadsheet, cls: "bg-emerald-100 text-emerald-700" },
@@ -39,12 +41,42 @@ const KIND_ICON: Record<FileKind, { Icon: any; cls: string }> = {
 
 export const dynamic = "force-dynamic";
 
-const ICONS: any = { convention: FileSignature, reglement: Gavel, livret: BookOpen };
-const LABELS: any = {
+const ICONS: Record<string, LucideIcon> = {
+  convention: FileSignature,
+  reglement: Gavel,
+  livret: BookOpen,
+};
+const LABELS: Record<string, string> = {
   convention: "Convention de formation",
   reglement: "Règlement intérieur",
   livret: "Livret d'accueil",
 };
+
+/** Ligne `document_acceptances` + document d'onboarding embarqué (cf. select). */
+type AcceptanceRow = Pick<
+  Tables<"document_acceptances">,
+  "id" | "accepted_at" | "document_version" | "document_type"
+> & {
+  onboarding_documents: Pick<
+    Tables<"onboarding_documents">,
+    "id" | "title" | "content_md" | "type"
+  > | null;
+};
+
+/** Ligne `student_documents` (cf. select). */
+type StudentDocRow = Pick<
+  Tables<"student_documents">,
+  | "id"
+  | "title"
+  | "reason"
+  | "custom_reason"
+  | "storage_path"
+  | "file_name"
+  | "mime_type"
+  | "size_bytes"
+  | "status"
+  | "created_at"
+>;
 
 function fmt(d: string) {
   return new Date(d).toLocaleString("fr-FR", {
@@ -71,7 +103,10 @@ export default async function MesDocumentsPage() {
           "id, accepted_at, document_version, document_type, onboarding_documents(id, title, content_md, type)"
         )
         .eq("user_id", user.id)
-        .order("accepted_at", { ascending: false }),
+        .order("accepted_at", { ascending: false })
+        // Client non typé globalement : supabase-js infère l'embed to-one
+        // comme un tableau. On rétablit la vraie forme (objet | null).
+        .overrideTypes<AcceptanceRow[], { merge: false }>(),
       supabase
         .from("placement_results")
         .select("taken_at")
@@ -87,7 +122,8 @@ export default async function MesDocumentsPage() {
     ]);
 
   // URLs signées (1 h) pour consulter / télécharger les documents importés.
-  const docs = (myDocs ?? []) as any[];
+  const docs = (myDocs ?? []) as StudentDocRow[];
+  const acceptances = rows ?? [];
   const signedMap: Record<string, string> = {};
   if (docs.length) {
     const admin = createAdminClient();
@@ -97,12 +133,14 @@ export default async function MesDocumentsPage() {
         docs.map((d) => d.storage_path),
         60 * 60
       );
-    (signed ?? []).forEach((s: any, i: number) => {
+    (signed ?? []).forEach((s, i) => {
       if (s?.signedUrl) signedMap[docs[i].storage_path] = s.signedUrl;
     });
   }
 
-  const placementTakenAt = placement?.taken_at as string | undefined;
+  const placementTakenAt = (
+    placement as Pick<Tables<"placement_results">, "taken_at"> | null
+  )?.taken_at;
 
   // Documents publiés non encore signés (présentés hors onboarding).
   const pending = await getPendingDocuments(supabase, user.id);
@@ -169,7 +207,7 @@ export default async function MesDocumentsPage() {
                           <h3 className="truncate font-semibold text-navy-900">
                             {d.title}
                           </h3>
-                          <Badge tone={st.tone as any} size="sm">
+                          <Badge tone={st.tone} size="sm">
                             {st.label}
                           </Badge>
                         </div>
@@ -276,7 +314,7 @@ export default async function MesDocumentsPage() {
           <h2 className="font-display text-xl font-semibold text-navy-900">
             Documents signés
           </h2>
-          {(rows ?? []).length > 0 && (
+          {acceptances.length > 0 && (
             <a
               href="/api/me/attestation-signatures"
               target="_blank"
@@ -286,14 +324,14 @@ export default async function MesDocumentsPage() {
             </a>
           )}
         </div>
-        {(rows ?? []).length === 0 && (
+        {acceptances.length === 0 && (
           <Card>
             <CardBody className="text-center py-10 text-slate-500 text-sm">
               Aucun document signé pour le moment.
             </CardBody>
           </Card>
         )}
-        {(rows ?? []).map((r: any) => {
+        {acceptances.map((r) => {
           const Icon = ICONS[r.document_type] ?? FileSignature;
           return (
             <Card key={r.id}>

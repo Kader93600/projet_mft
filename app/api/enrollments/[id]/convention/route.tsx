@@ -12,9 +12,23 @@ import { createClient } from "@/lib/supabase/server";
 import { canAccessEnrollment } from "@/lib/enrollment-access";
 import { LEGAL } from "@/lib/legal-config";
 import { resolveEnrollmentFormation } from "@/lib/enrollment-formation";
+import type { Tables } from "@/lib/database.types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+/**
+ * Ligne renvoyée par le `select` ci-dessous :
+ *   "*, user:profiles!user_id(...), funder:funders(name, kind)"
+ * → toutes les colonnes de `enrollments` + 2 embeds to-one.
+ */
+type EnrollmentWithParties = Tables<"enrollments"> & {
+  user: Pick<
+    Tables<"profiles">,
+    "full_name" | "email" | "phone" | "adresse" | "code_postal" | "ville"
+  > | null;
+  funder: Pick<Tables<"funders">, "name" | "kind"> | null;
+};
 
 const styles = StyleSheet.create({
   page: {
@@ -201,8 +215,8 @@ interface DocProps {
     phone?: string | null;
     address?: string | null;
   };
-  funder?: { name: string; kind: string } | null;
-  e: any;
+  funder?: Pick<Tables<"funders">, "name" | "kind"> | null;
+  e: EnrollmentWithParties;
 }
 
 function Doc({ refLabel, stagiaire, funder, e }: DocProps) {
@@ -483,21 +497,22 @@ export async function GET(
     return NextResponse.json({ error: "unauth" }, { status: 401 });
   }
 
-  const { data: enrollment, error } = await supabase
+  const { data, error } = await supabase
     .from("enrollments")
     .select(
       "*, user:profiles!user_id(full_name, email, phone, adresse, code_postal, ville), funder:funders(name, kind)"
     )
     .eq("id", params.id)
     .maybeSingle();
+  const enrollment = data as EnrollmentWithParties | null;
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   if (!enrollment) return NextResponse.json({ error: "not_found" }, { status: 404 });
-  if (!(await canAccessEnrollment(user.id, (enrollment as any).user_id))) {
+  if (!(await canAccessEnrollment(user.id, enrollment.user_id))) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 
-  const stagiaire = (enrollment as any).user;
+  const stagiaire = enrollment.user;
   if (!stagiaire) {
     return NextResponse.json({ error: "stagiaire_missing" }, { status: 500 });
   }
@@ -520,11 +535,16 @@ export async function GET(
             .filter(Boolean)
             .join(", ") || null,
       }}
-      funder={(enrollment as any).funder ?? null}
+      funder={enrollment.funder ?? null}
       e={enrollment}
     />
   );
 
+  // CAST CONSERVÉ (quirk de types tiers) : `renderToBuffer` renvoie un
+  // `Buffer<ArrayBufferLike>` (@types/node) que le `BodyInit` de lib.dom
+  // (`ArrayBufferView<ArrayBuffer>`) refuse — incompatibilité connue
+  // Node/DOM. Aucun type précis ne satisfait les deux ; runtime inchangé
+  // (un Buffer EST une Uint8Array, donc un body valide).
   return new NextResponse(buffer as any, {
     status: 200,
     headers: {

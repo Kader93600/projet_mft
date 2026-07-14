@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import type { Tables } from "@/lib/database.types";
 import { sendEmail, newStudentDocumentEmail } from "@/lib/email";
 import { LEGAL } from "@/lib/legal-config";
 import {
@@ -90,20 +91,25 @@ export async function finalizeUpload(input: {
   }
 
   // Formation courante du stagiaire (pour l'email + le filtrage admin).
-  const { data: profile } = await supabase
+  const { data: profileRow } = await supabase
     .from("profiles")
     .select("full_name, email, current_formation_id")
     .eq("id", user.id)
     .maybeSingle();
-  const formationId = (profile as any)?.current_formation_id ?? null;
+  const profile = (profileRow ?? null) as Pick<
+    Tables<"profiles">,
+    "full_name" | "email" | "current_formation_id"
+  > | null;
+  const formationId = profile?.current_formation_id ?? null;
   let formationTitle: string | null = null;
   if (formationId) {
-    const { data: f } = await supabase
+    const { data: fRow } = await supabase
       .from("formations")
       .select("title")
       .eq("id", formationId)
       .maybeSingle();
-    formationTitle = (f as any)?.title ?? null;
+    const f = (fRow ?? null) as Pick<Tables<"formations">, "title"> | null;
+    formationTitle = f?.title ?? null;
   }
 
   const { data: inserted, error } = await supabase
@@ -133,7 +139,7 @@ export async function finalizeUpload(input: {
       .from(BUCKET)
       .createSignedUrl(input.path, 60 * 60 * 24 * 7);
     const email = newStudentDocumentEmail({
-      studentName: (profile as any)?.full_name || (profile as any)?.email || "Stagiaire",
+      studentName: profile?.full_name || profile?.email || "Stagiaire",
       formation: formationTitle,
       docType: reasonLabel(input.reason, custom),
       title,
@@ -165,18 +171,22 @@ export async function deleteStudentDocument(
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "Non authentifié." };
 
-  const { data: doc } = await supabase
+  const { data: docRow } = await supabase
     .from("student_documents")
     .select("id, user_id, storage_path")
     .eq("id", id)
     .maybeSingle();
+  const doc = (docRow ?? null) as Pick<
+    Tables<"student_documents">,
+    "id" | "user_id" | "storage_path"
+  > | null;
   if (!doc) return { ok: false, error: "Document introuvable." };
-  if ((doc as any).user_id !== user.id) {
+  if (doc.user_id !== user.id) {
     return { ok: false, error: "Action non autorisée." };
   }
 
   const admin = createAdminClient();
-  await admin.storage.from(BUCKET).remove([(doc as any).storage_path]);
+  await admin.storage.from(BUCKET).remove([doc.storage_path]);
   const { error } = await supabase
     .from("student_documents")
     .delete()

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import type { Tables } from "@/lib/database.types";
 import { Card, CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -11,10 +12,23 @@ import {
   Hourglass,
   ArrowRight,
   ShieldCheck,
+  type LucideIcon,
 } from "lucide-react";
 import { getOrganizationAccess } from "@/lib/organization/access";
 
 export const dynamic = "force-dynamic";
+
+/** Vue agrégée `organization_dashboard` (toutes colonnes nullable). */
+type OrgDashboard = Tables<"organization_dashboard">;
+
+/** Résultat du select `enrollments` + embeds `user:profiles!user_id`, `formation:formations`. */
+type RecentEnrollment = Pick<
+  Tables<"enrollments">,
+  "id" | "status" | "pack" | "created_at" | "seats_reserved" | "total_amount_cents"
+> & {
+  user: Pick<Tables<"profiles">, "full_name" | "email"> | null;
+  formation: Pick<Tables<"formations">, "title" | "slug" | "code"> | null;
+};
 
 const fmtEuros = (cents: number) =>
   (cents / 100).toLocaleString("fr-FR", {
@@ -81,7 +95,9 @@ export default async function OrganisationPage() {
     .select("*")
     .eq("organization_id", access.organization_id)
     .maybeSingle();
-  const d = (dashboardRow as any) ?? {};
+  // `?? {}` : la vue peut ne renvoyer aucune ligne (orga sans activité) →
+  // toutes les colonnes sont alors absentes, d'où le Partial.
+  const d: Partial<OrgDashboard> = (dashboardRow as OrgDashboard | null) ?? {};
 
   // 5 derniers enrollments de l'orga
   const { data: recentEnrollments } = await supabase
@@ -93,7 +109,10 @@ export default async function OrganisationPage() {
     `)
     .eq("organization_id", access.organization_id)
     .order("created_at", { ascending: false })
-    .limit(5);
+    .limit(5)
+    // Le client n'étant pas câblé sur `Database`, postgrest infère les embeds
+    // to-one comme des tableaux : on impose la forme réelle renvoyée par l'API.
+    .overrideTypes<RecentEnrollment[], { merge: false }>();
 
   return (
     <div className="space-y-10">
@@ -157,11 +176,11 @@ export default async function OrganisationPage() {
           label="Places en attente"
           value={String(d.seats_pending ?? 0)}
           hint={
-            d.seats_pending > 0
+            (d.seats_pending ?? 0) > 0
               ? "Stagiaires à inviter"
               : "Toutes les places assignées"
           }
-          tone={d.seats_pending > 0 ? "warning" : "default"}
+          tone={(d.seats_pending ?? 0) > 0 ? "warning" : "default"}
         />
         <Kpi
           icon={Wallet}
@@ -224,7 +243,7 @@ export default async function OrganisationPage() {
           <Card>
             <CardBody className="p-0">
               <ul className="divide-y divide-navy-50">
-                {(recentEnrollments as any[]).map((e) => (
+                {(recentEnrollments ?? []).map((e) => (
                   <li
                     key={e.id}
                     className="px-5 py-3 flex items-center justify-between gap-3"
@@ -268,7 +287,7 @@ function Kpi({
   hint,
   tone = "default",
 }: {
-  icon: any;
+  icon: LucideIcon;
   label: string;
   value: string;
   hint?: string;

@@ -20,8 +20,38 @@ import { findFormation, FORMATIONS } from "@/lib/formations-config";
 import { Dumbbell, BookOpen, Sparkles, Filter } from "lucide-react";
 import { ExercicesCatalog } from "./exercices-catalog";
 import { computeUnlockedModuleIds } from "@/lib/module-unlock";
+import type { Tables } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
+
+// ── Types des lignes lues (dérivés des `select` réels ci-dessous) ────
+// Le client Supabase n'est pas câblé sur `Database` (cf. CLAUDE.md) :
+// les `data` sont donc `any` et on les annote explicitement ici.
+
+/** `formation_modules.select("module_id, formation:formations(slug)")` */
+type FormationModuleRow = Pick<Tables<"formation_modules">, "module_id"> & {
+  formation: Pick<Tables<"formations">, "slug"> | null;
+};
+
+/** `quizzes.select("... , modules(id, title, slug, bloc_id, order)")` */
+type QuizRow = Pick<
+  Tables<"quizzes">,
+  | "id"
+  | "title"
+  | "description"
+  | "type"
+  | "is_mock_exam"
+  | "pass_threshold"
+  | "time_limit_s"
+  | "timer_enabled"
+  | "max_attempts"
+  | "module_id"
+> & {
+  modules: Pick<
+    Tables<"modules">,
+    "id" | "title" | "slug" | "bloc_id" | "order"
+  > | null;
+};
 
 export default async function ExercicesPage({
   searchParams,
@@ -68,7 +98,9 @@ export default async function ExercicesPage({
         .from("formations")
         .select("id")
         .eq("active", true);
-      enrolledFormationIds = (allFormations ?? []).map((f: any) => f.id);
+      const formationRows: Pick<Tables<"formations">, "id">[] =
+        allFormations ?? [];
+      enrolledFormationIds = formationRows.map((f) => f.id);
     } else {
       const { data: enrollments } = await supabase
         .from("enrollments")
@@ -76,9 +108,13 @@ export default async function ExercicesPage({
         .eq("user_id", user.id)
         .neq("status", "refuse")
         .neq("status", "abandon");
-      enrolledFormationIds = (enrollments ?? [])
-        .map((e: any) => e.formation_id)
-        .filter(Boolean);
+      const enrollmentRows: Pick<
+        Tables<"enrollments">,
+        "formation_id" | "status"
+      >[] = enrollments ?? [];
+      enrolledFormationIds = enrollmentRows
+        .map((e) => e.formation_id)
+        .filter((id): id is string => !!id);
     }
   }
 
@@ -89,19 +125,24 @@ export default async function ExercicesPage({
   let allowedModuleIds: string[] = [];
   const moduleToFormation = new Map<string, string>();
   if (enrolledFormationIds.length > 0) {
+    // `overrideTypes` : le client n'étant pas câblé sur `Database`, supabase-js
+    // infère l'embed to-one `formations` comme un tableau — override
+    // purement compile-time (PostgREST renvoie un objet).
     const { data: fm } = await reader
       .from("formation_modules")
       .select("module_id, formation:formations(slug)")
-      .in("formation_id", enrolledFormationIds);
-    for (const row of fm ?? []) {
-      const slug = (row as any).formation?.slug;
+      .in("formation_id", enrolledFormationIds)
+      .overrideTypes<FormationModuleRow[], { merge: false }>();
+    const fmRows: FormationModuleRow[] = fm ?? [];
+    for (const row of fmRows) {
+      const slug = row.formation?.slug;
       if (slug) moduleToFormation.set(row.module_id, slug);
     }
     allowedModuleIds = Array.from(moduleToFormation.keys());
   }
 
   // Fetch quizzes ENTRAÎNEMENT uniquement
-  let quizzes: any[] = [];
+  let quizzes: QuizRow[] = [];
   if (allowedModuleIds.length > 0) {
     const { data } = await reader
       .from("quizzes")
@@ -112,7 +153,10 @@ export default async function ExercicesPage({
       )
       .eq("type", "entrainement")
       .or("is_mock_exam.is.null,is_mock_exam.eq.false")
-      .in("module_id", allowedModuleIds);
+      .in("module_id", allowedModuleIds)
+      // `select` concaténé (non littéral) → supabase-js ne peut pas l'inférer
+      // (cf. CLAUDE.md). Override compile-time du type de ligne.
+      .overrideTypes<QuizRow[], { merge: false }>();
     quizzes = data ?? [];
   }
 
@@ -199,9 +243,9 @@ export default async function ExercicesPage({
         description: q.description,
         formation_slug: formationSlug,
         module_id: q.module_id,
-        module_title: (q.modules as any)?.title ?? null,
-        module_order: (q.modules as any)?.order ?? 0,
-        bloc_id: (q.modules as any)?.bloc_id ?? null,
+        module_title: q.modules?.title ?? null,
+        module_order: q.modules?.order ?? 0,
+        bloc_id: q.modules?.bloc_id ?? null,
         time_limit_s: q.time_limit_s,
         timer_enabled: q.timer_enabled,
         max_attempts: q.max_attempts,
@@ -222,7 +266,9 @@ export default async function ExercicesPage({
   // Liste des formations disponibles pour les chips
   const availableFormations = FORMATIONS.filter((f) =>
     enrichedQuizzes.some((q) => q.formation_slug === f.slug) ||
-    quizzes.some((q) => moduleToFormation.get(q.module_id) === f.slug),
+    quizzes.some(
+      (q) => !!q.module_id && moduleToFormation.get(q.module_id) === f.slug,
+    ),
   );
 
   // Stats globales

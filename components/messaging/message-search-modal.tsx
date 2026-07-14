@@ -15,7 +15,21 @@ import {
   initials,
   relativeTimeFr,
 } from "@/lib/messaging-utils";
-import type { MessageSearchResult } from "@/lib/messaging-types";
+import type {
+  ConversationSummary,
+  MessageSearchResult,
+  MessageSenderRole,
+} from "@/lib/messaging-types";
+import type { Tables } from "@/lib/database.types";
+
+/** `messages` — select("id, conversation_id, sender_id, sender_role, body, created_at") */
+type MessageHit = Pick<
+  Tables<"messages">,
+  "id" | "conversation_id" | "sender_id" | "body" | "created_at"
+> & { sender_role: MessageSenderRole };
+
+/** `profiles` — select("id, full_name, email") */
+type SenderProfile = Pick<Tables<"profiles">, "id" | "full_name" | "email">;
 
 interface Props {
   open: boolean;
@@ -107,7 +121,7 @@ export function MessageSearchModal({
         return;
       }
 
-      const rows = (msgs ?? []) as any[];
+      const rows: MessageHit[] = msgs ?? [];
       if (rows.length === 0) {
         setResults([]);
         setLoading(false);
@@ -126,10 +140,12 @@ export function MessageSearchModal({
         supabase.rpc("list_my_conversations"),
       ]);
 
-      const profMap: Record<string, any> = {};
-      for (const p of profsRes.data ?? []) profMap[(p as any).id] = p;
-      const convMap: Record<string, any> = {};
-      for (const c of (convsRes.data ?? []) as any[]) convMap[c.id] = c;
+      const profMap: Record<string, SenderProfile> = {};
+      const profs: SenderProfile[] = profsRes.data ?? [];
+      for (const p of profs) profMap[p.id] = p;
+      const convMap: Record<string, ConversationSummary> = {};
+      const convs: ConversationSummary[] = convsRes.data ?? [];
+      for (const c of convs) convMap[c.id] = c;
 
       const enriched: MessageSearchResult[] = rows.map((m) => {
         const conv = convMap[m.conversation_id];

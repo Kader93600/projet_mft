@@ -1,3 +1,4 @@
+import type { ComponentProps } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getAuthorizedFormationSlugs } from "@/lib/admin-guard";
@@ -15,19 +16,47 @@ import {
   XCircle,
   Clock3,
   Sparkles,
+  type LucideIcon,
 } from "lucide-react";
 import { UrlSearchInput } from "@/components/ui/url-search-input";
+import type { Tables } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
 
-const STATUS_LABEL: Record<string, { label: string; tone: any }> = {
+/** Tons acceptés par <Badge /> (union non exportée → dérivée des props). */
+type BadgeTone = NonNullable<ComponentProps<typeof Badge>["tone"]>;
+
+/** Session + embeds déclarés dans le `select` ci-dessous. */
+type SessionRow = Pick<
+  Tables<"live_sessions">,
+  | "id"
+  | "title"
+  | "kind"
+  | "status"
+  | "start_at"
+  | "end_at"
+  | "location"
+  | "meeting_provider"
+  | "max_participants"
+  | "formation_id"
+> & {
+  formations: Pick<
+    Tables<"formations">,
+    "slug" | "title" | "accent_color"
+  > | null;
+  trainer: Pick<Tables<"profiles">, "id" | "full_name" | "email"> | null;
+  enrollments: Pick<Tables<"session_enrollments">, "user_id" | "status">[];
+  attendance: Pick<Tables<"session_attendance">, "user_id">[];
+};
+
+const STATUS_LABEL: Record<string, { label: string; tone: BadgeTone }> = {
   scheduled: { label: "Planifiée", tone: "navy" },
   in_progress: { label: "En cours", tone: "success" },
   completed: { label: "Terminée", tone: "slate" },
   cancelled: { label: "Annulée", tone: "rose" },
 };
 
-const KIND_LABEL: Record<string, { label: string; icon: any }> = {
+const KIND_LABEL: Record<string, { label: string; icon: LucideIcon }> = {
   presentiel: { label: "Présentiel", icon: MapPin },
   distanciel: { label: "Distanciel", icon: Video },
   hybride: { label: "Hybride", icon: CalendarDays },
@@ -94,17 +123,23 @@ export default async function AdminSessionsPage({
     query = query.eq("status", "cancelled");
   }
 
-  const { data: sessions } = await query;
+  // `overrideTypes` (API supabase-js) : le client n'est pas paramétré par
+  // `Database`, supabase-js infère donc les embeds to-one (formations,
+  // trainer) en tableau alors que PostgREST renvoie un objet.
+  const { data: sessions } = await query.overrideTypes<
+    SessionRow[],
+    { merge: false }
+  >();
 
   // Recherche libre (titre / formateur / formation) appliquée après l'onglet.
-  let list = (sessions ?? []) as any[];
+  let list = sessions ?? [];
   if (q) {
     list = list.filter(
       (s) =>
         (s.title ?? "").toLowerCase().includes(q) ||
         (s.trainer?.full_name ?? "").toLowerCase().includes(q) ||
         (s.trainer?.email ?? "").toLowerCase().includes(q) ||
-        ((s.formations as any)?.title ?? "").toLowerCase().includes(q)
+        (s.formations?.title ?? "").toLowerCase().includes(q)
     );
   }
 
@@ -187,11 +222,11 @@ export default async function AdminSessionsPage({
         )
       ) : (
         <ul className="grid gap-3">
-          {list.map((s: any) => {
+          {list.map((s) => {
             const Kind = KIND_LABEL[s.kind] ?? KIND_LABEL.distanciel;
             const Status = STATUS_LABEL[s.status] ?? STATUS_LABEL.scheduled;
             const enrolled = (s.enrollments ?? []).filter(
-              (e: any) => e.status === "confirmed" || e.status === "invited"
+              (e) => e.status === "confirmed" || e.status === "invited"
             ).length;
             const attended = (s.attendance ?? []).length;
             const startSoon =
@@ -235,7 +270,7 @@ export default async function AdminSessionsPage({
                         {Kind.label}
                       </Badge>
                       <span className="text-[11px] text-slate-500">
-                        {(s.formations as any)?.title}
+                        {s.formations?.title}
                       </span>
                       {startSoon && (
                         <Badge tone="gold" size="sm">

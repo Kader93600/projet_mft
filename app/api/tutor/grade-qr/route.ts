@@ -19,6 +19,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { gradeQrWithClaude } from "@/lib/tutor/qr-grading";
+import type { Tables } from "@/lib/database.types";
+
+/**
+ * `qr_responses` + embed `question_bank!inner(...)` (jointure inner →
+ * l'objet question est garanti non-null).
+ */
+type QrResponseWithQuestion = Pick<
+  Tables<"qr_responses">,
+  | "id"
+  | "attempt_id"
+  | "question_id"
+  | "student_answer"
+  | "max_score"
+  | "trainer_score"
+  | "ai_score"
+> & {
+  question_bank: Pick<
+    Tables<"question_bank">,
+    "id" | "statement" | "expected_answer" | "scoring_grid"
+  >;
+};
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -84,7 +105,10 @@ export async function POST(req: NextRequest) {
       )
     `)
     .eq("id", responseId)
-    .maybeSingle();
+    .maybeSingle()
+    // Embed many-to-one (`!inner`) : PostgREST renvoie un objet, mais sans
+    // schéma typé supabase-js infère un tableau → on rétablit la cardinalité.
+    .overrideTypes<QrResponseWithQuestion, { merge: false }>();
 
   if (respErr || !resp) {
     return NextResponse.json(
@@ -92,15 +116,16 @@ export async function POST(req: NextRequest) {
       { status: 404 }
     );
   }
-  if ((resp as any).trainer_score != null) {
+  const row: QrResponseWithQuestion = resp;
+  if (row.trainer_score != null) {
     return NextResponse.json(
       { error: "already_graded_by_trainer" },
       { status: 409 }
     );
   }
 
-  const question = (resp as any).question_bank;
-  const studentAnswer = (resp as any).student_answer ?? "";
+  const question = row.question_bank;
+  const studentAnswer = row.student_answer ?? "";
 
   // Appel Claude
   let result;
@@ -109,13 +134,16 @@ export async function POST(req: NextRequest) {
       questionStatement: question.statement,
       expectedAnswer: question.expected_answer ?? null,
       scoringGrid: question.scoring_grid ?? null,
-      maxScore: Number((resp as any).max_score ?? 1),
+      maxScore: Number(row.max_score ?? 1),
       studentAnswer,
     });
-  } catch (e: any) {
+  } catch (e) {
     console.error("[tutor/grade-qr] Claude error", e);
     return NextResponse.json(
-      { error: "ai_grading_failed", message: e?.message ?? "unknown" },
+      {
+        error: "ai_grading_failed",
+        message: e instanceof Error ? e.message : "unknown",
+      },
       { status: 500 }
     );
   }

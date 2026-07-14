@@ -27,8 +27,55 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { UserProfileActions } from "./user-profile-actions";
 import { UserEditForm } from "./user-edit-form";
+import type { Tables } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
+
+/** Tentative + quiz embarqué (cf. select `*, quizzes(title, type)`). */
+type AttemptRow = Tables<"quiz_attempts"> & {
+  quizzes: Pick<Tables<"quizzes">, "title" | "type"> | null;
+};
+
+/** Progression + leçon/module embarqués (cf. select `*, lessons(...)`). */
+type ProgressRow = Tables<"lesson_progress"> & {
+  lessons:
+    | (Pick<Tables<"lessons">, "title"> & {
+        modules: Pick<Tables<"modules">, "title"> | null;
+      })
+    | null;
+};
+
+type PublishedDocRow = Pick<
+  Tables<"onboarding_documents">,
+  "id" | "type" | "title" | "version"
+>;
+
+type AcceptanceRow = Pick<
+  Tables<"document_acceptances">,
+  | "document_id"
+  | "document_type"
+  | "document_version"
+  | "accepted_at"
+  | "ip_address"
+  | "user_agent"
+>;
+
+/**
+ * Résultat de positionnement. `scores` / `level_per_bloc` sont des jsonb
+ * indexés par code de bloc (contrat applicatif : cf. /positionnement).
+ */
+type PlacementRow = Omit<
+  Pick<
+    Tables<"placement_results">,
+    "scores" | "level_per_bloc" | "recommended_bloc_id" | "taken_at" | "duration_s"
+  >,
+  "scores" | "level_per_bloc"
+> & {
+  scores: Record<string, number> | null;
+  level_per_bloc: Record<string, string> | null;
+};
+
+type BlocRow = Pick<Tables<"blocs">, "id" | "code" | "title">;
 
 export default async function UserProfilePage({
   params,
@@ -45,13 +92,13 @@ export default async function UserProfilePage({
   if (!user) notFound();
 
   const [
-    { data: attempts },
-    { data: progress },
+    { data: attemptsRaw },
+    { data: progressRaw },
     { data: group },
-    { data: publishedDocs },
-    { data: acceptances },
-    { data: placement },
-    { data: blocsForPlacement },
+    { data: publishedDocsRaw },
+    { data: acceptancesRaw },
+    { data: placementRaw },
+    { data: blocsRaw },
   ] = await Promise.all([
     supabase
       .from("quiz_attempts")
@@ -118,8 +165,14 @@ export default async function UserProfilePage({
     supabase.auth.getUser(),
   ]);
 
-  const acceptedMap = new Map(
-    (acceptances ?? []).map((a: any) => [a.document_id, a])
+  const acceptances = (acceptancesRaw ?? []) as AcceptanceRow[];
+  const publishedDocs = (publishedDocsRaw ?? []) as PublishedDocRow[];
+  const placement = (placementRaw ?? null) as PlacementRow | null;
+  const blocsForPlacement = (blocsRaw ?? []) as BlocRow[];
+  const progress = (progressRaw ?? []) as ProgressRow[];
+
+  const acceptedMap = new Map<string, AcceptanceRow>(
+    acceptances.map((a) => [a.document_id, a])
   );
   const docLabels: Record<string, string> = {
     convention: "Convention de formation",
@@ -127,7 +180,7 @@ export default async function UserProfilePage({
     livret: "Livret d'accueil",
   };
 
-  const attemptsList = (attempts ?? []) as any[];
+  const attemptsList = (attemptsRaw ?? []) as AttemptRow[];
   const total = attemptsList.length;
   const avg =
     total > 0
@@ -247,7 +300,7 @@ export default async function UserProfilePage({
             )}
           </div>
           <CardBody>
-            {(publishedDocs ?? []).length === 0 ? (
+            {publishedDocs.length === 0 ? (
               <p className="text-sm text-slate-500 py-3">
                 Aucun document publié pour le moment.{" "}
                 <Link
@@ -260,8 +313,8 @@ export default async function UserProfilePage({
               </p>
             ) : (
               <div className="grid sm:grid-cols-3 gap-3">
-                {(publishedDocs ?? []).map((d: any) => {
-                  const a = acceptedMap.get(d.id) as any;
+                {publishedDocs.map((d) => {
+                  const a = acceptedMap.get(d.id);
                   return (
                     <div
                       key={d.id}
@@ -338,9 +391,9 @@ export default async function UserProfilePage({
           <CardBody>
             {placement ? (
               <div className="grid sm:grid-cols-3 gap-3">
-                {(blocsForPlacement ?? []).map((b: any) => {
-                  const pct = (placement.scores as any)?.[b.code] ?? 0;
-                  const lvl = (placement.level_per_bloc as any)?.[b.code] ?? "debutant";
+                {blocsForPlacement.map((b) => {
+                  const pct = placement.scores?.[b.code] ?? 0;
+                  const lvl = placement.level_per_bloc?.[b.code] ?? "debutant";
                   const recommended = placement.recommended_bloc_id === b.id;
                   return (
                     <div
@@ -434,7 +487,7 @@ export default async function UserProfilePage({
               <div>
                 <div className="text-xs text-slate-500">Leçons terminées</div>
                 <div className="font-display text-xl font-semibold text-navy-900">
-                  {progress?.length ?? 0}
+                  {progress.length}
                 </div>
               </div>
             </div>
@@ -482,7 +535,7 @@ export default async function UserProfilePage({
                     </tr>
                   </thead>
                   <tbody>
-                    {attemptsList.map((a: any) => (
+                    {attemptsList.map((a) => (
                       <tr key={a.id} className="border-t border-navy-50">
                         <td className="px-5 py-3 font-medium text-navy-900">
                           {a.quizzes?.title ?? "—"}
@@ -494,7 +547,9 @@ export default async function UserProfilePage({
                         </td>
                         <td className="px-5 py-3">
                           <span
-                            className={`font-semibold ${scoreColor(a.percentage)}`}
+                            className={`font-semibold ${scoreColor(
+                              a.percentage ?? 0
+                            )}`}
                           >
                             {a.percentage}%
                           </span>
@@ -529,13 +584,13 @@ export default async function UserProfilePage({
           </Card>
 
           {/* Progression */}
-          {progress && progress.length > 0 && (
+          {progress.length > 0 && (
             <Card className="mt-5">
               <div className="px-6 pt-5 pb-3 border-b border-navy-50">
                 <CardTitle className="text-base">Leçons terminées</CardTitle>
               </div>
               <div className="divide-y divide-navy-50">
-                {progress.slice(0, 10).map((p: any) => (
+                {progress.slice(0, 10).map((p) => (
                   <div key={p.id} className="px-6 py-3 flex items-center gap-3">
                     <div className="h-8 w-8 rounded-lg bg-emerald-50 flex items-center justify-center">
                       <BookOpen className="h-4 w-4 text-emerald-700" />

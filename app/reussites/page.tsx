@@ -9,6 +9,34 @@ import {
 } from "@/lib/gamification/badge-progress";
 import { RankHero } from "@/components/gamification/rank-hero";
 import { xpLevelFromTotal } from "@/lib/gamification/ranks";
+import type { Tables } from "@/lib/database.types";
+
+// ── Types des lignes lues (dérivés des `select` ci-dessous) ────────────
+type BadgeRow = Tables<"badges">;
+type UserBadgeRow = Pick<Tables<"user_badges">, "badge_id" | "earned_at">;
+type XpStatRow = Pick<Tables<"xp_events">, "points" | "created_at">;
+type XpHistoryRow = Pick<
+  Tables<"xp_events">,
+  "id" | "kind" | "points" | "ref_id" | "created_at"
+>;
+/** Ligne renvoyée par la RPC `user_streak(p_user uuid)`. */
+type StreakRow = { current_streak: number; longest_streak: number };
+type PassedAttemptRow = Pick<Tables<"quiz_attempts">, "quiz_id" | "passed">;
+type PerfectAttemptRow = Pick<Tables<"quiz_attempts">, "id" | "percentage">;
+type MockExamAttemptRow = Pick<Tables<"quiz_attempts">, "id" | "passed">;
+type LessonDoneRow = Pick<Tables<"lesson_progress">, "lesson_id">;
+/** `lessons` + embed `modules!inner(bloc_id)`. */
+type BlocLessonRow = Pick<Tables<"lessons">, "id"> & {
+  modules: Pick<Tables<"modules">, "bloc_id"> | null;
+};
+/** `lesson_progress` + embed `lessons!inner(modules!inner(bloc_id))`. */
+type BlocLessonDoneRow = Pick<Tables<"lesson_progress">, "lesson_id"> & {
+  lessons: { modules: Pick<Tables<"modules">, "bloc_id"> | null } | null;
+};
+/** `quiz_attempts` + embed `quizzes!inner(modules!inner(bloc_id))`. */
+type BlocExamPassedRow = Pick<Tables<"quiz_attempts">, "id"> & {
+  quizzes: { modules: Pick<Tables<"modules">, "bloc_id"> | null } | null;
+};
 
 const CATEGORY_LABEL: Record<string, string> = {
   progression: "Progression",
@@ -41,18 +69,18 @@ export default async function ReussitesPage() {
   //   - les stocks pour la progression vers les badges verrouillés
   //   - l'historique XP des 20 derniers événements
   const [
-    { data: badges },
-    { data: myBadges },
-    { data: stats },
-    { data: streak },
-    { data: passedAttempts },
-    { data: perfectAttempts },
-    { data: mockExamAttempts },
-    { data: lessonsDone },
-    { data: blocLessons },
-    { data: blocLessonsDone },
-    { data: blocExamsPassed },
-    { data: xpHistory },
+    { data: badgesData },
+    { data: myBadgesData },
+    { data: statsData },
+    { data: streakData },
+    { data: passedAttemptsData },
+    { data: perfectAttemptsData },
+    { data: mockExamAttemptsData },
+    { data: lessonsDoneData },
+    { data: blocLessonsData },
+    { data: blocLessonsDoneData },
+    { data: blocExamsPassedData },
+    { data: xpHistoryData },
   ] = await Promise.all([
     supabase.from("badges").select("*").eq("active", true).order("order"),
     supabase
@@ -109,19 +137,32 @@ export default async function ReussitesPage() {
       .limit(20),
   ]);
 
+  const badges = badgesData as BadgeRow[] | null;
+  const myBadges = myBadgesData as UserBadgeRow[] | null;
+  const stats = statsData as XpStatRow[] | null;
+  const streak = streakData as StreakRow[] | null;
+  const passedAttempts = passedAttemptsData as PassedAttemptRow[] | null;
+  const perfectAttempts = perfectAttemptsData as PerfectAttemptRow[] | null;
+  const mockExamAttempts = mockExamAttemptsData as MockExamAttemptRow[] | null;
+  const lessonsDone = lessonsDoneData as LessonDoneRow[] | null;
+  const blocLessons = blocLessonsData as BlocLessonRow[] | null;
+  const blocLessonsDone = blocLessonsDoneData as BlocLessonDoneRow[] | null;
+  const blocExamsPassed = blocExamsPassedData as BlocExamPassedRow[] | null;
+  const xpHistory = xpHistoryData as XpHistoryRow[] | null;
+
   // ─── Index des badges débloqués ──────────────────────────────────────
-  const earnedMap = new Map(
-    (myBadges || []).map((b: any) => [b.badge_id, b.earned_at])
+  const earnedMap = new Map<string, string>(
+    (myBadges || []).map((b) => [b.badge_id, b.earned_at])
   );
 
-  const earnedList = (badges || []).filter((b: any) => earnedMap.has(b.id));
+  const earnedList = (badges || []).filter((b) => earnedMap.has(b.id));
 
   // ─── Stats par bloc (pour bloc_mastered) ────────────────────────────
   const blocStats = new Map<
     number,
     { totalLessons: number; doneLessons: number; examsPassed: number }
   >();
-  (blocLessons ?? []).forEach((row: any) => {
+  (blocLessons ?? []).forEach((row) => {
     const blocId = row.modules?.bloc_id;
     if (blocId == null) return;
     const s = blocStats.get(blocId) ?? {
@@ -132,7 +173,7 @@ export default async function ReussitesPage() {
     s.totalLessons++;
     blocStats.set(blocId, s);
   });
-  (blocLessonsDone ?? []).forEach((row: any) => {
+  (blocLessonsDone ?? []).forEach((row) => {
     const blocId = row.lessons?.modules?.bloc_id;
     if (blocId == null) return;
     const s = blocStats.get(blocId) ?? {
@@ -143,7 +184,7 @@ export default async function ReussitesPage() {
     s.doneLessons++;
     blocStats.set(blocId, s);
   });
-  (blocExamsPassed ?? []).forEach((row: any) => {
+  (blocExamsPassed ?? []).forEach((row) => {
     const blocId = row.quizzes?.modules?.bloc_id;
     if (blocId == null) return;
     const s = blocStats.get(blocId) ?? {
@@ -156,9 +197,7 @@ export default async function ReussitesPage() {
   });
 
   const userStats: UserStats = {
-    quizPassedCount: new Set(
-      (passedAttempts ?? []).map((r: any) => r.quiz_id)
-    ).size,
+    quizPassedCount: new Set((passedAttempts ?? []).map((r) => r.quiz_id)).size,
     perfectScoreCount: (perfectAttempts ?? []).length,
     mockExamPassedCount: (mockExamAttempts ?? []).length,
     lessonsCompletedCount: (lessonsDone ?? []).length,
@@ -168,7 +207,7 @@ export default async function ReussitesPage() {
   // ─── XP / Niveau / Streak (cartes hero) ──────────────────────────────
   // Calcul direct depuis xp_events (robuste quel que soit le rôle ; la vue
   // user_gamification est filtrée role='student' pour le classement).
-  const xpRows = (stats ?? []) as { points: number; created_at: string }[];
+  const xpRows = stats ?? [];
   const totalXp = xpRows.reduce((s, r) => s + (r.points ?? 0), 0);
   const level = xpLevelFromTotal(totalXp);
   const activeDays = new Set(
@@ -180,12 +219,12 @@ export default async function ReussitesPage() {
     100,
     Math.round(((totalXp - curStart) / Math.max(1, nextStart - curStart)) * 100)
   );
-  const currentStreak = (streak as any)?.[0]?.current_streak ?? 0;
-  const longestStreak = (streak as any)?.[0]?.longest_streak ?? 0;
+  const currentStreak = streak?.[0]?.current_streak ?? 0;
+  const longestStreak = streak?.[0]?.longest_streak ?? 0;
 
   // ─── Groupement par catégorie ────────────────────────────────────────
-  const byCategory: Record<string, any[]> = {};
-  (badges || []).forEach((b: any) => {
+  const byCategory: Record<string, BadgeRow[]> = {};
+  (badges || []).forEach((b) => {
     const c = b.category ?? "progression";
     if (!byCategory[c]) byCategory[c] = [];
     byCategory[c].push(b);
@@ -273,8 +312,9 @@ export default async function ReussitesPage() {
             {CATEGORY_LABEL[cat] ?? cat}
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {list.map((b: any) => {
+            {list.map((b) => {
               const isEarned = earnedMap.has(b.id);
+              // `badges.criteria` est un jsonb au format BadgeCriteria.
               const progress = isEarned
                 ? null
                 : computeBadgeProgress(
@@ -305,7 +345,7 @@ export default async function ReussitesPage() {
           <Card>
             <CardBody className="p-0">
               <ul className="divide-y divide-navy-50">
-                {(xpHistory ?? []).map((e: any) => {
+                {(xpHistory ?? []).map((e) => {
                   const date = new Date(e.created_at);
                   return (
                     <li

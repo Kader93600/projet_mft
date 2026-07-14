@@ -7,8 +7,19 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Plus, ChevronRight, BookOpen } from "lucide-react";
 import { ModuleForm } from "../module-form";
 import { ModuleDangerZone } from "./module-danger-zone";
+import type { Tables } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
+
+// ── Formes exactes des lignes lues (miroir des `.select(...)` ci-dessous) ──
+type ModuleRow = Tables<"modules"> & {
+  blocs: Pick<Tables<"blocs">, "code" | "title"> | null;
+};
+type LessonRow = Tables<"lessons">;
+type FormationOptionRow = Pick<Tables<"formations">, "slug" | "code" | "title">;
+type FormationLinkRow = {
+  formation: Pick<Tables<"formations">, "slug"> | null;
+};
 
 export default async function EditModulePage({
   params,
@@ -17,11 +28,11 @@ export default async function EditModulePage({
 }) {
   const supabase = createClient();
   const [
-    { data: module },
-    { data: blocs },
-    { data: lessons },
-    { data: dbFormations },
-    { data: currentLink },
+    { data: rawModule },
+    { data: rawBlocs },
+    { data: rawLessons },
+    { data: rawFormations },
+    { data: rawCurrentLink },
   ] = await Promise.all([
     supabase.from("modules").select("*, blocs(code, title)").eq("id", params.id).single(),
     supabase.from("blocs").select("*").order("id"),
@@ -38,11 +49,15 @@ export default async function EditModulePage({
       .limit(1)
       .maybeSingle(),
   ]);
+  const module = rawModule as ModuleRow | null;
   if (!module) notFound();
 
-  const initialFormationSlug =
-    (currentLink?.formation as any)?.slug ?? null;
-  const formations = dbFormations ?? [];
+  const blocs = rawBlocs as Tables<"blocs">[] | null;
+  const lessons = rawLessons as LessonRow[] | null;
+  const currentLink = rawCurrentLink as FormationLinkRow | null;
+
+  const initialFormationSlug = currentLink?.formation?.slug ?? null;
+  const formations = (rawFormations ?? []) as FormationOptionRow[];
 
   return (
     <div className="space-y-6">
@@ -73,7 +88,7 @@ export default async function EditModulePage({
             <CardBody>
               <ModuleForm
                 blocs={blocs ?? []}
-                formations={formations as any}
+                formations={formations}
                 module={module}
                 initialFormationSlug={initialFormationSlug}
               />
@@ -97,7 +112,7 @@ export default async function EditModulePage({
               </CardBody>
             ) : (
               <div className="divide-y divide-navy-50">
-                {lessons!.map((l: any, i: number) => (
+                {lessons!.map((l, i) => (
                   <Link
                     key={l.id}
                     href={`/admin/modules/${module.id}/lessons/${l.id}`}

@@ -11,9 +11,17 @@ import {
 } from "@react-pdf/renderer";
 import React from "react";
 import { PdfLogoMark } from "@/lib/pdf-logo";
+import type { Tables } from "@/lib/database.types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+/** `certificates` — select("*") */
+type CertificateRow = Tables<"certificates">;
+/** `profiles` — select("full_name, email") */
+type CertificateHolder = Pick<Tables<"profiles">, "full_name" | "email">;
+/** `blocs` — select("code, title") */
+type BlocRef = Pick<Tables<"blocs">, "code" | "title">;
 
 const styles = StyleSheet.create({
   page: { padding: 60, fontSize: 11, fontFamily: "Helvetica", color: "#0f172a" },
@@ -190,9 +198,9 @@ function CertificatePDF({
   cert,
   bloc,
 }: {
-  user: any;
-  cert: any;
-  bloc: any | null;
+  user: CertificateHolder | null;
+  cert: CertificateRow;
+  bloc: BlocRef | null;
 }) {
   const C = React.createElement;
   const isFinal = cert.type === "final";
@@ -307,11 +315,12 @@ export async function GET(
   } = await supabase.auth.getUser();
   if (!authUser) return NextResponse.json({ error: "unauth" }, { status: 401 });
 
-  const { data: cert } = await supabase
+  const { data: certData } = await supabase
     .from("certificates")
     .select("*")
     .eq("id", params.id)
     .single();
+  const cert: CertificateRow | null = certData;
   if (!cert) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
   // Auto-only OR admin
@@ -326,13 +335,14 @@ export async function GET(
     }
   }
 
-  const { data: profile } = await supabase
+  const { data: profileData } = await supabase
     .from("profiles")
     .select("full_name, email")
     .eq("id", cert.user_id)
     .single();
+  const profile: CertificateHolder | null = profileData;
 
-  let bloc: any = null;
+  let bloc: BlocRef | null = null;
   if (cert.bloc_id) {
     const { data: b } = await supabase
       .from("blocs")
@@ -343,14 +353,12 @@ export async function GET(
   }
 
   const buffer = await renderToBuffer(
-    React.createElement(CertificatePDF, {
-      user: profile,
-      cert,
-      bloc,
-    }) as any
+    <CertificatePDF user={profile} cert={cert} bloc={bloc} />
   );
 
-  return new NextResponse(buffer as any, {
+  // Buffer (Node) satisfait BodyInit à l'exécution, mais les lib DOM de TS
+  // typent BodyInit sur ArrayBufferView<ArrayBuffer> — d'où l'annotation.
+  return new NextResponse(buffer as BodyInit, {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `inline; filename="certificat-${cert.serial}.pdf"`,

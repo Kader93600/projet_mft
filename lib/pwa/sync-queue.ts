@@ -60,9 +60,9 @@ function openDb(): Promise<IDBDatabase> {
 function generateClientId(): string {
   if (
     typeof crypto !== "undefined" &&
-    typeof (crypto as any).randomUUID === "function"
+    typeof crypto.randomUUID === "function"
   ) {
-    return (crypto as any).randomUUID();
+    return crypto.randomUUID();
   }
   // Fallback (navigateurs anciens) : timestamp + random
   return (

@@ -1,10 +1,33 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import type { Tables } from "@/lib/database.types";
 import { Card, CardBody } from "@/components/ui/card";
 import { ArrowLeft, UserPlus } from "lucide-react";
 import { CreateStudentForm } from "./create-student-form";
 
 export const dynamic = "force-dynamic";
+
+/** Résultat du select `enrollment_requests` (dropdown « Importer depuis un lead »). */
+type LeadRow = Pick<
+  Tables<"enrollment_requests">,
+  | "id"
+  | "full_name"
+  | "email"
+  | "phone"
+  | "adresse"
+  | "code_postal"
+  | "ville"
+  | "formation_slug"
+  | "funding_kind"
+  | "message"
+  | "status"
+  | "created_at"
+>;
+
+/** Résultat du select `formation_modules` + embed `formations!inner(slug)`. */
+type ModuleCountRow = Pick<Tables<"formation_modules">, "formation_id"> & {
+  formations: Pick<Tables<"formations">, "slug"> | null;
+};
 
 export default async function NewStudentPage({
   searchParams,
@@ -63,13 +86,16 @@ export default async function NewStudentPage({
     // disponible" après login).
     supabase
       .from("formation_modules")
-      .select("formation_id, formations!inner(slug)"),
+      .select("formation_id, formations!inner(slug)")
+      // Le client n'étant pas câblé sur `Database`, postgrest infère l'embed
+      // to-one comme un tableau : on impose la forme réelle renvoyée par l'API.
+      .overrideTypes<ModuleCountRow[], { merge: false }>(),
   ]);
 
   // Calcule le nb de modules par formation slug pour l'afficher
   // dans le dropdown du form (warning visuel si 0).
   const moduleCountBySlug: Record<string, number> = {};
-  for (const row of (moduleCountsRaw ?? []) as any[]) {
+  for (const row of moduleCountsRaw ?? []) {
     const slug = row.formations?.slug;
     if (slug) moduleCountBySlug[slug] = (moduleCountBySlug[slug] ?? 0) + 1;
   }
@@ -105,7 +131,7 @@ export default async function NewStudentPage({
             staff={staff ?? []}
             trainers={trainers ?? []}
             funders={funders ?? []}
-            leads={(leads ?? []) as any[]}
+            leads={(leads ?? []) as LeadRow[]}
             moduleCountBySlug={moduleCountBySlug}
             initialValues={{
               full_name: searchParams?.full_name,

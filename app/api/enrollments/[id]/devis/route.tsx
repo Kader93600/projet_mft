@@ -8,6 +8,7 @@ import {
 } from "@react-pdf/renderer";
 import React from "react";
 import { createClient } from "@/lib/supabase/server";
+import type { Tables } from "@/lib/database.types";
 import { canAccessEnrollment } from "@/lib/enrollment-access";
 import { LEGAL } from "@/lib/legal-config";
 import { resolveEnrollmentFormation } from "@/lib/enrollment-formation";
@@ -38,11 +39,21 @@ const MODALITY_LABEL: Record<string, string> = {
   mixte: "Mixte présentiel + distanciel",
 };
 
+/**
+ * Résultat exact du select ci-dessous :
+ *   "*, user:profiles!user_id(full_name, email, phone), funder:funders(name, kind)"
+ * (le client Supabase n'est pas câblé sur `Database` globalement).
+ */
+type EnrollmentWithRelations = Tables<"enrollments"> & {
+  user: Pick<Tables<"profiles">, "full_name" | "email" | "phone"> | null;
+  funder: Pick<Tables<"funders">, "name" | "kind"> | null;
+};
+
 interface Props {
   refLabel: string;
   stagiaire: { fullName: string; email: string; phone?: string | null };
-  funder?: { name: string; kind: string } | null;
-  e: any;
+  funder?: Pick<Tables<"funders">, "name" | "kind"> | null;
+  e: Tables<"enrollments">;
   validityDate: string;
 }
 
@@ -156,7 +167,7 @@ export async function GET(
     return NextResponse.json({ error: "unauth" }, { status: 401 });
   }
 
-  const { data: enrollment } = await supabase
+  const { data } = await supabase
     .from("enrollments")
     .select(
       "*, user:profiles!user_id(full_name, email, phone), funder:funders(name, kind)"
@@ -164,14 +175,15 @@ export async function GET(
     .eq("id", params.id)
     .maybeSingle();
 
+  const enrollment = data as EnrollmentWithRelations | null;
   if (!enrollment) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
   // Défense en profondeur : owner OU staff uniquement
-  if (!(await canAccessEnrollment(user.id, (enrollment as any).user_id))) {
+  if (!(await canAccessEnrollment(user.id, enrollment.user_id))) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
-  const stagiaire = (enrollment as any).user;
+  const stagiaire = enrollment.user;
   if (!stagiaire) {
     return NextResponse.json({ error: "stagiaire_missing" }, { status: 500 });
   }
@@ -193,13 +205,13 @@ export async function GET(
         email: stagiaire.email,
         phone: stagiaire.phone,
       }}
-      funder={(enrollment as any).funder ?? null}
+      funder={enrollment.funder ?? null}
       e={enrollment}
       validityDate={validityDate}
     />
   );
 
-  return new NextResponse(buffer as any, {
+  return new NextResponse(buffer as BodyInit, {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",

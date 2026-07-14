@@ -29,6 +29,8 @@ import { cn } from "@/lib/utils";
 import { FormationBadge } from "@/components/formation/formation-badge";
 import { FormationStripe } from "@/components/formation/formation-stripe";
 import { resolveFormationFromQuiz } from "@/lib/formation-resolver";
+import type { Tables } from "@/lib/database.types";
+import type { RewardBadge } from "@/components/celebration/reward-celebration";
 
 export const dynamic = "force-dynamic";
 
@@ -68,6 +70,77 @@ interface ResolvedQuestion extends BankQuestion {
   display_order: number;
 }
 
+/** Quiz embarqué dans la tentative (cf. select `quiz:quizzes(...)`). */
+type QuizEmbed = Pick<
+  Tables<"quizzes">,
+  | "id"
+  | "title"
+  | "description"
+  | "type"
+  | "is_mock_exam"
+  | "pass_threshold"
+  | "requires_manual_grading"
+  | "module_id"
+> & {
+  module: Pick<Tables<"modules">, "slug" | "title"> | null;
+};
+
+/**
+ * Tentative telle que sélectionnée ici. `answers` est un jsonb dont le contrat
+ * applicatif est `{ [questionId]: choiceId }` (écrit par le quiz runner).
+ */
+type AttemptRow = Omit<
+  Pick<
+    Tables<"quiz_attempts">,
+    | "id"
+    | "user_id"
+    | "quiz_id"
+    | "score"
+    | "total"
+    | "percentage"
+    | "passed"
+    | "qcm_score"
+    | "qr_score"
+    | "final_percentage"
+    | "final_passed"
+    | "status"
+    | "finished_at"
+    | "started_at"
+    | "duration_s"
+    | "graded_at"
+    | "graded_by"
+    | "trainer_global_comment"
+    | "mode"
+    | "answers"
+  >,
+  "answers"
+> & {
+  answers: Record<string, string> | null;
+  quiz: QuizEmbed | null;
+};
+
+/** Réponse rédigée corrigée (cf. select sur `qr_responses`). */
+type QrResponseRow = Pick<
+  Tables<"qr_responses">,
+  | "id"
+  | "question_id"
+  | "student_answer"
+  | "trainer_score"
+  | "max_score"
+  | "trainer_comment"
+  | "graded_at"
+>;
+
+/** Lien quiz ↔ banque + question embarquée (cf. select `question:question_bank(...)`). */
+type BankLinkRow = Pick<Tables<"quiz_question_bank">, "display_order"> & {
+  question: BankQuestion | null;
+};
+
+/** Badge fraîchement débloqué (cf. select `badges(name, description, icon, tier)`). */
+type FreshBadgeRow = Pick<Tables<"user_badges">, "earned_at"> & {
+  badges: Pick<Tables<"badges">, "name" | "description" | "icon" | "tier"> | null;
+};
+
 export default async function QuizResultsPage({
   params,
   searchParams,
@@ -85,7 +158,7 @@ export default async function QuizResultsPage({
   if (!user) redirect("/login");
 
   // Charger la tentative + quiz (+ answers JSON)
-  const { data: attempt } = await supabase
+  const { data: attemptRaw } = await supabase
     .from("quiz_attempts")
     .select(
       `id, user_id, quiz_id, score, total, percentage, passed,
@@ -98,6 +171,7 @@ export default async function QuizResultsPage({
     .eq("id", params.attemptId)
     .maybeSingle();
 
+  const attempt = (attemptRaw ?? null) as AttemptRow | null;
   if (!attempt) notFound();
 
   // Sécurité : seul le propriétaire ou le staff/formateur peut voir
@@ -113,14 +187,15 @@ export default async function QuizResultsPage({
   if (attempt.user_id !== user.id && !isStaff) redirect("/dashboard");
 
   // Charger les QR responses si applicable
-  const { data: qrResponses } = await supabase
+  const { data: qrResponsesRaw } = await supabase
     .from("qr_responses")
     .select(
       "id, question_id, student_answer, trainer_score, max_score, trainer_comment, graded_at"
     )
     .eq("attempt_id", params.attemptId);
 
-  const quiz = (attempt as any).quiz;
+  const qrResponses = (qrResponsesRaw ?? []) as QrResponseRow[];
+  const quiz = attempt.quiz;
   const status = attempt.status ?? "completed";
   const isGraded = status === "graded" || status === "completed";
   const isAwaiting = status === "awaiting_review";
@@ -134,7 +209,7 @@ export default async function QuizResultsPage({
     | {
         xpGained: number;
         rankUp: { label: string; emoji: string } | null;
-        badges: any[];
+        badges: RewardBadge[];
       }
     | null = null;
   if (isGraded && searchParams?.celebrate === "1" && attempt.finished_at) {
@@ -160,14 +235,20 @@ export default async function QuizResultsPage({
           .eq("user_id", attempt.user_id)
           .gte("earned_at", sinceIso)
           .order("earned_at", { ascending: false })
-          .limit(5),
+          .limit(5)
+          // Client non typé globalement : supabase-js infère l'embed to-one
+          // comme un tableau. On rétablit la vraie forme (objet | null).
+          .overrideTypes<FreshBadgeRow[], { merge: false }>(),
       ]);
-    const xpGained = (xpRows ?? []).reduce(
-      (s: number, r: any) => s + (r.points ?? 0),
-      0
-    );
-    const totalXp = (gami as any)?.total_xp ?? 0;
-    const levelAfter = (gami as any)?.level ?? 1;
+    const xpGained = (
+      (xpRows ?? []) as Pick<Tables<"xp_events">, "points">[]
+    ).reduce((s: number, r) => s + (r.points ?? 0), 0);
+    const gamification = (gami ?? null) as Pick<
+      Tables<"user_gamification">,
+      "total_xp" | "level"
+    > | null;
+    const totalXp = gamification?.total_xp ?? 0;
+    const levelAfter = gamification?.level ?? 1;
     const levelBefore = xpLevelFromTotal(totalXp - xpGained);
     const ra = getRank(levelAfter);
     const rb = getRank(levelBefore);
@@ -176,8 +257,8 @@ export default async function QuizResultsPage({
         ? { label: ra.rank.label, emoji: ra.rank.emoji }
         : null;
     const badges = (freshBadges ?? [])
-      .map((r: any) => r.badges)
-      .filter(Boolean);
+      .map((r) => r.badges)
+      .filter((b): b is NonNullable<FreshBadgeRow["badges"]> => Boolean(b));
     if (rankUp || badges.length > 0) {
       quizRewards = { xpGained, rankUp, badges };
     }
@@ -198,10 +279,13 @@ export default async function QuizResultsPage({
        question:question_bank(id, type, statement, choices, explanation, max_score)`
     )
     .eq("quiz_id", attempt.quiz_id)
-    .order("display_order");
+    .order("display_order")
+    // Client non typé globalement : supabase-js infère l'embed to-one comme
+    // un tableau. On rétablit la vraie forme (objet | null).
+    .overrideTypes<BankLinkRow[], { merge: false }>();
 
   const resolvedQuestions: ResolvedQuestion[] = (bankLinks ?? [])
-    .map((l: any) => {
+    .map((l): ResolvedQuestion | null => {
       const q = l.question;
       if (!q) return null;
       return {
@@ -212,13 +296,12 @@ export default async function QuizResultsPage({
         explanation: q.explanation,
         max_score: q.max_score ?? 1,
         display_order: l.display_order ?? 0,
-      } as ResolvedQuestion;
+      };
     })
-    .filter(Boolean) as ResolvedQuestion[];
+    .filter((q): q is ResolvedQuestion => Boolean(q));
 
   // Réponses utilisateur (jsonb { questionId: choiceId })
-  const userAnswers: Record<string, string> =
-    (attempt as any).answers ?? {};
+  const userAnswers: Record<string, string> = attempt.answers ?? {};
 
   // Stats QCM auto-corrigées
   const qcmQuestions = resolvedQuestions.filter((q) => q.type === "qcm");
@@ -247,8 +330,8 @@ export default async function QuizResultsPage({
   let remediation:
     | { moduleSlug: string; moduleTitle: string; lessons: RemediationLesson[] }
     | null = null;
-  const quizModuleId: string | null = (quiz as any)?.module_id ?? null;
-  const quizModule = (quiz as any)?.module ?? null;
+  const quizModuleId: string | null = quiz?.module_id ?? null;
+  const quizModule = quiz?.module ?? null;
   if (isGraded && !finalPassed && quizModuleId && quizModule?.slug) {
     const [{ data: remLessons }, { data: remProgress }] = await Promise.all([
       supabase
@@ -263,9 +346,19 @@ export default async function QuizResultsPage({
         .eq("completed", true),
     ]);
     const doneSet = new Set(
-      (remProgress ?? []).map((r: any) => r.lesson_id as string),
+      (
+        (remProgress ?? []) as Pick<
+          Tables<"lesson_progress">,
+          "lesson_id" | "completed"
+        >[]
+      ).map((r) => r.lesson_id),
     );
-    const lessons: RemediationLesson[] = (remLessons ?? []).map((l: any) => ({
+    const lessons: RemediationLesson[] = (
+      (remLessons ?? []) as Pick<
+        Tables<"lessons">,
+        "id" | "slug" | "title" | "order"
+      >[]
+    ).map((l) => ({
       slug: l.slug,
       title: l.title,
       done: doneSet.has(l.id),
@@ -413,16 +506,17 @@ export default async function QuizResultsPage({
                     </div>
                   )}
                   {/* Carte Rédigées : uniquement si vraies QR + affiche % ET fraction */}
-                  {attempt.qr_score !== null && (qrResponses ?? []).length > 0 && (
+                  {attempt.qr_score !== null && qrResponses.length > 0 && (
                     (() => {
-                      const qrMax = (qrResponses ?? []).reduce(
-                        (s: number, r: any) => s + (r.max_score ?? 0),
+                      const qrMax = qrResponses.reduce(
+                        (s: number, r) => s + (r.max_score ?? 0),
                         0
                       );
+                      // `attempt.qr_score` est non-null ici (garde ci-dessus) ;
+                      // `?? 0` sert uniquement au flow analysis (closure).
+                      const qrScore = attempt.qr_score ?? 0;
                       const qrPct =
-                        qrMax > 0
-                          ? Math.round((attempt.qr_score / qrMax) * 100)
-                          : 0;
+                        qrMax > 0 ? Math.round((qrScore / qrMax) * 100) : 0;
                       return (
                         <div className="rounded-xl border border-navy-100 bg-ivory p-3">
                           <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">
@@ -646,14 +740,14 @@ export default async function QuizResultsPage({
             )}
 
             {/* Détails par QR avec correction (si applicable) */}
-            {(qrResponses ?? []).length > 0 && (
+            {qrResponses.length > 0 && (
               <section>
                 <h2 className="font-display text-xl font-semibold text-navy-900 mb-4 flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-brand-700" />
                   {t("qrCorrectionsTitle")}
                 </h2>
                 <div className="space-y-3">
-                  {qrResponses!.map((r: any, i: number) => {
+                  {qrResponses.map((r, i) => {
                     const ratio = r.max_score
                       ? (r.trainer_score ?? 0) / r.max_score
                       : 0;
@@ -670,7 +764,7 @@ export default async function QuizResultsPage({
                             <div className="text-sm font-medium text-navy-900">
                               {t("questionNumber", { n: i + 1 })}
                             </div>
-                            <Badge tone={tone as any} size="sm">
+                            <Badge tone={tone} size="sm">
                               {r.trainer_score ?? 0} / {r.max_score}
                             </Badge>
                           </div>

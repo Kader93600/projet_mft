@@ -11,6 +11,12 @@
 
 import { cache } from "react";
 import { createClient } from "./supabase/server";
+import type { Tables } from "./database.types";
+
+/** Ligne renvoyée par `select("formation:formations(slug)")` (embed to-one). */
+type FormationSlugEmbed = {
+  formation: Pick<Tables<"formations">, "slug"> | null;
+};
 
 // Tous les résolveurs sont enveloppés dans `cache()` (React) : la
 // mémoïsation est SCOPÉE À LA REQUÊTE (aucun risque de données périmées
@@ -28,7 +34,7 @@ export const resolveFormationFromQuiz = cache(async function (
     .eq("quiz_id", quizId)
     .limit(1)
     .maybeSingle();
-  return (data as any)?.formation?.slug ?? null;
+  return (data as FormationSlugEmbed | null)?.formation?.slug ?? null;
 });
 
 /** Résout la formation d'un module (via formation_modules). */
@@ -42,7 +48,7 @@ export const resolveFormationFromModule = cache(async function (
     .eq("module_id", moduleId)
     .limit(1)
     .maybeSingle();
-  return (data as any)?.formation?.slug ?? null;
+  return (data as FormationSlugEmbed | null)?.formation?.slug ?? null;
 });
 
 /** Résout la formation depuis une leçon (via le module parent). */
@@ -55,8 +61,9 @@ export const resolveFormationFromLesson = cache(async function (
     .select("module_id")
     .eq("id", lessonId)
     .maybeSingle();
-  if (!lesson?.module_id) return null;
-  return resolveFormationFromModule(lesson.module_id);
+  const lessonRow = lesson as Pick<Tables<"lessons">, "module_id"> | null;
+  if (!lessonRow?.module_id) return null;
+  return resolveFormationFromModule(lessonRow.module_id);
 });
 
 /** Résout la formation d'une tentative (via le quiz). */
@@ -69,8 +76,12 @@ export const resolveFormationFromAttempt = cache(async function (
     .select("quiz_id")
     .eq("id", attemptId)
     .maybeSingle();
-  if (!attempt?.quiz_id) return null;
-  return resolveFormationFromQuiz(attempt.quiz_id);
+  const attemptRow = attempt as Pick<
+    Tables<"quiz_attempts">,
+    "quiz_id"
+  > | null;
+  if (!attemptRow?.quiz_id) return null;
+  return resolveFormationFromQuiz(attemptRow.quiz_id);
 });
 
 /**
@@ -94,7 +105,8 @@ export const resolveFormationIdFromQuiz = cache(async function (
     .eq("quiz_id", quizId)
     .limit(1)
     .maybeSingle();
-  if ((fq as any)?.formation_id) return (fq as any).formation_id as string;
+  const fqRow = fq as Pick<Tables<"formation_quizzes">, "formation_id"> | null;
+  if (fqRow?.formation_id) return fqRow.formation_id;
 
   // 2) Fallback : on remonte au module du quiz puis formation_modules
   const { data: q } = await supabase
@@ -102,12 +114,14 @@ export const resolveFormationIdFromQuiz = cache(async function (
     .select("module_id")
     .eq("id", quizId)
     .maybeSingle();
-  if (!q?.module_id) return null;
+  const quizRow = q as Pick<Tables<"quizzes">, "module_id"> | null;
+  if (!quizRow?.module_id) return null;
   const { data: fm } = await supabase
     .from("formation_modules")
     .select("formation_id")
-    .eq("module_id", q.module_id)
+    .eq("module_id", quizRow.module_id)
     .limit(1)
     .maybeSingle();
-  return (fm as any)?.formation_id ?? null;
+  const fmRow = fm as Pick<Tables<"formation_modules">, "formation_id"> | null;
+  return fmRow?.formation_id ?? null;
 });

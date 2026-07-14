@@ -6,8 +6,30 @@ import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress";
 import { PlacementWizard } from "./placement-wizard";
 import { Target, Sparkles, ArrowRight, RefreshCw, Trophy } from "lucide-react";
+import type { Tables } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
+
+// ── Types des lignes lues (dérivés des `select` ci-dessous) ────────────
+type PlacementResultRow = Tables<"placement_results">;
+type BlocRow = Pick<Tables<"blocs">, "id" | "code" | "title" | "description">;
+type EnrollmentRow = Pick<
+  Tables<"enrollments">,
+  "formation_id" | "formation_slug" | "status"
+>;
+type FormationRow = Pick<Tables<"formations">, "title" | "code">;
+/**
+ * `placement_questions.choices` est un `jsonb` (`Json`) en base, mais son
+ * contenu est toujours un tableau de libellés — contrat attendu par
+ * <PlacementWizard />.
+ */
+type PlacementQuestionRow = Pick<
+  Tables<"placement_questions">,
+  "id" | "bloc_id" | "prompt" | "order"
+> & {
+  choices: string[];
+  blocs: Pick<Tables<"blocs">, "code" | "title"> | null;
+};
 
 function levelLabel(level?: string) {
   return level === "avance"
@@ -33,14 +55,16 @@ export default async function PositionnementPage({
 
   const retake = searchParams?.retake === "1";
 
-  const [{ data: result }, { data: blocs }] = await Promise.all([
+  const [{ data: resultData }, { data: blocsData }] = await Promise.all([
     supabase.from("placement_results").select("*").eq("user_id", user.id).maybeSingle(),
     supabase.from("blocs").select("id, code, title, description").order("order"),
   ]);
+  const result = resultData as PlacementResultRow | null;
+  const blocs = blocsData as BlocRow[] | null;
 
   // Si déjà passé et pas en mode retake → page résultat
   if (result && !retake) {
-    const recommended = blocs?.find((b: any) => b.id === result.recommended_bloc_id);
+    const recommended = blocs?.find((b) => b.id === result.recommended_bloc_id);
     return (
       <div className="max-w-4xl mx-auto space-y-8">
         <header>
@@ -86,9 +110,12 @@ export default async function PositionnementPage({
         </Card>
 
         <section className="grid md:grid-cols-3 gap-4">
-          {blocs?.map((b: any) => {
-            const pct = (result.scores as any)?.[b.code] ?? 0;
-            const lvl = (result.level_per_bloc as any)?.[b.code] ?? "debutant";
+          {blocs?.map((b) => {
+            // `scores` / `level_per_bloc` : jsonb indexés par code de bloc.
+            const pct = (result.scores as Record<string, number> | null)?.[b.code] ?? 0;
+            const lvl =
+              (result.level_per_bloc as Record<string, string> | null)?.[b.code] ??
+              "debutant";
             return (
               <Card key={b.id}>
                 <CardBody>
@@ -118,7 +145,7 @@ export default async function PositionnementPage({
   // Sinon : wizard — on filtre les questions par la formation du stagiaire.
   // Source de vérité : son inscription (enrollments). On prend la plus
   // récente (active de préférence) pour gérer les multi-inscriptions.
-  const { data: enrollment } = await supabase
+  const { data: enrollmentData } = await supabase
     .from("enrollments")
     .select("formation_id, formation_slug, status")
     .eq("user_id", user.id)
@@ -126,10 +153,12 @@ export default async function PositionnementPage({
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
+  const enrollment = enrollmentData as EnrollmentRow | null;
 
+  // `.not("formation_id", "is", null)` garantit une valeur non nulle.
   const formationId = enrollment?.formation_id as string | undefined;
 
-  let questions: any[] | null = null;
+  let questions: PlacementQuestionRow[] | null = null;
   if (formationId) {
     const { data } = await supabase
       .from("placement_questions")
@@ -138,17 +167,18 @@ export default async function PositionnementPage({
       .eq("formation_id", formationId)
       .order("bloc_id")
       .order("order");
-    questions = data;
+    questions = data as PlacementQuestionRow[] | null;
   }
 
   // Récupère le titre de la formation pour personnaliser le hero
-  const { data: formation } = formationId
+  const { data: formationData } = formationId
     ? await supabase
         .from("formations")
         .select("title, code")
         .eq("id", formationId)
         .maybeSingle()
     : { data: null };
+  const formation = formationData as FormationRow | null;
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -201,7 +231,7 @@ export default async function PositionnementPage({
           </CardBody>
         </Card>
       ) : (
-        <PlacementWizard questions={questions as any} />
+        <PlacementWizard questions={questions} />
       )}
     </div>
   );

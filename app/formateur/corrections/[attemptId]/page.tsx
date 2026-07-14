@@ -11,8 +11,55 @@ import { FormationStripe } from "@/components/formation/formation-stripe";
 import { FormationBadge } from "@/components/formation/formation-badge";
 import { QrGradingForm } from "./qr-grading-form";
 import { FinalizeForm } from "./finalize-form";
+import type { Tables } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
+
+// ── Types de lecture, calqués sur les `select()` de cette page ──────────
+type AttemptRow = Pick<
+  Tables<"quiz_attempts">,
+  "id" | "user_id" | "quiz_id" | "status" | "qcm_score" | "qr_score" | "finished_at"
+> & {
+  student: Pick<Tables<"profiles">, "full_name" | "email"> | null;
+  quiz: Pick<
+    Tables<"quizzes">,
+    "title" | "description" | "is_mock_exam" | "pass_threshold"
+  > | null;
+};
+
+/** Critère de barème produit par le correcteur IA (colonne jsonb `ai_criteria`). */
+type AiCriterion = { name: string; weight: number; awarded: number };
+
+type QrResponseRow = Pick<
+  Tables<"qr_responses">,
+  | "id"
+  | "question_id"
+  | "student_answer"
+  | "trainer_score"
+  | "max_score"
+  | "trainer_comment"
+  | "graded_at"
+  | "graded_by"
+  | "submitted_at"
+  | "ai_score"
+  | "ai_feedback_md"
+  | "ai_concerns"
+  | "ai_graded_at"
+> & {
+  // Colonnes dont le type Postgres est plus large que le contrat réel :
+  // `ai_criteria` est un jsonb écrit par le grader IA, `ai_confidence` un
+  // text contraint aux trois niveaux ci-dessous.
+  ai_criteria: AiCriterion[] | null;
+  ai_confidence: "low" | "medium" | "high" | null;
+  question: Pick<
+    Tables<"question_bank">,
+    "statement" | "expected_answer" | "scoring_grid" | "tags"
+  > | null;
+};
+
+type FormationQuizRow = {
+  formation: Pick<Tables<"formations">, "slug" | "code"> | null;
+};
 
 export default async function CorrectionDetailPage({
   params,
@@ -35,10 +82,13 @@ export default async function CorrectionDetailPage({
     redirect("/dashboard");
   }
 
-  // Charger la tentative
+  // Charger la tentative.
+  // `select<Query, Result>` : sans client générique <Database>, postgrest-js
+  // ne connaît pas la cardinalité des embeds et les infère en tableaux ;
+  // on fournit donc explicitement le type de ligne (to-one → objet).
   const { data: attempt } = await supabase
     .from("quiz_attempts")
-    .select(
+    .select<string, AttemptRow>(
       `id, user_id, quiz_id, status, qcm_score, qr_score, finished_at,
        student:profiles!quiz_attempts_user_id_fkey(full_name, email),
        quiz:quizzes(title, description, is_mock_exam, pass_threshold)`
@@ -63,13 +113,17 @@ export default async function CorrectionDetailPage({
         .eq("quiz_id", attempt.quiz_id);
       let allowed = false;
       if (fq && fq.length > 0) {
+        const fqRows = fq as Pick<
+          Tables<"formation_quizzes">,
+          "formation_id"
+        >[];
         const { data: hab } = await supabase
           .from("trainer_formations")
           .select("id")
           .eq("trainer_id", user.id)
           .in(
             "formation_id",
-            fq.map((x: any) => x.formation_id)
+            fqRows.map((x) => x.formation_id)
           );
         allowed = !!hab?.length;
       }
@@ -82,7 +136,7 @@ export default async function CorrectionDetailPage({
   // formateur d'utiliser la proposition Claude comme point de départ.
   const { data: responses } = await supabase
     .from("qr_responses")
-    .select(
+    .select<string, QrResponseRow>(
       `id, question_id, student_answer, trainer_score, max_score,
        trainer_comment, graded_at, graded_by, submitted_at,
        ai_score, ai_feedback_md, ai_criteria, ai_confidence,
@@ -94,7 +148,7 @@ export default async function CorrectionDetailPage({
 
   const aiEnabled = process.env.FEATURE_AI_TUTOR === "true";
 
-  const list = (responses ?? []) as any[];
+  const list = responses ?? [];
   const ungradedCount = list.filter((r) => !r.graded_at).length;
   const allGraded = list.length > 0 && ungradedCount === 0;
   const isAlreadyGraded = attempt.status === "graded";
@@ -102,14 +156,14 @@ export default async function CorrectionDetailPage({
   // Slug formation pour affichage
   const { data: fq } = await supabase
     .from("formation_quizzes")
-    .select("formation:formations(slug, code)")
+    .select<string, FormationQuizRow>("formation:formations(slug, code)")
     .eq("quiz_id", attempt.quiz_id)
     .maybeSingle();
-  const formationSlug = (fq as any)?.formation?.slug;
+  const formationSlug = fq?.formation?.slug;
   const formation = formationSlug ? findFormation(formationSlug) : null;
 
-  const student = (attempt as any).student;
-  const quiz = (attempt as any).quiz;
+  const student = attempt.student;
+  const quiz = attempt.quiz;
 
   return (
     <div>
@@ -208,7 +262,7 @@ export default async function CorrectionDetailPage({
         </div>
 
         <div className="space-y-4">
-          {list.map((r: any, i: number) => (
+          {list.map((r, i) => (
             <QrGradingForm
               key={r.id}
               response={{

@@ -19,6 +19,10 @@ import {
   validateUpload,
 } from "@/lib/validations";
 import { z } from "zod";
+import type { Tables } from "@/lib/database.types";
+
+/** Client Supabase serveur (session utilisateur, RLS appliquée). */
+type ServerSupabase = ReturnType<typeof createClient>;
 
 function slugify(s: string) {
   return s
@@ -37,7 +41,7 @@ function slugify(s: string) {
  * Lève si introuvable — la création de module exige une formation valide.
  */
 async function resolveFormationId(
-  supabase: any,
+  supabase: ServerSupabase,
   slug: string
 ): Promise<string> {
   const { data, error } = await supabase
@@ -46,8 +50,9 @@ async function resolveFormationId(
     .eq("slug", slug)
     .maybeSingle();
   if (error) throw new Error(error.message);
-  if (!data) throw new Error(`Formation "${slug}" introuvable`);
-  return data.id;
+  const formation: Pick<Tables<"formations">, "id"> | null = data;
+  if (!formation) throw new Error(`Formation "${slug}" introuvable`);
+  return formation.id;
 }
 
 /**
@@ -55,16 +60,23 @@ async function resolveFormationId(
  * Utilisé pour vérifier l'habilitation trainer avant update/delete.
  */
 async function getModuleFormationSlug(
-  supabase: any,
+  supabase: ServerSupabase,
   moduleId: string
 ): Promise<string | null> {
-  const { data } = await supabase
+  // `overrideTypes` : le client n'étant pas câblé sur `Database`, supabase-js
+  // infère l'embed to-one `formations` comme un tableau. PostgREST renvoie
+  // bien un objet ici (FK simple) — override purement compile-time.
+  const { data: row } = await supabase
     .from("formation_modules")
     .select("formation:formations(slug)")
     .eq("module_id", moduleId)
     .limit(1)
-    .maybeSingle();
-  return (data?.formation as any)?.slug ?? null;
+    .maybeSingle()
+    .overrideTypes<
+      { formation: Pick<Tables<"formations">, "slug"> | null },
+      { merge: false }
+    >();
+  return row?.formation?.slug ?? null;
 }
 
 export async function createModule(raw: unknown) {
@@ -251,7 +263,7 @@ export async function updateLessonResource(raw: unknown) {
   const { supabase } = await requireAdmin();
   const schema = lessonResourceSchema.extend({ id: z.string().uuid() });
   const data = validate(schema, raw);
-  const { id, ...patch } = data as any;
+  const { id, ...patch } = data;
   const { error } = await supabase
     .from("lesson_resources")
     .update(patch)

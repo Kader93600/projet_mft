@@ -30,9 +30,24 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import type { Tables } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+/** Message d'erreur d'un `catch` (la valeur levée est de type `unknown`). */
+function errMessage(e: unknown): string {
+  return e instanceof Error ? e.message : String(e);
+}
+
+/** Query builder d'un `select(...)` — le nom de table est dynamique ici, donc
+ *  on dérive le type du builder depuis les clients eux-mêmes. */
+type SessionCountQuery = ReturnType<
+  ReturnType<ReturnType<typeof createClient>["from"]>["select"]
+>;
+type ServiceCountQuery = ReturnType<
+  ReturnType<ReturnType<typeof createAdminClient>["from"]>["select"]
+>;
 
 type DebugReport = {
   generated_at: string;
@@ -123,18 +138,22 @@ export async function GET() {
   let serviceClient: ReturnType<typeof createAdminClient>;
   try {
     serviceClient = createAdminClient();
-  } catch (e: any) {
+  } catch (e) {
     return NextResponse.json(
-      { error: "SUPABASE_SERVICE_ROLE_KEY manquante", details: e?.message },
+      { error: "SUPABASE_SERVICE_ROLE_KEY manquante", details: errMessage(e) },
       { status: 500 }
     );
   }
 
-  const { data: adminProfile } = await serviceClient
+  const { data: profileRow } = await serviceClient
     .from("profiles")
     .select("id, role, email, disabled")
     .eq("id", sessionUser.id)
     .single();
+  const adminProfile: Pick<
+    Tables<"profiles">,
+    "id" | "role" | "email" | "disabled"
+  > | null = profileRow;
 
   report.profile = adminProfile ?? null;
 
@@ -161,11 +180,13 @@ export async function GET() {
     if (whoamiErr) {
       report.rpc_results.errors.whoami = whoamiErr.message;
     } else {
+      // La RPC renvoie soit `{ uid }`, soit l'uid brut (string).
+      const w: { uid?: string | null } | string | null = whoami;
       report.session.user_id_from_supabase_auth_uid_rpc =
-        (whoami as any)?.uid ?? (typeof whoami === "string" ? whoami : null);
+        typeof w === "string" ? w : w?.uid ?? null;
     }
-  } catch (e: any) {
-    report.rpc_results.errors.whoami = e?.message ?? String(e);
+  } catch (e) {
+    report.rpc_results.errors.whoami = errMessage(e);
   }
 
   report.session.match =
@@ -177,7 +198,10 @@ export async function GET() {
   // Tous appelés via le client SESSION (= avec JWT du user). C'est le test
   // direct des fonctions SECURITY DEFINER. Si elles renvoient false pour un
   // super_admin, on a confirmé H2 (function buggy).
-  const callRpcBool = async (fn: string, args?: Record<string, any>) => {
+  const callRpcBool = async (
+    fn: string,
+    args?: Record<string, string>
+  ): Promise<boolean | null> => {
     try {
       const { data, error } = await supabase.rpc(fn, args ?? {});
       if (error) {
@@ -186,8 +210,8 @@ export async function GET() {
       }
       // Supabase RPC renvoie soit le booléen brut, soit un objet
       return typeof data === "boolean" ? data : Boolean(data);
-    } catch (e: any) {
-      report.rpc_results.errors[fn] = e?.message ?? String(e);
+    } catch (e) {
+      report.rpc_results.errors[fn] = errMessage(e);
       return null;
     }
   };
@@ -201,9 +225,14 @@ export async function GET() {
   );
 
   // ─── 4) Compteurs via client SESSION (RLS appliqué) ────────────────────
-  const countSession = async (table: string, extra?: (q: any) => any) => {
+  const countSession = async (
+    table: string,
+    extra?: (q: SessionCountQuery) => SessionCountQuery
+  ): Promise<number | null> => {
     try {
-      let q: any = supabase.from(table).select("*", { count: "exact", head: true });
+      let q: SessionCountQuery = supabase
+        .from(table)
+        .select("*", { count: "exact", head: true });
       if (extra) q = extra(q);
       const { count, error } = await q;
       if (error) {
@@ -211,15 +240,20 @@ export async function GET() {
         return null;
       }
       return count ?? 0;
-    } catch (e: any) {
-      report.rls_visible_data.errors[`session_${table}`] = e?.message ?? String(e);
+    } catch (e) {
+      report.rls_visible_data.errors[`session_${table}`] = errMessage(e);
       return null;
     }
   };
 
-  const countService = async (table: string, extra?: (q: any) => any) => {
+  const countService = async (
+    table: string,
+    extra?: (q: ServiceCountQuery) => ServiceCountQuery
+  ): Promise<number | null> => {
     try {
-      let q: any = serviceClient.from(table).select("*", { count: "exact", head: true });
+      let q: ServiceCountQuery = serviceClient
+        .from(table)
+        .select("*", { count: "exact", head: true });
       if (extra) q = extra(q);
       const { count, error } = await q;
       if (error) {
@@ -227,8 +261,8 @@ export async function GET() {
         return null;
       }
       return count ?? 0;
-    } catch (e: any) {
-      report.rls_visible_data.errors[`service_${table}`] = e?.message ?? String(e);
+    } catch (e) {
+      report.rls_visible_data.errors[`service_${table}`] = errMessage(e);
       return null;
     }
   };
@@ -262,10 +296,10 @@ export async function GET() {
     if (polErr) {
       report.rls_visible_data.errors.policies = polErr.message;
     } else if (Array.isArray(policies)) {
-      report.active_policies = policies as any[];
+      report.active_policies = policies as DebugReport["active_policies"];
     }
-  } catch (e: any) {
-    report.rls_visible_data.errors.policies = e?.message ?? String(e);
+  } catch (e) {
+    report.rls_visible_data.errors.policies = errMessage(e);
   }
 
   // ─── 6) Diagnostic auto-hint ──────────────────────────────────────────

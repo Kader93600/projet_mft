@@ -10,11 +10,40 @@ import {
   XCircle,
   TrendingUp,
   Wallet,
+  type LucideIcon,
 } from "lucide-react";
 import { isStaff } from "@/lib/permissions";
 import { ReferralActions } from "./referral-actions";
+import type { Tables } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
+
+// ── Types des lignes lues (dérivés des `select` réels ci-dessous) ────
+// Le client Supabase n'est pas câblé sur `Database` (cf. CLAUDE.md) :
+// les `data` sont donc `any` et on les annote explicitement ici.
+type ReferralProfile = Pick<Tables<"profiles">, "id" | "full_name" | "email">;
+
+/** File d'attente : referrals + les 2 profils embarqués (referrer/referred). */
+type QueueRow = Pick<
+  Tables<"referrals">,
+  "id" | "status" | "code_used" | "reward_cents" | "created_at" | "enrollment_id"
+> & {
+  referrer: ReferralProfile | null;
+  referred: ReferralProfile | null;
+};
+
+/** Dernières récompenses (embed referrer partiel). La requête filtre sur
+ *  `status = 'rewarded'` → `rewarded_at` est toujours renseigné. */
+type RewardedRow = Pick<Tables<"referrals">, "id" | "status" | "reward_cents"> & {
+  rewarded_at: string;
+  referrer: Pick<ReferralProfile, "full_name" | "email"> | null;
+};
+
+/** Stats du mois. */
+type MonthStatRow = Pick<
+  Tables<"referrals">,
+  "reward_cents" | "status" | "created_at"
+>;
 
 const fmtEuros = (cents: number) =>
   new Intl.NumberFormat("fr-FR", {
@@ -53,7 +82,11 @@ export default async function AdminReferralsPage() {
       `)
       .eq("status", "qualified")
       .order("created_at", { ascending: true })
-      .limit(50),
+      .limit(50)
+      // `overrideTypes` : client non câblé sur `Database` → supabase-js infère
+      // les embeds to-one (referrer/referred) comme des tableaux. PostgREST
+      // renvoie des objets (FK simples) — override purement compile-time.
+      .overrideTypes<QueueRow[], { merge: false }>(),
 
     // 5 dernières récompenses (pour validation visuelle)
     supabase
@@ -64,7 +97,8 @@ export default async function AdminReferralsPage() {
       `)
       .eq("status", "rewarded")
       .order("rewarded_at", { ascending: false })
-      .limit(5),
+      .limit(5)
+      .overrideTypes<RewardedRow[], { merge: false }>(),
 
     // Stats : récompenses du mois courant
     supabase
@@ -76,9 +110,9 @@ export default async function AdminReferralsPage() {
       ),
   ]);
 
-  const queue = (qualifiedRaw ?? []) as any[];
-  const recentRewarded = (recentRewardedRaw ?? []) as any[];
-  const monthStats = (monthStatsRaw ?? []) as any[];
+  const queue: QueueRow[] = qualifiedRaw ?? [];
+  const recentRewarded: RewardedRow[] = recentRewardedRaw ?? [];
+  const monthStats: MonthStatRow[] = monthStatsRaw ?? [];
 
   const stats = {
     pending: monthStats.filter((r) => r.status === "qualified").length,
@@ -269,7 +303,7 @@ function Kpi({
   hint,
   tone = "default",
 }: {
-  icon: any;
+  icon: LucideIcon;
   label: string;
   value: string;
   hint?: string;

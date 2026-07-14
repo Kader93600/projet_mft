@@ -8,6 +8,7 @@ import {
 } from "@react-pdf/renderer";
 import React from "react";
 import { createClient } from "@/lib/supabase/server";
+import type { Tables } from "@/lib/database.types";
 import { canAccessEnrollment } from "@/lib/enrollment-access";
 import { LEGAL } from "@/lib/legal-config";
 import { resolveEnrollmentFormation } from "@/lib/enrollment-formation";
@@ -27,6 +28,17 @@ const MODALITY_LABEL: Record<string, string> = {
   mixte: "Mixte présentiel + distanciel",
 };
 
+/** Profil stagiaire embarqué dans le select `user:profiles!user_id(...)`. */
+type StagiaireProfile = Pick<
+  Tables<"profiles">,
+  "full_name" | "email" | "adresse" | "code_postal" | "ville"
+>;
+
+/** Ligne `enrollments` (select `*`) + embed `user`. */
+type EnrollmentWithUser = Tables<"enrollments"> & {
+  user: StagiaireProfile | null;
+};
+
 interface Props {
   refLabel: string;
   stagiaire: {
@@ -34,7 +46,7 @@ interface Props {
     email: string;
     address?: string | null;
   };
-  e: any;
+  e: EnrollmentWithUser;
 }
 
 function Doc({ refLabel, stagiaire, e }: Props) {
@@ -171,7 +183,7 @@ export async function GET(
     return NextResponse.json({ error: "unauth" }, { status: 401 });
   }
 
-  const { data: enrollment } = await supabase
+  const { data: enrollmentRaw } = await supabase
     .from("enrollments")
     .select(
       "*, user:profiles!user_id(full_name, email, adresse, code_postal, ville)"
@@ -179,13 +191,14 @@ export async function GET(
     .eq("id", params.id)
     .maybeSingle();
 
+  const enrollment = enrollmentRaw as EnrollmentWithUser | null;
   if (!enrollment) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
-  if (!(await canAccessEnrollment(user.id, (enrollment as any).user_id))) {
+  if (!(await canAccessEnrollment(user.id, enrollment.user_id))) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
-  const stagiaire = (enrollment as any).user;
+  const stagiaire = enrollment.user;
   if (!stagiaire) {
     return NextResponse.json({ error: "stagiaire_missing" }, { status: 500 });
   }
@@ -221,6 +234,10 @@ export async function GET(
     />
   );
 
+  // NOTE: `as any` conservé — quirk de types : `renderToBuffer` (@react-pdf)
+  // renvoie un `Buffer<ArrayBufferLike>` (@types/node), non assignable au
+  // `BodyInit` (undici/DOM) attendu par NextResponse. Aucun type précis
+  // possible sans copier le buffer (ce qui changerait le runtime).
   return new NextResponse(buffer as any, {
     status: 200,
     headers: {

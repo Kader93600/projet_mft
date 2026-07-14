@@ -8,8 +8,45 @@ import { EditQuestionForm } from "./edit-form";
 import { QuestionPreview } from "./question-preview";
 import { GroupAssignSelect } from "../../group-assign-select";
 import { getQuestionFilterConfig } from "@/lib/question-filters";
+import type { Tables } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
+
+/** Contrat applicatif de la colonne jsonb `question_bank.choices`. */
+type QuestionChoice = {
+  id?: string;
+  label: string;
+  is_correct: boolean;
+  order?: number;
+};
+
+/**
+ * Ligne `question_bank` telle que sélectionnée ici. On resserre deux colonnes
+ * par rapport au type DB brut :
+ *  - `type` : `text` en base, mais l'app ne connaît que qcm | qr ;
+ *  - `choices` : `jsonb` en base, dont le contrat runtime est QuestionChoice[].
+ */
+type EditableQuestion = Omit<
+  Pick<
+    Tables<"question_bank">,
+    | "id"
+    | "type"
+    | "statement"
+    | "choices"
+    | "expected_answer"
+    | "scoring_grid"
+    | "max_score"
+    | "difficulty"
+    | "tags"
+    | "active"
+    | "source_ref"
+    | "formation_id"
+  >,
+  "type" | "choices"
+> & {
+  type: "qcm" | "qr";
+  choices: QuestionChoice[] | null;
+};
 
 export default async function EditQuestionPage({
   params,
@@ -17,13 +54,14 @@ export default async function EditQuestionPage({
   params: { id: string };
 }) {
   const supabase = createClient();
-  const { data: q } = await supabase
+  const { data } = await supabase
     .from("question_bank")
     .select(
       "id, type, statement, choices, expected_answer, scoring_grid, max_score, difficulty, tags, active, source_ref, formation_id"
     )
     .eq("id", params.id)
     .maybeSingle();
+  const q = (data ?? null) as EditableQuestion | null;
   if (!q) notFound();
 
   // Récupère le slug de la formation pour adapter le sélecteur
@@ -90,13 +128,13 @@ export default async function EditQuestionPage({
       <Card>
         <CardBody>
           <CardTitle className="mb-4">Prévisualisation stagiaire</CardTitle>
-          <QuestionPreview question={q as any} />
+          <QuestionPreview question={q} />
         </CardBody>
       </Card>
 
       <Card>
         <CardBody>
-          <EditQuestionForm question={q as any} />
+          <EditQuestionForm question={q} />
         </CardBody>
       </Card>
     </div>

@@ -16,6 +16,18 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+/**
+ * Ligne unique renvoyée par la RPC `award_daily_login_xp(p_user uuid)`
+ * (TABLE(awarded_login int, awarded_streak int, current_streak int,
+ * longest_streak int)).
+ */
+type DailyLoginXp = {
+  awarded_login: number;
+  awarded_streak: number;
+  current_streak: number;
+  longest_streak: number;
+};
+
 export async function POST() {
   const supabase = createClient();
   const {
@@ -43,10 +55,12 @@ export async function POST() {
     );
   }
 
+  const row = data as DailyLoginXp | null;
+
   return NextResponse.json({
-    awarded_login: (data as any)?.awarded_login ?? 0,
-    awarded_streak: (data as any)?.awarded_streak ?? 0,
-    current_streak: (data as any)?.current_streak ?? 0,
-    longest_streak: (data as any)?.longest_streak ?? 0,
+    awarded_login: row?.awarded_login ?? 0,
+    awarded_streak: row?.awarded_streak ?? 0,
+    current_streak: row?.current_streak ?? 0,
+    longest_streak: row?.longest_streak ?? 0,
   });
 }

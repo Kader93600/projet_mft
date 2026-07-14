@@ -24,6 +24,22 @@ const KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY;
 const TUNNEL_HOST = "/ingest";
 const UI_HOST = "https://eu.posthog.com";
 
+/**
+ * `window` enrichi des deux globales que ce provider pose lui-même :
+ *  - `__posthog_inited` : garde-fou anti double-init (hot-reload dev)
+ *  - `posthog` : référence récupérée par le wrapper `lib/analytics.ts`
+ *
+ * Typé localement (pas d'augmentation globale de `Window`) pour ne pas
+ * modifier le typage vu par les autres modules.
+ */
+type PostHogWindow = Window & {
+  __posthog_inited?: boolean;
+  posthog?: typeof posthog;
+};
+
+/** Payload de l'événement `CONSENT_CHANGED_EVENT` émis par la bannière cookies. */
+type ConsentChangedEvent = CustomEvent<{ analytics?: boolean } | undefined>;
+
 interface PostHogProviderProps {
   children: React.ReactNode;
   profile?: {
@@ -44,20 +60,18 @@ export function PostHogProvider({ children, profile }: PostHogProviderProps) {
   useEffect(() => {
     setConsented(hasAnalyticsConsent());
     const onConsent = (e: Event) => {
-      const detail = (e as CustomEvent).detail as
-        | { analytics?: boolean }
-        | undefined;
+      const detail = (e as ConsentChangedEvent).detail;
       const granted = detail?.analytics === true;
       setConsented(granted);
       // Retrait du consentement : stoppe la capture et purge l'état local
       // PostHog (cookies + localStorage), exigence CNIL.
-      if (!granted && (window as any).__posthog_inited) {
+      if (!granted && (window as PostHogWindow).__posthog_inited) {
         try {
           posthog.opt_out_capturing();
           posthog.reset();
         } catch {}
       }
-      if (granted && (window as any).__posthog_inited) {
+      if (granted && (window as PostHogWindow).__posthog_inited) {
         try {
           posthog.opt_in_capturing();
         } catch {}
@@ -73,8 +87,8 @@ export function PostHogProvider({ children, profile }: PostHogProviderProps) {
     if (typeof window === "undefined") return;
     if (!consented) return;
     // Évite la double-init lors d'un hot-reload en dev
-    if ((window as any).__posthog_inited) return;
-    (window as any).__posthog_inited = true;
+    if ((window as PostHogWindow).__posthog_inited) return;
+    (window as PostHogWindow).__posthog_inited = true;
 
     posthog.init(KEY, {
       api_host: TUNNEL_HOST,
@@ -113,13 +127,13 @@ export function PostHogProvider({ children, profile }: PostHogProviderProps) {
     });
 
     // expose pour le wrapper lib/analytics.ts
-    (window as any).posthog = posthog;
+    (window as PostHogWindow).posthog = posthog;
   }, [consented]);
 
   // Identification du user dès qu'il est disponible — uniquement si
   // PostHog a été initialisé (donc avec consentement).
   useEffect(() => {
-    if (!consented || !(window as any).__posthog_inited) return;
+    if (!consented || !(window as PostHogWindow).__posthog_inited) return;
     if (!profile?.id) return;
     identifyUser(profile.id, {
       email: profile.email,
@@ -152,7 +166,7 @@ function PageviewTracker() {
     if (typeof window === "undefined") return;
     if (!pathname) return;
     // Pas de capture si PostHog n'est pas initialisé (pas de consentement).
-    if (!(window as any).__posthog_inited) return;
+    if (!(window as PostHogWindow).__posthog_inited) return;
     const url = `${window.location.origin}${pathname}${
       searchParams?.toString() ? `?${searchParams.toString()}` : ""
     }`;

@@ -11,9 +11,28 @@ import {
 } from "@react-pdf/renderer";
 import React from "react";
 import { PdfLogoMark } from "@/lib/pdf-logo";
+import type { Tables, Views } from "@/lib/database.types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+/** Stagiaire (ligne `profiles`) — seuls ces champs sont lus dans le PDF. */
+type ReportUser = Pick<Tables<"profiles">, "full_name" | "email">;
+
+/**
+ * Ligne de la vue `user_daily_activity`.
+ * L'introspection génère toutes les colonnes en `| null` (une vue perd les
+ * NOT NULL) ; `day`, `first_connection` et `last_activity` proviennent du
+ * GROUP BY / des agrégats et sont donc toujours renseignés.
+ */
+type DayRow = Omit<
+  Views<"user_daily_activity">,
+  "day" | "first_connection" | "last_activity"
+> & {
+  day: string;
+  first_connection: string;
+  last_activity: string;
+};
 
 const styles = StyleSheet.create({
   page: { padding: 40, fontSize: 10, fontFamily: "Helvetica", color: "#0f172a" },
@@ -120,8 +139,8 @@ function PresenceReport({
   totalS,
   generatedAt,
 }: {
-  user: any;
-  days: any[];
+  user: ReportUser | null;
+  days: DayRow[];
   from: string;
   to: string;
   totalS: number;
@@ -211,7 +230,7 @@ function PresenceReport({
                 )
               ),
             ]
-          : days.map((d: any, i: number) =>
+          : days.map((d, i) =>
               C(
                 View,
                 {
@@ -261,7 +280,13 @@ function PresenceReport({
           "MA FORMATION TRANSPORT — Document officiel conformément aux obligations Qualiopi (formation à distance)"
         ),
         C(Text, {
-          render: ({ pageNumber, totalPages }: any) => `${pageNumber} / ${totalPages}`,
+          render: ({
+            pageNumber,
+            totalPages,
+          }: {
+            pageNumber: number;
+            totalPages: number;
+          }) => `${pageNumber} / ${totalPages}`,
         })
       )
     )
@@ -290,7 +315,7 @@ export async function GET(req: NextRequest) {
   const from = req.nextUrl.searchParams.get("from") ?? defaultFrom.toISOString().slice(0, 10);
   const to = req.nextUrl.searchParams.get("to") ?? now.toISOString().slice(0, 10);
 
-  const [{ data: user }, { data: days }] = await Promise.all([
+  const [{ data: userRaw }, { data: days }] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", userId).single(),
     supabase
       .from("user_daily_activity")
@@ -301,7 +326,8 @@ export async function GET(req: NextRequest) {
       .order("day"),
   ]);
 
-  const list = (days ?? []) as any[];
+  const user = userRaw as Tables<"profiles"> | null;
+  const list = (days ?? []) as DayRow[];
   const total = list.reduce((s, d) => s + (d.total_seconds || 0), 0);
   const generatedAt = now.toLocaleDateString("fr-FR", {
     day: "2-digit",
@@ -315,6 +341,9 @@ export async function GET(req: NextRequest) {
   const safe = (user?.full_name || user?.email || "stagiaire")
     .replace(/[^a-z0-9]+/gi, "-")
     .toLowerCase();
+  // NOTE: `as any` conservé — quirk de types : `renderToBuffer` (@react-pdf)
+  // renvoie un `Buffer<ArrayBufferLike>` (@types/node), non assignable au
+  // `BodyInit` (undici/DOM) attendu par NextResponse.
   return new NextResponse(buffer as any, {
     status: 200,
     headers: {

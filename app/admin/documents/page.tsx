@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import type { Tables } from "@/lib/database.types";
 import { isStaff } from "@/lib/permissions";
 import { redirect } from "next/navigation";
 import { FolderOpen, Download } from "lucide-react";
@@ -13,6 +14,31 @@ import { DocumentsFilters } from "./documents-filters";
 import { DocumentRow } from "./document-row";
 
 export const dynamic = "force-dynamic";
+
+/**
+ * Résultat exact du select `student_documents` ci-dessous, embeds inclus
+ * (`profiles(full_name, email)`, `formations(title)`). Le client Supabase
+ * n'étant pas câblé sur `Database` globalement, on décrit la forme ici.
+ */
+type DocRow = Pick<
+  Tables<"student_documents">,
+  | "id"
+  | "title"
+  | "reason"
+  | "custom_reason"
+  | "status"
+  | "admin_note"
+  | "file_name"
+  | "size_bytes"
+  | "storage_path"
+  | "created_at"
+  | "formation_id"
+> & {
+  profiles: Pick<Tables<"profiles">, "full_name" | "email"> | null;
+  formations: Pick<Tables<"formations">, "title"> | null;
+};
+
+type FormationOption = Pick<Tables<"formations">, "id" | "title">;
 
 function fmt(d: string) {
   return new Date(d).toLocaleString("fr-FR", {
@@ -45,7 +71,7 @@ export default async function AdminDocumentsPage({
     .select("role")
     .eq("id", user.id)
     .maybeSingle();
-  const role = (me as any)?.role;
+  const role = (me as Pick<Tables<"profiles">, "role"> | null)?.role;
   if (!isStaff(role) && role !== "trainer") redirect("/dashboard");
 
   // Lecture via service role (page déjà gated staff) → joins fiables.
@@ -62,11 +88,13 @@ export default async function AdminDocumentsPage({
   if (searchParams?.statut) query = query.eq("status", searchParams.statut);
 
   const [{ data: rawDocs }, { data: formations }] = await Promise.all([
-    query,
+    // Le client admin n'étant pas câblé sur `Database`, postgrest infère les
+    // embeds to-one comme des tableaux : on impose la forme réelle de l'API.
+    query.overrideTypes<DocRow[], { merge: false }>(),
     admin.from("formations").select("id, title").order("title"),
   ]);
 
-  let docs = (rawDocs ?? []) as any[];
+  let docs = rawDocs ?? [];
   const q = searchParams?.q?.trim().toLowerCase();
   if (q) {
     docs = docs.filter((d) =>
@@ -78,7 +106,7 @@ export default async function AdminDocumentsPage({
 
   // Tri (par défaut : plus récents). Effectué en mémoire — le jeu est borné
   // à 500 lignes et certains critères viennent de joins.
-  const studentName = (d: any) =>
+  const studentName = (d: DocRow) =>
     d.profiles?.full_name || d.profiles?.email || "";
   const sort = searchParams?.sort ?? "";
   docs = [...docs].sort((a, b) => {
@@ -108,7 +136,7 @@ export default async function AdminDocumentsPage({
         docs.map((d) => d.storage_path),
         60 * 60
       );
-    (signed ?? []).forEach((s: any, i: number) => {
+    (signed ?? []).forEach((s, i) => {
       if (s?.signedUrl) signedMap[docs[i].storage_path] = s.signedUrl;
     });
   }
@@ -161,7 +189,7 @@ export default async function AdminDocumentsPage({
         </div>
       </header>
 
-      <DocumentsFilters formations={(formations ?? []) as any[]} />
+      <DocumentsFilters formations={(formations ?? []) as FormationOption[]} />
 
       <div className="flex items-center justify-between gap-3">
         <div className="text-sm text-slate-500">

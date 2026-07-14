@@ -16,10 +16,36 @@ import {
   Phone,
   Wallet,
   AlertCircle,
+  type LucideIcon,
 } from "lucide-react";
 import { getFunderAccess } from "@/lib/funder/access";
+import type { Tables, Views } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
+
+type ScheduleRow = Pick<
+  Tables<"payment_schedule">,
+  | "id"
+  | "due_date"
+  | "amount_cents"
+  | "paid_at"
+  | "paid_amount_cents"
+  | "method"
+  | "reference"
+>;
+
+/** Tentative + embed `quizzes(title, is_mock_exam)` (cf. select). */
+type AttemptRow = Pick<
+  Tables<"quiz_attempts">,
+  "id" | "percentage" | "passed" | "finished_at" | "status"
+> & {
+  quizzes: Pick<Tables<"quizzes">, "title" | "is_mock_exam"> | null;
+};
+
+type CertificateRow = Pick<
+  Tables<"certificates">,
+  "id" | "type" | "issued_at" | "serial"
+>;
 
 const fmtEuros = (cents: number) =>
   (cents / 100).toLocaleString("fr-FR", {
@@ -49,24 +75,28 @@ export default async function FinanceurStagiaireDetailPage({
   const { data: student } = await detailsQuery.maybeSingle();
   if (!student) notFound();
 
-  const s = student as any;
+  const s = student as Views<"funder_student_details">;
+  const lessonsTotal = s.lessons_total ?? 0;
+  const lessonsDone = s.lessons_done ?? 0;
   const progressPct =
-    s.lessons_total > 0
-      ? Math.round((s.lessons_done / s.lessons_total) * 100)
-      : 0;
+    lessonsTotal > 0 ? Math.round((lessonsDone / lessonsTotal) * 100) : 0;
   const isAtRisk =
     s.status === "en_cours" &&
     (s.days_since_last_activity == null || s.days_since_last_activity > 14);
 
   // Échéances
-  const { data: schedule } = await supabase
+  const { data: scheduleRows } = await supabase
     .from("payment_schedule")
     .select("id, due_date, amount_cents, paid_at, paid_amount_cents, method, reference")
     .eq("enrollment_id", s.enrollment_id)
     .order("due_date");
+  const schedule = (scheduleRows ?? []) as ScheduleRow[];
 
   // Tentatives quiz (limité aux essentiels — pas de détails de réponses)
-  const { data: attempts } = await supabase
+  // `overrideTypes` (API supabase-js) : client non paramétré par `Database`
+  // → l'embed to-one `quizzes` est inféré en tableau alors que PostgREST
+  // renvoie un objet.
+  const { data: attemptRows } = await supabase
     .from("quiz_attempts")
     .select(`
       id, percentage, passed, finished_at, status,
@@ -75,15 +105,18 @@ export default async function FinanceurStagiaireDetailPage({
     .eq("user_id", params.id)
     .not("finished_at", "is", null)
     .order("finished_at", { ascending: false })
-    .limit(10);
+    .limit(10)
+    .overrideTypes<AttemptRow[], { merge: false }>();
+  const attempts = attemptRows ?? [];
 
   // Certificats
-  const { data: certificates } = await supabase
+  const { data: certificateRows } = await supabase
     .from("certificates")
     .select("id, type, issued_at, serial")
     .eq("user_id", params.id)
     .is("revoked_at", null)
     .order("issued_at", { ascending: false });
+  const certificates = (certificateRows ?? []) as CertificateRow[];
 
   return (
     <div className="space-y-8">
@@ -177,7 +210,7 @@ export default async function FinanceurStagiaireDetailPage({
         </h2>
         <Card>
           <CardBody className="p-0">
-            {(schedule ?? []).length === 0 ? (
+            {schedule.length === 0 ? (
               <p className="text-sm text-slate-500 px-5 py-6">
                 Aucune échéance enregistrée. La facturation est gérée hors
                 échéancier (paiement direct).
@@ -194,7 +227,7 @@ export default async function FinanceurStagiaireDetailPage({
                   </tr>
                 </thead>
                 <tbody>
-                  {(schedule as any[]).map((p) => {
+                  {schedule.map((p) => {
                     const isPaid = !!p.paid_at;
                     return (
                       <tr key={p.id} className="border-t border-navy-50">
@@ -230,7 +263,7 @@ export default async function FinanceurStagiaireDetailPage({
       </section>
 
       {/* Tentatives quiz */}
-      {(attempts ?? []).length > 0 && (
+      {attempts.length > 0 && (
         <section>
           <h2 className="font-display text-xl font-semibold text-navy-900 mb-4 inline-flex items-center gap-2">
             <ClipboardCheck className="h-5 w-5 text-gold-700" />
@@ -239,7 +272,7 @@ export default async function FinanceurStagiaireDetailPage({
           <Card>
             <CardBody className="p-0">
               <ul className="divide-y divide-navy-50">
-                {(attempts as any[]).map((a) => (
+                {attempts.map((a) => (
                   <li
                     key={a.id}
                     className="px-5 py-3 flex items-center justify-between gap-3"
@@ -291,7 +324,7 @@ export default async function FinanceurStagiaireDetailPage({
       )}
 
       {/* Certificats */}
-      {(certificates ?? []).length > 0 && (
+      {certificates.length > 0 && (
         <section>
           <h2 className="font-display text-xl font-semibold text-navy-900 mb-4 inline-flex items-center gap-2">
             <Award className="h-5 w-5 text-emerald-700" />
@@ -300,7 +333,7 @@ export default async function FinanceurStagiaireDetailPage({
           <Card>
             <CardBody className="p-0">
               <ul className="divide-y divide-navy-50">
-                {(certificates as any[]).map((c) => (
+                {certificates.map((c) => (
                   <li
                     key={c.id}
                     className="px-5 py-3 flex items-center justify-between"
@@ -345,7 +378,7 @@ function Kpi({
   value,
   hint,
 }: {
-  icon: any;
+  icon: LucideIcon;
   label: string;
   value: string;
   hint?: string;

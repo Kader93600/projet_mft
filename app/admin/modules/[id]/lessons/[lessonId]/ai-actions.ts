@@ -8,6 +8,12 @@ import {
   parseGeneratedQuestions,
 } from "@/lib/question-gen";
 import { revalidatePath } from "next/cache";
+import type { Tables } from "@/lib/database.types";
+
+/** Ligne du `select("formation:formations(id, title)")` sur `formation_modules`. */
+type FormationModuleRow = {
+  formation: Pick<Tables<"formations">, "id" | "title"> | null;
+};
 
 /**
  * Génère des QCM (brouillons) à partir du contenu d'une leçon, via Claude.
@@ -56,14 +62,15 @@ export async function generateQuestionsForLesson(
   let formationId: string | null = null;
   let formationTitle: string | null = null;
   if (lesson.module_id) {
-    const { data: fm } = await service
+    const { data } = await service
       .from("formation_modules")
       .select("formation:formations(id, title)")
       .eq("module_id", lesson.module_id)
       .limit(1)
       .maybeSingle();
-    formationId = (fm as any)?.formation?.id ?? null;
-    formationTitle = (fm as any)?.formation?.title ?? null;
+    const fm = data as FormationModuleRow | null;
+    formationId = fm?.formation?.id ?? null;
+    formationTitle = fm?.formation?.title ?? null;
   }
 
   // 3) Appel Claude
@@ -81,10 +88,11 @@ export async function generateQuestionsForLesson(
       temperature: 0.4,
     });
     text = res.text;
-  } catch (e: any) {
+  } catch (e) {
+    const message = e instanceof Error ? e.message : null;
     return {
       ok: false as const,
-      error: `Appel IA échoué : ${e?.message ?? "erreur inconnue"}`,
+      error: `Appel IA échoué : ${message ?? "erreur inconnue"}`,
     };
   }
 

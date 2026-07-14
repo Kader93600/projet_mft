@@ -11,9 +11,60 @@ import {
 } from "@react-pdf/renderer";
 import React from "react";
 import { PdfLogoMark } from "@/lib/pdf-logo";
+import type { Json, Tables } from "@/lib/database.types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+// ── Formes exactes des lignes lues (miroir des `.select(...)` plus bas) ──
+
+/** Stagiaire du rapport individuel (select `*` sur profiles). */
+type ReportUser = Tables<"profiles">;
+
+/**
+ * Tentative listée dans les rapports.
+ * `profiles` n'est embarqué que par le rapport GLOBAL (d'où l'optionalité).
+ */
+type ReportAttempt = Tables<"quiz_attempts"> & {
+  quizzes: Pick<Tables<"quizzes">, "title" | "type"> | null;
+  profiles?: Pick<Tables<"profiles">, "full_name" | "email"> | null;
+};
+
+/** Tentative détaillée (copie corrigée). */
+type AttemptDetail = Tables<"quiz_attempts"> & {
+  profiles: Pick<Tables<"profiles">, "id" | "full_name" | "email"> | null;
+  quizzes: Pick<
+    Tables<"quizzes">,
+    "id" | "title" | "type" | "pass_threshold"
+  > | null;
+};
+
+/** Une proposition de QCM (colonne jsonb `question_bank.choices`, ou table `choices`). */
+type ReportChoice = { id: string; label: string; is_correct: boolean };
+
+/** Question résolue (banque moderne ou fallback legacy `questions`). */
+type ReportQuestion = {
+  id: string;
+  type: string;
+  statement: string;
+  explanation: string | null;
+  display_order: number;
+  choices: ReportChoice[] | null;
+  max_score?: number | null;
+};
+
+/** Réponse rédigée + note formateur. */
+type QrRow = Pick<
+  Tables<"qr_responses">,
+  | "question_id"
+  | "student_answer"
+  | "trainer_score"
+  | "max_score"
+  | "trainer_comment"
+>;
+
+/** `quiz_attempts.answers` : jsonb { [id de question]: réponse(s) }. */
+type AnswersMap = Record<string, string | string[]>;
 
 const styles = StyleSheet.create({
   page: {
@@ -161,8 +212,8 @@ function Report({
   now,
 }: {
   mode: "user" | "global";
-  user?: any;
-  attempts: any[];
+  user?: ReportUser | null;
+  attempts: ReportAttempt[];
   globalKPI?: { total: number; avg: number; rate: number };
   now: string;
 }) {
@@ -282,7 +333,7 @@ function Report({
                 )
               ),
             ]
-          : attempts.map((a: any, i: number) =>
+          : attempts.map((a, i) =>
               React.createElement(
                 View,
                 {
@@ -313,10 +364,13 @@ function Report({
                       {
                         width: "12%",
                         fontWeight: "bold",
+                        // `percentage` est nullable en base ; `null >= 70`
+                        // valant `false` en JS, `?? 0` conserve exactement le
+                        // même résultat de couleur.
                         color:
-                          a.percentage >= 70
+                          (a.percentage ?? 0) >= 70
                             ? "#059669"
-                            : a.percentage >= 50
+                            : (a.percentage ?? 0) >= 50
                             ? "#d97706"
                             : "#dc2626",
                       },
@@ -367,12 +421,12 @@ function AttemptReport({
   qrByQuestion,
   now,
 }: {
-  attempt: any;
-  questions: any[];
-  qrByQuestion: Record<string, any>;
+  attempt: AttemptDetail;
+  questions: ReportQuestion[];
+  qrByQuestion: Record<string, QrRow | undefined>;
   now: string;
 }) {
-  const answers: Record<string, string | string[]> = attempt.answers ?? {};
+  const answers = (attempt.answers ?? {}) as AnswersMap;
   const student = attempt.profiles;
   const quiz = attempt.quizzes;
 
@@ -424,15 +478,15 @@ function AttemptReport({
 
       React.createElement(Text, { style: styles.h1 }, "Détail des réponses"),
 
-      ...questions.map((q: any, i: number) => {
+      ...questions.map((q, i) => {
         const raw = answers[q.id];
-        const picked = Array.isArray(raw)
+        const picked: string[] = Array.isArray(raw)
           ? raw
           : raw != null && raw !== ""
             ? [raw]
             : [];
         const pickedSet = new Set(picked);
-        const choices: any[] = q.choices ?? [];
+        const choices: ReportChoice[] = q.choices ?? [];
 
         // ── Question rédigée (QR) : réponse libre + note formateur ──────────
         if (q.type === "qr" || choices.length === 0) {
@@ -490,7 +544,7 @@ function AttemptReport({
 
         // ── QCM ─────────────────────────────────────────────────────────────
         const correctIds = new Set(
-          choices.filter((c: any) => c.is_correct).map((c: any) => c.id)
+          choices.filter((c) => c.is_correct).map((c) => c.id)
         );
         const isCorrect =
           pickedSet.size > 0 &&
@@ -521,7 +575,7 @@ function AttemptReport({
             )
           ),
           // Choices
-          ...choices.map((c: any) => {
+          ...choices.map((c) => {
             const isSel = pickedSet.has(c.id);
             const isOk = !!c.is_correct;
             // Color logic
@@ -587,7 +641,15 @@ function AttemptReport({
         React.createElement(Text, {}, "MA FORMATION TRANSPORT — Copie corrigée"),
         React.createElement(
           Text,
-          { render: ({ pageNumber, totalPages }: any) => `${pageNumber} / ${totalPages}` }
+          {
+            render: ({
+              pageNumber,
+              totalPages,
+            }: {
+              pageNumber: number;
+              totalPages: number;
+            }) => `${pageNumber} / ${totalPages}`,
+          }
         )
       )
     )
@@ -632,13 +694,14 @@ export async function GET(req: NextRequest) {
     // NB : quiz_attempts a 2 FK vers profiles (user_id + graded_by) → l'embed
     // doit être désambiguïsé via le nom de contrainte, sinon PostgREST renvoie
     // une erreur (masquée auparavant en « Tentative introuvable »).
-    const { data: attempt, error: attemptErr } = await supabase
+    const { data: attemptData, error: attemptErr } = await supabase
       .from("quiz_attempts")
       .select(
         "*, profiles!quiz_attempts_user_id_fkey(id, full_name, email), quizzes(id, title, type, pass_threshold)"
       )
       .eq("id", attemptId)
       .single();
+    const attempt = attemptData as AttemptDetail | null;
     if (attemptErr)
       return NextResponse.json(
         { error: `Erreur lecture tentative: ${attemptErr.message}` },
@@ -649,14 +712,24 @@ export async function GET(req: NextRequest) {
     // Détail des questions : modèle moderne quiz_question_bank → question_bank
     // (le quiz_runner stocke la réponse dans attempt.answers indexée par id de
     // question). Fallback legacy `questions`/`choices` pour les anciens quiz.
+    type BankLinkRow = Pick<Tables<"quiz_question_bank">, "display_order"> & {
+      question: Pick<
+        Tables<"question_bank">,
+        "id" | "type" | "statement" | "choices" | "explanation" | "max_score"
+      > | null;
+    };
     const [{ data: bankLinks }, { data: qrRows }] = await Promise.all([
+      // `overrideTypes` : sans le générique `Database` sur le client,
+      // supabase-js infère l'embed en tableau alors que PostgREST renvoie un
+      // objet (relation *-vers-un).
       supabase
         .from("quiz_question_bank")
         .select(
           "display_order, question:question_bank(id, type, statement, choices, explanation, max_score)"
         )
         .eq("quiz_id", attempt.quiz_id)
-        .order("display_order"),
+        .order("display_order")
+        .overrideTypes<BankLinkRow[], { merge: false }>(),
       supabase
         .from("qr_responses")
         .select(
@@ -664,18 +737,31 @@ export async function GET(req: NextRequest) {
         )
         .eq("attempt_id", attemptId),
     ]);
-    let resolvedQuestions: any[] = (bankLinks ?? [])
-      .map((l: any) =>
-        l.question ? { ...l.question, display_order: l.display_order ?? 0 } : null
+    type LegacyQuestionRow = Pick<
+      Tables<"questions">,
+      "id" | "statement" | "explanation" | "order"
+    > & { choices: Tables<"choices">[] | null };
+
+    let resolvedQuestions: ReportQuestion[] = (bankLinks ?? [])
+      .map((l): ReportQuestion | null =>
+        l.question
+          ? {
+              ...l.question,
+              // `question_bank.choices` est une colonne jsonb : on la restreint
+              // à la forme réellement stockée (liste de propositions QCM).
+              choices: l.question.choices as ReportChoice[] | null,
+              display_order: l.display_order ?? 0,
+            }
+          : null
       )
-      .filter(Boolean);
+      .filter((q): q is ReportQuestion => q !== null);
     if (resolvedQuestions.length === 0) {
       const { data: legacy } = await supabase
         .from("questions")
         .select("id, statement, explanation, order, choices(*)")
         .eq("quiz_id", attempt.quiz_id)
         .order("order");
-      resolvedQuestions = (legacy ?? []).map((q: any) => ({
+      resolvedQuestions = ((legacy ?? []) as LegacyQuestionRow[]).map((q) => ({
         id: q.id,
         type: "qcm",
         statement: q.statement,
@@ -683,16 +769,16 @@ export async function GET(req: NextRequest) {
         display_order: q.order ?? 0,
         choices: (q.choices ?? [])
           .slice()
-          .sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0))
-          .map((c: any) => ({
+          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+          .map((c) => ({
             id: c.id,
             label: c.label,
             is_correct: c.is_correct,
           })),
       }));
     }
-    const qrByQuestion: Record<string, any> = {};
-    for (const r of (qrRows ?? []) as any[]) qrByQuestion[r.question_id] = r;
+    const qrByQuestion: Record<string, QrRow | undefined> = {};
+    for (const r of (qrRows ?? []) as QrRow[]) qrByQuestion[r.question_id] = r;
     element = AttemptReport({
       attempt,
       questions: resolvedQuestions,
@@ -706,7 +792,7 @@ export async function GET(req: NextRequest) {
       ?.replace(/[^a-z0-9]+/gi, "-")
       .toLowerCase() ?? "quiz"}.pdf`;
   } else if (userId) {
-    const [{ data: targetUser }, { data: attempts }] = await Promise.all([
+    const [{ data: targetUserData }, { data: attempts }] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", userId).single(),
       supabase
         .from("quiz_attempts")
@@ -714,10 +800,11 @@ export async function GET(req: NextRequest) {
         .eq("user_id", userId)
         .order("started_at", { ascending: false }),
     ]);
+    const targetUser = targetUserData as ReportUser | null;
     element = Report({
       mode: "user",
       user: targetUser,
-      attempts: (attempts ?? []) as any[],
+      attempts: (attempts ?? []) as ReportAttempt[],
       now,
     });
     filename = `rapport-${(targetUser?.full_name || targetUser?.email || "etudiant")
@@ -731,7 +818,7 @@ export async function GET(req: NextRequest) {
       )
       .order("finished_at", { ascending: false })
       .limit(200);
-    const list = (attempts ?? []) as any[];
+    const list = (attempts ?? []) as ReportAttempt[];
     const total = list.length;
     const avg =
       total > 0
@@ -749,7 +836,7 @@ export async function GET(req: NextRequest) {
   }
 
   const buffer = await renderToBuffer(element);
-  return new NextResponse(buffer as any, {
+  return new NextResponse(new Uint8Array(buffer), {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",

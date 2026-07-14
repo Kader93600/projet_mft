@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
+import type { PostgrestError } from "@supabase/supabase-js";
+import type { TablesInsert } from "@/lib/database.types";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +21,15 @@ import { FormationStripe } from "@/components/formation/formation-stripe";
 import { RichTextDisplay } from "@/components/rich-text/rich-text-display";
 import { trackEvent } from "@/lib/analytics";
 import { enqueueAttempt } from "@/lib/pwa/sync-queue";
+
+/**
+ * Payload d'insertion d'une tentative (`quiz_attempts`).
+ * `formation_id` est NOT NULL en base mais reste optionnel dans le payload :
+ * il n'est ajouté que si la page a pu le résoudre, un trigger BD servant de
+ * fallback (cf. commentaire dans `submit()`).
+ */
+type AttemptInsert = Omit<TablesInsert<"quiz_attempts">, "formation_id"> &
+  Partial<Pick<TablesInsert<"quiz_attempts">, "formation_id">>;
 
 interface Choice { id: string; label: string; is_correct: boolean; order: number; }
 interface QuestionAnnex {
@@ -381,7 +392,7 @@ export function QuizRunner({
     // formation_id : passé explicitement depuis la page (résolu via le
     // module du quiz). Le trigger BD est un fallback mais ne couvre pas
     // les cas où profiles.current_formation_id est NULL.
-    const insertPayload: any = {
+    const insertPayload: AttemptInsert = {
       user_id: user.id,
       quiz_id: quiz.id,
       score,
@@ -444,7 +455,7 @@ export function QuizRunner({
     // Si une tentative a déjà été créée lors d'un submit précédent dont
     // seules les RPC QR ont échoué, on la réutilise (pas de 2e INSERT).
     let inserted: { id: string } | null = null;
-    let insertErr: any = null;
+    let insertErr: PostgrestError | null = null;
     if (submittedAttemptIdRef.current) {
       inserted = { id: submittedAttemptIdRef.current };
     } else {
@@ -463,13 +474,13 @@ export function QuizRunner({
       // n'apparaissait jamais dans /stats.
       console.error("[quiz submit] insert error", {
         message: insertErr?.message,
-        details: (insertErr as any)?.details,
-        hint: (insertErr as any)?.hint,
-        code: (insertErr as any)?.code,
+        details: insertErr?.details,
+        hint: insertErr?.hint,
+        code: insertErr?.code,
         full: insertErr,
       });
 
-      const code = (insertErr as any)?.code as string | undefined;
+      const code = insertErr?.code;
       const msg = insertErr?.message ?? t("unknownError");
       let friendly = t("unableToSave", { msg });
       // Mappings courants pour parler humain
@@ -481,7 +492,7 @@ export function QuizRunner({
       } else if (code === "23502") {
         // not null violation
         friendly = t("errMissingField", {
-          details: (insertErr as any)?.details ?? msg,
+          details: insertErr?.details ?? msg,
         });
       } else if (code === "23505") {
         friendly = t("errDuplicate");
@@ -532,7 +543,7 @@ export function QuizRunner({
         args: Record<string, unknown>,
       ): Promise<boolean> => {
         for (let attempt = 0; attempt < 2; attempt++) {
-          const { error } = await supabase.rpc(fn as any, args as any);
+          const { error } = await supabase.rpc(fn, args);
           if (!error) return true;
           console.error(`[${fn}] try ${attempt + 1}`, error);
           if (attempt === 0) await new Promise((r) => setTimeout(r, 600));

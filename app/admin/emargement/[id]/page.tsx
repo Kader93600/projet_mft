@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import type { Tables } from "@/lib/database.types";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
@@ -13,6 +14,18 @@ import {
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
+
+/** `attendance_sessions` — select("*") */
+type SessionRow = Tables<"attendance_sessions">;
+/** `profiles` — select("id, full_name, email") */
+type AttendeeProfile = Pick<Tables<"profiles">, "id" | "full_name" | "email">;
+/** `attendance_signatures` — select("user_id, signed_at, signature_data, signature_ip") */
+type SignatureRow = Pick<
+  Tables<"attendance_signatures">,
+  "user_id" | "signed_at" | "signature_data" | "signature_ip"
+>;
+/** `attendance_attendees` — select("user_id") */
+type AttendeeRow = Pick<Tables<"attendance_attendees">, "user_id">;
 
 const HALFDAY: Record<string, string> = {
   matin: "Matin",
@@ -56,13 +69,14 @@ export default async function EmargementDetailPage({
   if (!isAdmin && !isTrainer) redirect("/dashboard");
 
   const db = createAdminClient();
-  const { data: session } = await db
+  const { data: sessionData } = await db
     .from("attendance_sessions")
     .select("*")
     .eq("id", params.id)
     .maybeSingle();
+  const session: SessionRow | null = sessionData;
   if (!session) notFound();
-  if (isTrainer && (session as any).trainer_id !== user.id) {
+  if (isTrainer && session.trainer_id !== user.id) {
     redirect("/admin/emargement");
   }
 
@@ -70,20 +84,24 @@ export default async function EmargementDetailPage({
     .from("attendance_attendees")
     .select("user_id")
     .eq("session_id", params.id);
-  const userIds = (attendees ?? []).map((a: any) => a.user_id);
+  const userIds = ((attendees ?? []) as AttendeeRow[]).map((a) => a.user_id);
 
-  const { data: profiles } = userIds.length
+  const { data: profilesData } = userIds.length
     ? await db.from("profiles").select("id, full_name, email").in("id", userIds)
-    : { data: [] as any[] };
-  const { data: sigs } = await db
+    : { data: [] };
+  const profiles: AttendeeProfile[] = profilesData ?? [];
+  const { data: sigsData } = await db
     .from("attendance_signatures")
     .select("user_id, signed_at, signature_data, signature_ip")
     .eq("session_id", params.id);
+  const sigs: SignatureRow[] = sigsData ?? [];
 
-  const profMap = new Map((profiles ?? []).map((p: any) => [p.id, p]));
-  const sigMap = new Map((sigs ?? []).map((s: any) => [s.user_id, s]));
+  const profMap = new Map<string, AttendeeProfile>(
+    profiles.map((p) => [p.id, p])
+  );
+  const sigMap = new Map<string, SignatureRow>(sigs.map((s) => [s.user_id, s]));
   const rows = userIds
-    .map((uid: string) => ({ uid, profile: profMap.get(uid), sig: sigMap.get(uid) }))
+    .map((uid) => ({ uid, profile: profMap.get(uid), sig: sigMap.get(uid) }))
     .sort((a, b) =>
       (a.profile?.full_name ?? "").localeCompare(b.profile?.full_name ?? "")
     );
@@ -102,20 +120,19 @@ export default async function EmargementDetailPage({
         <div>
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="font-display text-2xl md:text-3xl font-semibold text-navy-950 tracking-tight">
-              {(session as any).title}
+              {session.title}
             </h1>
             <Badge tone="navy" size="sm">
-              {HALFDAY[(session as any).half_day] ?? (session as any).half_day}
+              {HALFDAY[session.half_day] ?? session.half_day}
             </Badge>
           </div>
           <p className="mt-1 text-sm text-slate-600 capitalize">
-            {fmtDay((session as any).starts_at)} ·{" "}
-            {fmtTime((session as any).starts_at)} –{" "}
-            {fmtTime((session as any).ends_at)}
+            {fmtDay(session.starts_at)} · {fmtTime(session.starts_at)} –{" "}
+            {fmtTime(session.ends_at)}
           </p>
-          {(session as any).location && (
+          {session.location && (
             <p className="mt-1 text-xs text-slate-500 inline-flex items-center gap-1">
-              <MapPin className="h-3 w-3" /> {(session as any).location}
+              <MapPin className="h-3 w-3" /> {session.location}
             </p>
           )}
         </div>

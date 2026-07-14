@@ -12,16 +12,25 @@ import {
   deleteLessonResource,
 } from "../../../actions";
 
-type Resource = {
-  id: string;
-  lesson_id: string;
-  kind: string;
-  title: string;
-  url: string;
-  description: string | null;
-  size_kb: number | null;
-  order: number;
-};
+import type { Tables } from "@/lib/database.types";
+
+/** Sous-ensemble éditable d'une ligne `lesson_resources`. */
+type Resource = Pick<
+  Tables<"lesson_resources">,
+  | "id"
+  | "lesson_id"
+  | "kind"
+  | "title"
+  | "url"
+  | "description"
+  | "size_kb"
+  | "order"
+>;
+
+/** Message d'erreur lisible depuis une exception d'action serveur. */
+function errorMessage(e: unknown): string {
+  return e instanceof Error ? e.message : String(e);
+}
 
 export function ResourcesManager({
   lessonId,
@@ -46,9 +55,9 @@ export function ResourcesManager({
     setError(null);
     start(async () => {
       try {
-        const payload = {
+        const payload: Omit<Resource, "id"> = {
           lesson_id: lessonId,
-          kind: nKind as any,
+          kind: nKind,
           title: nTitle,
           url: nUrl,
           description: nDesc || null,
@@ -58,15 +67,15 @@ export function ResourcesManager({
         const { id } = await createLessonResource(payload);
         setItems([
           ...items,
-          { id, ...payload, description: payload.description, size_kb: payload.size_kb } as any,
+          { id, ...payload, description: payload.description, size_kb: payload.size_kb },
         ]);
         setNTitle("");
         setNUrl("");
         setNDesc("");
         setNSize("");
         router.refresh();
-      } catch (e: any) {
-        setError(e.message);
+      } catch (e) {
+        setError(errorMessage(e));
       }
     });
   }
@@ -78,7 +87,7 @@ export function ResourcesManager({
         await updateLessonResource({
           id: r.id,
           lesson_id: r.lesson_id,
-          kind: r.kind as any,
+          kind: r.kind,
           title: r.title,
           url: r.url,
           description: r.description,
@@ -86,8 +95,8 @@ export function ResourcesManager({
           order: r.order,
         });
         router.refresh();
-      } catch (e: any) {
-        setError(e.message);
+      } catch (e) {
+        setError(errorMessage(e));
       }
     });
   }
@@ -99,8 +108,8 @@ export function ResourcesManager({
         await deleteLessonResource(id);
         setItems(items.filter((x) => x.id !== id));
         router.refresh();
-      } catch (e: any) {
-        setError(e.message);
+      } catch (e) {
+        setError(errorMessage(e));
       }
     });
   }

@@ -12,9 +12,18 @@ import React from "react";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { pdfStyles, PdfHeader, PdfFooter } from "@/lib/pdf-shared";
+import type { Tables } from "@/lib/database.types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+type AttendanceSession = Tables<"attendance_sessions">;
+type Attendee = Pick<Tables<"attendance_attendees">, "user_id">;
+type AttendeeProfile = Pick<Tables<"profiles">, "id" | "full_name">;
+type AttendanceSignature = Pick<
+  Tables<"attendance_signatures">,
+  "user_id" | "signed_at" | "signature_data"
+>;
 
 const HALFDAY: Record<string, string> = {
   matin: "Matin",
@@ -49,7 +58,7 @@ function Doc({
   rows,
 }: {
   refLabel: string;
-  session: any;
+  session: AttendanceSession;
   rows: Row[];
 }) {
   return (
@@ -140,13 +149,14 @@ export async function GET(
   }
 
   const db = createAdminClient();
-  const { data: session } = await db
+  const { data: sessionRow } = await db
     .from("attendance_sessions")
     .select("*")
     .eq("id", params.id)
     .maybeSingle();
-  if (!session) return NextResponse.json({ error: "not_found" }, { status: 404 });
-  if (isTrainer && (session as any).trainer_id !== user.id) {
+  if (!sessionRow) return NextResponse.json({ error: "not_found" }, { status: 404 });
+  const session = sessionRow as AttendanceSession;
+  if (isTrainer && session.trainer_id !== user.id) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 
@@ -154,17 +164,21 @@ export async function GET(
     .from("attendance_attendees")
     .select("user_id")
     .eq("session_id", params.id);
-  const userIds = (attendees ?? []).map((a: any) => a.user_id);
+  const userIds = ((attendees ?? []) as Attendee[]).map((a) => a.user_id);
   const { data: profiles } = userIds.length
     ? await db.from("profiles").select("id, full_name").in("id", userIds)
-    : { data: [] as any[] };
+    : { data: [] as AttendeeProfile[] };
   const { data: sigs } = await db
     .from("attendance_signatures")
     .select("user_id, signed_at, signature_data")
     .eq("session_id", params.id);
 
-  const profMap = new Map((profiles ?? []).map((p: any) => [p.id, p]));
-  const sigMap = new Map((sigs ?? []).map((s: any) => [s.user_id, s]));
+  const profMap = new Map(
+    ((profiles ?? []) as AttendeeProfile[]).map((p) => [p.id, p] as const)
+  );
+  const sigMap = new Map(
+    ((sigs ?? []) as AttendanceSignature[]).map((s) => [s.user_id, s] as const)
+  );
   const rows: Row[] = userIds
     .map((uid: string) => {
       const sig = sigMap.get(uid);
@@ -182,6 +196,10 @@ export async function GET(
     <Doc refLabel={refLabel} session={session} rows={rows} />
   );
 
+  // `as any` conservé : quirk de typage tiers. `renderToBuffer` renvoie un
+  // `Buffer<ArrayBufferLike>` (Node) que lib.dom refuse comme `BodyInit`
+  // (qui attend un `ArrayBufferView<ArrayBuffer>`). Toute alternative typée
+  // (copie en Uint8Array) modifierait le runtime.
   return new NextResponse(buffer as any, {
     status: 200,
     headers: {

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { isStaff } from "@/lib/permissions";
+import type { Tables, TablesInsert } from "@/lib/database.types";
 
 async function ensureStaff() {
   const supabase = createClient();
@@ -46,44 +47,51 @@ export async function createStaticQuiz(formData: FormData) {
   }
 
   // Création du quiz
-  const { data: quiz, error: quizErr } = await supabase
+  const quizPayload: TablesInsert<"quizzes"> = {
+    title,
+    description,
+    type: isMockExam ? "examen" : "entrainement",
+    is_mock_exam: isMockExam,
+    time_limit_s: timeLimitMin > 0 ? timeLimitMin * 60 : null,
+    pass_threshold: passThreshold,
+    generation_mode: "static",
+  };
+  const { data: quizRow, error: quizErr } = await supabase
     .from("quizzes")
-    .insert({
-      title,
-      description,
-      type: isMockExam ? "examen" : "entrainement",
-      is_mock_exam: isMockExam,
-      time_limit_s: timeLimitMin > 0 ? timeLimitMin * 60 : null,
-      pass_threshold: passThreshold,
-      generation_mode: "static",
-    } as any)
+    .insert(quizPayload)
     .select()
     .single();
   if (quizErr) throw new Error(quizErr.message);
+  // `.single()` sans erreur ⇒ ligne présente.
+  const quiz: Pick<Tables<"quizzes">, "id"> = quizRow;
 
   // Lien quiz ↔ questions
-  const links = questionIds.map((qid, idx) => ({
-    quiz_id: quiz.id,
-    question_id: qid,
-    display_order: idx,
-  }));
+  const links: TablesInsert<"quiz_question_bank">[] = questionIds.map(
+    (qid, idx) => ({
+      quiz_id: quiz.id,
+      question_id: qid,
+      display_order: idx,
+    })
+  );
   const { error: linkErr } = await supabase
     .from("quiz_question_bank")
     .insert(links);
   if (linkErr) throw new Error(linkErr.message);
 
   // Lien quiz ↔ formation
-  const { data: formation } = await supabase
+  const { data: formationRow } = await supabase
     .from("formations")
     .select("id")
     .eq("slug", formationSlug)
     .single();
+  const formation: Pick<Tables<"formations">, "id"> | null = formationRow;
   if (formation) {
-    await supabase.from("formation_quizzes").insert({
+    const link: TablesInsert<"formation_quizzes"> = {
       quiz_id: quiz.id,
       formation_id: formation.id,
       is_mock_exam: isMockExam,
-    } as any);
+    };
+    await supabase.from("formation_quizzes").insert(link);
   }
 
   revalidatePath("/admin/quizzes");
@@ -123,35 +131,40 @@ export async function createRandomQuiz(formData: FormData) {
     difficulties: difficulties.length > 0 ? difficulties : null,
   };
 
-  const { data: quiz, error } = await supabase
+  const quizPayload: TablesInsert<"quizzes"> = {
+    title,
+    description,
+    type: isMockExam ? "examen" : "entrainement",
+    is_mock_exam: isMockExam,
+    time_limit_s: timeLimitMin > 0 ? timeLimitMin * 60 : null,
+    pass_threshold: passThreshold,
+    generation_mode: "random_from_bank",
+    bank_filters: bankFilters,
+    requires_manual_grading: qrCount > 0,
+  };
+  const { data: quizRow, error } = await supabase
     .from("quizzes")
-    .insert({
-      title,
-      description,
-      type: isMockExam ? "examen" : "entrainement",
-      is_mock_exam: isMockExam,
-      time_limit_s: timeLimitMin > 0 ? timeLimitMin * 60 : null,
-      pass_threshold: passThreshold,
-      generation_mode: "random_from_bank",
-      bank_filters: bankFilters,
-      requires_manual_grading: qrCount > 0,
-    } as any)
+    .insert(quizPayload)
     .select()
     .single();
   if (error) throw new Error(error.message);
+  // `.single()` sans erreur ⇒ ligne présente.
+  const quiz: Pick<Tables<"quizzes">, "id"> = quizRow;
 
   // Lien formation
-  const { data: formation } = await supabase
+  const { data: formationRow } = await supabase
     .from("formations")
     .select("id")
     .eq("slug", formationSlug)
     .single();
+  const formation: Pick<Tables<"formations">, "id"> | null = formationRow;
   if (formation) {
-    await supabase.from("formation_quizzes").insert({
+    const link: TablesInsert<"formation_quizzes"> = {
       quiz_id: quiz.id,
       formation_id: formation.id,
       is_mock_exam: isMockExam,
-    } as any);
+    };
+    await supabase.from("formation_quizzes").insert(link);
   }
 
   revalidatePath("/admin/quizzes");

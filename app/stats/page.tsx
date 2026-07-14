@@ -23,8 +23,46 @@ import { ScoreEvolutionChart } from "@/components/stats/score-evolution-chart";
 import { ActivityBarsChart } from "@/components/stats/activity-bars-chart";
 import { ScrollReveal } from "@/components/lesson/scroll-reveal";
 import { AnimatedCounter } from "@/components/animated-counter";
+import type { ComponentProps } from "react";
+import type { Tables, Views } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
+
+// Types dérivés des `select` réels de cette page (colonnes vérifiées contre
+// lib/database.types.ts — généré par introspection de la BDD).
+type AttemptRow = Pick<
+  Tables<"quiz_attempts">,
+  | "id"
+  | "percentage"
+  | "passed"
+  | "score"
+  | "total"
+  | "finished_at"
+  | "started_at"
+  | "duration_s"
+  | "quiz_id"
+  | "formation_id"
+> & {
+  quizzes: Pick<Tables<"quizzes">, "title" | "type" | "module_id"> | null;
+};
+type BlocRow = Pick<Tables<"blocs">, "id" | "code" | "title">;
+type ModuleRow = Pick<Tables<"modules">, "id" | "title" | "bloc_id">;
+type LessonRow = Pick<Tables<"lessons">, "id" | "module_id">;
+type ProgressRow = Pick<
+  Tables<"lesson_progress">,
+  "lesson_id" | "completed" | "completed_at"
+>;
+type DailyRow = Pick<
+  Views<"user_daily_activity">,
+  "day" | "sessions" | "total_seconds"
+>;
+type SummaryRow = Tables<"user_training_summary">;
+type FormationRow = Pick<Tables<"formations">, "id" | "slug" | "code" | "title">;
+type EnrollmentFormationRow = Pick<Tables<"enrollments">, "formation_id">;
+type FormationModuleRow = Pick<
+  Tables<"formation_modules">,
+  "formation_id" | "module_id"
+>;
 
 const LEVEL_LABEL: Record<string, string> = {
   debutant: "Débutant",
@@ -57,9 +95,9 @@ export default async function StatsPage() {
     .not("formation_id", "is", null)
     .neq("status", "refuse")
       .neq("status", "abandon");
-  const enrolledFormationIds = (enrollments ?? [])
-    .map((e: any) => e.formation_id as string)
-    .filter(Boolean);
+  const enrolledFormationIds = ((enrollments ?? []) as EnrollmentFormationRow[])
+    .map((e) => e.formation_id)
+    .filter((id): id is string => Boolean(id));
 
   // Modules accessibles via formation_modules (M:N).
   let allowedModuleIds: string[] = [];
@@ -69,7 +107,11 @@ export default async function StatsPage() {
       .select("module_id")
       .in("formation_id", enrolledFormationIds);
     allowedModuleIds = Array.from(
-      new Set((links ?? []).map((l: any) => l.module_id as string))
+      new Set(
+        ((links ?? []) as Pick<Tables<"formation_modules">, "module_id">[]).map(
+          (l) => l.module_id
+        )
+      )
     );
   }
   const noModules = allowedModuleIds.length === 0;
@@ -93,16 +135,20 @@ export default async function StatsPage() {
         "id, percentage, passed, score, total, finished_at, started_at, duration_s, quiz_id, formation_id, quizzes(title, type, module_id)"
       )
       .eq("user_id", user.id)
-      .order("finished_at", { ascending: false }),
+      .order("finished_at", { ascending: false })
+      // Le client n'étant pas typé globalement, supabase-js infère l'embed
+      // `quizzes` comme un tableau. `overrideTypes` (API officielle,
+      // compile-time uniquement) déclare la forme réelle : embed to-one.
+      .overrideTypes<AttemptRow[], { merge: false }>(),
     supabase.from("blocs").select("id, code, title").order("order"),
     noModules
-      ? Promise.resolve({ data: [] as any[] })
+      ? Promise.resolve({ data: [] as ModuleRow[] })
       : supabase
           .from("modules")
           .select("id, title, bloc_id")
           .in("id", allowedModuleIds),
     noModules
-      ? Promise.resolve({ data: [] as any[] })
+      ? Promise.resolve({ data: [] as LessonRow[] })
       : supabase
           .from("lessons")
           .select("id, module_id")
@@ -128,22 +174,22 @@ export default async function StatsPage() {
   // user veut voir TOUS ses résultats (multi-formation inclus). C'est la
   // BONNE source de vérité même si formation_id est NULL sur certaines
   // lignes (legacy, trigger raté, etc.).
-  const attempts = attemptsRaw ?? [];
+  const attempts: AttemptRow[] = attemptsRaw ?? [];
+  const modulesList: ModuleRow[] = modules ?? [];
+  const lessonsList: LessonRow[] = lessons ?? [];
+  const progressList: ProgressRow[] = progress ?? [];
+  const dailyList: DailyRow[] = daily ?? [];
+  const summaryRow: SummaryRow | null = summary ?? null;
 
   // Récupère le détail des formations du user pour grouper la progression.
-  let formationsList: Array<{
-    id: string;
-    slug: string;
-    code: string;
-    title: string;
-  }> = [];
+  let formationsList: FormationRow[] = [];
   if (enrolledFormationIds.length > 0) {
     const { data: f } = await supabase
       .from("formations")
       .select("id, slug, code, title")
       .in("id", enrolledFormationIds)
       .order("display_order");
-    formationsList = (f ?? []) as any;
+    formationsList = (f ?? []) as FormationRow[];
   }
 
   // Mapping module → formation(s) pour agréger par formation.
@@ -153,7 +199,7 @@ export default async function StatsPage() {
       .from("formation_modules")
       .select("module_id, formation_id")
       .in("module_id", allowedModuleIds);
-    (links ?? []).forEach((l: any) => {
+    ((links ?? []) as FormationModuleRow[]).forEach((l) => {
       const arr = moduleToFormations.get(l.module_id) ?? [];
       arr.push(l.formation_id);
       moduleToFormations.set(l.module_id, arr);
@@ -162,11 +208,13 @@ export default async function StatsPage() {
 
   // Blocs : on ne garde que ceux qui ont au moins un module dans le périmètre.
   const usedBlocIds = new Set<number>(
-    (modules ?? [])
-      .map((m: any) => m.bloc_id)
-      .filter((id: number | null) => id != null)
+    modulesList
+      .map((m) => m.bloc_id)
+      .filter((id): id is number => id != null)
   );
-  const blocs = (allBlocs ?? []).filter((b: any) => usedBlocIds.has(b.id));
+  const blocs: BlocRow[] = ((allBlocs ?? []) as BlocRow[]).filter((b) =>
+    usedBlocIds.has(b.id)
+  );
 
   // Détecter si le découpage par bloc fait sens pour l'utilisateur :
   // - GOTRM utilise BC1/BC2/BC3 avec des titres dédiés à GOTRM
@@ -182,46 +230,49 @@ export default async function StatsPage() {
   const avg =
     total > 0
       ? Math.round(
-          (attempts ?? []).reduce((s, a: any) => s + a.percentage, 0) / total
+          attempts.reduce((s, a) => s + (a.percentage ?? 0), 0) / total
         )
       : 0;
-  const nbPassed = (attempts ?? []).filter((a: any) => a.passed).length;
+  const nbPassed = attempts.filter((a) => a.passed).length;
 
   // Tendance 30j vs 30j précédents
   const now = Date.now();
-  const last30 = (attempts ?? []).filter(
-    (a: any) =>
-      a.finished_at && +new Date(a.finished_at) >= now - 30 * 86400000
+  const last30 = attempts.filter(
+    (a) => a.finished_at && +new Date(a.finished_at) >= now - 30 * 86400000
   );
-  const prev30 = (attempts ?? []).filter(
-    (a: any) =>
+  const prev30 = attempts.filter(
+    (a) =>
       a.finished_at &&
       +new Date(a.finished_at) >= now - 60 * 86400000 &&
       +new Date(a.finished_at) < now - 30 * 86400000
   );
   const avg30 =
     last30.length > 0
-      ? Math.round(last30.reduce((s, a: any) => s + a.percentage, 0) / last30.length)
+      ? Math.round(
+          last30.reduce((s, a) => s + (a.percentage ?? 0), 0) / last30.length
+        )
       : null;
   const avgPrev =
     prev30.length > 0
-      ? Math.round(prev30.reduce((s, a: any) => s + a.percentage, 0) / prev30.length)
+      ? Math.round(
+          prev30.reduce((s, a) => s + (a.percentage ?? 0), 0) / prev30.length
+        )
       : null;
   const trend =
     avg30 != null && avgPrev != null ? avg30 - avgPrev : null;
 
   // Per bloc breakdown
-  const moduleById = new Map((modules ?? []).map((m: any) => [m.id, m]));
+  const moduleById = new Map<string, ModuleRow>(
+    modulesList.map((m) => [m.id, m])
+  );
   const lessonsByModule = new Map<string, string[]>();
-  (lessons ?? []).forEach((l: any) => {
+  lessonsList.forEach((l) => {
     const arr = lessonsByModule.get(l.module_id) ?? [];
     arr.push(l.id);
     lessonsByModule.set(l.module_id, arr);
   });
   const completedLessonIds = new Set(
-    (progress ?? [])
-      .filter((p: any) => p.completed)
-      .map((p: any) => p.lesson_id)
+    progressList.filter((p) => p.completed).map((p) => p.lesson_id)
   );
 
   type BlocStat = {
@@ -234,21 +285,21 @@ export default async function StatsPage() {
     quizTotal: number;
     avgScore: number | null;
   };
-  const byBloc: BlocStat[] = (blocs ?? []).map((b: any) => {
-    const modsOfBloc = (modules ?? []).filter((m: any) => m.bloc_id === b.id);
-    const modIds = new Set(modsOfBloc.map((m: any) => m.id));
+  const byBloc: BlocStat[] = blocs.map((b) => {
+    const modsOfBloc = modulesList.filter((m) => m.bloc_id === b.id);
+    const modIds = new Set(modsOfBloc.map((m) => m.id));
     const lessonsOfBloc = modsOfBloc.flatMap(
-      (m: any) => lessonsByModule.get(m.id) ?? []
+      (m) => lessonsByModule.get(m.id) ?? []
     );
     const done = lessonsOfBloc.filter((id) => completedLessonIds.has(id)).length;
-    const attemptsOfBloc = (attempts ?? []).filter((a: any) =>
+    const attemptsOfBloc = attempts.filter((a) =>
       a.quizzes?.module_id ? modIds.has(a.quizzes.module_id) : false
     );
-    const passed = attemptsOfBloc.filter((a: any) => a.passed).length;
+    const passed = attemptsOfBloc.filter((a) => a.passed).length;
     const score =
       attemptsOfBloc.length > 0
         ? Math.round(
-            attemptsOfBloc.reduce((s, a: any) => s + a.percentage, 0) /
+            attemptsOfBloc.reduce((s, a) => s + (a.percentage ?? 0), 0) /
               attemptsOfBloc.length
           )
         : null;
@@ -279,25 +330,25 @@ export default async function StatsPage() {
   };
   const byFormation: FormationStat[] = formationsList.map((f) => {
     // Modules rattachés à cette formation
-    const modsOfFormation = (modules ?? []).filter((m: any) =>
+    const modsOfFormation = modulesList.filter((m) =>
       (moduleToFormations.get(m.id) ?? []).includes(f.id)
     );
-    const modIds = new Set(modsOfFormation.map((m: any) => m.id));
+    const modIds = new Set(modsOfFormation.map((m) => m.id));
     const lessonsOfFormation = modsOfFormation.flatMap(
-      (m: any) => lessonsByModule.get(m.id) ?? []
+      (m) => lessonsByModule.get(m.id) ?? []
     );
     const done = lessonsOfFormation.filter((id) =>
       completedLessonIds.has(id)
     ).length;
-    const attemptsOfFormation = (attempts ?? []).filter((a: any) =>
+    const attemptsOfFormation = attempts.filter((a) =>
       a.quizzes?.module_id ? modIds.has(a.quizzes.module_id) : false
     );
-    const passed = attemptsOfFormation.filter((a: any) => a.passed).length;
+    const passed = attemptsOfFormation.filter((a) => a.passed).length;
     const score =
       attemptsOfFormation.length > 0
         ? Math.round(
             attemptsOfFormation.reduce(
-              (s, a: any) => s + a.percentage,
+              (s, a) => s + (a.percentage ?? 0),
               0
             ) / attemptsOfFormation.length
           )
@@ -324,19 +375,19 @@ export default async function StatsPage() {
     attempts: number;
   };
   const moduleStatsMap = new Map<string, { sum: number; n: number }>();
-  (attempts ?? []).forEach((a: any) => {
+  attempts.forEach((a) => {
     const mid = a.quizzes?.module_id;
     if (!mid) return;
     const cur = moduleStatsMap.get(mid) ?? { sum: 0, n: 0 };
-    cur.sum += a.percentage;
+    cur.sum += a.percentage ?? 0;
     cur.n += 1;
     moduleStatsMap.set(mid, cur);
   });
   const moduleStats: ModStat[] = Array.from(moduleStatsMap.entries())
-    .map(([id, v]) => {
-      const m: any = moduleById.get(id);
+    .map(([id, v]): ModStat | null => {
+      const m = moduleById.get(id);
       if (!m) return null;
-      const bloc = (blocs ?? []).find((b: any) => b.id === m.bloc_id);
+      const bloc = blocs.find((b) => b.id === m.bloc_id);
       return {
         id,
         title: m.title,
@@ -345,20 +396,25 @@ export default async function StatsPage() {
         attempts: v.n,
       };
     })
-    .filter(Boolean) as ModStat[];
+    .filter((m): m is ModStat => m !== null);
 
   moduleStats.sort((a, b) => a.avgScore - b.avgScore);
   const weakest = moduleStats.slice(0, 3);
   const strongest = [...moduleStats].reverse().slice(0, 3);
 
   // Heatmap : derniers 90 j
-  const heatDays = (daily ?? []).map((d: any) => ({
-    date: typeof d.day === "string" ? d.day.slice(0, 10) : new Date(d.day).toISOString().slice(0, 10),
+  const heatDays = dailyList.map((d) => ({
+    date:
+      typeof d.day === "string"
+        ? d.day.slice(0, 10)
+        : // `?? 0` : `new Date(null)` et `new Date(0)` donnent la même date
+          // (epoch) — le typage ne change donc rien au runtime.
+          new Date(d.day ?? 0).toISOString().slice(0, 10),
     count: d.sessions ?? 0,
   }));
   const heatMax = heatDays.reduce((m, d) => (d.count > m ? d.count : m), 0);
-  const totalTime = (summary as any)?.total_session_s ?? 0;
-  const lessonTime = (summary as any)?.lesson_time_s ?? 0;
+  const totalTime = summaryRow?.total_session_s ?? 0;
+  const lessonTime = summaryRow?.lesson_time_s ?? 0;
 
   const successRate = total > 0 ? Math.round((nbPassed / total) * 100) : 0;
   const totalMinutes = Math.round(totalTime / 60);
@@ -513,7 +569,11 @@ export default async function StatsPage() {
                 </h2>
               </div>
               <ScoreEvolutionChart
-                attempts={(attempts ?? []) as any}
+                attempts={
+                  attempts as ComponentProps<
+                    typeof ScoreEvolutionChart
+                  >["attempts"]
+                }
                 passThreshold={70}
               />
             </CardBody>
@@ -526,7 +586,11 @@ export default async function StatsPage() {
                   Temps d'apprentissage quotidien
                 </h2>
               </div>
-              <ActivityBarsChart daily={(daily ?? []) as any} />
+              <ActivityBarsChart
+                daily={
+                  dailyList as ComponentProps<typeof ActivityBarsChart>["daily"]
+                }
+              />
             </CardBody>
           </Card>
         </section>
@@ -832,7 +896,7 @@ export default async function StatsPage() {
                 </tr>
               </thead>
               <tbody>
-                {attempts?.map((a: any) => (
+                {attempts?.map((a) => (
                   <tr
                     key={a.id}
                     className="border-t border-navy-50 hover:bg-navy-50/30"
@@ -845,7 +909,7 @@ export default async function StatsPage() {
                     </td>
                     <td
                       className={`px-5 py-3.5 font-display font-semibold ${scoreColor(
-                        a.percentage
+                        a.percentage ?? 0
                       )}`}
                     >
                       {a.percentage}%{" "}

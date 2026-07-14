@@ -21,8 +21,30 @@ import {
   CircleDot,
   Trophy,
 } from "lucide-react";
+import type { Tables } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
+
+// ── Types de lecture, calqués sur les `select()` de cette page ──────────
+type ModuleRow = Tables<"modules">;
+type LessonRow = Tables<"lessons">;
+type QuizRow = Tables<"quizzes">;
+type LessonProgressRow = Pick<
+  Tables<"lesson_progress">,
+  "lesson_id" | "completed"
+>;
+type AttemptRow = Pick<
+  Tables<"quiz_attempts">,
+  "id" | "quiz_id" | "percentage" | "passed" | "score" | "total" | "status" | "mode"
+> & {
+  // La requête filtre `.not("finished_at", "is", null)` → jamais null ici.
+  finished_at: string;
+};
+type ModuleRef = Pick<Tables<"modules">, "id" | "slug" | "title">;
+type OrderedModuleRow = {
+  display_order: number;
+  module: ModuleRef | null;
+};
 
 /**
  * Détail d'un module — refonte 2026-05.
@@ -64,12 +86,13 @@ export default async function ModuleDetail({
   // Client session : RLS scopées réparées (bug récursion corrigé).
   const reader = supabase;
 
-  const { data: module } = await reader
+  const { data: moduleRow } = await reader
     .from("modules")
     .select("*")
     .eq("slug", params.slug)
     .single();
-  if (!module) notFound();
+  if (!moduleRow) notFound();
+  const module = moduleRow as ModuleRow;
 
   // Gate par formation : ce module est-il rattaché à une formation
   // où l'utilisateur est inscrit ? Sinon, 404. Staff = accès libre.
@@ -82,8 +105,10 @@ export default async function ModuleDetail({
       .not("formation_id", "is", null)
       .neq("status", "refuse")
       .neq("status", "abandon");
-    const enrolledIds = (enrollments ?? [])
-      .map((e: any) => e.formation_id as string)
+    const enrolledIds = (
+      (enrollments ?? []) as Pick<Tables<"enrollments">, "formation_id">[]
+    )
+      .map((e) => e.formation_id as string)
       .filter(Boolean);
     if (enrolledIds.length === 0) notFound();
 
@@ -107,13 +132,17 @@ export default async function ModuleDetail({
           .from("lesson_progress")
           .select("lesson_id, completed")
           .eq("user_id", user.id)
-      : { data: [] as any[] },
+      : { data: [] as LessonProgressRow[] },
   ]);
+
+  const lessonRows = (lessons ?? []) as LessonRow[];
+  const quizRows = (quizzes ?? []) as QuizRow[];
+  const progressRows = (progress ?? []) as LessonProgressRow[];
 
   // Tentatives du user sur les quiz de ce module — pour afficher les
   // résultats directement sur la page du module (best score, last attempt).
-  const quizIds = (quizzes ?? []).map((q: any) => q.id);
-  let attempts: any[] = [];
+  const quizIds = quizRows.map((q) => q.id);
+  let attempts: AttemptRow[] = [];
   if (user && quizIds.length > 0) {
     const { data: a } = await reader
       .from("quiz_attempts")
@@ -131,7 +160,7 @@ export default async function ModuleDetail({
   type QuizSummary = {
     bestPercentage: number;
     bestPassed: boolean;
-    lastAttempt: any | null;
+    lastAttempt: AttemptRow | null;
     attemptsCount: number;
   };
   const summaryByQuiz = new Map<string, QuizSummary>();
@@ -162,10 +191,10 @@ export default async function ModuleDetail({
   const accent = formation?.accent ?? "#9FE220";
 
   const doneIds = new Set(
-    (progress || []).filter((p: any) => p.completed).map((p: any) => p.lesson_id)
+    progressRows.filter((p) => p.completed).map((p) => p.lesson_id)
   );
-  const total = lessons?.length ?? 0;
-  const done = lessons?.filter((l: any) => doneIds.has(l.id)).length ?? 0;
+  const total = lessonRows.length;
+  const done = lessonRows.filter((l) => doneIds.has(l.id)).length;
   const pct = total ? Math.round((done / total) * 100) : 0;
 
   // Module entièrement validé ? Critère adapté au mode de déverrouillage
@@ -174,13 +203,11 @@ export default async function ModuleDetail({
   //   - 'flexible' (Capacité ≤ 3,5 t) : leçons + quiz ESSAYÉS (score ignoré)
   const allLessonsDone = total > 0 && done >= total;
   const allQuizzesPassed =
-    (quizzes?.length ?? 0) === 0 ||
-    (quizzes ?? []).every((q: any) => summaryByQuiz.get(q.id)?.bestPassed);
+    quizRows.length === 0 ||
+    quizRows.every((q) => summaryByQuiz.get(q.id)?.bestPassed);
   const allQuizzesAttempted =
-    (quizzes?.length ?? 0) === 0 ||
-    (quizzes ?? []).every(
-      (q: any) => (summaryByQuiz.get(q.id)?.attemptsCount ?? 0) > 0
-    );
+    quizRows.length === 0 ||
+    quizRows.every((q) => (summaryByQuiz.get(q.id)?.attemptsCount ?? 0) > 0);
   const isFlexibleUnlock = isFlexibleUnlockFormation(formationSlug);
   const moduleFullyDone = isFlexibleUnlock
     ? allLessonsDone && allQuizzesAttempted
@@ -200,16 +227,20 @@ export default async function ModuleDetail({
       .eq("slug", formationSlug)
       .maybeSingle();
     if (form?.id) {
+      // `select<Query, Result>` : sans client générique <Database>,
+      // postgrest-js infère les embeds en tableaux ; on donne le type réel.
       const { data: orderedModules } = await supabase
         .from("formation_modules")
-        .select("display_order, module:modules(id, slug, title)")
+        .select<string, OrderedModuleRow>(
+          "display_order, module:modules(id, slug, title)"
+        )
         .eq("formation_id", form.id)
         .order("display_order");
 
       const ordered = (orderedModules ?? [])
-        .map((r: any) => r.module)
-        .filter(Boolean);
-      const idx = ordered.findIndex((m: any) => m.id === module.id);
+        .map((r) => r.module)
+        .filter((m): m is ModuleRef => Boolean(m));
+      const idx = ordered.findIndex((m) => m.id === module.id);
       if (idx >= 0 && idx < ordered.length - 1) {
         const next = ordered[idx + 1];
         nextModuleData = {
@@ -223,13 +254,13 @@ export default async function ModuleDetail({
 
   // Première leçon non terminée → pour le CTA "Reprendre / Démarrer"
   const nextLesson =
-    lessons?.find((l: any) => !doneIds.has(l.id)) ?? lessons?.[0];
+    lessonRows.find((l) => !doneIds.has(l.id)) ?? lessonRows[0];
 
   // Quizzes par type
-  const trainingQuizzes = (quizzes ?? []).filter((q: any) => q.type !== "examen");
-  const examQuizzes = (quizzes ?? []).filter((q: any) => q.type === "examen");
+  const trainingQuizzes = quizRows.filter((q) => q.type !== "examen");
+  const examQuizzes = quizRows.filter((q) => q.type === "examen");
 
-  const totalQuizzes = quizzes?.length ?? 0;
+  const totalQuizzes = quizRows.length;
 
   return (
     <div className="max-w-5xl space-y-10">
@@ -329,9 +360,9 @@ export default async function ModuleDetail({
           attachée à ce module. Pour GOTRM, la vidéo intro du CCP est
           aussi affichée en tête de la section CCP sur /modules. */}
       <ModuleIntroVideo
-        videoPath={(module as any).intro_video_path ?? null}
-        label={(module as any).intro_video_label ?? null}
-        durationS={(module as any).intro_video_duration_s ?? null}
+        videoPath={module.intro_video_path ?? null}
+        label={module.intro_video_label ?? null}
+        durationS={module.intro_video_duration_s ?? null}
       />
 
       {/* Progression */}
@@ -427,7 +458,7 @@ export default async function ModuleDetail({
           </span>
         </header>
 
-        {!lessons || lessons.length === 0 ? (
+        {lessonRows.length === 0 ? (
           <div className="rounded-2xl border border-navy-100 bg-white px-6 py-12 text-center shadow-soft">
             <BookOpen className="mx-auto h-7 w-7 text-slate-300" />
             <p className="mt-3 text-sm text-slate-500">
@@ -441,7 +472,7 @@ export default async function ModuleDetail({
               aria-hidden
               className="absolute left-[19px] top-3 bottom-3 w-px bg-navy-100"
             />
-            {lessons.map((l: any, i: number) => {
+            {lessonRows.map((l, i) => {
               const isDone = doneIds.has(l.id);
               const isCurrent = !isDone && nextLesson?.id === l.id;
               return (
@@ -467,11 +498,11 @@ export default async function ModuleDetail({
                       }`}
                       style={
                         isCurrent
-                          ? {
+                          ? ({
                               background: `${accent}1A`,
                               color: "#0E1240",
-                              ["--tw-ring-color" as any]: accent,
-                            } as React.CSSProperties
+                              "--tw-ring-color": accent,
+                            } as React.CSSProperties)
                           : undefined
                       }
                     >
@@ -561,7 +592,7 @@ export default async function ModuleDetail({
 
           <div className="grid md:grid-cols-2 gap-4 md:gap-5">
             {/* Examens blancs en avant (cards accent) */}
-            {examQuizzes.map((q: any) => {
+            {examQuizzes.map((q) => {
               const s = summaryByQuiz.get(q.id);
               return (
                 <Link
@@ -628,7 +659,7 @@ export default async function ModuleDetail({
             })}
 
             {/* Quiz d'entraînement */}
-            {trainingQuizzes.map((q: any) => {
+            {trainingQuizzes.map((q) => {
               const s = summaryByQuiz.get(q.id);
               return (
                 <Link

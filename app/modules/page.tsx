@@ -16,8 +16,38 @@ import {
   type ModuleProgress,
 } from "@/lib/module-progress";
 import { AlertCircle, BookOpen, Layers } from "lucide-react";
+import type { Tables } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
+
+// --- Types dérivés des `select` réels ci-dessous -----------------------
+
+type BlocInfo = Pick<Tables<"blocs">, "id" | "code" | "title" | "order">;
+
+/** `formation_modules` + embed `formation:formations(slug)`. */
+type FormationModuleLink = Pick<
+  Tables<"formation_modules">,
+  "module_id" | "display_order"
+> & {
+  formation: Pick<Tables<"formations">, "slug"> | null;
+};
+
+type ModuleRow = Tables<"modules">;
+type LessonRef = Pick<Tables<"lessons">, "id" | "module_id">;
+/** `quizzes.module_id` est nullable en base, mais le `select` est filtré par
+ *  `.in("module_id", allowedModuleIds)` → jamais null dans ce jeu de lignes. */
+type QuizRef = Pick<Tables<"quizzes">, "id"> & { module_id: string };
+
+/** Carte module enrichie des champs internes calculés ici. */
+type ModuleCardEnriched = ModuleCardData & {
+  __progress: ModuleProgress;
+  /** Bloc (CCP) de rattachement — utilisé pour le sous-groupement. */
+  __bloc: BlocInfo | null;
+  intro_video_path: string | null;
+  intro_video_label: string | null;
+  intro_video_duration_s: number | null;
+  order: number | null;
+};
 
 /**
  * Catalogue stagiaire — refonte 2026-05 (cockpit).
@@ -84,16 +114,20 @@ export default async function ModulesPage() {
   let activeFormationSlug: string | null = null;
   if (user) {
     if (isStaff) {
-      const { data: allFormations } = await supabase
+      const { data: allFormationsRaw } = await supabase
         .from("formations")
         .select("id, slug")
         .eq("active", true)
         .order("code");
-      enrolledFormationIds = (allFormations ?? []).map((f: any) => f.id as string);
-      activeFormationSlug = (allFormations?.[0] as any)?.slug ?? null;
+      const allFormations = (allFormationsRaw ?? []) as Pick<
+        Tables<"formations">,
+        "id" | "slug"
+      >[];
+      enrolledFormationIds = allFormations.map((f) => f.id);
+      activeFormationSlug = allFormations[0]?.slug ?? null;
     } else {
       // Client session : RLS enrollments_self suffit (bug récursion corrigé).
-      const { data: enrollments } = await supabase
+      const { data: enrollmentsRaw } = await supabase
         .from("enrollments")
         .select("formation_id, formation_slug, status, created_at")
         .eq("user_id", user.id)
@@ -101,11 +135,15 @@ export default async function ModulesPage() {
         .neq("status", "refuse")
         .neq("status", "abandon")
         .order("created_at", { ascending: false });
-      enrolledFormationIds = (enrollments ?? [])
-        .map((e: any) => e.formation_id as string)
-        .filter(Boolean);
+      const enrollments = (enrollmentsRaw ?? []) as Pick<
+        Tables<"enrollments">,
+        "formation_id" | "formation_slug" | "status" | "created_at"
+      >[];
+      enrolledFormationIds = enrollments
+        .map((e) => e.formation_id)
+        .filter((id): id is string => Boolean(id));
       // active = en_cours en priorité, sinon le plus récent
-      const sorted = [...(enrollments ?? [])].sort((a: any, b: any) => {
+      const sorted = [...enrollments].sort((a, b) => {
         const ar = a.status === "en_cours" ? 0 : 1;
         const br = b.status === "en_cours" ? 0 : 1;
         if (ar !== br) return ar - br;
@@ -113,7 +151,7 @@ export default async function ModulesPage() {
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         );
       });
-      activeFormationSlug = (sorted[0] as any)?.formation_slug ?? null;
+      activeFormationSlug = sorted[0]?.formation_slug ?? null;
     }
   }
 
@@ -124,29 +162,31 @@ export default async function ModulesPage() {
   // Filtrage par formation : on récupère uniquement les modules rattachés
   // aux formations où le stagiaire est inscrit.
   let allowedModuleIds: string[] = [];
-  let links: any[] = [];
+  let links: FormationModuleLink[] = [];
   if (enrolledFormationIds.length > 0) {
+    // `overrideTypes` (API supabase-js) : le client n'étant pas paramétré par
+    // `Database`, supabase-js infère les embeds en tableau. Ici la FK
+    // formation_modules → formations est to-one : l'embed est un objet.
     const { data: linkRows } = await reader
       .from("formation_modules")
       .select("module_id, display_order, formation:formations(slug)")
-      .in("formation_id", enrolledFormationIds);
+      .in("formation_id", enrolledFormationIds)
+      .overrideTypes<FormationModuleLink[], { merge: false }>();
     links = linkRows ?? [];
-    allowedModuleIds = Array.from(
-      new Set(links.map((l: any) => l.module_id as string))
-    );
+    allowedModuleIds = Array.from(new Set(links.map((l) => l.module_id)));
   }
 
   // Données catalogue (filtrées)
   const noModules = allowedModuleIds.length === 0;
   const [
-    { data: modules },
+    { data: modulesRaw },
     { data: lessonsRaw },
     { data: quizzesRaw },
   ] = noModules
     ? [
-        { data: [] as any[] },
-        { data: [] as any[] },
-        { data: [] as any[] },
+        { data: [] as ModuleRow[] },
+        { data: [] as LessonRef[] },
+        { data: [] as QuizRef[] },
       ]
     : await Promise.all([
         reader
@@ -163,6 +203,9 @@ export default async function ModulesPage() {
           .select("id, module_id")
           .in("module_id", allowedModuleIds),
       ]);
+  const modules = (modulesRaw ?? []) as ModuleRow[];
+  const lessons = (lessonsRaw ?? []) as LessonRef[];
+  const quizzes = (quizzesRaw ?? []) as QuizRef[];
 
   // Blocs (CCP) : on les charge tous pour pouvoir grouper les modules.
   // Pour GOTRM : BC1 = CCP1, BC2 = CCP2, BC3 = CCP3.
@@ -170,12 +213,9 @@ export default async function ModulesPage() {
     .from("blocs")
     .select('id, code, title, "order"')
     .order("order");
-  const blocsById = new Map<
-    number,
-    { id: number; code: string; title: string; order: number }
-  >();
-  for (const b of blocsRaw ?? []) {
-    blocsById.set((b as any).id, b as any);
+  const blocsById = new Map<number, BlocInfo>();
+  for (const b of (blocsRaw ?? []) as BlocInfo[]) {
+    blocsById.set(b.id, b);
   }
 
   // Données de progression utilisateur
@@ -194,7 +234,7 @@ export default async function ModulesPage() {
     finished_at: string | null;
   }[] = [];
   if (user) {
-    const [{ data: views }, { data: progressRows }, { data: attempts }] =
+    const [{ data: views }, { data: progressRowsRaw }, { data: attempts }] =
       await Promise.all([
         supabase
           .from("lesson_views")
@@ -211,16 +251,18 @@ export default async function ModulesPage() {
           .eq("user_id", user.id),
       ]);
     lessonViews = views ?? [];
-    lessonProgressDone = new Set(
-      (progressRows ?? []).map((r: any) => r.lesson_id as string)
-    );
+    const progressRows = (progressRowsRaw ?? []) as Pick<
+      Tables<"lesson_progress">,
+      "lesson_id"
+    >[];
+    lessonProgressDone = new Set(progressRows.map((r) => r.lesson_id));
     quizAttempts = attempts ?? [];
   }
 
   // Index pour l'agrégation
   const formationByModule = new Map<string, string>();
   const orderByModule = new Map<string, number>();
-  (links ?? []).forEach((l: any) => {
+  links.forEach((l) => {
     if (l.formation?.slug && !formationByModule.has(l.module_id)) {
       formationByModule.set(l.module_id, l.formation.slug);
     }
@@ -230,13 +272,13 @@ export default async function ModulesPage() {
   });
 
   const lessonsByModule = new Map<string, string[]>();
-  (lessonsRaw ?? []).forEach((l: any) => {
+  lessons.forEach((l) => {
     if (!lessonsByModule.has(l.module_id)) lessonsByModule.set(l.module_id, []);
     lessonsByModule.get(l.module_id)!.push(l.id);
   });
 
   const quizzesByModule = new Map<string, string[]>();
-  (quizzesRaw ?? []).forEach((q: any) => {
+  quizzes.forEach((q) => {
     if (!quizzesByModule.has(q.module_id)) quizzesByModule.set(q.module_id, []);
     quizzesByModule.get(q.module_id)!.push(q.id);
   });
@@ -279,9 +321,7 @@ export default async function ModulesPage() {
   }
 
   // Construction des ModuleProgress + ModuleCardData
-  const allCards: (ModuleCardData & { __progress: ModuleProgress })[] = (
-    modules ?? []
-  ).map((m: any) => {
+  const allCards: ModuleCardEnriched[] = modules.map((m) => {
     const lessonIds = lessonsByModule.get(m.id) ?? [];
     const quizIds = quizzesByModule.get(m.id) ?? [];
     const lessonsTotal = lessonIds.length;
@@ -363,10 +403,10 @@ export default async function ModulesPage() {
       // afficher la vidéo en tête de section CCP. Sans ces champs,
       // `find(m => m.intro_video_path)` retournait toujours undefined
       // et la vidéo n'apparaissait jamais sur /modules.
-      intro_video_path: (m as any).intro_video_path ?? null,
-      intro_video_label: (m as any).intro_video_label ?? null,
-      intro_video_duration_s: (m as any).intro_video_duration_s ?? null,
-      order: (m as any).order ?? null,
+      intro_video_path: m.intro_video_path ?? null,
+      intro_video_label: m.intro_video_label ?? null,
+      intro_video_duration_s: m.intro_video_duration_s ?? null,
+      order: m.order ?? null,
     };
   });
 
@@ -585,7 +625,7 @@ async function SubsectionCourses({
   formationSlug,
   t,
 }: {
-  modules: (ModuleCardData & { __progress: ModuleProgress })[];
+  modules: ModuleCardEnriched[];
   sectionIdx: number;
   showHeader: boolean;
   formationSlug?: string;
@@ -619,9 +659,9 @@ async function SubsectionCourses({
     }
   >();
   for (const m of modules) {
-    const blocCode = (m as any).__bloc?.code ?? "_other";
-    const blocTitle = (m as any).__bloc?.title ?? "";
-    const blocOrder = (m as any).__bloc?.order ?? 999;
+    const blocCode = m.__bloc?.code ?? "_other";
+    const blocTitle = m.__bloc?.title ?? "";
+    const blocOrder = m.__bloc?.order ?? 999;
     if (!blocsMap.has(blocCode)) {
       blocsMap.set(blocCode, {
         code: blocCode,
@@ -681,17 +721,18 @@ async function SubsectionCourses({
     blocs.map(async (b) => {
       // Priorité au module avec le plus petit "order" (= 1er chapitre).
       const sortedModules = [...b.modules].sort(
-        (m1: any, m2: any) => (m1.order ?? 999) - (m2.order ?? 999),
+        (m1, m2) => (m1.order ?? 999) - (m2.order ?? 999),
       );
       const introMod = sortedModules.find(
-        (m: any) => !!m.intro_video_path,
-      ) as any;
+        (m): m is ModuleCardEnriched & { intro_video_path: string } =>
+          !!m.intro_video_path,
+      );
       if (!introMod) {
         return { bloc: b, introVideo: null };
       }
       const { data: signed, error: signErr } = await storageSigner.storage
         .from("module-intro-videos")
-        .createSignedUrl(introMod.intro_video_path as string, 60 * 60);
+        .createSignedUrl(introMod.intro_video_path, 60 * 60);
       if (signErr || !signed?.signedUrl) {
         // eslint-disable-next-line no-console
         console.warn(
@@ -706,8 +747,8 @@ async function SubsectionCourses({
         bloc: b,
         introVideo: {
           url: signed.signedUrl,
-          label: (introMod.intro_video_label as string | null) ?? null,
-          durationS: (introMod.intro_video_duration_s as number | null) ?? null,
+          label: introMod.intro_video_label ?? null,
+          durationS: introMod.intro_video_duration_s ?? null,
         },
       };
     }),
@@ -734,7 +775,7 @@ function ModulesGrid({
   modules,
   sectionIdx,
 }: {
-  modules: (ModuleCardData & { __progress: ModuleProgress })[];
+  modules: ModuleCardEnriched[];
   sectionIdx: number;
 }) {
   return (

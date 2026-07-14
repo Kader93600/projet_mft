@@ -4,6 +4,12 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email";
+import type { Tables } from "@/lib/database.types";
+
+/** profiles(role, email, full_name) */
+type SenderProfile = Pick<Tables<"profiles">, "role" | "email" | "full_name">;
+/** profiles(role) */
+type RoleRow = Pick<Tables<"profiles">, "role">;
 
 const STAFF = ["admin", "super_admin", "trainer"];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -52,13 +58,14 @@ export async function sendPlatformEmail(input: SendPlatformEmailInput): Promise<
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "Non authentifié." };
 
-  const { data: me } = await supabase
+  const { data: meData } = await supabase
     .from("profiles")
     .select("role, email, full_name")
     .eq("id", user.id)
     .maybeSingle();
-  const role = (me as any)?.role;
-  if (!STAFF.includes(role)) return { ok: false, error: "Accès refusé." };
+  const me = (meData ?? null) as SenderProfile | null;
+  const role = me?.role;
+  if (!STAFF.includes(role ?? "")) return { ok: false, error: "Accès refusé." };
 
   const to = clean(input.to);
   const cc = clean(input.cc);
@@ -74,7 +81,7 @@ export async function sendPlatformEmail(input: SendPlatformEmailInput): Promise<
     return { ok: false, error: "Pièces jointes trop volumineuses (9 Mo max au total)." };
 
   const html = safeHtml(input.html);
-  const senderEmail = (me as any)?.email || user.email || undefined;
+  const senderEmail = me?.email || user.email || undefined;
 
   const result = await sendEmail({
     to,
@@ -122,12 +129,13 @@ async function requireStaff(): Promise<{ ok: true; userId: string } | { ok: fals
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "Non authentifié." };
-  const { data: me } = await supabase
+  const { data: meData } = await supabase
     .from("profiles")
     .select("role")
     .eq("id", user.id)
     .maybeSingle();
-  if (!STAFF.includes((me as any)?.role)) return { ok: false, error: "Accès refusé." };
+  const me = (meData ?? null) as RoleRow | null;
+  if (!STAFF.includes(me?.role ?? "")) return { ok: false, error: "Accès refusé." };
   return { ok: true, userId: user.id };
 }
 
@@ -149,8 +157,8 @@ export async function assignEmail(emailId: string, userId: string | null) {
   if (!auth.ok) return auth;
   const admin = createAdminClient();
   if (userId) {
-    const { data: who } = await admin.from("profiles").select("role").eq("id", userId).maybeSingle();
-    const role = (who as any)?.role;
+    const { data: whoData } = await admin.from("profiles").select("role").eq("id", userId).maybeSingle();
+    const role = ((whoData ?? null) as RoleRow | null)?.role;
     if (role !== "admin" && role !== "super_admin") {
       return { ok: false, error: "Seuls les admins / super-admins peuvent recevoir une attribution." };
     }

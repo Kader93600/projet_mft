@@ -6,6 +6,17 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail, documentStatusEmail } from "@/lib/email";
 import { isStaff } from "@/lib/permissions";
 import { DOC_STATUS } from "@/lib/student-documents";
+import type { Tables } from "@/lib/database.types";
+
+/** Ligne renvoyée par le `select("role")` sur `profiles`. */
+type RoleRow = Pick<Tables<"profiles">, "role">;
+/** Ligne renvoyée par le `select("user_id, title, admin_note")` sur `student_documents`. */
+type UpdatedDocRow = Pick<
+  Tables<"student_documents">,
+  "user_id" | "title" | "admin_note"
+>;
+/** Ligne renvoyée par le `select("full_name, email")` sur `profiles`. */
+type ProfileContactRow = Pick<Tables<"profiles">, "full_name" | "email">;
 
 async function requireStaff() {
   const supabase = createClient();
@@ -13,12 +24,13 @@ async function requireStaff() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { supabase, ok: false as const };
-  const { data: me } = await supabase
+  const { data } = await supabase
     .from("profiles")
     .select("role")
     .eq("id", user.id)
     .maybeSingle();
-  const role = (me as any)?.role;
+  const me = data as RoleRow | null;
+  const role = me?.role;
   const ok = isStaff(role) || role === "trainer";
   return { supabase, ok };
 }
@@ -30,12 +42,13 @@ export async function setDocumentStatus(
   if (!(status in DOC_STATUS)) return { ok: false, error: "Statut invalide." };
   const { supabase, ok } = await requireStaff();
   if (!ok) return { ok: false, error: "Accès refusé." };
-  const { data: updated, error } = await supabase
+  const { data, error } = await supabase
     .from("student_documents")
     .update({ status })
     .eq("id", id)
     .select("user_id, title, admin_note")
     .maybeSingle();
+  const updated = data as UpdatedDocRow | null;
   if (error || !updated) return { ok: false, error: "Mise à jour impossible." };
 
   // Notifie le stagiaire pour les décisions (validé / refusé).
@@ -44,29 +57,30 @@ export async function setDocumentStatus(
       const admin = createAdminClient();
       const validated = status === "valide";
       await admin.from("notifications").insert({
-        user_id: (updated as any).user_id,
+        user_id: updated.user_id,
         type: "system",
         title: validated ? "Document validé" : "Document refusé",
-        body: `Votre document « ${(updated as any).title} » a été ${
+        body: `Votre document « ${updated.title} » a été ${
           validated ? "validé" : "refusé"
         }.`,
         link_url: "/mes-documents",
       });
-      const { data: prof } = await admin
+      const { data: profData } = await admin
         .from("profiles")
         .select("full_name, email")
-        .eq("id", (updated as any).user_id)
+        .eq("id", updated.user_id)
         .maybeSingle();
-      if ((prof as any)?.email) {
+      const prof = profData as ProfileContactRow | null;
+      if (prof?.email) {
         const mail = documentStatusEmail({
-          studentName: (prof as any).full_name || "",
-          title: (updated as any).title,
+          studentName: prof.full_name || "",
+          title: updated.title,
           status,
-          adminNote: (updated as any).admin_note,
+          adminNote: updated.admin_note,
           link: "https://www.maformationtransport.fr/mes-documents",
         });
         await sendEmail({
-          to: (prof as any).email,
+          to: prof.email,
           subject: mail.subject,
           html: mail.html,
         });

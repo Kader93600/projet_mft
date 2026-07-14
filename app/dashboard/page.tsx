@@ -38,6 +38,53 @@ import {
   pickNextModule,
   type ModuleProgress,
 } from "@/lib/module-progress";
+import type { LucideIcon } from "lucide-react";
+import type { Tables } from "@/lib/database.types";
+
+// ─── Types des lignes lues (dérivés des `select` ci-dessous) ─────────
+type FormationIdRow = Pick<Tables<"formations">, "id">;
+type ModuleIdRow = Pick<Tables<"modules">, "id">;
+type EnrollmentFormationRow = Pick<Tables<"enrollments">, "formation_id">;
+type FormationModuleLinkRow = Pick<Tables<"formation_modules">, "module_id">;
+
+/** modules(id, title, slug, duration_min, bloc_id, blocs(code, title)) */
+type ModuleRow = Pick<
+  Tables<"modules">,
+  "id" | "title" | "slug" | "duration_min" | "bloc_id"
+> & { blocs: Pick<Tables<"blocs">, "code" | "title"> | null };
+
+/** lesson_progress(lesson_id, completed) */
+type ProgressRow = Pick<Tables<"lesson_progress">, "lesson_id" | "completed">;
+
+/** quiz_attempts(id, percentage, passed, finished_at, quizzes(title)) */
+type AttemptRow = Pick<
+  Tables<"quiz_attempts">,
+  "id" | "percentage" | "passed" | "finished_at"
+> & { quizzes: Pick<Tables<"quizzes">, "title"> | null };
+
+/** lessons(id, module_id) — filtrées par `.in("module_id", …)` */
+type LessonRow = Pick<Tables<"lessons">, "id" | "module_id">;
+
+/** quizzes(id, module_id) — filtrés par `.in("module_id", …)`, donc module_id non-null */
+type ModuleQuizRow = Pick<Tables<"quizzes">, "id"> & { module_id: string };
+
+/** quiz_attempts(quiz_id, passed, finished_at) */
+type ModuleAttemptRow = Pick<
+  Tables<"quiz_attempts">,
+  "quiz_id" | "passed" | "finished_at"
+>;
+
+/** formation_modules(module_id, display_order, formations(slug)) — l'embed
+ *  peut arriver en objet ou en tableau selon le client, cf. code ci-dessous. */
+type FormationOrderRow = Pick<
+  Tables<"formation_modules">,
+  "module_id" | "display_order"
+> & {
+  formations:
+    | Pick<Tables<"formations">, "slug">
+    | Pick<Tables<"formations">, "slug">[]
+    | null;
+};
 
 // Force le rendu dynamique à chaque requête : la page lit la session
 // + les enrollments du stagiaire, donc le HTML doit être recalculé à
@@ -77,8 +124,10 @@ export default async function DashboardPage() {
       supabase.from("formations").select("id").eq("active", true),
       supabase.from("modules").select("id"),
     ]);
-    enrolledFormationIds = (allFormations ?? []).map((f: any) => f.id as string);
-    allowedModuleIds = (allModules ?? []).map((m: any) => m.id as string);
+    enrolledFormationIds = ((allFormations ?? []) as FormationIdRow[]).map(
+      (f) => f.id
+    );
+    allowedModuleIds = ((allModules ?? []) as ModuleIdRow[]).map((m) => m.id);
   } else {
     // Stagiaire : périmètre via enrollments (client session, RLS
     // enrollments_self suffit — bug de récursion corrigé).
@@ -94,9 +143,9 @@ export default async function DashboardPage() {
       console.error("[dashboard] enrollments query failed", enrollErr);
     }
 
-    enrolledFormationIds = (enrollments ?? [])
-      .map((e: any) => e.formation_id as string)
-      .filter(Boolean);
+    enrolledFormationIds = ((enrollments ?? []) as EnrollmentFormationRow[])
+      .map((e) => e.formation_id)
+      .filter((id): id is string => Boolean(id));
 
     if (enrolledFormationIds.length > 0) {
       const { data: links } = await supabase
@@ -104,7 +153,7 @@ export default async function DashboardPage() {
         .select("module_id")
         .in("formation_id", enrolledFormationIds);
       allowedModuleIds = Array.from(
-        new Set((links ?? []).map((l: any) => l.module_id as string))
+        new Set(((links ?? []) as FormationModuleLinkRow[]).map((l) => l.module_id))
       );
     }
   }
@@ -127,7 +176,7 @@ export default async function DashboardPage() {
   ] = await Promise.all([
     reader.from("profiles").select("*").eq("id", user.id).single(),
     noModules
-      ? Promise.resolve({ data: [] as any[] })
+      ? Promise.resolve({ data: [] as ModuleRow[] })
       : reader
           .from("modules")
           .select("id, title, slug, duration_min, bloc_id, blocs(code, title)")
@@ -142,17 +191,17 @@ export default async function DashboardPage() {
           .in("formation_id", enrolledFormationIds)
           .order("finished_at", { ascending: false })
           .limit(5)
-      : Promise.resolve({ data: [] as any[] }),
+      : Promise.resolve({ data: [] as AttemptRow[] }),
     // Toutes les leçons des modules autorisés (pour décompte par module)
     noModules
-      ? Promise.resolve({ data: [] as any[] })
+      ? Promise.resolve({ data: [] as LessonRow[] })
       : reader
           .from("lessons")
           .select("id, module_id")
           .in("module_id", allowedModuleIds),
     // Tous les quizzes des modules autorisés
     noModules
-      ? Promise.resolve({ data: [] as any[] })
+      ? Promise.resolve({ data: [] as ModuleQuizRow[] })
       : reader
           .from("quizzes")
           .select("id, module_id")
@@ -164,7 +213,7 @@ export default async function DashboardPage() {
           .select("quiz_id, passed, finished_at")
           .eq("user_id", user.id)
           .in("formation_id", enrolledFormationIds)
-      : Promise.resolve({ data: [] as any[] }),
+      : Promise.resolve({ data: [] as ModuleAttemptRow[] }),
     // Display order des modules dans la formation (pour le verrouillage linéaire)
     // + slug de la formation (pour déterminer le mode 'strict' vs 'flexible'
     //   de déverrouillage — révision client 2026-05).
@@ -173,36 +222,44 @@ export default async function DashboardPage() {
           .from("formation_modules")
           .select("module_id, display_order, formations(slug)")
           .in("formation_id", enrolledFormationIds)
-      : Promise.resolve({ data: [] as any[] }),
+      : Promise.resolve({ data: [] as FormationOrderRow[] }),
   ]);
+
+  // Lignes typées (le client Supabase n'est pas câblé sur `Database`,
+  // on resserre donc les `data` ici, en miroir des `select` ci-dessus).
+  const moduleRows = (modules ?? []) as ModuleRow[];
+  const progressRows = (progress ?? []) as ProgressRow[];
+  const attemptRows = (attempts ?? []) as AttemptRow[];
+  const lessonRows = (allLessons ?? []) as LessonRow[];
+  const moduleQuizRows = (allModuleQuizzes ?? []) as ModuleQuizRow[];
+  const moduleAttemptRows = (allModuleAttempts ?? []) as ModuleAttemptRow[];
+  const formationOrderRows = (formationModulesOrder ?? []) as FormationOrderRow[];
 
   // ─── Calcul du verrouillage linéaire pour la section "Continuer la formation" ─
   // Index lookup
   const lessonsByModule = new Map<string, string[]>();
-  (allLessons ?? []).forEach((l: any) => {
+  lessonRows.forEach((l) => {
     const arr = lessonsByModule.get(l.module_id) ?? [];
     arr.push(l.id);
     lessonsByModule.set(l.module_id, arr);
   });
   const quizzesByModule = new Map<string, string[]>();
-  (allModuleQuizzes ?? []).forEach((q: any) => {
+  moduleQuizRows.forEach((q) => {
     const arr = quizzesByModule.get(q.module_id) ?? [];
     arr.push(q.id);
     quizzesByModule.set(q.module_id, arr);
   });
   const completedLessonIds = new Set(
-    (progress ?? []).filter((p: any) => p.completed).map((p: any) => p.lesson_id)
+    progressRows.filter((p) => p.completed).map((p) => p.lesson_id)
   );
   const passedQuizIds = new Set(
-    (allModuleAttempts ?? []).filter((a: any) => a.passed).map((a: any) => a.quiz_id)
+    moduleAttemptRows.filter((a) => a.passed).map((a) => a.quiz_id)
   );
-  const attemptedQuizIds = new Set(
-    (allModuleAttempts ?? []).map((a: any) => a.quiz_id)
-  );
+  const attemptedQuizIds = new Set(moduleAttemptRows.map((a) => a.quiz_id));
   const orderByModule = new Map<string, number>();
   // module_id → slug de la formation (pour le mode de déverrouillage)
   const formationSlugByModule = new Map<string, string>();
-  (formationModulesOrder ?? []).forEach((fm: any) => {
+  formationOrderRows.forEach((fm) => {
     if (!orderByModule.has(fm.module_id)) {
       orderByModule.set(fm.module_id, fm.display_order ?? 0);
     }
@@ -217,7 +274,7 @@ export default async function DashboardPage() {
   });
 
   // Construction de la liste ModuleProgress pour applyLinearLocking
-  const moduleProgressList: ModuleProgress[] = (modules ?? []).map((m: any) => {
+  const moduleProgressList: ModuleProgress[] = moduleRows.map((m) => {
     const lessonIds = lessonsByModule.get(m.id) ?? [];
     const lessonsTotal = lessonIds.length;
     const lessonsDone = lessonIds.filter((id) => completedLessonIds.has(id)).length;
@@ -274,7 +331,7 @@ export default async function DashboardPage() {
   // bonne page plutôt que vers /modules en général.
   const nextModule = pickNextModule(lockedList);
   const nextModuleMeta = nextModule
-    ? (modules ?? []).find((m: any) => m.id === nextModule.id)
+    ? moduleRows.find((m) => m.id === nextModule.id)
     : null;
   const resumeHref = nextModuleMeta
     ? `/modules/${nextModuleMeta.slug}`
@@ -282,7 +339,7 @@ export default async function DashboardPage() {
 
   // Modules à afficher dans "Continuer la formation" : on garde l'ordre
   // d'origine (par bloc + display_order), tous états confondus, top 6.
-  const sortedModules = [...(modules ?? [])].sort((a: any, b: any) => {
+  const sortedModules = [...moduleRows].sort((a, b) => {
     const oa = orderByModule.get(a.id) ?? 9999;
     const ob = orderByModule.get(b.id) ?? 9999;
     return oa - ob;
@@ -295,19 +352,20 @@ export default async function DashboardPage() {
         .from("lessons")
         .select("*", { count: "exact", head: true })
         .in("module_id", allowedModuleIds);
-  const completedLessons = progress?.filter((p) => p.completed).length || 0;
+  const completedLessons = progressRows.filter((p) => p.completed).length || 0;
   const progressPct = totalLessons ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
   // Note : `percentage` peut être NULL pour les quiz QR-only (en attente de
   // correction formateur). On filtre les tentatives sans pourcentage QCM
   // pour ne pas polluer la moyenne avec des NaN.
-  const attemptsWithPct = (attempts ?? []).filter(
-    (a: any) => typeof a.percentage === "number"
+  const attemptsWithPct = attemptRows.filter(
+    (a): a is AttemptRow & { percentage: number } =>
+      typeof a.percentage === "number"
   );
   const avgScore =
     attemptsWithPct.length > 0
       ? Math.round(
-          attemptsWithPct.reduce((s, a: any) => s + a.percentage, 0) /
+          attemptsWithPct.reduce((s, a) => s + a.percentage, 0) /
             attemptsWithPct.length
         )
       : 0;
@@ -477,7 +535,7 @@ export default async function DashboardPage() {
         <StatCard
           icon={ClipboardCheck}
           label={t("statQuizLabel")}
-          value={String(attempts?.length ?? 0)}
+          value={String(attemptRows.length)}
           hint={t("statQuizHint")}
           color="emerald"
         />
@@ -502,7 +560,7 @@ export default async function DashboardPage() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {sortedModules.slice(0, 6).map((m: any) => {
+          {sortedModules.slice(0, 6).map((m) => {
             const state = stateById.get(m.id) ?? "not-started";
             const isLocked = state === "locked";
             const isDone = state === "done";
@@ -624,10 +682,10 @@ export default async function DashboardPage() {
             </Link>
           </div>
 
-          {attempts && attempts.length > 0 ? (
+          {attemptRows.length > 0 ? (
             <Card>
               <div className="divide-y divide-navy-50">
-                {attempts.map((a: any) => (
+                {attemptRows.map((a) => (
                   <div
                     key={a.id}
                     className="flex items-center justify-between gap-3 px-4 sm:px-6 py-3.5 sm:py-4"
@@ -663,7 +721,7 @@ export default async function DashboardPage() {
                       </span>
                       <div
                         className={`font-display font-semibold text-lg sm:text-xl tabular-nums ${scoreColor(
-                          a.percentage
+                          a.percentage ?? 0
                         )}`}
                       >
                         {a.percentage}%
@@ -756,7 +814,7 @@ function StatCard({
   hint,
   color = "brand",
 }: {
-  icon: any;
+  icon: LucideIcon;
   label: string;
   value: string;
   hint?: string;

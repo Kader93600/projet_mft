@@ -51,7 +51,7 @@ export async function createCoachingSession(raw: unknown) {
 export async function updateCoachingSession(raw: unknown) {
   const { supabase } = await requireAdmin();
   const data = validate(updateSessionSchema, raw);
-  const { id, ...patch } = data as any;
+  const { id, ...patch } = data;
   const { error } = await supabase
     .from("coaching_sessions")
     .update(patch)
@@ -93,7 +93,7 @@ export async function createCoachingNote(raw: unknown) {
 export async function updateCoachingNote(raw: unknown) {
   const { supabase } = await requireAdmin();
   const data = validate(updateNoteSchema, raw);
-  const { id, ...patch } = data as any;
+  const { id, ...patch } = data;
   const { error } = await supabase
     .from("coaching_notes")
     .update(patch)

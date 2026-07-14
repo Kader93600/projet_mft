@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import type { ComponentProps } from "react";
 import { createClient } from "@/lib/supabase/server";
+import type { Tables } from "@/lib/database.types";
+import type { LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,7 +27,30 @@ import { SessionActions } from "@/app/admin/sessions/[id]/session-actions";
 
 export const dynamic = "force-dynamic";
 
-const STATUS_META: Record<string, { label: string; tone: any }> = {
+/** Tons acceptés par <Badge tone={...}> (le type Tone n'est pas exporté). */
+type BadgeTone = NonNullable<ComponentProps<typeof Badge>["tone"]>;
+
+/** Profil « léger » tel que sélectionné dans les requêtes de cette page. */
+type ProfileLite = Pick<Tables<"profiles">, "id" | "full_name" | "email">;
+
+/** Formation embarquée dans le select de `live_sessions`. */
+type SessionFormation = Pick<
+  Tables<"formations">,
+  "id" | "slug" | "title" | "code" | "accent_color"
+>;
+
+/** Ligne `live_sessions` + embeds du select ci-dessous. */
+type SessionRow = Tables<"live_sessions"> & {
+  formation: SessionFormation;
+  trainer: ProfileLite | null;
+};
+
+/** Ligne `enrollments` + embed `profile` du select des candidats Premium. */
+type PremiumEligibleRow = Pick<Tables<"enrollments">, "user_id"> & {
+  profile: ProfileLite | null;
+};
+
+const STATUS_META: Record<string, { label: string; tone: BadgeTone }> = {
   scheduled: { label: "Planifiée", tone: "navy" },
   in_progress: { label: "En cours", tone: "success" },
   completed: { label: "Terminée", tone: "slate" },
@@ -59,7 +85,7 @@ export default async function FormateurSessionDetailPage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: session } = await supabase
+  const { data: sessionRaw } = await supabase
     .from("live_sessions")
     .select(
       `
@@ -71,6 +97,7 @@ export default async function FormateurSessionDetailPage({
     .eq("id", params.id)
     .single();
 
+  const session = sessionRaw as SessionRow | null;
   if (!session) notFound();
 
   // Vérif habilitation : le formateur doit être habilité sur la formation
@@ -78,7 +105,7 @@ export default async function FormateurSessionDetailPage({
     .from("trainer_formations")
     .select("trainer_id")
     .eq("trainer_id", user.id)
-    .eq("formation_id", (session.formation as any).id)
+    .eq("formation_id", session.formation.id)
     .maybeSingle();
 
   if (!hab) {
@@ -107,25 +134,28 @@ export default async function FormateurSessionDetailPage({
     .eq("session_id", params.id);
 
   const userIds = (enrollments ?? []).map((e) => e.user_id);
-  const { data: profiles } = userIds.length
+  const { data: profilesRaw } = userIds.length
     ? await supabase
         .from("profiles")
         .select("id, full_name, email")
         .in("id", userIds)
-    : { data: [] as any[] };
+    : { data: [] as ProfileLite[] };
+  const profiles = (profilesRaw ?? []) as ProfileLite[];
 
   const { data: premiumEligible } = await supabase
     .from("enrollments")
-    .select("user_id, profile:profiles!inner(id, full_name, email)")
-    .eq("formation_id", (session.formation as any).id)
+    .select<string, PremiumEligibleRow>(
+      "user_id, profile:profiles!inner(id, full_name, email)"
+    )
+    .eq("formation_id", session.formation.id)
     .eq("pack", "premium")
     .neq("status", "refuse")
     .neq("status", "abandon");
 
   const enrolledIds = new Set(userIds);
   const candidates = (premiumEligible ?? [])
-    .map((e: any) => e.profile)
-    .filter((p: any) => p && !enrolledIds.has(p.id));
+    .map((e) => e.profile)
+    .filter((p): p is ProfileLite => p !== null && !enrolledIds.has(p.id));
 
   const Status = STATUS_META[session.status] ?? STATUS_META.scheduled;
   const confirmedCount = (enrollments ?? []).filter(
@@ -173,7 +203,7 @@ export default async function FormateurSessionDetailPage({
                 Premium
               </Badge>
               <span className="text-[11.5px] text-slate-500">
-                {(session.formation as any).title}
+                {session.formation.title}
               </span>
             </div>
             <h1 className="font-display text-3xl md:text-4xl font-semibold text-navy-950 tracking-tight">
@@ -290,7 +320,7 @@ export default async function FormateurSessionDetailPage({
           sessionId={params.id}
           enrollments={enrollments ?? []}
           attendance={attendance ?? []}
-          profiles={profiles ?? []}
+          profiles={profiles}
           sessionStatus={session.status}
         />
       </section>
@@ -321,7 +351,7 @@ function InfoCard({
   value,
   sub,
 }: {
-  icon: any;
+  icon: LucideIcon;
   label: string;
   value: string;
   sub?: string;

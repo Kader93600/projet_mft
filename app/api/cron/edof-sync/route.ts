@@ -16,12 +16,22 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createEdofClient, EdofNotImplementedError } from "@/lib/edof/client";
 import { isEdofConfigured, isEdofFeatureEnabled } from "@/lib/edof/config";
+import type { Json } from "@/lib/database.types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const CRON_SECRET = process.env.CRON_SECRET;
 const PAGE_SIZE = 100; // volume moyen → pagination raisonnable
+
+/**
+ * Curseur de synchro EDOF (table `edof_sync_state`, ligne singleton id=true).
+ * Table absente de `supabase/schema.sql` (feature EDOF encore inerte) → pas
+ * de `Tables<"edof_sync_state">` disponible : la forme lue est décrite ici.
+ */
+type EdofSyncStateRow = {
+  last_pulled_at: string | null;
+};
 
 export async function GET(req: Request) {
   if (!CRON_SECRET) {
@@ -44,12 +54,13 @@ export async function GET(req: Request) {
   const client = createEdofClient();
 
   // Curseur incrémental
-  const { data: state } = await supabase
+  const { data: rawState } = await supabase
     .from("edof_sync_state")
     .select("last_pulled_at")
     .eq("id", true)
     .maybeSingle();
-  const since = (state as any)?.last_pulled_at ?? undefined;
+  const state = rawState as EdofSyncStateRow | null;
+  const since = state?.last_pulled_at ?? undefined;
 
   try {
     let page = 1;
@@ -72,7 +83,8 @@ export async function GET(req: Request) {
         learner_email: d.learnerEmail,
         formation_label: d.formationLabel,
         amount_cents: d.amountCents,
-        raw: (d.raw ?? null) as any,
+        // `cpf_edof_dossiers.raw` : jsonb d'audit (payload EDOF brut).
+        raw: (d.raw ?? null) as Json,
         last_synced_at: runAt,
       }));
       const { error } = await supabase
