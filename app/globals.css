@@ -1019,6 +1019,87 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.25) !important;
   }
 
+  /* =====================================================================
+     PALETTE SÉMANTIQUE EN THÈME SOMBRE
+     ---------------------------------------------------------------------
+     Le thème sombre ne couvrait que navy/slate. Toute la palette sémantique
+     (gold, brand, rose, emerald, amber, signal) restait en teintes FONCÉES,
+     donc illisible sur fond sombre. Contrastes mesurés sur la carte (#121A2C)
+     AVANT correction :
+        text-brand-700  1,55:1   text-slate-900  1,19:1
+        text-rose-700   2,76:1   text-gold-700   3,53:1  (243 usages : accent + liens)
+        text-emerald-700 3,17:1  text-gold-800   2,53:1
+     Toutes sous le seuil WCAG AA (4,5:1). Les teintes ci-dessous montent
+     entre 7,4:1 et 12,5:1 (AA, souvent AAA), en conservant la teinte d'origine
+     pour ne pas perdre le sens (rouge = erreur, vert = succès, or = accent).
+     ===================================================================== */
+
+  /* ── Textes : accent de marque (« gold » = palette LIME dans ce projet,
+        gold-500 = #9FE220 ; le vrai or chaud est sous « amber »). On éclaircit
+        DANS la même teinte pour ne pas trahir l'identité. ── 12,5:1 */
+  .dark .text-gold-500, .dark .text-gold-600, .dark .text-gold-700 { color: #B6EC4F !important; }
+  .dark .text-gold-800, .dark .text-gold-900 { color: #A8DC3F !important; }
+
+  /* ── Textes : or chaud réel (amber — badges Qualiopi) ── 9,6:1 */
+  .dark .text-amber-600, .dark .text-amber-700 { color: #F0B84B !important; }
+  .dark .text-amber-800, .dark .text-amber-900 { color: #E5A83A !important; }
+
+  /* ── Textes : marque (bleu/indigo) ── 7,4 à 9,4:1 */
+  .dark .text-brand-600, .dark .text-brand-700 { color: #9AA2FF !important; }
+  .dark .text-brand-800, .dark .text-brand-900 { color: #B4BAFF !important; }
+  .dark .text-blue-600, .dark .text-blue-700,
+  .dark .text-blue-800, .dark .text-blue-900 { color: #9AC4FF !important; }
+
+  /* ── Textes : erreur (rose/rouge) ── 7,6 à 10,3:1 */
+  .dark .text-rose-600, .dark .text-red-600 { color: #FFB3BC !important; }
+  .dark .text-rose-700, .dark .text-red-700 { color: #FF9AA5 !important; }
+  .dark .text-rose-800, .dark .text-rose-900,
+  .dark .text-red-800, .dark .text-red-900 { color: #FF8794 !important; }
+
+  /* ── Textes : succès (vert) ── 8,6 à 10,7:1 */
+  .dark .text-emerald-600, .dark .text-green-600 { color: #6FE0AC !important; }
+  .dark .text-emerald-700, .dark .text-green-700 { color: #5FD6A0 !important; }
+  .dark .text-emerald-800, .dark .text-emerald-900,
+  .dark .text-green-800, .dark .text-green-900 { color: #4FCC94 !important; }
+
+  /* ── Textes : signal (lime) ── 12,5:1 */
+  .dark .text-signal-600, .dark .text-signal-700,
+  .dark .text-signal-800, .dark .text-signal-900 { color: #B6EC4F !important; }
+
+  /* ── Textes : slate foncés (invisibles en dark : 1,19:1) ── 14,9:1 */
+  .dark .text-slate-800, .dark .text-slate-900,
+  .dark .text-gray-800, .dark .text-gray-900 { color: #E8EEF9 !important; }
+
+  /* ── Surfaces neutres claires (cartes verrouillées, puces, encarts) ── */
+  .dark .bg-slate-50, .dark .bg-slate-50\/60, .dark .bg-slate-100,
+  .dark .bg-gray-50, .dark .bg-gray-100 { background: #1A2040 !important; }
+  .dark .bg-slate-200, .dark .bg-gray-200 { background: #2A3358 !important; }
+  .dark .bg-navy-800 { background: #0E1430 !important; }
+
+  /* ── Fonds teintés : deviennent des voiles sombres qui gardent la teinte ── */
+  .dark .bg-rose-50, .dark .bg-red-50 { background: rgba(255, 154, 165, 0.09) !important; }
+  .dark .bg-rose-100, .dark .bg-red-100 { background: rgba(255, 154, 165, 0.15) !important; }
+  .dark .bg-emerald-50, .dark .bg-green-50 { background: rgba(95, 214, 160, 0.09) !important; }
+  .dark .bg-emerald-100, .dark .bg-green-100 { background: rgba(95, 214, 160, 0.15) !important; }
+  .dark .bg-brand-50 { background: rgba(154, 162, 255, 0.09) !important; }
+  .dark .bg-brand-100 { background: rgba(154, 162, 255, 0.15) !important; }
+  .dark .bg-blue-50 { background: rgba(154, 196, 255, 0.09) !important; }
+  .dark .bg-signal-50 { background: rgba(182, 236, 79, 0.09) !important; }
+
+  /* ── Bordures ── */
+  .dark .border-slate-100, .dark .border-slate-200, .dark .border-slate-300,
+  .dark .border-gray-100, .dark .border-gray-200 { border-color: #2A3358 !important; }
+  .dark .border-navy-300 { border-color: #313A66 !important; }
+  .dark .border-navy-900, .dark .border-navy-950 { border-color: #060912 !important; }
+  .dark .border-rose-200, .dark .border-rose-300,
+  .dark .border-red-200 { border-color: rgba(255, 154, 165, 0.30) !important; }
+  .dark .border-emerald-200, .dark .border-emerald-300,
+  .dark .border-green-200 { border-color: rgba(95, 214, 160, 0.30) !important; }
+  .dark .border-gold-200, .dark .border-gold-300 { border-color: rgba(182, 236, 79, 0.30) !important; }
+  .dark .border-amber-200, .dark .border-amber-300 { border-color: rgba(240, 184, 75, 0.30) !important; }
+  .dark .border-brand-200, .dark .border-brand-300 { border-color: rgba(154, 162, 255, 0.30) !important; }
+  .dark .border-signal-200, .dark .border-signal-300 { border-color: rgba(182, 236, 79, 0.30) !important; }
+
   /* ============ Accessibilité (Point #12) ============ */
   /* Confort de lecture DYS. « OpenDyslexic » est utilisée si l'utilisateur
      l'a installée localement ; sinon on retombe sur des polices SYSTÈME

@@ -102,7 +102,11 @@ export function ModuleCard({ module: m }: { module: ModuleCardData }) {
           aria-hidden
           className="absolute inset-x-0 top-0 h-1 bg-slate-200"
         />
-        <div className="p-5 md:p-6 flex flex-col h-full min-h-[210px] opacity-60">
+        {/* En clair, opacity-60 suffit à signaler le verrouillage sans nuire à
+            la lecture (texte foncé sur carte claire). En sombre, il s'ajoutait
+            à des couleurs déjà atténuées et rendait la carte illisible : les
+            teintes muted du thème sombre portent déjà l'information. */}
+        <div className="p-5 md:p-6 flex flex-col h-full min-h-[210px] opacity-60 dark:opacity-95">
           <div className="flex items-start justify-between gap-3">
             <span className="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 border border-slate-200">
               {formation?.code ?? "Module"}
