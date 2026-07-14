@@ -1278,6 +1278,89 @@
   .dark .text-signal-700\/80 { color: #B6EC4F !important; }
   .dark .to-navy-50\/40 { --tw-gradient-to: rgba(26,32,64,0.4) !important; }
 
+  /* =====================================================================
+     CONTENU PÉDAGOGIQUE (.prose-lesson) EN THÈME SOMBRE
+     ---------------------------------------------------------------------
+     Le texte courant de la prose s'adapte déjà (il passe par des utilitaires
+     Tailwind). MAIS les blocs riches (callouts, tableaux, formulaires visuels,
+     arbres, timelines) sont stylés avec des couleurs LITTÉRALES et des
+     VARIABLES CSS écrites pour un fond clair. Elles échappent donc à toutes
+     les surcharges `.dark` basées sur les classes utilitaires.
+     Résultat : le texte des encadrés (#1f2937) et des tableaux (#0E1240)
+     restait NOIR sur fond sombre → cours illisibles.
+
+     On redéfinit les variables et les couleurs littérales, en CONSERVANT la
+     teinte porteuse de sens (lime = objectifs, rouge = piège, vert = synthèse).
+     ===================================================================== */
+
+  /* ── Callouts : texte commun + couleur de titre par variante ── */
+  .dark .prose-lesson .callout { --callout-text-color: #D5DDEC; }
+  .dark .prose-lesson .callout--objectifs  { --callout-title-color: #B6EC4F; --callout-bullet: #B6EC4F; }
+  .dark .prose-lesson .callout--important  { --callout-title-color: #9AA2FF; --callout-bullet: #9AA2FF; }
+  .dark .prose-lesson .callout--attention  { --callout-title-color: #F0B84B; --callout-bullet: #F0B84B; }
+  .dark .prose-lesson .callout--astuce     { --callout-title-color: #7DC8F7; --callout-bullet: #7DC8F7; }
+  .dark .prose-lesson .callout--synthese   { --callout-title-color: #5FD6A0; --callout-bullet: #5FD6A0; }
+  .dark .prose-lesson .callout--focus      { --callout-title-color: #C3CCE0; --callout-bullet: #C3CCE0; }
+  .dark .prose-lesson .callout--piege      { --callout-title-color: #FF9AA5; --callout-bullet: #FFB3BC; }
+  .dark .prose-lesson .callout--ressource  { --callout-title-color: #A5AFFF; --callout-bullet: #A5AFFF; }
+  .dark .prose-lesson .callout--examen     { --callout-title-color: #F0B84B; --callout-bullet: #F0B84B; }
+
+  /* ── Tableaux de données ── */
+  .dark .prose-lesson .data-table th { color: #9AA2FF !important; }
+  .dark .prose-lesson .data-table td { color: #D5DDEC !important; }
+  .dark .prose-lesson .data-table .data-table__cell--num { color: #E8EEF9 !important; }
+  .dark .prose-lesson .data-table[data-variant="kv"] td:first-child { color: #9AA2FF !important; }
+  .dark .prose-lesson .data-table[data-variant="kv"] td:last-child { color: #E8EEF9 !important; }
+  .dark .prose-lesson .data-table[data-variant="grid"] td::before { color: #9AA2FF !important; }
+  .dark .prose-lesson .data-table[data-variant="grid"] td:first-child { color: #E8EEF9 !important; }
+  .dark .prose-lesson .data-table[data-variant="grid"] tbody,
+  .dark .prose-lesson .data-table[data-variant="grid"] tbody tr:nth-child(even) td {
+    background: rgba(255, 255, 255, 0.035) !important;
+  }
+  .dark .prose-lesson .data-table[data-variant="grid"] tbody tr:hover td,
+  .dark .prose-lesson .data-table[data-variant="kv"] tr:hover {
+    background: rgba(154, 162, 255, 0.10) !important;
+  }
+
+  /* ── Formulaires visuels ── */
+  .dark .prose-lesson .visual-form__value { color: #E8EEF9 !important; }
+  .dark .prose-lesson .visual-form__chip {
+    color: #D5DDEC !important;
+    background: rgba(154, 162, 255, 0.10) !important;
+  }
+  .dark .prose-lesson .visual-form__chip:hover {
+    background: rgba(154, 162, 255, 0.18) !important;
+    border-color: rgba(154, 162, 255, 0.35) !important;
+  }
+  .dark .prose-lesson .visual-form__note { background: rgba(240, 184, 75, 0.09) !important; }
+  .dark .prose-lesson .visual-form__checkbox {
+    background: #1A2040 !important;
+    border-color: rgba(255, 255, 255, 0.20) !important;
+  }
+  .dark .prose-lesson .visual-form__checkbox.is-checked {
+    background: #9AA2FF !important;
+    border-color: #9AA2FF !important;
+    color: #0B0F24 !important;
+  }
+  .dark .prose-lesson .visual-form__sep { background: rgba(154, 162, 255, 0.10) !important; }
+
+  /* ── Arbres / arborescences ── */
+  .dark .prose-lesson .visual-tree { background: #121A2C !important; }
+  .dark .prose-lesson .visual-tree pre code { color: #D5DDEC !important; }
+  .dark .prose-lesson .tree-dash { color: rgba(154, 162, 255, 0.55) !important; }
+  .dark .prose-lesson .tree-branch--last { color: rgba(154, 162, 255, 0.85) !important; }
+
+  /* ── Diagrammes de flux / timelines ── */
+  .dark .prose-lesson .flow-card__num {
+    background: #9AA2FF !important;
+    color: #0B0F24 !important;
+  }
+  .dark .prose-lesson .timeline__dot {
+    background: #1A2040 !important;
+    color: #9AA2FF !important;
+  }
+  .dark .prose-lesson .timeline__content { color: #D5DDEC !important; }
+
   /* ── Derniers trous relevés par l'audit exhaustif des classes utilisées ──
      Bordures FONCÉES (quasi invisibles sur fond sombre) et bordures trop
      CLAIRES (trop lumineuses), plus le séparateur divide-navy-100. */
