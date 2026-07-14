@@ -1392,6 +1392,75 @@
   .dark .border-emerald-100 { border-color: rgba(95, 214, 160, 0.22) !important; }
   .dark .border-gold-100 { border-color: rgba(182, 236, 79, 0.22) !important; }
 
+
+  /* =====================================================================
+     DÉGRADÉS TAILWIND + TEINTES PÂLES « signal » EN THÈME SOMBRE
+     ---------------------------------------------------------------------
+     Deux trous de mon générateur précédent, révélés par la carte « Suivant »
+     (bg-gradient-to-br from-white to-signal-50/40) qui restait BLANCHE :
+       1. il SAUTAIT les classes simples (sans opacité ni variante), en
+          supposant qu'elles étaient déjà couvertes. Or seul `.dark .to-white`
+          existait : `from-white` et `via-white` ne l'étaient pas.
+       2. son garde-fou excluait tout ce qui commence par `signal-5`, ce qui
+          attrapait aussi `signal-50` — une teinte PÂLE, à assombrir.
+
+     On ne touche QUE les teintes pâles (white, ivory, *-50/100/200) : les
+     dégradés VIFS (from-brand-600, to-gold-600, from-amber-500…) sont des
+     boutons/CTA à texte blanc, lisibles sur les deux thèmes → laissés.
+     ===================================================================== */
+
+  .dark .bg-emerald-100 { background-color: rgba(95,214,160,0.15) !important; }
+  .dark .bg-emerald-50 { background-color: rgba(95,214,160,0.09) !important; }
+  .dark .bg-ivory { background-color: rgba(18,26,44,1) !important; }
+  .dark .bg-rose-100 { background-color: rgba(255,154,165,0.15) !important; }
+  .dark .bg-rose-50 { background-color: rgba(255,154,165,0.09) !important; }
+  .dark .bg-signal-100 { background-color: rgba(159,226,32,0.15) !important; }
+  .dark .bg-signal-100\/60 { background-color: rgba(159,226,32,0.15) !important; }
+  .dark .bg-signal-50\/40 { background-color: rgba(159,226,32,0.072) !important; }
+  .dark .bg-signal-50\/60 { background-color: rgba(159,226,32,0.09) !important; }
+  .dark .bg-slate-100 { background-color: rgba(26,32,64,1) !important; }
+  .dark .bg-slate-200 { background-color: rgba(42,51,88,1) !important; }
+  .dark .bg-slate-50 { background-color: rgba(26,32,64,1) !important; }
+  .dark .bg-white\/10 { background-color: rgba(18,26,44,0.1) !important; }
+  .dark .bg-white\/20 { background-color: rgba(18,26,44,0.2) !important; }
+  .dark .bg-white\/40 { background-color: rgba(18,26,44,0.4) !important; }
+  .dark .bg-white\/5 { background-color: rgba(18,26,44,0.05) !important; }
+  .dark .bg-white\/60 { background-color: rgba(18,26,44,0.6) !important; }
+  .dark .bg-white\/8 { background-color: rgba(18,26,44,0.08) !important; }
+  .dark .from-amber-50\/60 { --tw-gradient-from: rgba(245,158,11,0.09) !important; }
+  .dark .from-amber-50\/80 { --tw-gradient-from: rgba(245,158,11,0.108) !important; }
+  .dark .from-brand-50 { --tw-gradient-from: rgba(154,162,255,0.09) !important; }
+  .dark .from-brand-50\/60 { --tw-gradient-from: rgba(154,162,255,0.09) !important; }
+  .dark .from-emerald-50 { --tw-gradient-from: rgba(95,214,160,0.09) !important; }
+  .dark .from-emerald-50\/60 { --tw-gradient-from: rgba(95,214,160,0.09) !important; }
+  .dark .from-gold-100 { --tw-gradient-from: rgba(159,226,32,0.15) !important; }
+  .dark .from-gold-50\/30 { --tw-gradient-from: rgba(159,226,32,0.063) !important; }
+  .dark .from-gold-50\/60 { --tw-gradient-from: rgba(159,226,32,0.09) !important; }
+  .dark .from-navy-50 { --tw-gradient-from: rgba(26,32,64,1) !important; }
+  .dark .from-rose-50 { --tw-gradient-from: rgba(255,154,165,0.09) !important; }
+  .dark .from-white { --tw-gradient-from: rgba(18,26,44,1) !important; }
+  .dark .hover\:bg-signal-100:hover { background-color: rgba(159,226,32,0.15) !important; }
+  .dark .hover\:bg-signal-50\/30:hover { background-color: rgba(159,226,32,0.063) !important; }
+  .dark .hover\:bg-white\/10:hover { background-color: rgba(18,26,44,0.1) !important; }
+  .dark .hover\:bg-white\/15:hover { background-color: rgba(18,26,44,0.15) !important; }
+  .dark .hover\:bg-white\/20:hover { background-color: rgba(18,26,44,0.2) !important; }
+  .dark .hover\:bg-white\/5:hover { background-color: rgba(18,26,44,0.05) !important; }
+  .dark .hover\:from-brand-50:hover { --tw-gradient-from: rgba(154,162,255,0.09) !important; }
+  .dark .hover\:to-signal-50:hover { --tw-gradient-to: rgba(159,226,32,0.09) !important; }
+  .dark .to-amber-100 { --tw-gradient-to: rgba(245,158,11,0.15) !important; }
+  .dark .to-amber-50 { --tw-gradient-to: rgba(245,158,11,0.09) !important; }
+  .dark .to-brand-50\/30 { --tw-gradient-to: rgba(154,162,255,0.063) !important; }
+  .dark .to-brand-50\/40 { --tw-gradient-to: rgba(154,162,255,0.072) !important; }
+  .dark .to-emerald-50\/40 { --tw-gradient-to: rgba(95,214,160,0.072) !important; }
+  .dark .to-gold-100 { --tw-gradient-to: rgba(159,226,32,0.15) !important; }
+  .dark .to-gold-50 { --tw-gradient-to: rgba(159,226,32,0.09) !important; }
+  .dark .to-ivory { --tw-gradient-to: rgba(18,26,44,1) !important; }
+  .dark .to-navy-50 { --tw-gradient-to: rgba(26,32,64,1) !important; }
+  .dark .to-signal-50 { --tw-gradient-to: rgba(159,226,32,0.09) !important; }
+  .dark .to-signal-50\/40 { --tw-gradient-to: rgba(159,226,32,0.072) !important; }
+  .dark .to-white\/40 { --tw-gradient-to: rgba(18,26,44,0.4) !important; }
+  .dark .via-white { --tw-gradient-via: rgba(18,26,44,1) !important; }
+
   /* =====================================================================
      BADGES / PASTILLES DE FORMATION (accent propre à chaque formation)
      ---------------------------------------------------------------------
