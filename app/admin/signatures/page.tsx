@@ -20,7 +20,7 @@ function fmt(d?: string | null) {
 }
 
 export default async function AdminSignaturesPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

@@ -56,12 +56,13 @@ type OrderedModuleRow = {
  *  - Timeline verticale des leçons (numéro + ligne, statut visible)
  *  - Section Quizzes : entraînement à gauche, examen blanc en avant à droite
  */
-export default async function ModuleDetail({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  const supabase = createClient();
+export default async function ModuleDetail(
+  props: {
+    params: Promise<{ slug: string }>;
+  }
+) {
+  const params = await props.params;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

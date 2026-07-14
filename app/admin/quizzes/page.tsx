@@ -9,7 +9,7 @@ import { QuizTable } from "./quiz-table";
 export const dynamic = "force-dynamic";
 
 export default async function AdminQuizzes() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { slugs, isTrainerOnly } = await getAuthorizedFormationSlugs();
 
   const [

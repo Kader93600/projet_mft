@@ -122,12 +122,13 @@ function flagEmoji(code: string): string {
   );
 }
 
-export default async function AdminAnalytics({
-  searchParams,
-}: {
-  searchParams?: { period?: string };
-}) {
-  const supabase = createClient();
+export default async function AdminAnalytics(
+  props: {
+    searchParams?: Promise<{ period?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const supabase = await createClient();
 
   // Période sélectionnée (par défaut 30 jours)
   const periodDays = Math.max(

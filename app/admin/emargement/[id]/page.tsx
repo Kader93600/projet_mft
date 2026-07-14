@@ -48,12 +48,13 @@ function fmtTime(iso: string) {
   }).format(new Date(iso));
 }
 
-export default async function EmargementDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const supabase = createClient();
+export default async function EmargementDetailPage(
+  props: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  const params = await props.params;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -115,7 +116,6 @@ export default async function EmargementDetailPage({
       >
         <ArrowLeft className="h-4 w-4" /> Émargement
       </Link>
-
       <header className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -144,11 +144,9 @@ export default async function EmargementDetailPage({
           <Download className="h-4 w-4" /> Feuille d'émargement (PDF)
         </a>
       </header>
-
       <Badge tone={signedCount >= rows.length && rows.length > 0 ? "success" : "gold"}>
         {signedCount} / {rows.length} signature{signedCount > 1 ? "s" : ""}
       </Badge>
-
       <Card>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -185,11 +183,11 @@ export default async function EmargementDetailPage({
                   <td className="px-5 py-3">
                     {r.sig?.signature_data ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      (<img
                         src={r.sig.signature_data}
                         alt="Signature"
                         className="h-9 w-auto max-w-[140px] rounded border border-navy-100 bg-white"
-                      />
+                      />)
                     ) : (
                       <span className="text-slate-300 text-xs">—</span>
                     )}

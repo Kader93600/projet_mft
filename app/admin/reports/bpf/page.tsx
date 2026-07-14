@@ -49,15 +49,16 @@ function fmtNumber(n: number, digits = 0) {
   }).format(n);
 }
 
-export default async function BpfPage({
-  searchParams,
-}: {
-  searchParams?: { year?: string };
-}) {
+export default async function BpfPage(
+  props: {
+    searchParams?: Promise<{ year?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const year = Number(searchParams?.year ?? new Date().getFullYear() - 1);
   const yearStart = `${year}-01-01`;
   const yearEnd = `${year + 1}-01-01`;
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // 1) Synthèse principale (KPI tier 1)
   const summaryRes = await supabase.rpc("bpf_summary", { p_year: year });

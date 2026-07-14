@@ -157,7 +157,7 @@ type EnrollmentRow = Pick<Tables<"enrollments">, "id"> & {
 type LeadRow = Pick<Tables<"enrollment_requests">, "id" | "full_name" | "email">;
 
 export default async function AuditLogPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: logs } = await supabase
     .from("audit_log")
     .select("*")

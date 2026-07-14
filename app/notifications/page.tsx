@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
  * client `NotificationsArchive`.
  */
 export default async function NotificationsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

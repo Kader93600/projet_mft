@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 // Petit endpoint pour le polling de la cloche.
 export async function GET() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

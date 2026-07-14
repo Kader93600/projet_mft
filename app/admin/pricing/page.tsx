@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
  * déjà l'AdminShell avec sidebar + breadcrumb.
  */
 export default async function AdminPricingPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

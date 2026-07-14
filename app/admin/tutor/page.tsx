@@ -30,7 +30,7 @@ const fmtEuros = (cents: number) =>
 const ALERT_THRESHOLD_CHAT_CENTS = 3000; // 30 € chat (Claude)
 
 export default async function AdminTutorPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

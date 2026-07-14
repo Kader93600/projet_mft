@@ -39,20 +39,21 @@ const MODULE_LABELS: Record<string, string> = {
   f: "F — Sécurité",
 };
 
-export default async function BanqueQuestionsListPage({
-  searchParams,
-}: {
-  searchParams?: {
-    f?: string;
-    q?: string;
-    type?: string;
-    status?: string;
-    module?: string;
-    sort?: string;
-    page?: string;
-  };
-}) {
-  const supabase = createClient();
+export default async function BanqueQuestionsListPage(
+  props: {
+    searchParams?: Promise<{
+      f?: string;
+      q?: string;
+      type?: string;
+      status?: string;
+      module?: string;
+      sort?: string;
+      page?: string;
+    }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const supabase = await createClient();
 
   const formationSlug = searchParams?.f ?? "";
   const search = (searchParams?.q ?? "").trim();

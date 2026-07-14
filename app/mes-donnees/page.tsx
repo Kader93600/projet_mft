@@ -45,7 +45,7 @@ const CONSENT_LABEL: Record<string, { label: string; desc: string; icon: any }> 
 };
 
 export default async function MesDonneesPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

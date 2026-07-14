@@ -43,7 +43,7 @@ function errMessage(e: unknown): string {
 /** Query builder d'un `select(...)` — le nom de table est dynamique ici, donc
  *  on dérive le type du builder depuis les clients eux-mêmes. */
 type SessionCountQuery = ReturnType<
-  ReturnType<ReturnType<typeof createClient>["from"]>["select"]
+  ReturnType<Awaited<ReturnType<typeof createClient>>["from"]>["select"]
 >;
 type ServiceCountQuery = ReturnType<
   ReturnType<ReturnType<typeof createAdminClient>["from"]>["select"]
@@ -120,7 +120,7 @@ export async function GET() {
   };
 
   // ─── 1) Auth session ────────────────────────────────────────────────────
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: userData, error: userErr } = await supabase.auth.getUser();
   const sessionUser = userData?.user ?? null;
   report.session.has_session_cookie = !!sessionUser;

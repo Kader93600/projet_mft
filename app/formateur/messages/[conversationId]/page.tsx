@@ -5,10 +5,11 @@ import { redirect } from "next/navigation";
  * /formateur/messages/[conversationId]. On les redirige vers la
  * nouvelle structure /formateur/messages?c=...
  */
-export default function LegacyTrainerThreadPage({
-  params,
-}: {
-  params: { conversationId: string };
-}) {
+export default async function LegacyTrainerThreadPage(
+  props: {
+    params: Promise<{ conversationId: string }>;
+  }
+) {
+  const params = await props.params;
   redirect(`/formateur/messages?c=${params.conversationId}`);
 }

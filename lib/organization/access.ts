@@ -21,7 +21,7 @@ export interface OrganizationAccess {
 }
 
 export async function getOrganizationAccess(): Promise<OrganizationAccess> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

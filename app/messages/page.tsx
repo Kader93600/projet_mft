@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
  * La logique d'affichage est entièrement gérée par <MessagingShell />.
  */
 export default async function MessagesPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

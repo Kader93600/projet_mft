@@ -10,7 +10,7 @@ import { trackServerEvent } from "@/lib/analytics-server";
 // ---------------------------------------------------------------------
 
 async function requireUser() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -19,7 +19,7 @@ async function requireUser() {
 }
 
 async function getSession(sessionId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data } = await supabase
     .from("live_sessions")
     .select(
@@ -168,7 +168,7 @@ export async function signAttendance(
   }
 
   // 4) Audit IP / UA (Qualiopi)
-  const h = headers();
+  const h = await headers();
   const ip =
     h.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     h.get("x-real-ip") ||

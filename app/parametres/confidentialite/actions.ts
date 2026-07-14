@@ -8,7 +8,7 @@ import { revalidatePath } from "next/cache";
  * Le RPC SQL vérifie l'authentification.
  */
 export async function setLeaderboardOptOut(optOut: boolean) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase.rpc("set_leaderboard_opt_out", {
     p_opt_out: optOut,
   });

@@ -39,7 +39,7 @@ function isOpenForSigning(starts: string, ends: string) {
 }
 
 export default async function EmargementPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

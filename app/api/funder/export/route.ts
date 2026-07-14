@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   let query = supabase
     .from("funder_student_details")
     .select("*")

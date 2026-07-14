@@ -35,10 +35,8 @@ const KIND_BY_MIME: Record<string, "image" | "pdf" | "document" | "other"> = {
   "text/csv": "document",
 };
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } },
-) {
+export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const { supabase, admin } = await requireAdmin();
     const questionId = params.id;
@@ -134,10 +132,8 @@ export async function POST(
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } },
-) {
+export async function DELETE(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const { supabase } = await requireAdmin();
     const questionId = params.id;

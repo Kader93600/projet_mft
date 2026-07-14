@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import {
   UploadCloud,
@@ -286,13 +287,13 @@ export function CourseImportFlow({
                   <RotateCcw className="h-3.5 w-3.5" />
                   Nouvel import
                 </button>
-                <a
+                <Link
                   href="/admin/modules"
                   className="inline-flex items-center gap-1.5 text-sm font-semibold px-3.5 py-2 rounded-lg border border-emerald-300 bg-white text-emerald-900 hover:bg-emerald-50 transition"
                 >
                   Voir les modules
                   <ArrowRight className="h-3.5 w-3.5" />
-                </a>
+                </Link>
               </div>
             </div>
           </div>

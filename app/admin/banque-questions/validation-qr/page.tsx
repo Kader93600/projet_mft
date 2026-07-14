@@ -42,12 +42,13 @@ type AttachmentRow = Pick<
 
 type ImportRow = Pick<Tables<"question_imports">, "id" | "pdf_storage_path">;
 
-export default async function ValidationQrPage({
-  searchParams,
-}: {
-  searchParams?: { f?: string; module?: string };
-}) {
-  const supabase = createClient();
+export default async function ValidationQrPage(
+  props: {
+    searchParams?: Promise<{ f?: string; module?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const supabase = await createClient();
   const slug = searchParams?.f ?? "capacite-3-5t";
   const groupFilter = searchParams?.module ?? "";
 

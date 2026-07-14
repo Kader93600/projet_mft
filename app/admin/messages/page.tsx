@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
  * les conversations grâce à la RLS spéciale `is_staff()`.
  */
 export default async function AdminMessagesPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

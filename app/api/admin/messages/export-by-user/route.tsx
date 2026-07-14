@@ -58,7 +58,7 @@ const CONV_HARD_LIMIT = 50;
  * Réservé aux admins / super_admins.
  */
 export async function GET(req: NextRequest) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

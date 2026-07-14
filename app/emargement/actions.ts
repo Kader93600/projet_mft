@@ -7,7 +7,7 @@ export async function signAttendance(sessionId: string, formData: FormData) {
   const ack = formData.get("ack") === "on";
   if (!ack) throw new Error("Vous devez confirmer votre présence.");
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -22,7 +22,7 @@ export async function signAttendance(sessionId: string, formData: FormData) {
   const name = (profile?.full_name ?? "").trim();
   if (name.length < 2) throw new Error("Profil incomplet : nom manquant.");
 
-  const h = headers();
+  const h = await headers();
   const ip = (h.get("x-forwarded-for") ?? "").split(",")[0]?.trim() || null;
   const ua = h.get("user-agent") ?? null;
 

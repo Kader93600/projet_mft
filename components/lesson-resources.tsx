@@ -33,7 +33,7 @@ function formatSize(kb?: number | null) {
 }
 
 export async function LessonResources({ lessonId }: { lessonId: string }) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data } = await supabase
     .from("lesson_resources")
     .select("*")

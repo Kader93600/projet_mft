@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { HeartHandshake, Video, Phone, MapPin, ArrowRight } from "lucide-react";
 
 export async function NextSessionCard() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

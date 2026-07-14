@@ -9,7 +9,7 @@ import { revalidatePath } from "next/cache";
  * est org_admin de la même orga ou admin MFT.
  */
 export async function removeMember(memberId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase.rpc("remove_organization_member", {
     p_member_id: memberId,
   });

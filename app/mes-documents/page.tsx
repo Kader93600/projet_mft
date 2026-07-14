@@ -89,7 +89,7 @@ function fmt(d: string) {
 }
 
 export default async function MesDocumentsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

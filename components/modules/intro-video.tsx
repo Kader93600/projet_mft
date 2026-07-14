@@ -22,7 +22,7 @@ export async function ModuleIntroVideo({
 }) {
   if (!videoPath) return null;
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: signed, error } = await supabase.storage
     .from("module-intro-videos")
     .createSignedUrl(videoPath, 60 * 60); // 1h

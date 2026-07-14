@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { placementSubmitSchema, formatZodError } from "@/lib/validations";
 
 export async function submitPlacement(raw: unknown) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

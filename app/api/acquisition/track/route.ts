@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
   // 2. User ID si déjà connecté
   let userId: string | null = null;
   try {
-    const supabase = createBrowserClient();
+    const supabase = await createBrowserClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

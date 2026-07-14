@@ -20,7 +20,7 @@ import { LEGAL } from "@/lib/legal-config";
 export const dynamic = "force-dynamic";
 
 export default async function AdminHome() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const [
     { count: usersCount },

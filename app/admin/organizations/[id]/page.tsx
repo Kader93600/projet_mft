@@ -56,12 +56,13 @@ const STATUS_TONE: Record<string, "gold" | "success" | "rose" | "slate"> = {
   churned: "slate",
 };
 
-export default async function AdminOrgDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const supabase = createClient();
+export default async function AdminOrgDetailPage(
+  props: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  const params = await props.params;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

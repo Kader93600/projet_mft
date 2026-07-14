@@ -48,12 +48,13 @@ type EditableQuestion = Omit<
   choices: QuestionChoice[] | null;
 };
 
-export default async function EditQuestionPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const supabase = createClient();
+export default async function EditQuestionPage(
+  props: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  const params = await props.params;
+  const supabase = await createClient();
   const { data } = await supabase
     .from("question_bank")
     .select(

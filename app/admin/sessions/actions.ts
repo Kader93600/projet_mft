@@ -15,7 +15,7 @@ import { isStaff } from "@/lib/permissions";
  * habilité sur la formation cible. Renvoie le client + le profil.
  */
 async function requireStaffOrTrainerForFormation(formationId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -49,7 +49,7 @@ async function requireStaffOrTrainerForFormation(formationId: string) {
  * Récupère la session par id + son formation_id (pour les guards).
  */
 async function getSessionFormationId(sessionId: string): Promise<string> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data } = await supabase
     .from("live_sessions")
     .select("formation_id")

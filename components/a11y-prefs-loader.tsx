@@ -19,11 +19,11 @@ import { createClient } from "@/lib/supabase/server";
  * script inline <ThemeInit/> (anti-FOUC côté client) — rien à faire ici.
  */
 export async function A11yPrefsLoader() {
-  const jar = cookies();
+  const jar = await cookies();
   const hasAuthCookie = jar.getAll().some((c) => c.name.startsWith("sb-"));
   if (!hasAuthCookie) return null;
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

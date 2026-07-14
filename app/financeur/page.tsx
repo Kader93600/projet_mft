@@ -81,7 +81,7 @@ export default async function FinanceurPage() {
     );
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // KPIs via RPC (security definer)
   const { data: kpis } = await supabase

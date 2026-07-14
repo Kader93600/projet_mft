@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 export const dynamic = "force-dynamic";
 
 export default async function AuditLogPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: rows } = await supabase
     .from("audit_logs")
     .select("*, actor:profiles!audit_logs_actor_id_fkey(full_name, email)")

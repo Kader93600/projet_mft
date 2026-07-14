@@ -77,12 +77,13 @@ type PlacementRow = Omit<
 
 type BlocRow = Pick<Tables<"blocs">, "id" | "code" | "title">;
 
-export default async function UserProfilePage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const supabase = createClient();
+export default async function UserProfilePage(
+  props: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  const params = await props.params;
+  const supabase = await createClient();
 
   const [{ data: user }, { data: groups }] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", params.id).single(),

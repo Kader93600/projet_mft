@@ -151,9 +151,10 @@ type BuildingQuestion = UnifiedQuestion & {
   import_id_raw?: string | null;
 };
 
-export default async function QuizPage({ params }: { params: { id: string } }) {
+export default async function QuizPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const t = await getTranslations("quiz");
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

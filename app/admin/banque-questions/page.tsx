@@ -15,12 +15,13 @@ import { FORMATIONS } from "@/lib/formations-config";
 
 export const dynamic = "force-dynamic";
 
-export default async function BanqueQuestionsPage({
-  searchParams,
-}: {
-  searchParams?: { f?: string };
-}) {
-  const supabase = createClient();
+export default async function BanqueQuestionsPage(
+  props: {
+    searchParams?: Promise<{ f?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const supabase = await createClient();
   const filter = searchParams?.f ?? "";
 
   // Stats par formation

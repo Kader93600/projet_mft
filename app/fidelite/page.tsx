@@ -57,7 +57,7 @@ const TIER_META: Record<
 };
 
 export default async function FidelitePage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

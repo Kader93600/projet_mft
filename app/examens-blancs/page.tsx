@@ -96,13 +96,14 @@ type UserExamStats = {
   passed: boolean;
 };
 
-export default async function ExamensBlancsPage({
-  searchParams,
-}: {
-  searchParams?: { f?: string; tab?: string };
-}) {
+export default async function ExamensBlancsPage(
+  props: {
+    searchParams?: Promise<{ f?: string; tab?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const t = await getTranslations("examensBlancs");
-  const supabase = createClient();
+  const supabase = await createClient();
   const filterFormation = searchParams?.f ?? null;
   const tab = (searchParams?.tab === "global" ? "global" : "module") as
     | "module"

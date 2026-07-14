@@ -17,7 +17,7 @@ const STATUS_TONE: Record<string, "navy" | "gold" | "success" | "slate" | "rose"
 };
 
 export default async function AdminA11yPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const [{ data: requests }, { data: overview }] = await Promise.all([
     supabase
       .from("accessibility_requests")

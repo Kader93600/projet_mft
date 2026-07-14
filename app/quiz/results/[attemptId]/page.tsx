@@ -141,17 +141,18 @@ type FreshBadgeRow = Pick<Tables<"user_badges">, "earned_at"> & {
   badges: Pick<Tables<"badges">, "name" | "description" | "icon" | "tier"> | null;
 };
 
-export default async function QuizResultsPage({
-  params,
-  searchParams,
-}: {
-  params: { attemptId: string };
-  searchParams?: { celebrate?: string };
-}) {
+export default async function QuizResultsPage(
+  props: {
+    params: Promise<{ attemptId: string }>;
+    searchParams?: Promise<{ celebrate?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const t = await getTranslations("quizResults");
   const locale = await getLocale();
   const dateLocale = locale === "en" ? "en-GB" : "fr-FR";
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

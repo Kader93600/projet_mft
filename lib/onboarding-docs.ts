@@ -14,7 +14,7 @@ export interface PendingDoc {
  * inscrits, ou document publié après leur entrée en formation).
  */
 export async function getPendingDocuments(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string
 ): Promise<PendingDoc[]> {
   const [{ data: docs }, { data: acc }] = await Promise.all([

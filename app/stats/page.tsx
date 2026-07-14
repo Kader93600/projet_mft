@@ -78,7 +78,7 @@ function fmtHours(s: number) {
 }
 
 export default async function StatsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

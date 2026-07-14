@@ -21,12 +21,13 @@ import { FORMATIONS, findFormation } from "@/lib/formations-config";
 
 export const dynamic = "force-dynamic";
 
-export default async function FormateursAffectationsPage({
-  searchParams,
-}: {
-  searchParams?: { f?: string };
-}) {
-  const supabase = createClient();
+export default async function FormateursAffectationsPage(
+  props: {
+    searchParams?: Promise<{ f?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const supabase = await createClient();
 
   const filterFormation = (searchParams?.f ?? "").trim();
 

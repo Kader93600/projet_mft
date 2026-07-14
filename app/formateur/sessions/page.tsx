@@ -39,12 +39,13 @@ function fmtDuration(start: string, end: string): string {
   return m ? `${h}h${String(m).padStart(2, "0")}` : `${h}h`;
 }
 
-export default async function FormateurSessionsPage({
-  searchParams,
-}: {
-  searchParams?: { filter?: string };
-}) {
-  const supabase = createClient();
+export default async function FormateurSessionsPage(
+  props: {
+    searchParams?: Promise<{ filter?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

@@ -37,7 +37,7 @@ const STATUS_TONE: Record<string, "gold" | "success" | "rose" | "slate"> = {
 };
 
 export default async function AdminOrganizationsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

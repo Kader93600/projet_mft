@@ -16,7 +16,7 @@ const STATUS_TONE: Record<string, "gold" | "navy" | "success" | "slate" | "rose"
 };
 
 export default async function AdminRgpdPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const [{ data: requests }, { data: log }, { data: consents }] =
     await Promise.all([

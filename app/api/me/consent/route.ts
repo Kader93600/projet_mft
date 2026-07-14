@@ -21,7 +21,7 @@ export async function POST(req: Request) {
       headers: rateLimitHeaders(rl, 30),
     });
   }
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

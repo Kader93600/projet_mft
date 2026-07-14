@@ -4,7 +4,7 @@ import { BadgeEditor } from "./badge-editor";
 export const dynamic = "force-dynamic";
 
 export default async function AdminBadgesPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: badges } = await supabase
     .from("badges")
     .select("*")

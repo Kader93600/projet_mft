@@ -99,10 +99,10 @@ function Doc({
               <View style={[pdfStyles.td, { width: "27%" }]}>
                 {r.signature ? (
                   // eslint-disable-next-line jsx-a11y/alt-text
-                  <Image
+                  (<Image
                     src={r.signature}
                     style={{ width: 90, height: 30, objectFit: "contain" }}
-                  />
+                  />)
                 ) : (
                   <Text style={{ color: "#94a3b8" }}>—</Text>
                 )}
@@ -127,11 +127,9 @@ function Doc({
   );
 }
 
-export async function GET(
-  _req: Request,
-  { params }: { params: { id: string } }
-) {
-  const supabase = createClient();
+export async function GET(_req: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

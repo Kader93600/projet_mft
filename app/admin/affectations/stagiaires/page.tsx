@@ -25,12 +25,13 @@ const STATUS_TONE: Record<string, "gold" | "navy" | "success" | "slate" | "rose"
   refuse: "rose",
 };
 
-export default async function StagiairesAffectationsPage({
-  searchParams,
-}: {
-  searchParams?: { f?: string; q?: string };
-}) {
-  const supabase = createClient();
+export default async function StagiairesAffectationsPage(
+  props: {
+    searchParams?: Promise<{ f?: string; q?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const supabase = await createClient();
 
   const filterFormation = (searchParams?.f ?? "").trim();
   const search = (searchParams?.q ?? "").trim();

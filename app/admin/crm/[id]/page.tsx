@@ -70,12 +70,13 @@ const MODALITY_LABEL: Record<string, string> = {
   mixte: "Mixte (présentiel + distanciel)",
 };
 
-export default async function CrmLeadDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const supabase = createClient();
+export default async function CrmLeadDetailPage(
+  props: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  const params = await props.params;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

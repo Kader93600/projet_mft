@@ -47,7 +47,7 @@ const TIER_STYLES: Record<string, string> = {
 };
 
 export async function RecentAchievements() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

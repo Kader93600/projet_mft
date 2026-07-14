@@ -17,7 +17,7 @@ import { LEGAL } from "@/lib/legal-config";
 export const dynamic = "force-dynamic";
 
 export default async function AdminFormationsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Demandes agrégées (vue formations_demand)
   const [{ data: demand }, { data: enrollByFormation }] = await Promise.all([

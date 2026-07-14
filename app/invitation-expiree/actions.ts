@@ -26,7 +26,7 @@ export async function resendInvitation(rawEmail: string): Promise<{
     return { ok: false, error: "Adresse email invalide." };
   }
 
-  const ip = clientIp(headers());
+  const ip = clientIp(await headers());
   const [ipLimit, mailLimit] = await Promise.all([
     rateLimit({ key: `resend-invite:ip:${ip}`, limit: 5, windowSec: 600 }),
     rateLimit({ key: `resend-invite:mail:${email}`, limit: 3, windowSec: 3600 }),

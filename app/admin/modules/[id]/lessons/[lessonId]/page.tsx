@@ -38,12 +38,13 @@ type LessonVersionRow = Pick<
   editor: Pick<Tables<"profiles">, "full_name" | "email"> | null;
 };
 
-export default async function EditLessonPage({
-  params,
-}: {
-  params: { id: string; lessonId: string };
-}) {
-  const supabase = createClient();
+export default async function EditLessonPage(
+  props: {
+    params: Promise<{ id: string; lessonId: string }>;
+  }
+) {
+  const params = await props.params;
+  const supabase = await createClient();
   const [
     { data: module },
     { data: lessonData },

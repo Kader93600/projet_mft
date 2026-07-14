@@ -18,7 +18,7 @@ import { isStaff, isSuperAdmin } from "./permissions";
  * (cf. supabase/permissions_v2_step2.sql). On aligne le check TypeScript.
  */
 export async function requireAdmin() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -71,7 +71,7 @@ export async function requireSuperAdmin() {
  * (update/delete), récupérer le slug depuis l'objet ciblé d'abord.
  */
 export async function requireStaffOrFormationTrainer(formation_slug: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -122,7 +122,7 @@ export async function getAuthorizedFormationSlugs(): Promise<{
   isStaff: boolean;
   isTrainerOnly: boolean;
 }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -187,7 +187,7 @@ export async function auditLog(
   metadata?: Record<string, any>
 ) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     await supabase.rpc("log_admin_action", {
       p_action: action,
       p_target_type: targetType,

@@ -52,7 +52,7 @@ export async function sendPlatformEmail(input: SendPlatformEmailInput): Promise<
   id?: string;
   error?: string;
 }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -124,7 +124,7 @@ export async function sendPlatformEmail(input: SendPlatformEmailInput): Promise<
 
 // ─── Boîte de réception : libellés, attribution, lecture ──────────────
 async function requireStaff(): Promise<{ ok: true; userId: string } | { ok: false; error: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

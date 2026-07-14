@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
  * courant. Renvoie 401 si non authentifié, 400 si payload invalide.
  */
 export async function POST(req: Request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

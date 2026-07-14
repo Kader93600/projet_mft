@@ -5,7 +5,7 @@ import { Megaphone, Pin, ArrowRight } from "lucide-react";
 
 // Dernières annonces publiées destinées au stagiaire (épinglées d'abord)
 export async function AnnouncementBanner() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

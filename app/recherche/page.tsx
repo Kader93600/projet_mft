@@ -21,13 +21,14 @@ const KIND_LABEL: Record<string, string> = {
   glossary: "Glossaire",
 };
 
-export default async function RecherchePage({
-  searchParams,
-}: {
-  searchParams: { q?: string };
-}) {
+export default async function RecherchePage(
+  props: {
+    searchParams: Promise<{ q?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const q = (searchParams.q ?? "").trim();
-  const supabase = createClient();
+  const supabase = await createClient();
 
   let results: any[] = [];
   if (q.length >= 2) {

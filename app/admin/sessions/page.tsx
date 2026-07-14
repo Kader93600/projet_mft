@@ -82,12 +82,13 @@ function fmtDuration(start: string, end: string): string {
   return m ? `${h}h${String(m).padStart(2, "0")}` : `${h}h`;
 }
 
-export default async function AdminSessionsPage({
-  searchParams,
-}: {
-  searchParams?: { filter?: string; q?: string };
-}) {
-  const supabase = createClient();
+export default async function AdminSessionsPage(
+  props: {
+    searchParams?: Promise<{ filter?: string; q?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const supabase = await createClient();
   const { slugs, isStaff } = await getAuthorizedFormationSlugs();
 
   // Pour les formateurs : ne lister que les sessions de leurs formations

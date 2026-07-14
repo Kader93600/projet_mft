@@ -9,7 +9,7 @@ import { CreateOrgForm } from "./create-form";
 export const dynamic = "force-dynamic";
 
 export default async function NewOrgPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

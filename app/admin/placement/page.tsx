@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 type FormationOption = Pick<Tables<"formations">, "slug" | "code" | "title">;
 
 export default async function AdminPlacementPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const [
     { data: questions },

@@ -12,10 +12,8 @@ import { getFunderAccess } from "@/lib/funder/access";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET(
-  _req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(_req: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const access = await getFunderAccess();
   if (!access.allowed) {
     return NextResponse.json(
@@ -24,7 +22,7 @@ export async function GET(
     );
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Détails depuis la vue (RLS vérifie funder_id == funders.portal_user_id)
   let detailsQuery = supabase

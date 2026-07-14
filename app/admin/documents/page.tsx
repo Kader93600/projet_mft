@@ -50,18 +50,19 @@ function fmt(d: string) {
   });
 }
 
-export default async function AdminDocumentsPage({
-  searchParams,
-}: {
-  searchParams?: {
-    q?: string;
-    formation?: string;
-    motif?: string;
-    statut?: string;
-    sort?: string;
-  };
-}) {
-  const supabase = createClient();
+export default async function AdminDocumentsPage(
+  props: {
+    searchParams?: Promise<{
+      q?: string;
+      formation?: string;
+      motif?: string;
+      statut?: string;
+      sort?: string;
+    }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

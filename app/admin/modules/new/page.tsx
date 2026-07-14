@@ -8,7 +8,7 @@ import { FORMATIONS } from "@/lib/formations-config";
 export const dynamic = "force-dynamic";
 
 export default async function NewModulePage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const [{ data: blocs }, { data: dbFormations }] = await Promise.all([
     supabase.from("blocs").select("*").order("id"),
     supabase

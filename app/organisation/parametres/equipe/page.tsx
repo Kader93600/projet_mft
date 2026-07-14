@@ -30,7 +30,7 @@ export default async function TeamPage() {
   if (!access.is_org_admin) redirect("/organisation");
   if (!access.organization_id) redirect("/admin/organizations");
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: members } = await supabase
     .from("organization_members")
     .select(`

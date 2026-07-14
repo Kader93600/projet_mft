@@ -38,7 +38,7 @@ const DOC_STATUS_BY_KEY: Record<
 > = DOC_STATUS;
 
 export async function GET(req: NextRequest) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

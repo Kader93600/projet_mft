@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 
 export async function signEnrollment(id: string, formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim() || null;
   const ack = formData.get("ack") === "on";
@@ -12,7 +12,7 @@ export async function signEnrollment(id: string, formData: FormData) {
   if (!ack) throw new Error("Vous devez confirmer la lecture.");
   if (!name) throw new Error("Nom obligatoire.");
 
-  const fwd = headers().get("x-forwarded-for") ?? "";
+  const fwd = (await headers()).get("x-forwarded-for") ?? "";
   const ip = fwd.split(",")[0]?.trim() || null;
 
   const { error } = await supabase.rpc("funder_sign_enrollment", {

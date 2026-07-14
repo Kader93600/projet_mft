@@ -47,12 +47,13 @@ type SessionRow = Pick<
   | "formation_id"
 > & { formations: Pick<Tables<"formations">, "title"> | null };
 
-export default async function FormateurDashboard({
-  searchParams,
-}: {
-  searchParams?: { f?: string };
-}) {
-  const supabase = createClient();
+export default async function FormateurDashboard(
+  props: {
+    searchParams?: Promise<{ f?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

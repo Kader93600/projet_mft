@@ -19,7 +19,7 @@ const LABELS: any = {
 };
 
 export default async function DocumentsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: docs } = await supabase
     .from("onboarding_documents")
     .select("*")

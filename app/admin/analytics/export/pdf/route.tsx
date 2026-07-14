@@ -666,7 +666,7 @@ function kpi(label: string, value: string) {
 }
 
 export async function GET(req: NextRequest) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -687,7 +687,10 @@ export async function GET(req: NextRequest) {
     year: "numeric",
   });
 
-  let element: React.ReactElement;
+  // React 19 : `React.ReactElement` vaut désormais `ReactElement<unknown>`, non
+  // assignable au paramètre de renderToBuffer. On dérive le type directement de
+  // la signature de la lib plutôt que de caster.
+  let element: Parameters<typeof renderToBuffer>[0];
   let filename = "rapport-gotrm.pdf";
 
   if (attemptId) {

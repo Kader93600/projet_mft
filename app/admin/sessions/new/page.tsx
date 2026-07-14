@@ -7,7 +7,7 @@ import { ChevronLeft } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function NewSessionPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { slugs, isStaff } = await getAuthorizedFormationSlugs();
 
   // Formations accessibles (staff = toutes, trainer = ses formations)

@@ -57,11 +57,12 @@ const FUNDING_KEYS: FundingKey[] = [
   "transitions_pro",
 ];
 
-export default function FormationsPage({
-  searchParams,
-}: {
-  searchParams?: { cat?: string; finance?: string };
-}) {
+export default async function FormationsPage(
+  props: {
+    searchParams?: Promise<{ cat?: string; finance?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const cat = (searchParams?.cat ?? "").trim();
   const finance = (searchParams?.finance ?? "").trim();
 

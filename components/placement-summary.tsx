@@ -27,7 +27,7 @@ function levelLabel(level?: string) {
 }
 
 export async function PlacementSummary() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

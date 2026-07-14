@@ -54,11 +54,12 @@ export async function generateStaticParams() {
   return FORMATIONS.map((f) => ({ slug: f.slug }));
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string };
-}) {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ slug: string }>;
+  }
+) {
+  const params = await props.params;
   const f = findFormation(params.slug);
   if (!f) return { title: "Formation introuvable" };
 
@@ -97,7 +98,8 @@ export async function generateMetadata({
   };
 }
 
-export default function FormationPage({ params }: { params: { slug: string } }) {
+export default async function FormationPage(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const f = findFormation(params.slug);
   if (!f) notFound();
   const Icon = ICONS[f.iconName] ?? Truck;

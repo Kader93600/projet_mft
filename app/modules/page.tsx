@@ -76,7 +76,7 @@ type ModuleCardEnriched = ModuleCardData & {
  */
 export default async function ModulesPage() {
   const t = await getTranslations("modules");
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },

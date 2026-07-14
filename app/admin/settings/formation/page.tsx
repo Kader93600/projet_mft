@@ -7,12 +7,13 @@ import { Settings, AlertCircle, ChevronDown } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-export default async function FormationSettingsPage({
-  searchParams,
-}: {
-  searchParams?: { formation?: string };
-}) {
-  const supabase = createClient();
+export default async function FormationSettingsPage(
+  props: {
+    searchParams?: Promise<{ formation?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const supabase = await createClient();
 
   // 1) Liste des formations actives
   const { data: formations } = await supabase

@@ -8,7 +8,7 @@ import { Megaphone } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function AnnouncementsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const [{ data: announcements }, { data: groups }] = await Promise.all([
     supabase
       .from("announcements")

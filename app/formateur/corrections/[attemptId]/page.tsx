@@ -61,12 +61,13 @@ type FormationQuizRow = {
   formation: Pick<Tables<"formations">, "slug" | "code"> | null;
 };
 
-export default async function CorrectionDetailPage({
-  params,
-}: {
-  params: { attemptId: string };
-}) {
-  const supabase = createClient();
+export default async function CorrectionDetailPage(
+  props: {
+    params: Promise<{ attemptId: string }>;
+  }
+) {
+  const params = await props.params;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

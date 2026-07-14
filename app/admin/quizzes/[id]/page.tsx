@@ -59,12 +59,13 @@ type QuestionWithChoices = Pick<
   choices: Pick<Tables<"choices">, "id" | "label" | "is_correct" | "order">[];
 };
 
-export default async function EditQuizPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const supabase = createClient();
+export default async function EditQuizPage(
+  props: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  const params = await props.params;
+  const supabase = await createClient();
   const [
     { data: quiz },
     { data: modules },

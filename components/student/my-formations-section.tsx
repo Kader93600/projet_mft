@@ -61,7 +61,7 @@ const STATUS_LABEL: Record<string, string> = {
  * et lien direct vers le module / la formation.
  */
 export async function MyFormationsSection() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

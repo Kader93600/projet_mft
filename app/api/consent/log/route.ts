@@ -44,7 +44,7 @@ export async function POST(req: Request) {
   // Rattache à la session si elle existe (facultatif — anon accepté).
   let userId: string | null = null;
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

@@ -19,7 +19,7 @@ const RISK_LABEL: Record<string, { label: string; tone: "rose" | "gold" | "slate
 };
 
 export default async function AdminCoachingPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const [
     { data: upcoming },

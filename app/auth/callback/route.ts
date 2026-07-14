@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     return loginError(errorDescription);
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // ── Flux B : token_hash (invitation, recovery, signup, email change) ──
   if (tokenHash && type) {

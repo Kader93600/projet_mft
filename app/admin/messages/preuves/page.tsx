@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
  * - Exporte en 1 PDF toutes ses conversations (audit Qualiopi)
  */
 export default async function PreuvesPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

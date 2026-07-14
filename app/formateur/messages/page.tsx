@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
  * que les liens deep-link reviennent ici plutôt que sur /messages.
  */
 export default async function TrainerMessagesPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

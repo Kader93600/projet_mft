@@ -7,7 +7,7 @@ import { findFormation } from "@/lib/formations-config";
 export const dynamic = "force-dynamic";
 
 export default async function StagiairesPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
  * Idéal pour un grand écran dans le bureau de l'admin / direction.
  */
 export default async function AnalyticsTvPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

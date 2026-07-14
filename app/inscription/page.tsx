@@ -58,12 +58,13 @@ function fmtEuros(cents: number) {
   });
 }
 
-export default async function InscriptionPage({
-  searchParams,
-}: {
-  searchParams?: { formation?: string; financeur?: string; pack?: string };
-}) {
-  const supabase = createClient();
+export default async function InscriptionPage(
+  props: {
+    searchParams?: Promise<{ formation?: string; financeur?: string; pack?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -127,7 +128,6 @@ export default async function InscriptionPage({
           chaque étape.
         </p>
       </header>
-
       {/* Dossier en cours */}
       {current ? (
         <section className="space-y-5">
@@ -280,7 +280,7 @@ export default async function InscriptionPage({
         </section>
       ) : (
         /* Pas de dossier : formulaire de demande + sélecteur de pack */
-        <section>
+        (<section>
           <Card>
             <CardBody>
               <CardTitle>Démarrer votre inscription</CardTitle>
@@ -392,7 +392,7 @@ export default async function InscriptionPage({
               </form>
             </CardBody>
           </Card>
-        </section>
+        </section>)
       )}
     </div>
   );

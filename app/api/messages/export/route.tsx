@@ -57,7 +57,7 @@ type PinnedRow = Pick<Tables<"pinned_messages">, "message_id">;
  *   404 si conv introuvable
  */
 export async function GET(req: NextRequest) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

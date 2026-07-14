@@ -28,7 +28,7 @@ const CATEGORY_LABEL: Record<string, string> = {
 };
 
 export default async function AccessibilitePage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

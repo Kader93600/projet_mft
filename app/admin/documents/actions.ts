@@ -19,7 +19,7 @@ type UpdatedDocRow = Pick<
 type ProfileContactRow = Pick<Tables<"profiles">, "full_name" | "email">;
 
 async function requireStaff() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

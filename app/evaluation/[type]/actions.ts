@@ -4,7 +4,7 @@ import { surveySchema, formatZodError } from "@/lib/validations";
 import { revalidatePath } from "next/cache";
 
 export async function submitSurvey(raw: unknown) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

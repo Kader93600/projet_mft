@@ -17,11 +17,12 @@ export const metadata = {
 
 export const revalidate = 3600;
 
-export default function TemoignagesPage({
-  searchParams,
-}: {
-  searchParams?: { f?: string };
-}) {
+export default async function TemoignagesPage(
+  props: {
+    searchParams?: Promise<{ f?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const filter = searchParams?.f ?? "";
   const filtered = filter
     ? TESTIMONIALS.filter((t) => t.formationSlug === filter)

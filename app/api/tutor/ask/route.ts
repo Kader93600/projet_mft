@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Auth ────────────────────────────────────────────────────────────
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -385,7 +385,7 @@ export async function POST(req: NextRequest) {
 // de patterns abusifs).
 // =====================================================================
 async function streamModerationRefusal(args: {
-  supabase: ReturnType<typeof createClient>;
+  supabase: Awaited<ReturnType<typeof createClient>>;
   userId: string;
   question: string;
   formationSlug: string | null;

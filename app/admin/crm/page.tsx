@@ -64,12 +64,13 @@ type CrmLead = Partial<Tables<"enrollment_requests">> &
 
 type PipelineCounter = Views<"crm_pipeline_counters">;
 
-export default async function AdminCrmPage({
-  searchParams,
-}: {
-  searchParams?: { q?: string };
-}) {
-  const supabase = createClient();
+export default async function AdminCrmPage(
+  props: {
+    searchParams?: Promise<{ q?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

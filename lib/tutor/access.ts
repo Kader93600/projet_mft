@@ -46,7 +46,7 @@ export interface TutorAccess {
 export async function getTutorAccess(
   formationSlug?: string | null
 ): Promise<TutorAccess> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

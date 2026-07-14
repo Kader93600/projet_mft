@@ -6,7 +6,7 @@ import { Search, AlertTriangle } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function SearchAnalyticsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: rows } = await supabase
     .from("search_top_queries")
     .select("*")

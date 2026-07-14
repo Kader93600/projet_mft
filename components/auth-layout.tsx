@@ -18,7 +18,7 @@ export async function AuthLayout({
   children: React.ReactNode;
   requireAdmin?: boolean;
 }) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

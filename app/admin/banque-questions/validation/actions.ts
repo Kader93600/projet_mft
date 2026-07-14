@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { isStaff } from "@/lib/permissions";
 
 async function ensureStaff() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

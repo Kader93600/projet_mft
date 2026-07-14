@@ -29,18 +29,19 @@ type ModuleCountRow = Pick<Tables<"formation_modules">, "formation_id"> & {
   formations: Pick<Tables<"formations">, "slug"> | null;
 };
 
-export default async function NewStudentPage({
-  searchParams,
-}: {
-  searchParams?: {
-    email?: string;
-    full_name?: string;
-    phone?: string;
-    formation_slug?: string;
-    funding_kind?: string;
-  };
-}) {
-  const supabase = createClient();
+export default async function NewStudentPage(
+  props: {
+    searchParams?: Promise<{
+      email?: string;
+      full_name?: string;
+      phone?: string;
+      formation_slug?: string;
+      funding_kind?: string;
+    }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const supabase = await createClient();
 
   const [
     { data: formations },

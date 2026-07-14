@@ -15,12 +15,13 @@ import { findFormation } from "@/lib/formations-config";
 
 export const dynamic = "force-dynamic";
 
-export default async function CorrectionsListPage({
-  searchParams,
-}: {
-  searchParams?: { f?: string };
-}) {
-  const supabase = createClient();
+export default async function CorrectionsListPage(
+  props: {
+    searchParams?: Promise<{ f?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const supabase = await createClient();
   const filter = searchParams?.f ?? "";
 
   // Liste des copies en attente de correction (vue créée en S7.2)

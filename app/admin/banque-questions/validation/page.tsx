@@ -31,12 +31,13 @@ type QuestionRow = Pick<
   choices: { id: string; label: string; is_correct: boolean }[];
 };
 
-export default async function ValidationPage({
-  searchParams,
-}: {
-  searchParams?: { f?: string; page?: string; module?: string };
-}) {
-  const supabase = createClient();
+export default async function ValidationPage(
+  props: {
+    searchParams?: Promise<{ f?: string; page?: string; module?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const supabase = await createClient();
   const slug = searchParams?.f ?? "capacite-3-5t";
   const page = Math.max(1, parseInt(searchParams?.page ?? "1", 10));
   const groupFilter = searchParams?.module ?? "";

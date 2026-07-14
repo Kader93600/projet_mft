@@ -96,7 +96,7 @@ type EnrichedQuiz = {
  */
 export default async function QuizListPage() {
   const t = await getTranslations("quiz");
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },

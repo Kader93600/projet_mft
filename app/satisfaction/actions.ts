@@ -8,7 +8,7 @@ function num(v: FormDataEntryValue | null, min: number, max: number) {
 }
 
 export async function submitSurvey(type: "chaud" | "froid", formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

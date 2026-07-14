@@ -6,7 +6,7 @@ import { Users, Award, ArrowRight, Sparkles } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function AffectationsIndexPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const [
     { count: totalEnrollments },

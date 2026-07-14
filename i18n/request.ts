@@ -20,15 +20,15 @@ export const locales = ["fr", "en"] as const;
 export type Locale = (typeof locales)[number];
 export const defaultLocale: Locale = "fr";
 
-function resolveLocale(): Locale {
+async function resolveLocale(): Promise<Locale> {
   // 1. Cookie explicite
-  const cookieLocale = cookies().get("NEXT_LOCALE")?.value;
+  const cookieLocale = (await cookies()).get("NEXT_LOCALE")?.value;
   if (cookieLocale && locales.includes(cookieLocale as Locale)) {
     return cookieLocale as Locale;
   }
 
   // 2. Accept-Language du navigateur
-  const acceptLanguage = headers().get("accept-language") ?? "";
+  const acceptLanguage = (await headers()).get("accept-language") ?? "";
   for (const lang of acceptLanguage.split(",")) {
     const code = lang.split(";")[0].trim().slice(0, 2).toLowerCase();
     if (locales.includes(code as Locale)) {
@@ -41,7 +41,7 @@ function resolveLocale(): Locale {
 }
 
 export default getRequestConfig(async () => {
-  const locale = resolveLocale();
+  const locale = await resolveLocale();
   return {
     locale,
     messages: (await import(`../messages/${locale}.json`)).default,

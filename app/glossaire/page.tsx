@@ -11,12 +11,13 @@ import { sanitizeSearchTerm } from "@/lib/search";
 // Glossaire = filtré par formations du stagiaire connecté → dynamique
 export const dynamic = "force-dynamic";
 
-export default async function GlossairePage({
-  searchParams,
-}: {
-  searchParams?: { q?: string; bloc?: string; formation?: string };
-}) {
-  const supabase = createClient();
+export default async function GlossairePage(
+  props: {
+    searchParams?: Promise<{ q?: string; bloc?: string; formation?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

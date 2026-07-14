@@ -8,13 +8,14 @@ import { StaticQuizForm } from "./static-form";
 
 export const dynamic = "force-dynamic";
 
-export default async function CreerQuizPage({
-  searchParams,
-}: {
-  searchParams?: { mode?: string; f?: string };
-}) {
+export default async function CreerQuizPage(
+  props: {
+    searchParams?: Promise<{ mode?: string; f?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const mode = searchParams?.mode === "static" ? "static" : "random";
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Stats par formation pour aider au paramétrage
   const formationStats = await Promise.all(

@@ -9,14 +9,15 @@ import { createFunder, updateFunder } from "../../actions";
 
 export const dynamic = "force-dynamic";
 
-export default async function FunderEditorPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function FunderEditorPage(
+  props: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  const params = await props.params;
   const isNew = params.id === "new";
   // Client session : RLS réparées, is_admin() autorise le staff.
-  const supabase = createClient();
+  const supabase = await createClient();
   const [{ data: funder }, { data: users }] = await Promise.all([
     isNew
       ? Promise.resolve({ data: null })

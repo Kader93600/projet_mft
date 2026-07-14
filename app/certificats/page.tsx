@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollText, Download, Award } from "lucide-react";
 
 export default async function CertificatesPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 

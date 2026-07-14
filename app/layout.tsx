@@ -118,6 +118,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html
       lang={locale}
       className={`${inter.variable} ${display.variable} ${jetbrains.variable}`}
+      // <ThemeInit /> (script inline, anti-FOUC) pose class="dark" et
+      // style.colorScheme sur <html> AVANT l'hydratation : l'écart
+      // serveur/client est donc voulu. React 19 le signale désormais ;
+      // suppressHydrationWarning est l'API prévue pour ce cas précis.
+      suppressHydrationWarning
     >
       <head>
         <ThemeInit />

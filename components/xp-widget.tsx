@@ -7,7 +7,7 @@ import type { Tables } from "@/lib/database.types";
 type StreakRow = { current_streak: number; longest_streak: number };
 
 export async function XpWidget() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

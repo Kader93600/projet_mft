@@ -87,7 +87,7 @@ export async function POST(req: Request) {
   }
 
   // Auth optionnelle : si connecté, on capture l'user_id
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

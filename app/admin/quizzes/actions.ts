@@ -89,7 +89,7 @@ export async function updateQuiz(id: string, raw: unknown) {
   const patch = validate(quizUpdateSchema, raw);
   const { formation_slug, ...quizPatch } = patch;
   // Gating trainer
-  const sbRead = createClient();
+  const sbRead = await createClient();
   const currentSlug = await getQuizFormationSlug(sbRead, id);
   const slugToCheck = formation_slug || currentSlug || "";
   const { supabase } = await requireStaffOrFormationTrainer(slugToCheck);
@@ -129,7 +129,7 @@ export async function updateQuiz(id: string, raw: unknown) {
 
 export async function deleteQuiz(id: string) {
   validate(uuid, id);
-  const sbRead = createClient();
+  const sbRead = await createClient();
   const currentSlug = await getQuizFormationSlug(sbRead, id);
   // Gate de permission (staff OU formateur de la formation du quiz)
   await requireStaffOrFormationTrainer(currentSlug || "");
@@ -161,7 +161,7 @@ export async function deleteQuiz(id: string) {
 export async function createQuestion(raw: unknown) {
   const data = validate(questionCreateSchema, raw);
   // Gating via le quiz parent
-  const sbRead = createClient();
+  const sbRead = await createClient();
   const slug = await getQuizFormationSlug(sbRead, data.quiz_id);
   const { supabase } = await requireStaffOrFormationTrainer(slug || "");
   const { data: created, error } = await supabase
@@ -179,7 +179,7 @@ export async function updateQuestion(id: string, quizId: string, raw: unknown) {
   validate(uuid, id);
   validate(uuid, quizId);
   const patch = validate(questionUpdateSchema, raw);
-  const sbRead = createClient();
+  const sbRead = await createClient();
   const slug = await getQuizFormationSlug(sbRead, quizId);
   const { supabase } = await requireStaffOrFormationTrainer(slug || "");
   const { error } = await supabase.from("questions").update(patch).eq("id", id);
@@ -192,7 +192,7 @@ export async function updateQuestion(id: string, quizId: string, raw: unknown) {
 export async function deleteQuestion(id: string, quizId: string) {
   validate(uuid, id);
   validate(uuid, quizId);
-  const sbRead = createClient();
+  const sbRead = await createClient();
   const slug = await getQuizFormationSlug(sbRead, quizId);
   const { supabase } = await requireStaffOrFormationTrainer(slug || "");
   const { error } = await supabase.from("questions").delete().eq("id", id);
@@ -210,7 +210,7 @@ export async function setChoices(
 ) {
   validate(uuid, questionId);
   validate(uuid, quizId);
-  const sbRead = createClient();
+  const sbRead = await createClient();
   const slug = await getQuizFormationSlug(sbRead, quizId);
   const { supabase } = await requireStaffOrFormationTrainer(slug || "");
   const validated = validate(choicesArraySchema, choices);
@@ -247,7 +247,7 @@ export async function attachBankQuestion(
 ) {
   validate(uuid, quizId);
   validate(uuid, questionId);
-  const sbRead = createClient();
+  const sbRead = await createClient();
   const slug = await getQuizFormationSlug(sbRead, quizId);
   const { supabase } = await requireStaffOrFormationTrainer(slug || "");
 
@@ -281,7 +281,7 @@ export async function attachBankQuestion(
 export async function detachBankQuestion(quizId: string, questionId: string) {
   validate(uuid, quizId);
   validate(uuid, questionId);
-  const sbRead = createClient();
+  const sbRead = await createClient();
   const slug = await getQuizFormationSlug(sbRead, quizId);
   const { supabase } = await requireStaffOrFormationTrainer(slug || "");
 
@@ -305,7 +305,7 @@ export async function setBankQuestionsForQuiz(
   questionIds: string[],
 ) {
   validate(uuid, quizId);
-  const sbRead = createClient();
+  const sbRead = await createClient();
   const slug = await getQuizFormationSlug(sbRead, quizId);
   const { supabase } = await requireStaffOrFormationTrainer(slug || "");
 

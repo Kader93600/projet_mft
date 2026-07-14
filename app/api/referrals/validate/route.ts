@@ -27,7 +27,7 @@ const REASON_LABELS: Record<string, string> = {
 };
 
 export async function POST(req: NextRequest) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

@@ -61,7 +61,7 @@ const SOURCE_COLORS: Record<string, string> = {
 };
 
 export default async function AdminAcquisitionPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

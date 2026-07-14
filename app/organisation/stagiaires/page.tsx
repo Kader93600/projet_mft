@@ -39,7 +39,7 @@ export default async function OrganisationStagiairesPage() {
   if (!access.is_org_viewer) redirect("/organisation");
   if (!access.organization_id) redirect("/admin/organizations");
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: enrollments } = await supabase
     .from("enrollments")

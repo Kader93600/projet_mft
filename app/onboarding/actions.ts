@@ -10,7 +10,7 @@ const acceptSchema = z.object({
 });
 
 export async function acceptDocument(raw: unknown) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -19,7 +19,7 @@ export async function acceptDocument(raw: unknown) {
   const res = acceptSchema.safeParse(raw);
   if (!res.success) throw new Error("Données invalides");
 
-  const h = headers();
+  const h = await headers();
   const ua = h.get("user-agent") ?? null;
   // IP client : 1er maillon de x-forwarded-for (Vercel), sinon x-real-ip.
   const ip =
@@ -45,7 +45,7 @@ const selectFormationSchema = z.object({
 });
 
 export async function selectFormation(raw: unknown) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -89,7 +89,7 @@ export async function selectFormation(raw: unknown) {
 }
 
 export async function completeOnboarding() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

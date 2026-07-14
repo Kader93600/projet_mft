@@ -99,12 +99,13 @@ function durationMin(start: string, end: string): number {
   );
 }
 
-export default async function SessionDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const supabase = createClient();
+export default async function SessionDetailPage(
+  props: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  const params = await props.params;
+  const supabase = await createClient();
   const { slugs, isStaff } = await getAuthorizedFormationSlugs();
 
   const { data: sessionRaw } = await supabase

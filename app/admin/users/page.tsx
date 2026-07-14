@@ -9,12 +9,13 @@ export const dynamic = "force-dynamic";
 
 const PAGE_SIZE = 50;
 
-export default async function AdminUsers({
-  searchParams,
-}: {
-  searchParams?: { page?: string; q?: string };
-}) {
-  const supabase = createClient();
+export default async function AdminUsers(
+  props: {
+    searchParams?: Promise<{ page?: string; q?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const supabase = await createClient();
 
   const page = Math.max(1, Number(searchParams?.page ?? 1) || 1);
   const q = (searchParams?.q ?? "").toString().trim();

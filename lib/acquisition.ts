@@ -20,9 +20,9 @@ const COOKIE_NAME = "mft_vid";
 /**
  * Lit le visitor_id du cookie HttpOnly. Disponible uniquement côté serveur.
  */
-export function getVisitorIdFromCookies(): string | null {
+export async function getVisitorIdFromCookies(): Promise<string | null> {
   try {
-    return cookies().get(COOKIE_NAME)?.value ?? null;
+    return (await cookies()).get(COOKIE_NAME)?.value ?? null;
   } catch {
     // Le helper `cookies()` est sync mais throws s'il n'est pas appelé
     // dans un Server Component / Route Handler. Fallback prudent.
@@ -37,7 +37,7 @@ export function getVisitorIdFromCookies(): string | null {
  * Best-effort : si pas de cookie ou erreur, ne casse pas le flux principal.
  */
 export async function linkVisitorToUser(userId: string): Promise<void> {
-  const visitorId = getVisitorIdFromCookies();
+  const visitorId = await getVisitorIdFromCookies();
   if (!visitorId || !userId) return;
 
   const supaUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

@@ -29,7 +29,7 @@ export function DropdownMenu({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function DropdownMenuTrigger({ children }: { children: React.ReactElement }) {
+export function DropdownMenuTrigger({ children }: { children: React.ReactElement<React.HTMLAttributes<HTMLElement>> }) {
   const ctx = React.useContext(DDCtx)!;
   return React.cloneElement(children, {
     onClick: (e: React.MouseEvent) => {

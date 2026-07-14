@@ -21,12 +21,13 @@ type FormationLinkRow = {
   formation: Pick<Tables<"formations">, "slug"> | null;
 };
 
-export default async function EditModulePage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const supabase = createClient();
+export default async function EditModulePage(
+  props: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  const params = await props.params;
+  const supabase = await createClient();
   const [
     { data: rawModule },
     { data: rawBlocs },

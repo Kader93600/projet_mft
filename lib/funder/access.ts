@@ -20,7 +20,7 @@ export interface FunderAccess {
 }
 
 export async function getFunderAccess(): Promise<FunderAccess> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

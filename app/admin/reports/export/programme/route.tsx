@@ -191,7 +191,7 @@ function Programme({ cfg, today }: { cfg: any; today: string }) {
 }
 
 export async function GET() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

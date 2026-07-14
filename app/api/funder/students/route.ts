@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
   );
   const offset = Math.max(Number(url.searchParams.get("offset") ?? "0"), 0);
 
-  const supabase = createClient();
+  const supabase = await createClient();
   let query = supabase
     .from("funder_student_details")
     .select("*", { count: "exact" })

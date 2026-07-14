@@ -7,7 +7,7 @@ import { BookOpen } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function AdminGlossaryPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const [{ data: terms }, { data: blocs }] = await Promise.all([
     supabase
       .from("glossary_terms")

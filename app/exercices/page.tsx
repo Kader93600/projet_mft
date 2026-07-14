@@ -53,13 +53,14 @@ type QuizRow = Pick<
   > | null;
 };
 
-export default async function ExercicesPage({
-  searchParams,
-}: {
-  searchParams?: { f?: string };
-}) {
+export default async function ExercicesPage(
+  props: {
+    searchParams?: Promise<{ f?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const t = await getTranslations("exercices");
-  const supabase = createClient();
+  const supabase = await createClient();
   const filterFormation = searchParams?.f ?? null;
 
   const {

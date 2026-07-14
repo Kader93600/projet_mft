@@ -34,18 +34,19 @@ const STATUS_TONE: Record<string, "gold" | "navy" | "success" | "slate"> = {
   termine: "success",
 };
 
-export default async function FinanceurStagiairesPage({
-  searchParams,
-}: {
-  searchParams?: { status?: string; q?: string };
-}) {
+export default async function FinanceurStagiairesPage(
+  props: {
+    searchParams?: Promise<{ status?: string; q?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const access = await getFunderAccess();
   if (!access.allowed) {
     if (access.reason === "unauthenticated") redirect("/login");
     redirect("/financeur");
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const status = searchParams?.status;
   const q = searchParams?.q;
 

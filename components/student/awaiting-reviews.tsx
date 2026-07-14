@@ -8,7 +8,7 @@ import { Hourglass, ArrowRight, Sparkles } from "lucide-react";
  * encore en attente de correction. Masqué si aucune copie en attente.
  */
 export async function StudentAwaitingReviews() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

@@ -29,7 +29,7 @@ export async function createUploadUrl(input: {
   | { ok: true; path: string; token: string; signedUrl: string }
   | { ok: false; error: string }
 > {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -67,7 +67,7 @@ export async function finalizeUpload(input: {
   mimeType?: string;
   sizeBytes: number;
 }): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -165,7 +165,7 @@ export async function finalizeUpload(input: {
 export async function deleteStudentDocument(
   id: string
 ): Promise<{ ok: boolean; error?: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

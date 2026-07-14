@@ -40,7 +40,7 @@ const STATUS_TONE: Record<string, { bg: string; fg: string; label: string }> = {
 };
 
 export default async function ImportPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const [
     { data: formations },

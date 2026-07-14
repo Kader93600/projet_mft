@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
 export async function requestDeletion(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -20,7 +20,7 @@ export async function requestDeletion(formData: FormData) {
 }
 
 export async function cancelDeletion(id: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase
     .from("deletion_requests")
     .update({ status: "cancelled", resolved_at: new Date().toISOString() })
@@ -49,7 +49,7 @@ export async function toggleConsent(formData: FormData) {
     return;
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

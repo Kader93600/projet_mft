@@ -29,12 +29,13 @@ export const dynamic = "force-dynamic";
  *  - Une Card par formation contenant la liste compacte de ses modules
  *  - Card séparée pour les modules orphelins
  */
-export default async function AdminModules({
-  searchParams,
-}: {
-  searchParams?: { f?: string; b?: string };
-}) {
-  const supabase = createClient();
+export default async function AdminModules(
+  props: {
+    searchParams?: Promise<{ f?: string; b?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const supabase = await createClient();
 
   const { slugs, isTrainerOnly } = await getAuthorizedFormationSlugs();
   const filterSlug = searchParams?.f && searchParams.f !== "all" ? searchParams.f : null;

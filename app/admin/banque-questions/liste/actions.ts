@@ -6,7 +6,7 @@ import { findFormation } from "@/lib/formations-config";
 import { getQuestionFilterConfig } from "@/lib/question-filters";
 
 async function ensureStaff() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

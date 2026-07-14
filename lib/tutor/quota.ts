@@ -45,7 +45,7 @@ export async function getQuotaStatus(
   userId: string,
   isStaffOverride: boolean
 ): Promise<QuotaStatus> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Calcule le 1er du mois courant et du mois suivant
   const now = new Date();

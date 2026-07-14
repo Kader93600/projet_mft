@@ -19,7 +19,7 @@ const revalidateAll = () => {
 // ─── Envoi ────────────────────────────────────────────────────
 
 export async function sendMessage(raw: unknown) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -43,7 +43,7 @@ export async function sendMessage(raw: unknown) {
 // ─── Création / récupération de conversations ─────────────────
 
 export async function createOrGetDM(targetUserId: string): Promise<string> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const id = UUID.parse(targetUserId);
   const { data, error } = await supabase.rpc("create_or_get_dm", {
     p_target_user_id: id,
@@ -54,7 +54,7 @@ export async function createOrGetDM(targetUserId: string): Promise<string> {
 }
 
 export async function createOrGetAdminTeamConversation(): Promise<string> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase.rpc("create_or_get_admin_team_conv");
   if (error) throw new Error(error.message);
   revalidateAll();
@@ -65,7 +65,7 @@ export async function createOrGetClassConversation(
   groupId: string,
   writable = false
 ): Promise<string> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const id = UUID.parse(groupId);
   const { data, error } = await supabase.rpc("create_or_get_class_conv", {
     p_group_id: id,
@@ -79,7 +79,7 @@ export async function createOrGetClassConversation(
 // ─── Lecture / état ───────────────────────────────────────────
 
 export async function markConversationRead(conversationId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const id = UUID.parse(conversationId);
   await supabase.rpc("mark_conversation_read", { p_conversation_id: id });
   revalidateAll();
@@ -90,7 +90,7 @@ export async function setConversationPinned(
   conversationId: string,
   pinned: boolean
 ) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const id = UUID.parse(conversationId);
   const { error } = await supabase.rpc("set_conversation_pinned", {
     p_conversation_id: id,
@@ -105,7 +105,7 @@ export async function setConversationArchived(
   conversationId: string,
   archived: boolean
 ) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const id = UUID.parse(conversationId);
   const { error } = await supabase.rpc("set_conversation_archived", {
     p_conversation_id: id,
@@ -120,7 +120,7 @@ export async function setConversationMuted(
   conversationId: string,
   muted: boolean
 ) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const id = UUID.parse(conversationId);
   const { error } = await supabase.rpc("set_conversation_muted", {
     p_conversation_id: id,
@@ -139,7 +139,7 @@ const editSchema = z.object({
 });
 
 export async function editMessage(raw: unknown) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -159,7 +159,7 @@ export async function editMessage(raw: unknown) {
 }
 
 export async function deleteMessage(messageId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -190,7 +190,7 @@ const reactionSchema = z.object({
  * `added: false` si elle vient d'être retirée.
  */
 export async function toggleReaction(raw: unknown) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const parsed = reactionSchema.safeParse(raw);
   if (!parsed.success) {
     throw new Error(parsed.error.errors[0]?.message ?? "Invalide");
@@ -222,7 +222,7 @@ const attachmentRowSchema = z.object({
 });
 
 export async function insertAttachments(raw: unknown[]) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -255,7 +255,7 @@ export async function insertAttachments(raw: unknown[]) {
  * Restreint à l'auteur du message ou au staff (RLS).
  */
 export async function deleteAttachment(attachmentId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const id = UUID.parse(attachmentId);
 
   const { data: att } = await supabase
@@ -290,7 +290,7 @@ const togglePinSchema = z.object({
  * épinglé, `false` si désépinglé.
  */
 export async function togglePinnedMessage(raw: unknown) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const parsed = togglePinSchema.safeParse(raw);
   if (!parsed.success) {
     throw new Error(parsed.error.errors[0]?.message ?? "Invalide");
@@ -312,7 +312,7 @@ export async function togglePinnedMessage(raw: unknown) {
  * (cascade messages). Les autres participants la conservent.
  */
 export async function leaveConversation(conversationId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const id = UUID.parse(conversationId);
   const { error } = await supabase.rpc("leave_conversation", {
     p_conversation_id: id,
@@ -327,7 +327,7 @@ export async function leaveConversation(conversationId: string) {
  * Admin/super_admin OU owner de la conv uniquement.
  */
 export async function deleteConversation(conversationId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const id = UUID.parse(conversationId);
   const { error } = await supabase.rpc("delete_conversation", {
     p_conversation_id: id,

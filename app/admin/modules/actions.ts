@@ -22,7 +22,7 @@ import { z } from "zod";
 import type { Tables } from "@/lib/database.types";
 
 /** Client Supabase serveur (session utilisateur, RLS appliquée). */
-type ServerSupabase = ReturnType<typeof createClient>;
+type ServerSupabase = Awaited<ReturnType<typeof createClient>>;
 
 function slugify(s: string) {
   return s
@@ -120,7 +120,7 @@ export async function updateModule(id: string, raw: unknown) {
   const { formation_slug, ...modulePatch } = patch;
 
   // Récupérer le slug actuellement lié au module (pour le gating trainer)
-  const sbRead = createClient();
+  const sbRead = await createClient();
   const currentSlug = await getModuleFormationSlug(sbRead, id);
   const slugToCheck = formation_slug || currentSlug || "";
   const { supabase } = await requireStaffOrFormationTrainer(slugToCheck);
@@ -158,7 +158,7 @@ export async function updateModule(id: string, raw: unknown) {
 export async function deleteModule(id: string) {
   if (!id || typeof id !== "string") throw new Error("ID invalide");
   // Gating trainer : doit être habilité sur la formation actuelle
-  const sbRead = createClient();
+  const sbRead = await createClient();
   const currentSlug = await getModuleFormationSlug(sbRead, id);
   await requireStaffOrFormationTrainer(currentSlug || "");
 
@@ -194,7 +194,7 @@ export async function deleteModule(id: string) {
 export async function createLesson(raw: unknown) {
   const data = validate(lessonCreateSchema, raw);
   // Gating trainer : il faut être habilité sur la formation du module parent
-  const sbRead = createClient();
+  const sbRead = await createClient();
   const formationSlug = await getModuleFormationSlug(sbRead, data.module_id);
   const { supabase } = await requireStaffOrFormationTrainer(formationSlug || "");
   const slug = data.slug || slugify(data.title);
@@ -220,7 +220,7 @@ export async function createLesson(raw: unknown) {
 export async function updateLesson(id: string, moduleId: string, raw: unknown) {
   const patch = validate(lessonUpdateSchema, raw);
   // Gating trainer : habilitation sur la formation du module parent
-  const sbRead = createClient();
+  const sbRead = await createClient();
   const slug = await getModuleFormationSlug(sbRead, moduleId);
   const { supabase } = await requireStaffOrFormationTrainer(slug || "");
   const { error } = await supabase.from("lessons").update(patch).eq("id", id);
@@ -233,7 +233,7 @@ export async function updateLesson(id: string, moduleId: string, raw: unknown) {
 
 export async function deleteLesson(id: string, moduleId: string) {
   if (!id || !moduleId) throw new Error("ID invalide");
-  const sbRead = createClient();
+  const sbRead = await createClient();
   const slug = await getModuleFormationSlug(sbRead, moduleId);
   const { supabase } = await requireStaffOrFormationTrainer(slug || "");
   const { error } = await supabase.from("lessons").delete().eq("id", id);
@@ -292,7 +292,7 @@ export async function deleteLessonResource(id: string) {
  * Validation stricte côté serveur (type, taille, extension) + rate limit.
  */
 export async function uploadMedia(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -353,7 +353,7 @@ export async function uploadMedia(formData: FormData) {
  * Supprime un fichier précédemment uploadé. Le path vient de uploadMedia.
  */
 export async function deleteMedia(path: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

@@ -68,7 +68,7 @@ const fmtEuros = (cents: number) =>
   }).format(cents / 100);
 
 export default async function ParrainagePage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

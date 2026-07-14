@@ -76,14 +76,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "bad_email" }, { status: 400 });
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Snapshot d'attribution : on relie le lead à son parcours marketing via
   // le cookie visiteur (mft_vid) — même si l'URL ne porte plus les params
   // (utm/click-IDs captés à l'atterrissage, pas forcément sur /contact).
   // Best-effort : `attribution` peut être null, on n'empêche jamais la
   // création du lead pour autant.
-  const visitorId = cookies().get("mft_vid")?.value ?? null;
+  const visitorId = (await cookies()).get("mft_vid")?.value ?? null;
   const attribution = await getAcquisitionSnapshot(visitorId);
 
   const fundingMap: Record<string, string> = {

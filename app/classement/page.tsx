@@ -39,16 +39,17 @@ const PERIODS = [
 
 type Period = (typeof PERIODS)[number]["value"];
 
-export default async function ClassementPage({
-  searchParams,
-}: {
-  searchParams?: { p?: string };
-}) {
+export default async function ClassementPage(
+  props: {
+    searchParams?: Promise<{ p?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const period: Period = (
     PERIODS.find((p) => p.value === searchParams?.p)?.value ?? "month"
   ) as Period;
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

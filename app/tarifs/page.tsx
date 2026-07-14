@@ -25,10 +25,11 @@ export const metadata = {
 };
 
 interface PageProps {
-  searchParams?: { formation?: string };
+  searchParams?: Promise<{ formation?: string }>;
 }
 
-export default async function TarifsPage({ searchParams }: PageProps) {
+export default async function TarifsPage(props: PageProps) {
+  const searchParams = await props.searchParams;
   const t = await getTranslations("tarifs");
   const prices = await listActivePackPrices();
   const defaultFormationSlug = searchParams?.formation;

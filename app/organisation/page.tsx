@@ -88,7 +88,7 @@ export default async function OrganisationPage() {
     );
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: dashboardRow } = await supabase
     .from("organization_dashboard")

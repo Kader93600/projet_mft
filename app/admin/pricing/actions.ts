@@ -22,7 +22,7 @@ export async function updatePackPriceAction(input: {
   compareAtCents?: number | null;
   active?: boolean;
 }): Promise<{ ok: boolean; error?: string; price?: any }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

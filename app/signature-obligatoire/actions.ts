@@ -11,7 +11,7 @@ import { createHash } from "crypto";
  * via la RPC atomique complete_mandatory_signature (SECURITY DEFINER).
  */
 export async function submitMandatorySignature(signatureDataUrl: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -27,7 +27,7 @@ export async function submitMandatorySignature(signatureDataUrl: string) {
     return { ok: false, error: "Signature invalide ou vide." };
   }
 
-  const h = headers();
+  const h = await headers();
   const ua = h.get("user-agent") ?? null;
   const ip =
     h.get("x-forwarded-for")?.split(",")[0]?.trim() ||

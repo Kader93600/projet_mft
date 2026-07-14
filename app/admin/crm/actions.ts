@@ -6,7 +6,7 @@ import { sendEmail, quoteEmail } from "@/lib/email";
 import { renderQuotePdf } from "@/lib/quote-pdf";
 
 async function ensureAdmin() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

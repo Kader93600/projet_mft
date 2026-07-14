@@ -19,7 +19,8 @@ export function generateStaticParams() {
   return ARTICLES.map((a) => ({ slug: a.slug }));
 }
 
-export function generateMetadata({ params }: { params: { slug: string } }) {
+export async function generateMetadata(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const a = findArticle(params.slug);
   if (!a) return { title: "Article introuvable" };
   const canonicalPath = `/blog/${a.slug}`;
@@ -51,7 +52,8 @@ function fmtDate(iso: string): string {
   });
 }
 
-export default function ArticlePage({ params }: { params: { slug: string } }) {
+export default async function ArticlePage(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const a = findArticle(params.slug);
   if (!a) notFound();
 

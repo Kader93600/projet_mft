@@ -28,14 +28,15 @@ function fmtEuros(cents: number) {
 
 const EPAGE_SIZE = 25;
 
-export default async function AdminEnrollmentsPage({
-  searchParams,
-}: {
-  searchParams?: { epage?: string; estatus?: string };
-}) {
+export default async function AdminEnrollmentsPage(
+  props: {
+    searchParams?: Promise<{ epage?: string; estatus?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   // Client session : les RLS sont réparées (migration
   // fix_rls_org_recursion), is_admin() autorise le staff à tout lire.
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const epage = Math.max(1, Number(searchParams?.epage ?? 1) || 1);
   const estatus = (searchParams?.estatus ?? "").toString();

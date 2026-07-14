@@ -42,12 +42,13 @@ function levelTone(level?: string): "success" | "gold" | "navy" {
   return level === "avance" ? "success" : level === "intermediaire" ? "gold" : "navy";
 }
 
-export default async function PositionnementPage({
-  searchParams,
-}: {
-  searchParams?: { retake?: string };
-}) {
-  const supabase = createClient();
+export default async function PositionnementPage(
+  props: {
+    searchParams?: Promise<{ retake?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

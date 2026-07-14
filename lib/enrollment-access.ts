@@ -19,7 +19,7 @@ export async function canAccessEnrollment(
   enrollmentUserId: string | null | undefined,
 ): Promise<boolean> {
   if (enrollmentUserId && currentUserId === enrollmentUserId) return true;
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data } = await supabase
     .from("profiles")
     .select("role")

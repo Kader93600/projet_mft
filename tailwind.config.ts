@@ -2,6 +2,11 @@ import type { Config } from "tailwindcss";
 
 const config: Config = {
   darkMode: "class",
+  // Faux positif du scanner Tailwind : la regex /^\s*[-:|\s]+\s*$/ de
+  // lib/text-to-table.ts est prise pour une propriété arbitraire [prop:valeur]
+  // et génère du CSS invalide (`-: |\s;`) que Turbopack (Next 16) rejette.
+  blocklist: ["[-:|\\s]"],
+
   content: [
     "./app/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",

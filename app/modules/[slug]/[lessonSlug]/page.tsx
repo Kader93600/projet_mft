@@ -25,12 +25,13 @@ function estimateReadingTime(md: string | null | undefined): number {
   return Math.max(1, Math.round(words / 210));
 }
 
-export default async function LessonPage({
-  params,
-}: {
-  params: { slug: string; lessonSlug: string };
-}) {
-  const supabase = createClient();
+export default async function LessonPage(
+  props: {
+    params: Promise<{ slug: string; lessonSlug: string }>;
+  }
+) {
+  const params = await props.params;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

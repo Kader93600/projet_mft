@@ -6,7 +6,7 @@ import { isStaff } from "@/lib/permissions";
 import type { Tables, TablesInsert } from "@/lib/database.types";
 
 async function ensureStaff() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

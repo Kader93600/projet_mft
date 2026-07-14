@@ -5,7 +5,7 @@ import { GroupsManager } from "./groups-manager";
 export const dynamic = "force-dynamic";
 
 export default async function AdminGroups() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const [{ data: groups }, { data: profiles }] = await Promise.all([
     supabase.from("groups").select("*").order("created_at", { ascending: false }),
     supabase

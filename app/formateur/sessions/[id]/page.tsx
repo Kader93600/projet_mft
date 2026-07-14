@@ -74,12 +74,13 @@ function durationMin(start: string, end: string): number {
   );
 }
 
-export default async function FormateurSessionDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const supabase = createClient();
+export default async function FormateurSessionDetailPage(
+  props: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  const params = await props.params;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

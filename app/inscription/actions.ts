@@ -6,7 +6,7 @@ import { sendEmail, enrollmentReceivedEmail } from "@/lib/email";
 import { isPackSlug, isPackAvailableForFormation } from "@/lib/packs";
 
 export async function submitEnrollmentRequest(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

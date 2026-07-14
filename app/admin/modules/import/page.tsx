@@ -15,7 +15,7 @@ import { CourseImportFlow } from "./import-flow";
 export const dynamic = "force-dynamic";
 
 export default async function CourseImportPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const [{ data: formations }, { data: blocs }] = await Promise.all([
     supabase

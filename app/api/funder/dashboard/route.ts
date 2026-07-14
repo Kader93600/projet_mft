@@ -20,7 +20,7 @@ export async function GET() {
     );
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // KPIs agrégés via RPC SECURITY DEFINER
   const { data: kpis, error: kpisErr } = await supabase

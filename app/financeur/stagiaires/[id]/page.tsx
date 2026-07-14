@@ -53,18 +53,19 @@ const fmtEuros = (cents: number) =>
     currency: "EUR",
   });
 
-export default async function FinanceurStagiaireDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function FinanceurStagiaireDetailPage(
+  props: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  const params = await props.params;
   const access = await getFunderAccess();
   if (!access.allowed) {
     if (access.reason === "unauthenticated") redirect("/login");
     redirect("/financeur");
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   let detailsQuery = supabase
     .from("funder_student_details")

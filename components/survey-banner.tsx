@@ -6,7 +6,7 @@ import { ArrowRight, Sparkles } from "lucide-react";
 // - "chaud" quand progressPct >= 80% et pas encore rempli
 // - "froid" quand enquête chaud faite depuis > 60j et pas encore de froid
 export async function SurveyBanner({ progressPct }: { progressPct: number }) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

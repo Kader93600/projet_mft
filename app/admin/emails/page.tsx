@@ -42,12 +42,13 @@ type AdminRow = Pick<Tables<"profiles">, "id" | "full_name" | "email" | "role">;
 /** Ligne renvoyée par le `select("role")` sur `profiles`. */
 type RoleRow = Pick<Tables<"profiles">, "role">;
 
-export default async function EmailsPage({
-  searchParams,
-}: {
-  searchParams?: { tab?: string };
-}) {
-  const supabase = createClient();
+export default async function EmailsPage(
+  props: {
+    searchParams?: Promise<{ tab?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

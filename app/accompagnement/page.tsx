@@ -20,7 +20,7 @@ export default async function AccompagnementPage() {
   const t = await getTranslations("coaching");
   const locale = await getLocale();
   const dateLocale = locale === "en" ? "en-GB" : "fr-FR";
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

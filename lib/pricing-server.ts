@@ -87,7 +87,7 @@ export async function getPackPrice(
   formationSlug: string,
   pack: PackSlug,
 ): Promise<PackPrice | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("formation_pack_prices")
     .select(
@@ -159,7 +159,7 @@ export async function listAllPackPrices(): Promise<PackPrice[]> {
 async function fetchPackPrices(opts: {
   activeOnly: boolean;
 }): Promise<PackPrice[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
   let query = supabase
     .from("formation_pack_prices")
     .select(
@@ -229,7 +229,7 @@ export interface UpdatePackPriceInput {
 export async function upsertPackPrice(
   input: UpdatePackPriceInput,
 ): Promise<PackPrice | { error: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

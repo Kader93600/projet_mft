@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
  * Permet d'avoir un lien "Mon profil" universel dans le menu.
  */
 export default async function MyAdminProfilePage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

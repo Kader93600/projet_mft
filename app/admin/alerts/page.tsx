@@ -31,7 +31,7 @@ function fmtDateTime(iso: string) {
 }
 
 export default async function AdminAlertsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const [{ data: alerts }, { data: pings }] = await Promise.all([
     supabase

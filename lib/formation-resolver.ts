@@ -27,7 +27,7 @@ type FormationSlugEmbed = {
 export const resolveFormationFromQuiz = cache(async function (
   quizId: string
 ): Promise<string | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data } = await supabase
     .from("formation_quizzes")
     .select("formation:formations(slug)")
@@ -41,7 +41,7 @@ export const resolveFormationFromQuiz = cache(async function (
 export const resolveFormationFromModule = cache(async function (
   moduleId: string
 ): Promise<string | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data } = await supabase
     .from("formation_modules")
     .select("formation:formations(slug)")
@@ -55,7 +55,7 @@ export const resolveFormationFromModule = cache(async function (
 export const resolveFormationFromLesson = cache(async function (
   lessonId: string
 ): Promise<string | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: lesson } = await supabase
     .from("lessons")
     .select("module_id")
@@ -70,7 +70,7 @@ export const resolveFormationFromLesson = cache(async function (
 export const resolveFormationFromAttempt = cache(async function (
   attemptId: string
 ): Promise<string | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: attempt } = await supabase
     .from("quiz_attempts")
     .select("quiz_id")
@@ -96,7 +96,7 @@ export const resolveFormationFromAttempt = cache(async function (
 export const resolveFormationIdFromQuiz = cache(async function (
   quizId: string
 ): Promise<string | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // 1) formation_quizzes (mapping direct quiz↔formation)
   const { data: fq } = await supabase

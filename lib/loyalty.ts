@@ -52,7 +52,7 @@ export function getTierDiscountPct(tier: LoyaltyTier): number {
  */
 export async function getUserLoyaltyTier(userId: string): Promise<LoyaltyTier> {
   if (!userId) return "none";
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .rpc("loyalty_tier_for_user", { p_user: userId })
     .single();

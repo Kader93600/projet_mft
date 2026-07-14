@@ -5,7 +5,7 @@ import { isStaff } from "@/lib/permissions";
 import { sanitizeRichTextServer, isRichTextHtml } from "@/lib/rich-text";
 
 async function ensureStaff() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

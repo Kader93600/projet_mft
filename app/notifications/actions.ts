@@ -12,7 +12,7 @@ const validIds = (ids: string[]): string[] =>
  * comme lues. Idempotent côté SQL.
  */
 export async function markAllRead() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -26,7 +26,7 @@ export async function markAllRead() {
  */
 export async function markOneRead(id: string) {
   if (!UUID_RE.test(id)) return;
-  const supabase = createClient();
+  const supabase = await createClient();
   await supabase.rpc("mark_notifications_read", { p_ids: [id] });
   revalidatePath("/notifications");
 }
@@ -37,7 +37,7 @@ export async function markOneRead(id: string) {
 export async function markManyRead(ids: string[]) {
   const safe = validIds(ids);
   if (safe.length === 0) return;
-  const supabase = createClient();
+  const supabase = await createClient();
   await supabase.rpc("mark_notifications_read", { p_ids: safe });
   revalidatePath("/notifications");
 }
@@ -49,7 +49,7 @@ export async function markManyRead(ids: string[]) {
  */
 export async function deleteOne(id: string) {
   if (!UUID_RE.test(id)) return;
-  const supabase = createClient();
+  const supabase = await createClient();
   await supabase.rpc("delete_notifications", { p_ids: [id] });
   revalidatePath("/notifications");
 }
@@ -60,7 +60,7 @@ export async function deleteOne(id: string) {
 export async function deleteMany(ids: string[]) {
   const safe = validIds(ids);
   if (safe.length === 0) return;
-  const supabase = createClient();
+  const supabase = await createClient();
   await supabase.rpc("delete_notifications", { p_ids: safe });
   revalidatePath("/notifications");
 }
@@ -69,7 +69,7 @@ export async function deleteMany(ids: string[]) {
  * Vide la boîte de réception de l'utilisateur courant.
  */
 export async function deleteAll() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

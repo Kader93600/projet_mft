@@ -33,7 +33,7 @@ export async function setNotificationPreference(
   if (!VALID_CHANNELS.includes(channel))
     return { ok: false, error: "Canal invalide" };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase.rpc("set_notification_preference", {
     p_type: type,
     p_channel: channel,
@@ -50,7 +50,7 @@ export async function setNotificationPreference(
  * Réinitialise toutes les préférences (revient au défaut "tout activé").
  */
 export async function resetNotificationPreferences() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase.rpc("reset_notification_preferences");
   if (error) return { ok: false, error: error.message };
   revalidatePath("/parametres/notifications");

@@ -6,15 +6,16 @@ import { ClipboardCheck, Thermometer, Snowflake } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-export default async function EvaluationPage({
-  params,
-}: {
-  params: { type: string };
-}) {
+export default async function EvaluationPage(
+  props: {
+    params: Promise<{ type: string }>;
+  }
+) {
+  const params = await props.params;
   if (params.type !== "chaud" && params.type !== "froid") notFound();
   const type = params.type as "chaud" | "froid";
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

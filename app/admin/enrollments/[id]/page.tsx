@@ -18,14 +18,15 @@ import { PackFormationFields } from "./pack-formation-fields";
 
 export const dynamic = "force-dynamic";
 
-export default async function EnrollmentEditorPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function EnrollmentEditorPage(
+  props: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  const params = await props.params;
   const isNew = params.id === "new";
   // Client session : RLS réparées, is_admin() autorise le staff.
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const [
     { data: enrollment },

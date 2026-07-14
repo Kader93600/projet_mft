@@ -40,7 +40,7 @@ const ICONS: Record<string, any> = {
 export async function FormationPipeline() {
   // Client session : les RLS sont réparées (cf. migration
   // fix_rls_org_recursion), is_admin() autorise le staff à tout voir.
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const [
     { data: demand },

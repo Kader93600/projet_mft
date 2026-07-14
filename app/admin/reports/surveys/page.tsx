@@ -50,7 +50,7 @@ function StarBar({ value }: { value: number | null }) {
 }
 
 export default async function SurveysPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const [{ data: stats }, { data: surveys }] = await Promise.all([
     supabase.from("survey_stats").select("*"),

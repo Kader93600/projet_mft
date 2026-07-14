@@ -1,29 +1,35 @@
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-export function createClient() {
-  const cookieStore = cookies();
+/**
+ * Client Supabase côté serveur (session utilisateur via cookies).
+ *
+ * ⚠️ ASYNC depuis Next 15/16 : `cookies()` renvoie désormais une Promise.
+ * Tout appelant doit donc faire `const supabase = await createClient();`.
+ *
+ * L'API cookies de @supabase/ssr (>= 0.6) est `getAll`/`setAll`.
+ * Le `setAll` peut échouer quand il est invoqué depuis un Server Component
+ * (les cookies n'y sont pas modifiables) : c'est sans conséquence, le
+ * middleware se charge du rafraîchissement de session.
+ */
+export async function createClient() {
+  const cookieStore = await cookies();
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
+        getAll() {
+          return cookieStore.getAll();
         },
-        set(name: string, value: string, options: CookieOptions) {
+        setAll(cookiesToSet) {
           try {
-            cookieStore.set({ name, value, ...options });
+            for (const { name, value, options } of cookiesToSet) {
+              cookieStore.set(name, value, options);
+            }
           } catch {
-            /* called from server component — ignore */
-          }
-        },
-        remove(name: string, options: CookieOptions) {
-          try {
-            cookieStore.set({ name, value: "", ...options });
-          } catch {
-            /* ignore */
+            /* appelé depuis un Server Component — ignoré (cf. middleware) */
           }
         },
       },
@@ -32,7 +38,7 @@ export function createClient() {
 }
 
 export async function getCurrentUser() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
