@@ -1293,6 +1293,25 @@
      teinte porteuse de sens (lime = objectifs, rouge = piège, vert = synthèse).
      ===================================================================== */
 
+  /* ── Fonds en DÉGRADÉ (angle mort : un `background: linear-gradient(...)`
+        n'apparaît pas dans `background-color`, il vit dans `background-image`).
+        Ces 5 blocs étaient donc des CARTES BLANCHES en plein thème sombre. ── */
+  .dark .prose-lesson .data-table,
+  .dark .prose-lesson .visual-form,
+  .dark .prose-lesson .flow-card {
+    background: linear-gradient(180deg, #161D33 0%, #121A2C 100%) !important;
+    box-shadow:
+      0 1px 0 rgba(0, 0, 0, 0.35),
+      0 12px 32px -16px rgba(0, 0, 0, 0.45) !important;
+  }
+  .dark .prose-lesson .visual-form__field,
+  .dark .prose-lesson .visual-form__value {
+    background: linear-gradient(180deg, #1A2040 0%, #161D33 100%) !important;
+  }
+  .dark .skeleton {
+    background: linear-gradient(90deg, #161D33 0%, #1F2748 50%, #161D33 100%) !important;
+  }
+
   /* ── Callouts : texte commun + couleur de titre par variante ── */
   .dark .prose-lesson .callout { --callout-text-color: #D5DDEC; }
   .dark .prose-lesson .callout--objectifs  { --callout-title-color: #B6EC4F; --callout-bullet: #B6EC4F; }
