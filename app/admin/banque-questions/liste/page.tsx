@@ -15,6 +15,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { findFormation, FORMATIONS } from "@/lib/formations-config";
+import { accentVars } from "@/lib/formation-accent";
 import { getQuestionFilterConfig } from "@/lib/question-filters";
 import { ToggleActiveButton } from "./toggle-active-button";
 import { BulkActiveBar } from "./bulk-active-bar";
@@ -280,12 +281,8 @@ export default async function BanqueQuestionsListPage(
             {" "}
             ·{" "}
             <span
-              className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold"
-              style={{
-                backgroundColor: `${formation.accent}22`,
-                color: formation.accent,
-                border: `1px solid ${formation.accent}55`,
-              }}
+              className="formation-accent inline-flex items-center px-2 py-0.5 rounded border text-xs font-semibold"
+              style={accentVars(formation.accent)}
             >
               {formation.code}
             </span>

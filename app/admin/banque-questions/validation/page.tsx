@@ -11,6 +11,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { findFormation } from "@/lib/formations-config";
+import { accentVars } from "@/lib/formation-accent";
 import { getQuestionFilterConfig } from "@/lib/question-filters";
 import { ValidationForm } from "./validation-form";
 import type { Tables } from "@/lib/database.types";
@@ -132,12 +133,8 @@ export default async function ValidationPage(
 
       <header>
         <span
-          className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-semibold uppercase tracking-wider"
-          style={{
-            backgroundColor: `${formation.accent}22`,
-            color: formation.accent,
-            border: `1px solid ${formation.accent}55`,
-          }}
+          className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-semibold uppercase tracking-wider border formation-accent"
+          style={accentVars(formation.accent)}
         >
           {formation.code}
         </span>

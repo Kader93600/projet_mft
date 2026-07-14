@@ -8,6 +8,8 @@ import {
   YAxis,
 } from "recharts";
 
+import { accentVars } from "@/lib/formation-accent";
+
 interface FormationTrendRow {
   formation_id: string;
   formation_slug: string;
@@ -70,11 +72,8 @@ export function FormationTrendsGrid({ rows }: { rows: FormationTrendRow[] }) {
         >
           <div className="flex items-center justify-between mb-1.5">
             <span
-              className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold"
-              style={{
-                backgroundColor: `${f.accent_color ?? "#0E1240"}22`,
-                color: f.accent_color ?? "#0E1240",
-              }}
+              className="formation-accent inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold"
+              style={accentVars(f.accent_color ?? "#0E1240")}
             >
               {f.formation_code}
             </span>

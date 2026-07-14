@@ -5,6 +5,7 @@ import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Award, User, BookOpen, Clock } from "lucide-react";
 import { findFormation } from "@/lib/formations-config";
+import { accentVars } from "@/lib/formation-accent";
 import { initials } from "@/lib/utils";
 import { isStaff } from "@/lib/permissions";
 import { FormationStripe } from "@/components/formation/formation-stripe";
@@ -190,12 +191,8 @@ export default async function CorrectionDetailPage(
             <div className="mt-2 flex items-center gap-3 text-sm text-slate-600 flex-wrap">
               {formation && (
                 <span
-                  className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold"
-                  style={{
-                    backgroundColor: `${formation.accent}22`,
-                    color: formation.accent,
-                    border: `1px solid ${formation.accent}55`,
-                  }}
+                  className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold border formation-accent"
+                  style={accentVars(formation.accent)}
                 >
                   {formation.code}
                 </span>

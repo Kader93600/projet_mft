@@ -18,6 +18,7 @@ import {
   revokeTrainerFormation,
 } from "../actions";
 import { FORMATIONS, findFormation } from "@/lib/formations-config";
+import { accentVars } from "@/lib/formation-accent";
 
 export const dynamic = "force-dynamic";
 
@@ -226,12 +227,8 @@ export default async function FormateursAffectationsPage(
                         </td>
                         <td className="px-3 py-3">
                           <span
-                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-semibold"
-                            style={{
-                              backgroundColor: `${f?.accent ?? "#9FE220"}22`,
-                              color: f?.accent ?? "#609015",
-                              border: `1px solid ${f?.accent ?? "#9FE220"}55`,
-                            }}
+                            className="formation-accent inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-semibold border"
+                            style={accentVars(f?.accent ?? "#9FE220")}
                           >
                             {h.formation?.code ?? "—"}
                           </span>

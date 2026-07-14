@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody } from "@/components/ui/card";
 import { ArrowLeft, Filter, CheckCircle2 } from "lucide-react";
 import { findFormation, FORMATIONS } from "@/lib/formations-config";
+import { accentVars } from "@/lib/formation-accent";
 import { getQuestionFilterConfig } from "@/lib/question-filters";
 import { QrEditor } from "./qr-editor";
 import { ActivateAllButton } from "./activate-all-button";
@@ -230,12 +231,8 @@ export default async function ValidationQrPage(
 
       <header>
         <span
-          className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-semibold uppercase tracking-wider"
-          style={{
-            backgroundColor: `${formation.accent}22`,
-            color: formation.accent,
-            border: `1px solid ${formation.accent}55`,
-          }}
+          className="formation-accent border inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-semibold uppercase tracking-wider"
+          style={accentVars(formation.accent)}
         >
           {formation.code}
         </span>

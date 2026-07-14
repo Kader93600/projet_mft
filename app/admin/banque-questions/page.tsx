@@ -12,6 +12,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { FORMATIONS } from "@/lib/formations-config";
+import { accentVars } from "@/lib/formation-accent";
 
 export const dynamic = "force-dynamic";
 
@@ -372,12 +373,8 @@ export default async function BanqueQuestionsPage(
                     <tr key={s.slug} className="border-t border-navy-50">
                       <td className="px-6 py-3">
                         <span
-                          className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-semibold"
-                          style={{
-                            backgroundColor: `${s.accent}22`,
-                            color: s.accent,
-                            border: `1px solid ${s.accent}55`,
-                          }}
+                          className="formation-accent inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-semibold border"
+                          style={accentVars(s.accent)}
                         >
                           {s.code}
                         </span>

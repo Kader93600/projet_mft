@@ -12,6 +12,7 @@ import {
   Filter,
 } from "lucide-react";
 import { findFormation } from "@/lib/formations-config";
+import { accentVars } from "@/lib/formation-accent";
 
 export const dynamic = "force-dynamic";
 
@@ -166,12 +167,8 @@ export default async function CorrectionsListPage(
                         <div className="text-xs text-slate-500 mt-0.5 flex items-center gap-2 flex-wrap">
                           {f && (
                             <span
-                              className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold"
-                              style={{
-                                backgroundColor: `${f.accent}22`,
-                                color: f.accent,
-                                border: `1px solid ${f.accent}55`,
-                              }}
+                              className="formation-accent border inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold"
+                              style={accentVars(f.accent)}
                             >
                               {f.code}
                             </span>

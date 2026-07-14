@@ -9,6 +9,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { findFormation } from "@/lib/formations-config";
+import { accentVars } from "@/lib/formation-accent";
 import { FormationStripe } from "./formation-stripe";
 
 const ICONS: Record<string, any> = {
@@ -74,18 +75,16 @@ export function FormationHeader({
             <div className="flex items-center gap-2 mb-2">
               {Icon && (
                 <span
-                  className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0"
-                  style={{
-                    backgroundColor: `${accent}22`,
-                    border: `1px solid ${accent}55`,
-                  }}
+                  className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0 border formation-accent"
+                  style={accentVars(accent)}
                 >
-                  <Icon className="h-4 w-4" style={{ color: accent }} />
+                  {/* L'icône hérite de `currentColor` posé par `formation-accent`. */}
+                  <Icon className="h-4 w-4" />
                 </span>
               )}
               <span
-                className="text-[10px] font-bold uppercase tracking-[0.18em]"
-                style={{ color: accent }}
+                className="text-[10px] font-bold uppercase tracking-[0.18em] formation-accent-text"
+                style={accentVars(accent)}
               >
                 {f ? `${f.code} · ${eyebrow}` : eyebrow}
               </span>

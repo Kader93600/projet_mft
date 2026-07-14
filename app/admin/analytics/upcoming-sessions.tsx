@@ -7,6 +7,7 @@ import {
   Clock3,
   CalendarRange,
 } from "lucide-react";
+import { accentVars } from "@/lib/formation-accent";
 
 interface UpcomingSession {
   id: string;
@@ -95,11 +96,8 @@ export function UpcomingSessionsSection({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-0.5">
                     <span
-                      className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold"
-                      style={{
-                        backgroundColor: `${s.accent_color ?? "#0E1240"}22`,
-                        color: s.accent_color ?? "#0E1240",
-                      }}
+                      className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold formation-accent"
+                      style={accentVars(s.accent_color ?? "#0E1240")}
                     >
                       {s.formation_code}
                     </span>

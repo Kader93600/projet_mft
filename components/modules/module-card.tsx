@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { findFormation } from "@/lib/formations-config";
+import { accentVars } from "@/lib/formation-accent";
 import {
   isFlexibleUnlockFormation,
   type ModuleState,
@@ -135,8 +136,9 @@ export function ModuleCard({ module: m }: { module: ModuleCardData }) {
   // ----- Done / in-progress / not-started : Link cliquable
 
   const stateBadge = renderStateBadge(state, kind);
-  const accentText = shadeForText(accent);
   const ariaLabel = buildAriaLabel(m, state, percent);
+  // CTA : l'accent ne colore le libellé qu'au hover (et jamais sur "done").
+  const ctaAccented = hovered && state !== "done";
 
   return (
     <Link
@@ -182,12 +184,8 @@ export function ModuleCard({ module: m }: { module: ModuleCardData }) {
         <div className="flex items-start justify-between gap-3">
           {formation ? (
             <span
-              className="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em]"
-              style={{
-                background: `${accent}1A`,
-                color: accentText,
-                border: `1px solid ${accent}40`,
-              }}
+              className="formation-accent inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em]"
+              style={accentVars(accent, "soft")}
             >
               {formation.code}
             </span>
@@ -276,11 +274,13 @@ export function ModuleCard({ module: m }: { module: ModuleCardData }) {
             <span
               className={cn(
                 "inline-flex items-center gap-1 text-[13px] font-medium transition-colors",
-                state === "done" ? "text-emerald-700" : "text-navy-900"
+                ctaAccented
+                  ? "formation-accent-text"
+                  : state === "done"
+                    ? "text-emerald-700"
+                    : "text-navy-900"
               )}
-              style={{
-                color: hovered && state !== "done" ? accentText : undefined,
-              }}
+              style={ctaAccented ? accentVars(accent) : undefined}
             >
               {state === "done"
                 ? "Revoir"
@@ -335,8 +335,8 @@ export function ModuleCard({ module: m }: { module: ModuleCardData }) {
             />
           ) : (
             <Sparkles
-              className="h-3.5 w-3.5 shrink-0 mt-0.5"
-              style={{ color: accentText }}
+              className="formation-accent-text h-3.5 w-3.5 shrink-0 mt-0.5"
+              style={accentVars(accent)}
               strokeWidth={2.2}
             />
           )}
@@ -453,21 +453,4 @@ function buildOverlayTagline(
 
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
-}
-
-/**
- * Pour les chips et accents textuels : on assombrit le hex de base de
- * façon à garantir la lisibilité sur fond clair (WCAG AA).
- */
-function shadeForText(hex: string): string {
-  const h = hex.replace("#", "");
-  if (h.length < 6) return hex;
-  const r = parseInt(h.slice(0, 2), 16);
-  const g = parseInt(h.slice(2, 4), 16);
-  const b = parseInt(h.slice(4, 6), 16);
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  const factor = luminance > 0.7 ? 0.55 : luminance > 0.5 ? 0.7 : 0.85;
-  const dark = (c: number) =>
-    Math.max(0, Math.round(c * factor)).toString(16).padStart(2, "0");
-  return `#${dark(r)}${dark(g)}${dark(b)}`;
 }

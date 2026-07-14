@@ -6,6 +6,7 @@ import { renderMarkdown } from "@/lib/markdown";
 import { acceptDocument, selectFormation, completeOnboarding } from "./actions";
 import { FormationStripe } from "@/components/formation/formation-stripe";
 import { FormationBadge } from "@/components/formation/formation-badge";
+import { accentVars } from "@/lib/formation-accent";
 import {
   FileSignature,
   Gavel,
@@ -342,15 +343,14 @@ export function OnboardingWizard({
                     <div className="relative flex items-start gap-3">
                       <div
                         className={
-                          "h-11 w-11 rounded-xl flex items-center justify-center shrink-0 " +
+                          "formation-accent h-11 w-11 rounded-xl flex items-center justify-center shrink-0 " +
                           "transition-transform duration-300 ease-out " +
                           (active
                             ? "scale-105"
                             : "group-hover:scale-105 motion-reduce:group-hover:scale-100")
                         }
                         style={{
-                          background: `${f.accent}1F`,
-                          color: f.accent,
+                          ...accentVars(f.accent),
                           boxShadow: active
                             ? `0 8px 24px -10px ${f.accent}66`
                             : undefined,
@@ -361,15 +361,15 @@ export function OnboardingWizard({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span
-                            className="text-[10px] font-bold uppercase tracking-wider"
-                            style={{ color: f.accent }}
+                            className="formation-accent-text text-[10px] font-bold uppercase tracking-wider"
+                            style={accentVars(f.accent)}
                           >
                             {f.code}
                           </span>
                           {active && (
                             <Check
-                              className="h-3.5 w-3.5"
-                              style={{ color: f.accent }}
+                              className="formation-accent-text h-3.5 w-3.5"
+                              style={accentVars(f.accent)}
                             />
                           )}
                         </div>

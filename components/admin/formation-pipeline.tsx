@@ -19,6 +19,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { FORMATIONS } from "@/lib/formations-config";
+import { accentVars } from "@/lib/formation-accent";
 import { cn } from "@/lib/utils";
 
 const ICONS: Record<string, any> = {
@@ -179,13 +180,10 @@ export async function FormationPipeline() {
               <div className="relative">
                 <div className="flex items-center justify-between gap-2">
                   <div
-                    className="h-9 w-9 rounded-lg flex items-center justify-center"
-                    style={{
-                      backgroundColor: `${accent}22`,
-                      border: `1px solid ${accent}55`,
-                    }}
+                    className="formation-accent h-9 w-9 rounded-lg border flex items-center justify-center"
+                    style={accentVars(accent)}
                   >
-                    <Icon className="h-4 w-4" style={{ color: accent }} />
+                    <Icon className="h-4 w-4" />
                   </div>
                   {r.pending > 0 && (
                     <Badge tone="rose" size="sm">

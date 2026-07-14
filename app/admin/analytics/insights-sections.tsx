@@ -10,6 +10,7 @@ import {
   Award,
 } from "lucide-react";
 import { initials } from "@/lib/utils";
+import { accentVars } from "@/lib/formation-accent";
 
 // =====================================================================
 // Section : Top 10 stagiaires actifs
@@ -395,12 +396,8 @@ export function RevenueMatrixSection({ rows }: { rows: RevenueRow[] }) {
               <tr key={f.formation_id} className="hover:bg-ivory/40">
                 <td className="px-5 py-2.5">
                   <span
-                    className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold mr-2"
-                    style={{
-                      backgroundColor: `${f.accent_color ?? "#0E1240"}22`,
-                      color: f.accent_color ?? "#0E1240",
-                      border: `1px solid ${f.accent_color ?? "#0E1240"}55`,
-                    }}
+                    className="formation-accent border inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold mr-2"
+                    style={accentVars(f.accent_color ?? "#0E1240")}
                   >
                     {f.formation_code}
                   </span>

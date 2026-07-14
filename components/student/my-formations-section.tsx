@@ -18,6 +18,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { findFormation } from "@/lib/formations-config";
+import { accentVars } from "@/lib/formation-accent";
 
 const ICONS: Record<string, any> = {
   Truck,
@@ -162,13 +163,11 @@ export async function MyFormationsSection() {
               <div className="relative">
                 <div className="flex items-start justify-between gap-3">
                   <div
-                    className="h-11 w-11 rounded-xl flex items-center justify-center shrink-0"
-                    style={{
-                      backgroundColor: `${accent}22`,
-                      border: `1px solid ${accent}55`,
-                    }}
+                    className="formation-accent border h-11 w-11 rounded-xl flex items-center justify-center shrink-0"
+                    style={accentVars(accent)}
                   >
-                    <Icon className="h-5 w-5" style={{ color: accent }} />
+                    {/* L'icône hérite de `currentColor` posé par .formation-accent */}
+                    <Icon className="h-5 w-5" />
                   </div>
                   <Badge tone={STATUS_TONE[e.status] ?? "slate"} size="sm">
                     {STATUS_LABEL[e.status] ?? e.status}

@@ -11,6 +11,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { sendInactivityReminder } from "./actions";
+import { accentVars } from "@/lib/formation-accent";
 
 interface AtRiskRow {
   user_id: string;
@@ -112,11 +113,8 @@ export function AtRiskSection({ rows }: { rows: AtRiskRow[] }) {
                     <span>{r.email}</span>
                     <span>·</span>
                     <span
-                      className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold"
-                      style={{
-                        backgroundColor: `${r.accent_color ?? "#0E1240"}22`,
-                        color: r.accent_color ?? "#0E1240",
-                      }}
+                      className="formation-accent inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold"
+                      style={accentVars(r.accent_color ?? "#0E1240")}
                     >
                       {r.formation_code}
                     </span>

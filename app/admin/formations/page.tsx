@@ -12,6 +12,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { FORMATIONS, findFormation } from "@/lib/formations-config";
+import { accentVars } from "@/lib/formation-accent";
 import { LEGAL } from "@/lib/legal-config";
 
 export const dynamic = "force-dynamic";
@@ -157,12 +158,8 @@ export default async function AdminFormationsPage() {
                     <td className="px-6 py-3">
                       <div className="flex items-center gap-2">
                         <div
-                          className="h-7 w-7 rounded-lg flex items-center justify-center text-[10px] font-bold"
-                          style={{
-                            backgroundColor: `${r.formation.accent}22`,
-                            color: r.formation.accent,
-                            border: `1px solid ${r.formation.accent}55`,
-                          }}
+                          className="formation-accent h-7 w-7 rounded-lg border flex items-center justify-center text-[10px] font-bold"
+                          style={accentVars(r.formation.accent)}
                         >
                           {r.formation.code.slice(0, 2)}
                         </div>

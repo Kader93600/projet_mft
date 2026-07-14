@@ -1100,6 +1100,35 @@
   .dark .border-brand-200, .dark .border-brand-300 { border-color: rgba(154, 162, 255, 0.30) !important; }
   .dark .border-signal-200, .dark .border-signal-300 { border-color: rgba(182, 236, 79, 0.30) !important; }
 
+  /* =====================================================================
+     BADGES / PASTILLES DE FORMATION (accent propre à chaque formation)
+     ---------------------------------------------------------------------
+     Ces éléments sont colorés avec l'accent HEX de la formation (défini dans
+     lib/formations-config.ts), donc en STYLE INLINE : aucune règle .dark ne
+     pourrait les surcharger (l'inline gagne toujours). Le composant
+     <FormationBadge> n'émet donc QUE des variables CSS, et c'est ici qu'on
+     choisit le jeu à utiliser selon le thème.
+
+     Sans ça, les accents déjà foncés (ex. #2530D9 pour « Capacité > 3,5 t »)
+     restaient en bleu profond sur fond navy : ~1,6:1, illisible. Le composant
+     calcule la variante claire par contraste WCAG réel (≥ 4,5:1 garanti).
+     ===================================================================== */
+  .formation-accent {
+    color: var(--fa-fg);
+    background-color: var(--fa-bg);
+    border-color: var(--fa-bd);
+  }
+  .dark .formation-accent {
+    color: var(--fa-fg-dark) !important;
+    background-color: var(--fa-bg-dark) !important;
+    border-color: var(--fa-bd-dark) !important;
+  }
+
+  /* Variante TEXTE SEUL : quand l'accent ne colore qu'une icône ou un libellé,
+     sans fond ni bordure (sinon on imposerait un fond indésirable). */
+  .formation-accent-text { color: var(--fa-fg); }
+  .dark .formation-accent-text { color: var(--fa-fg-dark) !important; }
+
   /* ============ Accessibilité (Point #12) ============ */
   /* Confort de lecture DYS. « OpenDyslexic » est utilisée si l'utilisateur
      l'a installée localement ; sinon on retombe sur des polices SYSTÈME

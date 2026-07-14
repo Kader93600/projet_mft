@@ -22,6 +22,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { findFormation, type Formation } from "@/lib/formations-config";
+import { accentVars } from "@/lib/formation-accent";
 
 const ICONS: Record<string, any> = {
   Truck,
@@ -100,52 +101,20 @@ export function FormationBadge({
   const Icon = ICONS[f.iconName] ?? Truck;
   const accent = f.accent ?? "#9FE220";
   /**
-   * Couleur de texte / icône — assombrie pour passer WCAG AA sur fond
-   * clair (ivory). Pour les couleurs déjà foncées (navy, slate),
-   * `darkenForReadability` retourne quasiment la même couleur.
+   * L'accent est émis en VARIABLES CSS (jeu clair + jeu sombre), jamais en
+   * color/background direct : un style inline ne peut pas être surchargé par
+   * une règle `.dark`. C'est donc le CSS qui choisit le jeu selon le thème
+   * (cf. lib/formation-accent.ts et `.formation-accent` dans globals.css).
+   *
+   * Sans ça, les accents déjà foncés (ex. #2530D9 pour « Capacité > 3,5 t »)
+   * restaient en bleu profond sur fond navy : 2,07:1, illisible.
    */
-  const accentText = darkenForReadability(accent);
-
-  let style: React.CSSProperties = {};
+  const style = accentVars(accent, variant);
   const cls = [
+    "formation-accent",
     "inline-flex items-center font-semibold uppercase tracking-wider rounded-lg border",
     SIZES[size],
   ].join(" ");
-
-  switch (variant) {
-    case "solid":
-      // Bg accent vif, texte navy-950 lisible
-      style = {
-        backgroundColor: accent,
-        color: "#0E1240",
-        borderColor: accent,
-      };
-      break;
-    case "outline":
-      // Texte accent assombri, border accent semi
-      style = {
-        color: accentText,
-        borderColor: `${accent}99`,
-        backgroundColor: "transparent",
-      };
-      break;
-    case "soft":
-      // Bg accent très léger, texte assombri
-      style = {
-        backgroundColor: `${accent}1F`,
-        color: accentText,
-        borderColor: `${accent}33`,
-      };
-      break;
-    case "chip":
-    default:
-      // Bg accent léger + border + texte assombri WCAG AA
-      style = {
-        backgroundColor: `${accent}26`,
-        color: accentText,
-        borderColor: `${accent}66`,
-      };
-  }
 
   return (
     <span
@@ -168,43 +137,4 @@ export function FormationBadge({
       )}
     </span>
   );
-}
-
-// ---------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------
-
-/**
- * Assombrit une couleur HEX pour qu'elle reste lisible (≥ 4.5:1) sur
- * fond clair ivory (#FAFAF7). Algorithme simple basé sur la luminance
- * perçue : plus la couleur est claire, plus on assombrit.
- *
- * Exemple :
- *   #9FE220 (signal-500 lime, L≈0.74) → environ #5A8112 (lisible)
- *   #2530D9 (brand-600, L≈0.27)        → presque inchangé
- *   #475569 (slate-600)                → inchangé
- */
-function darkenForReadability(hex: string): string {
-  const h = hex.replace("#", "");
-  if (h.length < 6) return hex;
-  const r = parseInt(h.slice(0, 2), 16);
-  const g = parseInt(h.slice(2, 4), 16);
-  const b = parseInt(h.slice(4, 6), 16);
-  // Luminance perçue (Rec. 601, suffisant pour notre usage)
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  // Facteur d'assombrissement adaptatif :
-  //  L > 0.65 : très clair (lime, jaune) → 0.55
-  //  L > 0.50 : clair (vert clair, sky)  → 0.65
-  //  L > 0.35 : moyen                     → 0.80
-  //  sinon    : déjà foncé, on garde     → 1.00
-  let factor: number;
-  if (luminance > 0.65) factor = 0.5;
-  else if (luminance > 0.5) factor = 0.62;
-  else if (luminance > 0.35) factor = 0.78;
-  else factor = 1.0;
-  const dark = (c: number) =>
-    Math.max(0, Math.min(255, Math.round(c * factor)))
-      .toString(16)
-      .padStart(2, "0");
-  return `#${dark(r)}${dark(g)}${dark(b)}`;
 }

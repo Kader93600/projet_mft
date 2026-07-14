@@ -9,6 +9,7 @@ import {
   PACK_METADATA,
   type PackSlug,
 } from "@/lib/packs";
+import { accentVars } from "@/lib/formation-accent";
 
 interface FormationOpt {
   id: string;
@@ -184,18 +185,19 @@ export function PackFormationFields({
               >
                 <div className="flex items-center justify-between w-full">
                   <span
-                    className="text-[10px] font-bold uppercase tracking-[0.14em]"
-                    style={{
-                      color: disabled ? "#94a3b8" : meta.accent,
-                    }}
+                    className={
+                      "text-[10px] font-bold uppercase tracking-[0.14em] " +
+                      (disabled ? "text-slate-400" : "formation-accent-text")
+                    }
+                    style={disabled ? undefined : accentVars(meta.accent)}
                   >
                     {meta.name}
                   </span>
                   {active && !disabled && (
                     <Check
-                      className="h-3.5 w-3.5"
+                      className="h-3.5 w-3.5 formation-accent-text"
                       strokeWidth={3}
-                      style={{ color: meta.accent }}
+                      style={accentVars(meta.accent)}
                     />
                   )}
                 </div>
