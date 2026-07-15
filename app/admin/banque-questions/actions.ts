@@ -28,9 +28,13 @@ const createQcmSchema = z.object({
 const createQrSchema = z.object({
   formation_slug: z.string().trim().min(1, "Formation requise"),
   module_id: z.string().uuid().optional().nullable(),
-  statement: z.string().trim().min(3, "Énoncé trop court").max(5000),
-  expected_answer: z.string().trim().min(3, "Réponse modèle requise").max(5000),
-  scoring_grid: z.string().trim().max(2000).optional().nullable(),
+  statement: z.string().trim().min(3, "Énoncé trop court").max(15000),
+  expected_answer: z
+    .string()
+    .trim()
+    .min(3, "Réponse modèle requise")
+    .max(15000, "Réponse modèle : 15000 caractères maximum"),
+  scoring_grid: z.string().trim().max(5000).optional().nullable(),
   difficulty: z.enum(["facile", "moyen", "difficile"]).default("moyen"),
   max_score: z.number().min(0.5).max(20).default(2),
   tags: z.array(z.string().trim().max(60)).default([]),

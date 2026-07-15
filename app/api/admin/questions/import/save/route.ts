@@ -44,10 +44,10 @@ const choiceSchema = z.object({
 
 const questionSchema = z.object({
   type: z.enum(["qcm", "qr"]),
-  statement: z.string().min(5).max(4000),
+  statement: z.string().min(5).max(15000),
   choices: z.array(choiceSchema).optional().nullable(),
-  expected_answer: z.string().max(8000).optional().nullable(),
-  scoring_grid: z.string().max(4000).optional().nullable(),
+  expected_answer: z.string().max(15000).optional().nullable(),
+  scoring_grid: z.string().max(5000).optional().nullable(),
   max_score: z.number().min(0).max(100),
   difficulty: z.enum(["facile", "moyen", "difficile"]),
   tags: z.array(z.string().trim().max(40)).max(20),
