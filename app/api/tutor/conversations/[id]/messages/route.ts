@@ -4,6 +4,7 @@
 
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { captureException } from "@/lib/observability";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -38,10 +39,8 @@ export async function GET(_req: Request, props: { params: Promise<{ id: string }
     .order("created_at", { ascending: true });
 
   if (error) {
-    return NextResponse.json(
-      { error: "fetch_failed", message: error.message },
-      { status: 500 }
-    );
+    await captureException(error, { tags: { route: "tutor/messages" } });
+    return NextResponse.json({ error: "fetch_failed" }, { status: 500 });
   }
 
   return NextResponse.json({

@@ -15,6 +15,7 @@ import {
   SALES_JOURNAL_COLUMNS,
   type EnrollmentForAccounting,
 } from "@/lib/accounting-export";
+import { captureException } from "@/lib/observability";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -50,10 +51,8 @@ export async function GET(req: Request) {
     .order("created_at", { ascending: true });
 
   if (error) {
-    return NextResponse.json(
-      { error: "fetch_failed", message: error.message },
-      { status: 500 },
-    );
+    await captureException(error, { tags: { route: "admin/accounting/export" } });
+    return NextResponse.json({ error: "fetch_failed" }, { status: 500 });
   }
 
   const enrollments: EnrollmentForAccounting[] = (data ?? []).map((e: any) => ({

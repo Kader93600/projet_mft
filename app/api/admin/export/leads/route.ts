@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin-guard";
 import { toCsv, csvHeaders, fmtDateTime } from "@/lib/csv";
+import { captureException } from "@/lib/observability";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,7 +30,8 @@ export async function GET() {
     .order("created_at", { ascending: false });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    await captureException(error, { tags: { route: "admin/export/leads" } });
+    return NextResponse.json({ error: "export_failed" }, { status: 500 });
   }
 
   const rows = (data ?? []).map((r: any) => ({

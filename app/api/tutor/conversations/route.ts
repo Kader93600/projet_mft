@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getTutorAccess } from "@/lib/tutor/access";
+import { captureException } from "@/lib/observability";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -36,10 +37,8 @@ export async function GET() {
     .limit(30);
 
   if (error) {
-    return NextResponse.json(
-      { error: "fetch_failed", message: error.message },
-      { status: 500 }
-    );
+    await captureException(error, { tags: { route: "tutor/conversations" } });
+    return NextResponse.json({ error: "fetch_failed" }, { status: 500 });
   }
 
   return NextResponse.json({ conversations: data ?? [] });

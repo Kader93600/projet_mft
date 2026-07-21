@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { captureException } from "@/lib/observability";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,8 @@ export async function GET() {
 
   const { data, error } = await supabase.rpc("export_my_data");
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    await captureException(error, { tags: { route: "me/export" } });
+    return NextResponse.json({ error: "export_failed" }, { status: 500 });
   }
 
   const filename = `gotrm-export-${user.id}-${new Date()

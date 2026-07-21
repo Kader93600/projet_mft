@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { rateLimit, rateLimitHeaders, clientIp } from "@/lib/rate-limit";
+import { captureException } from "@/lib/observability";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,7 +36,10 @@ export async function GET(req: Request) {
     q,
     max_per_kind: max,
   });
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    await captureException(error, { tags: { route: "search" } });
+    return NextResponse.json({ error: "search_failed" }, { status: 500 });
+  }
 
   const results = data ?? [];
 

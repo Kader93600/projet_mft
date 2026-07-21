@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import ExcelJS from "exceljs";
 import { requireAdmin } from "@/lib/admin-guard";
 import { sanitizeSearchTerm } from "@/lib/search";
+import { captureException } from "@/lib/observability";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -56,7 +57,8 @@ export async function GET(req: NextRequest) {
 
   const { data: users, error } = await query;
   if (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    await captureException(error, { tags: { route: "admin/export/users/xlsx" } });
+    return new Response(JSON.stringify({ error: "export_failed" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });

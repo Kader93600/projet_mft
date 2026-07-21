@@ -12,6 +12,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { captureException } from "@/lib/observability";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -44,10 +45,9 @@ export async function POST() {
   if (error) {
     // On évite de remonter une erreur 500 pour ne pas casser le rendu
     // du dashboard côté client : la RPC est best-effort.
-    console.error("[streak/checkin] RPC error", {
-      message: error.message,
-      code: error.code,
-      details: error.details,
+    await captureException(error, {
+      tags: { route: "streak/checkin" },
+      extra: { code: error.code, details: error.details },
     });
     return NextResponse.json(
       { awarded_login: 0, awarded_streak: 0, current_streak: 0, longest_streak: 0 },

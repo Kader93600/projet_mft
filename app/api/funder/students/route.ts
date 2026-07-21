@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { sanitizeSearchTerm } from "@/lib/search";
 import { createClient } from "@/lib/supabase/server";
 import { getFunderAccess } from "@/lib/funder/access";
+import { captureException } from "@/lib/observability";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -55,10 +56,8 @@ export async function GET(req: NextRequest) {
 
   const { data, error, count } = await query.range(offset, offset + limit - 1);
   if (error) {
-    return NextResponse.json(
-      { error: "fetch_failed", message: error.message },
-      { status: 500 }
-    );
+    await captureException(error, { tags: { route: "funder/students" } });
+    return NextResponse.json({ error: "fetch_failed" }, { status: 500 });
   }
 
   return NextResponse.json({

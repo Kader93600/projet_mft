@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { rateLimit, rateLimitHeaders, clientIp } from "@/lib/rate-limit";
+import { captureException } from "@/lib/observability";
 
 export const dynamic = "force-dynamic";
 
@@ -55,7 +56,8 @@ export async function POST(req: Request) {
     { onConflict: "user_id,kind" }
   );
   if (error) {
-    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+    await captureException(error, { tags: { route: "me/consent" } });
+    return NextResponse.json({ ok: false, error: "save_failed" }, { status: 500 });
   }
   return NextResponse.json({ ok: true });
 }

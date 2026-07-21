@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { requireAdmin } from "@/lib/admin-guard";
 import { toCsv, csvHeaders, fmtDate, fmtDateTime } from "@/lib/csv";
 import { sanitizeSearchTerm } from "@/lib/search";
+import { captureException } from "@/lib/observability";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -54,7 +55,8 @@ export async function GET(req: NextRequest) {
 
   const { data: users, error } = await query;
   if (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    await captureException(error, { tags: { route: "admin/export/users" } });
+    return new Response(JSON.stringify({ error: "export_failed" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });

@@ -46,7 +46,7 @@ export async function GET(req: Request) {
   const { data, error } = await supabase.rpc("run_data_retention_purge");
   if (error) {
     captureException(error, { tags: { where: "cron/data-retention" } });
-    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: false, error: "rpc_failed" }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true, purged: data });

@@ -93,10 +93,8 @@ export async function GET(req: Request) {
         .from("cpf_edof_dossiers")
         .upsert(rows, { onConflict: "edof_dossier_id" });
       if (error) {
-        return NextResponse.json(
-          { error: "upsert_failed", message: error.message },
-          { status: 500 },
-        );
+        await captureException(error, { tags: { task: "edof-sync", step: "upsert" } });
+        return NextResponse.json({ error: "upsert_failed" }, { status: 500 });
       }
       upserted += rows.length;
       if (dossiers.length < PAGE_SIZE) break;

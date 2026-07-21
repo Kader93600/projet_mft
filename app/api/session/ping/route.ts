@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+import { captureException } from "@/lib/observability";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,7 +20,10 @@ export async function POST(req: NextRequest) {
     p_path: path,
     p_user_agent: ua,
   });
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    await captureException(error, { tags: { route: "session/ping" } });
+    return NextResponse.json({ error: "ping_failed" }, { status: 500 });
+  }
 
   // Optionnel : si le ping concerne une leçon, on ping aussi la vue de leçon
   if (body.lesson_id && typeof body.lesson_id === "string") {

@@ -47,7 +47,7 @@ export async function GET(req: Request) {
     const { data: rpcRes, error } = await supabase.rpc("run_inactivity_check");
     if (error) {
       await captureException(error, { tags: { task: "inactivity" } });
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "rpc_failed" }, { status: 500 });
     }
 
     // Email aux nouvellement notifiés (ceux dont last_pinged_at était nul ou >7j)

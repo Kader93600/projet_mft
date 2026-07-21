@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { captureException } from "@/lib/observability";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -59,7 +60,8 @@ export async function POST(req: Request) {
     );
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    await captureException(error, { tags: { route: "push/subscribe" } });
+    return NextResponse.json({ error: "subscribe_failed" }, { status: 500 });
   }
   return NextResponse.json({ ok: true });
 }

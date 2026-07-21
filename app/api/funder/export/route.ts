@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getFunderAccess } from "@/lib/funder/access";
 import type { Views } from "@/lib/database.types";
+import { captureException } from "@/lib/observability";
 
 type FunderStudentRow = Views<"funder_student_details">;
 
@@ -46,10 +47,8 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await query;
   if (error) {
-    return NextResponse.json(
-      { error: "fetch_failed", message: error.message },
-      { status: 500 }
-    );
+    await captureException(error, { tags: { route: "funder/export" } });
+    return NextResponse.json({ error: "fetch_failed" }, { status: 500 });
   }
 
   const rows = (data ?? []) as FunderStudentRow[];

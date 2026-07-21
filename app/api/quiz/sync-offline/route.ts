@@ -20,6 +20,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { loadQuizScoringData, computeQcmScore } from "@/lib/quiz-scoring";
 import { NextRequest, NextResponse } from "next/server";
+import { captureException } from "@/lib/observability";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -200,16 +201,11 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ id: e2.id, deduplicated: true });
       }
     }
-    console.error("[quiz/sync-offline] insert error", {
-      message: error.message,
-      code: error.code,
-      details: error.details,
-      hint: error.hint,
+    await captureException(error, {
+      tags: { route: "quiz/sync-offline" },
+      extra: { code: error.code, details: error.details, hint: error.hint },
     });
-    return NextResponse.json(
-      { error: "insert_failed", message: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "insert_failed" }, { status: 500 });
   }
 
   return NextResponse.json({ id: inserted.id, deduplicated: false });
