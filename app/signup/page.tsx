@@ -8,6 +8,7 @@ export const metadata = {
   title: "Inscription — contactez-nous",
   description:
     "Les comptes stagiaires sont créés par notre équipe pédagogique après confirmation de votre dossier d'inscription.",
+  robots: { index: false, follow: false },
 };
 
 /**

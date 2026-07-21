@@ -12,6 +12,10 @@ import {
 import { LEGAL } from "@/lib/legal-config";
 import { FORMATIONS } from "@/lib/formations-config";
 
+export const metadata = {
+  robots: { index: false, follow: false },
+};
+
 export default async function LoginPage() {
   const t = await getTranslations("auth");
   const tCommon = await getTranslations("common");

@@ -5,6 +5,10 @@ import { Logo } from "@/components/ui/logo";
 import { ShieldCheck, ArrowLeft, KeyRound } from "lucide-react";
 import { LEGAL } from "@/lib/legal-config";
 
+export const metadata = {
+  robots: { index: false, follow: false },
+};
+
 export const dynamic = "force-dynamic";
 
 export default async function ResetPasswordPage() {
