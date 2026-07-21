@@ -42,6 +42,42 @@ export async function POST(req: Request) {
 
   const event = JSON.parse(raw) as StripeWebhookEvent;
 
+  // ── Idempotence (PAY-01) ────────────────────────────────────────────
+  // Stripe rejoue les webhooks (retries, incidents) et envoie DEUX
+  // événements "payés" pour une même session async (completed +
+  // async_payment_succeeded). Sans dédup, l'enrollment et les lignes
+  // ledger (crédit / fidélité) étaient dupliquées.
+  //   - dédup par event.id : rejeu du même événement
+  //   - dédup par session.id (événements payés uniquement) : le même
+  //     paiement livré sous deux types d'événements
+  // Repli gracieux : si la table stripe_events n'existe pas encore
+  // (SQL 2026_07_21_stripe_idempotency.sql non appliqué), on traite
+  // comme avant (payments_log reste idempotent par session).
+  const admin = createAdminClient();
+  const isPaidEvent =
+    event.type === "checkout.session.completed" ||
+    event.type === "checkout.session.async_payment_succeeded";
+  let eventRecorded = false;
+  {
+    const { error: dupErr } = await admin.from("stripe_events").insert({
+      event_id: event.id,
+      type: event.type,
+      session_id: isPaidEvent ? event.data.object?.id ?? null : null,
+    });
+    if (!dupErr) {
+      eventRecorded = true;
+    } else if (dupErr.code === "23505") {
+      // Déjà traité (rejeu ou 2e événement payé de la même session).
+      return NextResponse.json({ received: true, deduplicated: true });
+    } else {
+      await captureException(dupErr, {
+        level: "warning",
+        tags: { service: "stripe", step: "idempotency" },
+        extra: { event_id: event.id },
+      });
+    }
+  }
+
   try {
     switch (event.type) {
       case "checkout.session.completed":
@@ -67,6 +103,15 @@ export async function POST(req: Request) {
       tags: { service: "stripe", event: event.type },
       extra: { event_id: event.id },
     });
+    // Handler en échec → on LIBÈRE l'événement pour que le retry Stripe
+    // puisse retraiter (sinon le rejeu serait dédupliqué à tort).
+    if (eventRecorded) {
+      try {
+        await admin.from("stripe_events").delete().eq("event_id", event.id);
+      } catch {
+        /* au pire, le rejeu sera dédupliqué : payments_log garde la trace */
+      }
+    }
     return NextResponse.json({ error: "handler_failed" }, { status: 500 });
   }
 

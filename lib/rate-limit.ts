@@ -1,7 +1,11 @@
-// Rate-limiter sliding window minimal.
-// - Mode "memory" par défaut : suffisant pour 1 instance / dev.
-// - Mode "upstash" si UPSTASH_REDIS_REST_URL est défini : utilisable derrière
-//   un déploiement multi-instance (Vercel Edge / Serverless).
+// Rate-limiter minimal, multi-backend.
+// - Mode "upstash" si UPSTASH_REDIS_REST_URL est défini (opt-in explicite).
+// - Mode "postgres" sinon (défaut prod) : fenêtre fixe via l'RPC
+//   `rate_limit_hit` (SECURITY DEFINER, service_role uniquement, cf.
+//   supabase/2026_07_21_rate_limit.sql). Compteur PARTAGÉ entre toutes
+//   les instances serverless — le mode mémoire ne l'était pas (SEC-RL).
+// - Repli "memory" : dev sans service key, ou RPC pas encore appliquée
+//   (fail-open contrôlé, l'incident est loggé une fois par process).
 //
 // Usage :
 //
@@ -9,6 +13,8 @@
 //     key: `login:${ip}`, limit: 5, windowSec: 60,
 //   });
 //   if (!ok) return new Response("Too Many Requests", { status: 429, ... });
+
+import { createAdminClient } from "@/lib/supabase/admin";
 
 type Result = { ok: boolean; remaining: number; reset: number };
 
@@ -66,6 +72,49 @@ async function upstashLimit(
   };
 }
 
+// Évite de spammer les logs si la RPC Postgres n'est pas (encore)
+// disponible : on ne signale l'incident qu'une fois par process.
+let pgUnavailableLogged = false;
+
+/**
+ * Backend Postgres : compteur partagé entre instances via l'RPC
+ * `rate_limit_hit(p_key, p_window_seconds)` → nouveau count de la
+ * fenêtre courante. Renvoie null si indisponible (env de test, SQL non
+ * appliqué) → l'appelant bascule en mémoire.
+ */
+async function postgresLimit(
+  key: string,
+  limit: number,
+  windowSec: number
+): Promise<Result | null> {
+  try {
+    const admin = createAdminClient();
+    const { data, error } = await admin.rpc("rate_limit_hit", {
+      p_key: key,
+      p_window_seconds: windowSec,
+    });
+    if (error) throw error;
+    const count = Number(data);
+    if (!Number.isFinite(count) || count <= 0) return null;
+    const windowMs = windowSec * 1000;
+    const reset = (Math.floor(Date.now() / windowMs) + 1) * windowMs;
+    return {
+      ok: count <= limit,
+      remaining: Math.max(0, limit - count),
+      reset,
+    };
+  } catch (e) {
+    if (!pgUnavailableLogged) {
+      pgUnavailableLogged = true;
+      console.error(
+        "[rateLimit] backend Postgres indisponible, repli mémoire",
+        e instanceof Error ? e.message : e
+      );
+    }
+    return null;
+  }
+}
+
 export async function rateLimit(opts: {
   key: string;
   limit: number;
@@ -74,9 +123,12 @@ export async function rateLimit(opts: {
   const useUpstash =
     !!process.env.UPSTASH_REDIS_REST_URL &&
     !!process.env.UPSTASH_REDIS_REST_TOKEN;
-  return useUpstash
-    ? upstashLimit(opts.key, opts.limit, opts.windowSec)
-    : memoryLimit(opts.key, opts.limit, opts.windowSec);
+  if (useUpstash) return upstashLimit(opts.key, opts.limit, opts.windowSec);
+
+  const pg = await postgresLimit(opts.key, opts.limit, opts.windowSec);
+  if (pg) return pg;
+
+  return memoryLimit(opts.key, opts.limit, opts.windowSec);
 }
 
 export function rateLimitHeaders(r: Result, limit: number) {
