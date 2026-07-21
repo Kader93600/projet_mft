@@ -26,8 +26,8 @@ import {
 import type { Tables, Views } from "@/lib/database.types";
 import { AnalyticsToolbar } from "./analytics-toolbar";
 import { DeleteAttemptButton } from "./analytics-row-actions";
-import { TrendsChart } from "./trends-chart";
-import { CompletionBars } from "./completion-bars";
+import { TrendsChart } from "./charts-lazy";
+import { CompletionBars } from "./charts-lazy";
 import { RealtimeIndicator } from "./realtime-indicator";
 import { AtRiskSection } from "./at-risk-section";
 import {
@@ -38,7 +38,7 @@ import {
 } from "./insights-sections";
 import { FunnelChart } from "./funnel-chart";
 import { HeatmapGrid } from "./heatmap-grid";
-import { FormationTrendsGrid } from "./formation-trends";
+import { FormationTrendsGrid } from "./charts-lazy";
 import { UpcomingSessionsSection } from "./upcoming-sessions";
 import { PeriodFilter, KpiWithDelta } from "./period-filter";
 import { AnalyticsTabs } from "./analytics-tabs";

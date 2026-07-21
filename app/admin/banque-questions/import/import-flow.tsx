@@ -18,7 +18,7 @@ import {
   Pencil,
   Eye,
 } from "lucide-react";
-import { RichTextEditor } from "@/components/rich-text/rich-text-editor";
+import { RichTextEditor } from "@/components/rich-text/rich-text-editor-lazy";
 import { RichTextDisplay } from "@/components/rich-text/rich-text-display";
 
 interface FormationOpt {

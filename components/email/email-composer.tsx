@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
-import { RichTextEditor } from "@/components/rich-text/rich-text-editor";
+import { RichTextEditor } from "@/components/rich-text/rich-text-editor-lazy";
 import { LEGAL } from "@/lib/legal-config";
 import {
   EMAIL_TEMPLATES,

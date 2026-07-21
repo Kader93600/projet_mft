@@ -6,7 +6,7 @@ import { useToast } from "@/components/ui/toast";
 import { Save, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { MarkdownEditor } from "@/components/markdown-editor";
-import { RichTextEditor } from "@/components/rich-text/rich-text-editor";
+import { RichTextEditor } from "@/components/rich-text/rich-text-editor-lazy";
 import { isRichTextHtml } from "@/lib/rich-text";
 import { ImageUploader } from "@/components/admin/image-uploader";
 import {

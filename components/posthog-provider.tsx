@@ -11,7 +11,10 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import posthog from "posthog-js";
+// PERF : posthog-js (~60 ko gzip) n'est plus importé statiquement — il
+// est chargé dynamiquement APRÈS consentement (import() dans l'effet
+// d'init). Les pages authentifiées ne le paient plus au premier rendu.
+import type { PostHog } from "posthog-js";
 import { identifyUser } from "@/lib/analytics";
 import { hasAnalyticsConsent } from "@/lib/marketing/consent";
 import { CONSENT_CHANGED_EVENT } from "@/components/cookie-banner";
@@ -34,7 +37,7 @@ const UI_HOST = "https://eu.posthog.com";
  */
 type PostHogWindow = Window & {
   __posthog_inited?: boolean;
-  posthog?: typeof posthog;
+  posthog?: PostHog;
 };
 
 /** Payload de l'événement `CONSENT_CHANGED_EVENT` émis par la bannière cookies. */
@@ -65,15 +68,16 @@ export function PostHogProvider({ children, profile }: PostHogProviderProps) {
       setConsented(granted);
       // Retrait du consentement : stoppe la capture et purge l'état local
       // PostHog (cookies + localStorage), exigence CNIL.
+      const ph = (window as PostHogWindow).posthog;
       if (!granted && (window as PostHogWindow).__posthog_inited) {
         try {
-          posthog.opt_out_capturing();
-          posthog.reset();
+          ph?.opt_out_capturing();
+          ph?.reset();
         } catch {}
       }
       if (granted && (window as PostHogWindow).__posthog_inited) {
         try {
-          posthog.opt_in_capturing();
+          ph?.opt_in_capturing();
         } catch {}
       }
     };
@@ -90,7 +94,10 @@ export function PostHogProvider({ children, profile }: PostHogProviderProps) {
     if ((window as PostHogWindow).__posthog_inited) return;
     (window as PostHogWindow).__posthog_inited = true;
 
-    posthog.init(KEY, {
+    // Chargement différé du SDK : uniquement ici, après consentement.
+    void (async () => {
+      const { default: posthog } = await import("posthog-js");
+      posthog.init(KEY, {
       api_host: TUNNEL_HOST,
       ui_host: UI_HOST,
       // ─── RGPD & vie privée ───────────────────────────────────────
@@ -124,10 +131,11 @@ export function PostHogProvider({ children, profile }: PostHogProviderProps) {
       respect_dnt: true,
       // Cookie 1ère partie (pas tiers — moins de friction côté ad-blockers)
       persistence: "localStorage+cookie",
-    });
+      });
 
-    // expose pour le wrapper lib/analytics.ts
-    (window as PostHogWindow).posthog = posthog;
+      // expose pour le wrapper lib/analytics.ts
+      (window as PostHogWindow).posthog = posthog;
+    })();
   }, [consented]);
 
   // Identification du user dès qu'il est disponible — uniquement si
@@ -170,7 +178,7 @@ function PageviewTracker() {
     const url = `${window.location.origin}${pathname}${
       searchParams?.toString() ? `?${searchParams.toString()}` : ""
     }`;
-    posthog.capture("$pageview", {
+    (window as PostHogWindow).posthog?.capture("$pageview", {
       $current_url: stripSensitiveQuery(url),
     });
   }, [pathname, searchParams]);

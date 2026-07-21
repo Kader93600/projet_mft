@@ -31,7 +31,7 @@ import {
   AttachmentManager,
   type QuestionAttachment,
 } from "./attachment-manager";
-import { RichTextEditor } from "@/components/rich-text/rich-text-editor";
+import { RichTextEditor } from "@/components/rich-text/rich-text-editor-lazy";
 import { stripHtmlPreview } from "@/lib/strip-html";
 import { RichTextDisplay } from "@/components/rich-text/rich-text-display";
 
