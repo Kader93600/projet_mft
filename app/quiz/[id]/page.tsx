@@ -490,10 +490,25 @@ export default async function QuizPage(props: { params: Promise<{ id: string }> 
     ]);
   const attemptState: AttemptState | null = attemptStateRaw ?? null;
 
+  // ── QUIZ-03 : en mode examen, ne JAMAIS embarquer les bonnes réponses
+  // ni les explications dans le payload client (elles étaient lisibles
+  // dans les données de la page → fuite du corrigé pendant l'épreuve).
+  // Le scoring est fait côté serveur (server action submitQuizAttempt) ;
+  // l'entraînement conserve is_correct pour la correction immédiate et
+  // le mode hors-ligne.
+  const isExamMode = quiz.type === "examen" || !!quiz.is_mock_exam;
+  const clientQuestions: UnifiedQuestion[] = isExamMode
+    ? list.map((q) => ({
+        ...q,
+        explanation: null,
+        choices: q.choices.map((c) => ({ ...c, is_correct: false })),
+      }))
+    : list;
+
   return (
     <QuizRunner
       quiz={quiz}
-      questions={list}
+      questions={clientQuestions}
       attemptState={attemptState}
       formationSlug={formationSlug}
       formationId={formationId}

@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
-import type { PostgrestError } from "@supabase/supabase-js";
 import type { TablesInsert } from "@/lib/database.types";
+import { submitQuizAttempt } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -121,11 +121,12 @@ export function QuizRunner({
   const [focusLoss, setFocusLoss] = useState(0);
   const [showFocusWarning, setShowFocusWarning] = useState(false);
   const focusRef = useRef(0);
-  // Mémorise l'attemptId déjà créé en base : si l'INSERT a réussi mais
-  // que l'enregistrement des réponses QR a échoué, un nouveau clic sur
-  // "Terminer" réutilise la MÊME tentative au lieu d'en créer une 2e
-  // (évite le double-submit + les copies orphelines).
+  // attemptId confirmé par le serveur (sert à l'écran de redirection).
   const submittedAttemptIdRef = useRef<string | null>(null);
+  // uuid d'idempotence : généré au 1er submit, transmis au serveur. Un
+  // retry (échec réseau / QR) réutilise la MÊME tentative côté serveur
+  // au lieu d'en créer une 2e (évite le double-submit + copies orphelines).
+  const clientAttemptIdRef = useRef<string | null>(null);
   const [flagged, setFlagged] = useState<Set<string>>(new Set());
 
   // ───── Sauvegarde auto + reprise après crash ────────────────────
@@ -349,80 +350,40 @@ export function QuizRunner({
   }
 
   async function submit() {
-    // ⚠️ Ne PAS poser finished=true ici. Si on le pose avant l'INSERT et
-    // que celui-ci échoue, le user voit un écran "Félicitations !" calculé
-    // localement (cf. const result = useMemo...) sans que sa tentative ne
-    // soit en base → stats à 0 alors qu'il pense avoir terminé.
-    // On pose finished=true UNIQUEMENT après le succès de l'INSERT.
+    // ⚠️ Ne PAS poser finished=true ici. On pose finished=true UNIQUEMENT
+    // après la confirmation serveur (ou l'enqueue offline) : sinon le user
+    // verrait un écran de succès sans tentative en base.
     if (finished) return;
     setSubmitError(null);
     const finishedAt = new Date();
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setSubmitError(
-        "Session expirée. Reconnectez-vous puis réessayez de soumettre."
-      );
-      return;
-    }
 
     // Sépare QCM et QR
     const qcmList = orderedQuestions.filter((q) => (q.type ?? "qcm") === "qcm");
     const qrList = orderedQuestions.filter((q) => q.type === "qr");
 
-    // Score QCM auto-corrigé
+    // Score LOCAL : uniquement pour l'écran de confirmation hors-ligne et
+    // l'analytics d'entraînement. En mode examen, les bonnes réponses ne
+    // sont plus envoyées au navigateur (QUIZ-03) : le score qui fait foi
+    // est TOUJOURS recalculé côté serveur (server action ci-dessous).
     let score = 0;
     qcmList.forEach((q) => {
       const sel = answers[q.id];
       if (sel && q.choices.find((c) => c.is_correct)?.id === sel) score++;
     });
     const totalQcm = qcmList.length;
-    // qcmPercentage doit être NULL quand le quiz ne contient AUCUN QCM,
-    // sinon la page de résultats affiche "Score QCM 0%" qui n'a aucun
-    // sens et la pondération finale (70 % QCM + 30 % QR) divise le score
-    // du stagiaire par 3 sans raison. Cf. fix 2026-05-16.
     const qcmPercentage: number | null =
       totalQcm > 0 ? Math.round((score / totalQcm) * 100) : null;
-    const total = orderedQuestions.length;
 
     const hasQr = qrList.length > 0;
     const mode = isMock ? "blanc" : quiz.type === "examen" ? "examen" : "entrainement";
-
-    // Insert tentative principale.
-    // formation_id : passé explicitement depuis la page (résolu via le
-    // module du quiz). Le trigger BD est un fallback mais ne couvre pas
-    // les cas où profiles.current_formation_id est NULL.
-    const insertPayload: AttemptInsert = {
-      user_id: user.id,
-      quiz_id: quiz.id,
-      score,
-      total: totalQcm,
-      percentage: qcmPercentage,
-      passed: hasQr
-        ? null
-        : qcmPercentage !== null && qcmPercentage >= quiz.pass_threshold,
-      duration_s: startedAt
-        ? Math.round((finishedAt.getTime() - startedAt.getTime()) / 1000)
-        : null,
-      answers,
-      started_at: startedAt?.toISOString(),
-      finished_at: finishedAt.toISOString(),
-      focus_loss_count: focusRef.current,
-      flagged_questions: Array.from(flagged),
-      mode,
-      status: hasQr ? "awaiting_review" : "graded",
-      qcm_score: qcmPercentage,
-    };
-    if (formationId) insertPayload.formation_id = formationId;
 
     // ─── Gate offline : quiz QCM d'entraînement uniquement ─────────────
     // Si le navigateur est hors-ligne ET que le quiz est un entraînement
     // QCM pur (pas QR, pas examen blanc), on enregistre la tentative dans
     // IndexedDB pour resync au retour réseau (cf. <OfflineSync /> dans
-    // AuthLayout + endpoint /api/quiz/sync-offline).
-    // Décision client 2026-05 : les examens blancs et QR restent online-only
-    // pour ne pas polluer les stats officielles ni faire correspondre les
-    // QR sans connexion (correction formateur).
+    // AuthLayout + endpoint /api/quiz/sync-offline — qui RE-SCORE côté
+    // serveur : les champs score/percentage du payload sont indicatifs).
+    // Décision client 2026-05 : les examens blancs et QR restent online-only.
     if (
       typeof navigator !== "undefined" &&
       !navigator.onLine &&
@@ -430,6 +391,38 @@ export function QuizRunner({
       !hasQr &&
       !quiz.is_mock_exam
     ) {
+      // getSession = lecture locale (pas d'appel réseau, contrairement à
+      // getUser) → fonctionne réellement hors-ligne.
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const uid = session?.user?.id;
+      if (!uid) {
+        setSubmitError(
+          "Session expirée. Reconnectez-vous puis réessayez de soumettre."
+        );
+        return;
+      }
+      const insertPayload: AttemptInsert = {
+        user_id: uid,
+        quiz_id: quiz.id,
+        score,
+        total: totalQcm,
+        percentage: qcmPercentage,
+        passed:
+          qcmPercentage !== null && qcmPercentage >= quiz.pass_threshold,
+        duration_s: startedAt
+          ? Math.round((finishedAt.getTime() - startedAt.getTime()) / 1000)
+          : null,
+        answers,
+        started_at: startedAt?.toISOString(),
+        finished_at: finishedAt.toISOString(),
+        focus_loss_count: focusRef.current,
+        flagged_questions: Array.from(flagged),
+        mode,
+        status: "graded",
+        qcm_score: qcmPercentage,
+      };
+      if (formationId) insertPayload.formation_id = formationId;
       try {
         await enqueueAttempt(insertPayload);
         // Pas d'attemptId → on ne redirige pas vers /quiz/results/[id].
@@ -452,65 +445,72 @@ export function QuizRunner({
       }
     }
 
-    // Si une tentative a déjà été créée lors d'un submit précédent dont
-    // seules les RPC QR ont échoué, on la réutilise (pas de 2e INSERT).
-    let inserted: { id: string } | null = null;
-    let insertErr: PostgrestError | null = null;
-    if (submittedAttemptIdRef.current) {
-      inserted = { id: submittedAttemptIdRef.current };
-    } else {
-      const res = await supabase
-        .from("quiz_attempts")
-        .insert(insertPayload)
-        .select("id")
-        .single();
-      inserted = res.data;
-      insertErr = res.error;
+    // ─── Soumission ONLINE : scoring 100 % serveur (QUIZ-03) ───────────
+    // Le client n'envoie QUE ses réponses brutes. La server action
+    // authentifie, re-vérifie le droit de passage, recalcule le score et
+    // insère la tentative (service-role). Idempotente par clientAttemptId :
+    // un retry après échec partiel réutilise la même tentative.
+    if (!clientAttemptIdRef.current) {
+      clientAttemptIdRef.current =
+        typeof crypto !== "undefined" &&
+        typeof crypto.randomUUID === "function"
+          ? crypto.randomUUID()
+          : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
     }
 
-    if (insertErr || !inserted) {
-      // Diagnostic complet côté serveur ET côté UI — avant ce fix, l'échec
-      // était silencieux, le stagiaire ne savait pas pourquoi son score
-      // n'apparaissait jamais dans /stats.
-      console.error("[quiz submit] insert error", {
-        message: insertErr?.message,
-        details: insertErr?.details,
-        hint: insertErr?.hint,
-        code: insertErr?.code,
-        full: insertErr,
+    let res: Awaited<ReturnType<typeof submitQuizAttempt>>;
+    try {
+      res = await submitQuizAttempt({
+        quizId: quiz.id,
+        clientAttemptId: clientAttemptIdRef.current,
+        answers,
+        qrAnswers: Object.fromEntries(
+          qrList.map((q) => [q.id, qrAnswers[q.id] ?? ""]),
+        ),
+        startedAt: startedAt?.toISOString() ?? null,
+        focusLossCount: focusRef.current,
+        flaggedQuestions: Array.from(flagged),
+        formationId: formationId ?? null,
       });
-
-      const code = insertErr?.code;
-      const msg = insertErr?.message ?? t("unknownError");
-      let friendly = t("unableToSave", { msg });
-      // Mappings courants pour parler humain
-      if (code === "42703") {
-        // colonne inexistante
-        friendly = t("errDbOutdated");
-      } else if (code === "42501" || /row.level security|policy/i.test(msg)) {
-        friendly = t("errRls");
-      } else if (code === "23502") {
-        // not null violation
-        friendly = t("errMissingField", {
-          details: insertErr?.details ?? msg,
-        });
-      } else if (code === "23505") {
-        friendly = t("errDuplicate");
-      }
-      setSubmitError(friendly);
+    } catch (e) {
+      // Coupure réseau pendant l'appel : rien n'est perdu, les réponses
+      // sont en mémoire + localStorage → nouvel essai possible.
+      console.error("[quiz submit] action failed", e);
+      setSubmitError(
+        "Impossible de joindre le serveur. Vérifiez votre connexion et cliquez à nouveau sur Terminer — vos réponses sont conservées."
+      );
       return;
     }
-    const attemptId = inserted.id;
-    // Mémorise l'attempt pour qu'un retry (échec QR) ne recrée pas de
-    // tentative.
+
+    if (!res.ok) {
+      if (res.error === "session_expired") {
+        setSubmitError(
+          "Session expirée. Reconnectez-vous puis réessayez de soumettre."
+        );
+      } else if (res.error === "not_allowed") {
+        setSubmitError(
+          "Cette tentative n'est plus autorisée (nombre maximal de passages atteint ou délai avant reprise non écoulé)."
+        );
+      } else if (res.error === "qr_failed") {
+        setSubmitError(
+          res.failedQrCount && res.failedQrCount > 0
+            ? `Échec d'enregistrement de ${res.failedQrCount} réponse(s) rédigée(s). Vérifiez votre connexion et cliquez à nouveau sur Terminer — vos réponses sont conservées.`
+            : "Votre copie a été enregistrée mais la mise en file de correction a échoué. Cliquez à nouveau sur Terminer pour réessayer.",
+        );
+      } else {
+        setSubmitError(t("unableToSave", { msg: res.error }));
+      }
+      return;
+    }
+
+    const attemptId = res.attemptId;
     submittedAttemptIdRef.current = attemptId;
-    // ✅ INSERT réussi — on bascule en état "fini" (le faux écran de
-    // succès local ne peut plus apparaître sans tentative en BD).
+    // ✅ Confirmation serveur — on bascule en état "fini".
     setFinished(true);
 
-    // Analytics : fin de tentative (qu'elle soit gradée ou en attente QR).
-    // Si hasQr, le score final viendra après correction formateur — on
-    // capture ici le score QCM partiel et le mode pour mesurer l'engagement.
+    // Analytics : fin de tentative. Le score vient du SERVEUR (en mode
+    // examen le client ne peut plus le calculer). Si hasQr, le score
+    // final viendra après correction formateur.
     trackEvent(
       isMock || quiz.type === "examen" ? "exam_finished" : "quiz_finished",
       {
@@ -521,65 +521,16 @@ export function QuizRunner({
         mode,
         is_mock_exam: !!quiz.is_mock_exam,
         has_qr: hasQr,
-        qcm_score: qcmPercentage ?? undefined,
-        passed: hasQr ? undefined : (qcmPercentage ?? 0) >= quiz.pass_threshold,
+        qcm_score: res.qcmPercentage ?? undefined,
+        passed: hasQr
+          ? undefined
+          : (res.qcmPercentage ?? 0) >= quiz.pass_threshold,
         duration_s: startedAt
           ? Math.round((finishedAt.getTime() - startedAt.getTime()) / 1000)
           : undefined,
         total_questions: orderedQuestions.length,
       }
     );
-
-    // Soumettre chaque réponse rédigée via la RPC sécurisée.
-    // ⚠️ Auparavant les échecs étaient avalés silencieusement (console
-    // only) puis le stagiaire était redirigé comme si tout allait bien
-    // → copies QR perdues en cas de coupure réseau. Désormais : retry
-    // (2 tentatives) par réponse, et si un échec persiste, on AFFICHE
-    // l'erreur et on NE redirige PAS (le stagiaire peut réessayer sans
-    // perdre sa copie).
-    if (hasQr) {
-      const rpcWithRetry = async (
-        fn: string,
-        args: Record<string, unknown>,
-      ): Promise<boolean> => {
-        for (let attempt = 0; attempt < 2; attempt++) {
-          const { error } = await supabase.rpc(fn, args);
-          if (!error) return true;
-          console.error(`[${fn}] try ${attempt + 1}`, error);
-          if (attempt === 0) await new Promise((r) => setTimeout(r, 600));
-        }
-        return false;
-      };
-
-      const failedQr: string[] = [];
-      for (const q of qrList) {
-        const text = (qrAnswers[q.id] ?? "").trim();
-        const ok = await rpcWithRetry("submit_qr_response", {
-          p_attempt: attemptId,
-          p_question: q.id,
-          p_answer: text,
-        });
-        if (!ok) failedQr.push(q.id);
-      }
-
-      const markOk = await rpcWithRetry("mark_attempt_awaiting_review", {
-        p_attempt: attemptId,
-        p_qcm_score: qcmPercentage,
-      });
-
-      if (failedQr.length > 0 || !markOk) {
-        // On garde le quiz en état "fini" mais on montre l'erreur et on
-        // ne redirige pas : les réponses sont encore en mémoire (state),
-        // l'utilisateur peut re-cliquer "Terminer" pour relancer l'envoi.
-        setSubmitError(
-          failedQr.length > 0
-            ? `Échec d'enregistrement de ${failedQr.length} réponse(s) rédigée(s). Vérifiez votre connexion et cliquez à nouveau sur Terminer — vos réponses sont conservées.`
-            : "Votre copie a été enregistrée mais la mise en file de correction a échoué. Cliquez à nouveau sur Terminer pour réessayer.",
-        );
-        setFinished(false); // ré-autorise un nouveau submit
-        return;
-      }
-    }
 
     // Sort du fullscreen
     if (document.fullscreenElement) {
