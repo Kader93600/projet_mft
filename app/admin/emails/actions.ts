@@ -60,11 +60,12 @@ export async function sendPlatformEmail(input: SendPlatformEmailInput): Promise<
 
   const { data: meData } = await supabase
     .from("profiles")
-    .select("role, email, full_name")
+    .select("role, email, full_name, disabled")
     .eq("id", user.id)
     .maybeSingle();
-  const me = (meData ?? null) as SenderProfile | null;
+  const me = (meData ?? null) as (SenderProfile & { disabled?: boolean }) | null;
   const role = me?.role;
+  if (me?.disabled) return { ok: false, error: "Compte désactivé." };
   if (!STAFF.includes(role ?? "")) return { ok: false, error: "Accès refusé." };
 
   const to = clean(input.to);

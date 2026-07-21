@@ -26,12 +26,12 @@ async function requireStaff() {
   if (!user) return { supabase, ok: false as const };
   const { data } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, disabled")
     .eq("id", user.id)
     .maybeSingle();
-  const me = data as RoleRow | null;
+  const me = data as (RoleRow & { disabled?: boolean }) | null;
   const role = me?.role;
-  const ok = isStaff(role) || role === "trainer";
+  const ok = !me?.disabled && (isStaff(role) || role === "trainer");
   return { supabase, ok };
 }
 

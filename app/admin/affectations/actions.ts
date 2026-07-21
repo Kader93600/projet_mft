@@ -10,9 +10,10 @@ async function ensureAdmin() {
   if (!user) throw new Error("Non authentifié");
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, disabled")
     .eq("id", user.id)
     .single();
+  if (profile?.disabled) throw new Error("Compte désactivé");
   if (profile?.role !== "admin" && profile?.role !== "super_admin") {
     throw new Error("Réservé au personnel administrateur");
   }

@@ -11,9 +11,10 @@ async function ensureStaff() {
   if (!user) throw new Error("Non authentifié");
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, disabled")
     .eq("id", user.id)
     .single();
+  if (profile?.disabled) throw new Error("Compte désactivé");
   if (!isStaff(profile?.role)) {
     throw new Error("Réservé au personnel");
   }
