@@ -10,7 +10,8 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-night text-white">
       <SiteHeader />
-      {children}
+      {/* Landmark principal : navigation lecteur d'écran + cible du skip-link */}
+      <main>{children}</main>
       <SiteFooterContact />
       <LegalFooter variant="dark" />
     </div>

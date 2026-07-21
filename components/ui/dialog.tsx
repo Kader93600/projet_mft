@@ -11,22 +11,72 @@ interface DialogProps {
   size?: "sm" | "md" | "lg" | "xl";
 }
 
+/** Sélecteur des éléments focusables pour le piège à focus. */
+const FOCUSABLE =
+  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 export function Dialog({ open, onClose, children, size = "md" }: DialogProps) {
   const [mounted, setMounted] = React.useState(false);
+  const panelRef = React.useRef<HTMLDivElement>(null);
+  // Élément focusé avant l'ouverture : on lui rend le focus à la fermeture
+  // (exigence WCAG 2.4.3 — parcours de focus cohérent).
+  const previouslyFocused = React.useRef<HTMLElement | null>(null);
   React.useEffect(() => setMounted(true), []);
 
   React.useEffect(() => {
-    function onEsc(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+    if (!open) return;
+
+    previouslyFocused.current =
+      (document.activeElement as HTMLElement | null) ?? null;
+
+    // Focus initial : 1er élément focusable du panneau, sinon le panneau.
+    const raf = requestAnimationFrame(() => {
+      const panel = panelRef.current;
+      if (!panel) return;
+      const focusables = panel.querySelectorAll<HTMLElement>(FOCUSABLE);
+      (focusables[0] ?? panel).focus();
+    });
+
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      // Piège à focus : Tab / Shift+Tab bouclent dans le dialogue.
+      if (e.key !== "Tab") return;
+      const panel = panelRef.current;
+      if (!panel) return;
+      const els = Array.from(
+        panel.querySelectorAll<HTMLElement>(FOCUSABLE),
+      ).filter((el) => el.offsetParent !== null);
+      if (els.length === 0) {
+        e.preventDefault();
+        panel.focus();
+        return;
+      }
+      const first = els[0];
+      const last = els[els.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      if (e.shiftKey) {
+        if (active === first || !panel.contains(active)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (active === last || !panel.contains(active)) {
+        e.preventDefault();
+        first.focus();
+      }
     }
-    if (open) {
-      document.addEventListener("keydown", onEsc);
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.removeEventListener("keydown", onEsc);
-        document.body.style.overflow = "";
-      };
-    }
+
+    document.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      cancelAnimationFrame(raf);
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+      // Retour du focus au déclencheur d'origine.
+      previouslyFocused.current?.focus?.();
+    };
   }, [open, onClose]);
 
   if (!mounted || !open) return null;
@@ -43,11 +93,17 @@ export function Dialog({ open, onClose, children, size = "md" }: DialogProps) {
       <div
         className="absolute inset-0 bg-navy-950/50 backdrop-blur-sm animate-in fade-in"
         onClick={onClose}
+        aria-hidden="true"
       />
       <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        tabIndex={-1}
         className={cn(
           "relative w-full bg-white rounded-2xl shadow-float border border-navy-100",
           "max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95",
+          "focus:outline-none",
           sizes[size]
         )}
       >

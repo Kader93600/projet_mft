@@ -41,16 +41,19 @@ export default async function HomePage() {
       <JsonLd schema={faqSchema(FAQ_ITEMS)} />
       <JsonLd schema={localBusinessSchema()} />
       <Header t={t} />
-      <Hero t={t} />
-      <RecognizedBy />
-      <Pillars t={t} />
-      <FormationsCarousel />
-      <Experience t={t} />
-      <Stats t={t} />
-      <Testimonials />
-      <Funding t={t} />
-      <FaqSection />
-      <FinalCTA t={t} />
+      {/* Landmark principal : navigation lecteur d'écran + cible du skip-link */}
+      <main>
+        <Hero t={t} />
+        <RecognizedBy />
+        <Pillars t={t} />
+        <FormationsCarousel />
+        <Experience t={t} />
+        <Stats t={t} />
+        <Testimonials />
+        <Funding t={t} />
+        <FaqSection />
+        <FinalCTA t={t} />
+      </main>
       <FooterContact t={t} />
       <LegalFooter variant="dark" />
     </div>

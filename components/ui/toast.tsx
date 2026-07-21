@@ -45,12 +45,20 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastCtx.Provider value={{ toast }}>
       {children}
-      <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2 items-end">
+      {/* aria-live : les nouveaux toasts sont annoncés par les lecteurs
+          d'écran (polite) ; les erreurs passent en role=alert (assertive). */}
+      <div
+        aria-live="polite"
+        className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2 items-end"
+      >
         {toasts.map((t) => (
           <div
             key={t.id}
+            role={t.type === "error" ? "alert" : "status"}
             className={cn(
-              "flex items-start gap-2.5 rounded-xl border shadow-raised px-4 py-3 pr-10 min-w-[280px] max-w-sm",
+              // `relative` : ancre le bouton Fermer (absolute) sur CE toast
+              // et non sur le conteneur fixe (bug visuel avec 2+ toasts).
+              "relative flex items-start gap-2.5 rounded-xl border shadow-raised px-4 py-3 pr-10 min-w-[280px] max-w-sm",
               "animate-in slide-in-from-bottom-2",
               borders[t.type]
             )}
@@ -60,6 +68,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             <button
               onClick={() => setToasts((ts) => ts.filter((x) => x.id !== t.id))}
               className="absolute right-2 top-2 text-slate-400 hover:text-navy-900"
+              aria-label="Fermer la notification"
             >
               <X className="h-3.5 w-3.5" />
             </button>
