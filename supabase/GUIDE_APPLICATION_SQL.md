@@ -2,7 +2,7 @@
 
 **Mis à jour : 21/07/2026.** À exécuter dans l'ordre ci-dessous, dans le SQL editor Supabase (projet prod). Chaque étape indique le risque, le prérequis et la vérification. Tous les scripts sont idempotents (ré-exécutables sans dégât).
 
-État constaté en base le 21/07 : corrigés QR **déjà appliqués** (669/791 QR avec réponse modèle, 791 actives) ; **43 vues encore en SECURITY DEFINER** ; durcissement RPC du 21/07 **déjà appliqué** (`2026_07_21_security_rpc_hardening.sql` n'est qu'une consignation, ne pas le rejouer, même si le rejouer serait sans dégât).
+État constaté en base le 21/07 : corrigés QR **tous appliqués** (791/791 QR avec réponse modèle, toutes actives) ; **43 vues encore en SECURITY DEFINER** ; durcissement RPC du 21/07 **déjà appliqué** (`2026_07_21_security_rpc_hardening.sql` n'est qu'une consignation, ne pas le rejouer, même si le rejouer serait sans dégât).
 
 ---
 
@@ -38,7 +38,8 @@
 ## Déjà appliqué (ne pas rejouer, consignation)
 
 - `2026_07_21_security_rpc_hardening.sql` (REVOKE RPC monétaires + garde bump_tutor_quota + anonymize_user RGPD) — appliqué le 21/07 pendant l'audit.
-- `2026_07_13_corriges_qr_capa_leger.sql`, `2026_07_14_corriges_qr_gotrm.sql`, `2026_07_14_corriges_qr_6formations.sql` — corrigés en base (669/791 QR avec réponse modèle).
+- `2026_07_14_corriges_qr_6formations.sql` — appliqué (activation des 370 QR, 6 formations).
+- `2026_07_13_corriges_qr_capa_leger.sql` + `2026_07_14_corriges_qr_gotrm.sql` — **appliqués le 21/07** (123 corrigés injectés par script REST service-role). Différence volontaire avec les fichiers : le flag `active` a été CONSERVÉ à true (instruction : questions actives avec leurs corrigés), au lieu du `active = false` prévu par les fichiers. Total : 791/791 QR avec réponse modèle.
 
 ## Check-list finale (après les 4 étapes)
 
