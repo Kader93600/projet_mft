@@ -41,10 +41,15 @@ const ESCAPE_HTML: Record<string, string> = {
   "&": "&amp;",
   "<": "&lt;",
   ">": "&gt;",
+  // Guillemets échappés aussi : renderInline interpole l'URL d'un lien dans un
+  // attribut href="...". Sans échapper le ", une URL de lien comme
+  // /a"onmouseover=... injecterait un attribut événementiel exécutable (XSS).
+  '"': "&quot;",
+  "'": "&#39;",
 };
 
 function escapeHtml(s: string): string {
-  return s.replace(/[&<>]/g, (c) => ESCAPE_HTML[c]);
+  return s.replace(/["'&<>]/g, (c) => ESCAPE_HTML[c]);
 }
 
 // ---------------------------------------------------------------------

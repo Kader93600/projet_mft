@@ -91,3 +91,20 @@ describe("renderMarkdown — edge cases", () => {
     expect(out).toContain("Para 2");
   });
 });
+
+describe("renderMarkdown — sécurité (anti-XSS)", () => {
+  it("échappe le guillemet pour empêcher l'injection d'attribut dans un lien", () => {
+    const out = renderMarkdown('[x](/a"onmouseover="alert(1))');
+    // Le " du payload est échappé en &quot; : il reste DANS la valeur href et ne
+    // peut plus fermer l'attribut. Donc aucun guillemet BRUT ne précède
+    // onmouseover (ce serait le signe d'un attribut événementiel injecté).
+    expect(out).not.toMatch(/"\s*onmouseover/i);
+    expect(out).toContain("&quot;onmouseover");
+  });
+
+  it("neutralise les balises HTML brutes dans le texte", () => {
+    const out = renderMarkdown('<img src=x onerror="alert(1)">');
+    expect(out).not.toContain("<img");
+    expect(out).toContain("&lt;img");
+  });
+});

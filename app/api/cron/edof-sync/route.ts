@@ -13,10 +13,12 @@
 // =====================================================================
 
 import { NextResponse } from "next/server";
+import { timingSafeEqualStr } from "@/lib/timing-safe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createEdofClient, EdofNotImplementedError } from "@/lib/edof/client";
 import { isEdofConfigured, isEdofFeatureEnabled } from "@/lib/edof/config";
 import type { Json } from "@/lib/database.types";
+import { captureException } from "@/lib/observability";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,7 +39,7 @@ export async function GET(req: Request) {
   if (!CRON_SECRET) {
     return NextResponse.json({ error: "cron_not_configured" }, { status: 500 });
   }
-  if (req.headers.get("authorization") !== `Bearer ${CRON_SECRET}`) {
+  if (!timingSafeEqualStr(req.headers.get("authorization"), `Bearer ${CRON_SECRET}`)) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 
@@ -121,6 +123,8 @@ export async function GET(req: Request) {
         detail: e.message,
       });
     }
+    // Échec réel de synchro CPF/EDOF : on le remonte (invisible sinon).
+    await captureException(e, { tags: { task: "edof-sync" } });
     return NextResponse.json(
       { error: "sync_failed", message: (e as Error)?.message },
       { status: 500 },

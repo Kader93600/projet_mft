@@ -89,6 +89,16 @@ type DebugReport = {
 };
 
 export async function GET() {
+  // Endpoint de diagnostic : ne doit JAMAIS répondre en production (il révèle
+  // la structure des policies RLS et l'écart session/service-role). Le bug RLS
+  // d'origine étant résolu, on le neutralise sauf activation explicite.
+  if (
+    process.env.NODE_ENV === "production" &&
+    process.env.DEBUG_RLS_ENABLED !== "1"
+  ) {
+    return new Response("Not found", { status: 404 });
+  }
+
   const report: DebugReport = {
     generated_at: new Date().toISOString(),
     session: {

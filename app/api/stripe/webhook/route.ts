@@ -102,7 +102,7 @@ async function handlePaid(session: StripeCheckoutSession) {
   }
 
   // 1) Trace dans une table dédiée (idempotence par session.id)
-  await supabase.from("payments_log").upsert(
+  const { error: logError } = await supabase.from("payments_log").upsert(
     {
       stripe_session_id: session.id,
       user_id: userId,
@@ -115,6 +115,14 @@ async function handlePaid(session: StripeCheckoutSession) {
     },
     { onConflict: "stripe_session_id" }
   );
+  if (logError) {
+    // Paiement encaissé mais trace non écrite : à surveiller (n'empêche pas la
+    // suite, mais on veut le savoir).
+    await captureException(logError, {
+      tags: { service: "stripe", step: "payments_log" },
+      extra: { session: session.id, email },
+    });
+  }
 
   // 2) Si l'utilisateur est connu, créer une enrollment "en cours"
   //    Le pack est extrait de la metadata si présent, sinon "initial" par défaut.
@@ -124,7 +132,7 @@ async function handlePaid(session: StripeCheckoutSession) {
       : `Achat en ligne — ${planId ?? "inconnu"}`;
 
     const organizationId: string | null = metadata.organization_id || null;
-    const { data: enrollment } = await supabase
+    const { data: enrollment, error: enrollError } = await supabase
       .from("enrollments")
       .insert({
         user_id: userId,
@@ -139,6 +147,19 @@ async function handlePaid(session: StripeCheckoutSession) {
       })
       .select("id")
       .single();
+
+    if (enrollError || !enrollment) {
+      // CRITIQUE : le client a payé mais son inscription n'a pas été créée.
+      // On alerte fort (le paiement est déjà tracé dans payments_log, un admin
+      // peut donc rattacher manuellement). On NE relance PAS l'exception ici
+      // pour éviter que Stripe rejoue le webhook et duplique l'inscription
+      // (l'insert enrollments n'est pas encore idempotent — cf. suivi pay-01).
+      await captureException(enrollError ?? new Error("enrollment_insert_null"), {
+        level: "fatal",
+        tags: { service: "stripe", step: "enrollment" },
+        extra: { session: session.id, userId, email, formationId, packSlug },
+      });
+    }
 
     // ─── Parrainage : qualifier le referral si présent ────────────────
     // Métadonnées posées par /api/stripe/checkout. Si referrer_code,

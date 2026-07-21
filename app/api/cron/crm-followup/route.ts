@@ -14,6 +14,7 @@
 // =====================================================================
 
 import { NextResponse } from "next/server";
+import { timingSafeEqualStr } from "@/lib/timing-safe";
 import { createClient } from "@supabase/supabase-js";
 import { sendEmail, crmFollowupReminderEmail } from "@/lib/email";
 import { LEGAL } from "@/lib/legal-config";
@@ -29,7 +30,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "cron_not_configured" }, { status: 500 });
   }
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${CRON_SECRET}`) {
+  if (!timingSafeEqualStr(auth, `Bearer ${CRON_SECRET}`)) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 

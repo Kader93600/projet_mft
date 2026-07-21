@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { timingSafeEqualStr } from "@/lib/timing-safe";
 import webpush from "web-push";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -40,7 +41,7 @@ export async function POST(req: Request) {
   const provided =
     req.headers.get("x-webhook-secret") ??
     req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
-  if (provided !== expectedSecret) {
+  if (!timingSafeEqualStr(provided, expectedSecret)) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 
