@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { LoginForm } from "./login-form";
+import { LoginScene } from "@/components/auth/login-scene";
 import { Logo } from "@/components/ui/logo";
 import {
   ShieldCheck,
@@ -41,6 +42,10 @@ export default async function LoginPage() {
           aria-hidden="true"
           className="absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-brand-500/20 blur-3xl pointer-events-none"
         />
+        {/* Scène animée « Le Convoi » (concept A+ validé) : canvas plein
+            panneau derrière le contenu ; les fonds ci-dessus servent de
+            décor de repli le temps du chargement du moteur. */}
+        <LoginScene />
 
         <div className="relative">
           <Link

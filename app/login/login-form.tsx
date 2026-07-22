@@ -43,11 +43,17 @@ export function LoginForm() {
     window.setTimeout(() => setShake(false), 650);
   }
 
+  /** Pilote la scène animée du panneau gauche (cf. components/auth/login-scene). */
+  function notifyScene(state: "idle" | "connecting" | "success") {
+    window.dispatchEvent(new CustomEvent("mft:auth-scene", { detail: state }));
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setNotice(null);
+    notifyScene("connecting");
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -57,9 +63,11 @@ export function LoginForm() {
       triggerShake();
       setError(translateAuthError(error.message));
       setLoading(false);
+      notifyScene("idle");
       return;
     }
     // Succès → retournement 3D de la carte vers la face « réussite », puis redirection.
+    notifyScene("success");
     setFlipped(true);
     window.setTimeout(() => {
       router.push("/dashboard");
