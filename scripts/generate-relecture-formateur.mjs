@@ -90,12 +90,26 @@ function plainText(s) {
     .trim();
 }
 
+/* ── Filtre : verdicts de la passe de validation sourcée (23/07) ─────
+   livraison/validation-corriges.json : les items "confirme" (donnée
+   vérifiée exacte) et "applique" (corrigé rectifié en base) sortent du
+   dossier ; seuls les "irresolu" restent à l'arbitrage du formateur. */
+let resolved = new Set();
+try {
+  const validation = JSON.parse(readFileSync(resolve(ROOT, "livraison/validation-corriges.json"), "utf-8"));
+  resolved = new Set(validation.filter((v) => v.statut !== "irresolu").map((v) => v.id));
+  console.log("items résolus par la validation :", resolved.size);
+} catch {
+  console.log("(pas de fichier de validation : dossier complet)");
+}
+
 const IN_TEXT = /(À CONFIRMER|NON VÉRIFIÉ)/u;
 const items = [];
 for (const q of qrs) {
   const fromFile = byRef.get(q.source_ref ?? "");
   const inText = IN_TEXT.test(q.expected_answer ?? "");
   if (!fromFile && !inText) continue;
+  if (resolved.has(q.id)) continue; // validé par la passe sourcée du 23/07
   let note = fromFile?.note ?? "";
   if (inText) {
     // Extrait les segments [À CONFIRMER ...] du corrigé lui-même
@@ -176,8 +190,10 @@ const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8">
   <div class="eyebrow">DOSSIER DE RELECTURE FORMATEUR</div>
   <h1>Corrigés à valider avant usage certifiant</h1>
   <p class="lead">Lors de la rédaction des réponses modèles, chaque donnée réglementaire incertaine a été
-  volontairement signalée plutôt qu'inventée. Ce dossier liste les ${items.length} questions concernées
-  (sur 791) : pour chacune, vérifier le point signalé, corriger le corrigé si besoin dans
+  volontairement signalée plutôt qu'inventée. Une passe de validation sourcée (23/07/2026) a vérifié
+  chaque point contre les sources officielles : 86 confirmés et 35 corrigés en base (voir le rapport
+  de validation joint). Ce dossier liste les ${items.length} questions RESTANTES :
+  des arbitrages pédagogiques (énoncé à clarifier, convention de correction) plutôt que des faits : pour chacune, vérifier le point signalé, corriger le corrigé si besoin dans
   Admin → Banque de questions (référence indiquée), puis cocher. Généré le ${new Date().toLocaleDateString("fr-FR")}.</p>
 </header>
 ${sections}

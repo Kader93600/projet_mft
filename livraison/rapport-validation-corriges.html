@@ -1,0 +1,831 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8">
+<title>Rapport de validation des corrigés signalés</title>
+<style>
+  :root { --navy:#0E1240; --ink:#0f172a; --soft:#64748b; --line:#e2e8f0; --lime:#5a7f12; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font:9.5pt/1.5 -apple-system,"Segoe UI",Roboto,sans-serif; color:var(--ink); padding:32px 38px; }
+  header { border-bottom:3px solid var(--navy); padding-bottom:14px; }
+  .eyebrow { font-size:8.5pt; letter-spacing:.18em; font-weight:700; color:var(--lime); }
+  h1 { font-size:18pt; color:var(--navy); margin-top:4px; letter-spacing:-.01em; }
+  .lead { color:var(--soft); font-size:9pt; margin-top:6px; max-width:75ch; }
+  .stats { display:flex; gap:10px; margin:14px 0 4px; }
+  .stat { flex:1; border:1px solid var(--line); border-radius:8px; padding:9px 12px; }
+  .stat b { font-size:15pt; color:var(--navy); display:block; }
+  .stat span { font-size:7.5pt; color:var(--soft); text-transform:uppercase; letter-spacing:.08em; }
+  h2 { font-size:12.5pt; color:var(--navy); margin:20px 0 8px; break-after:avoid; }
+  .meta { font-size:7.5pt; color:var(--soft); text-transform:uppercase; letter-spacing:.06em; }
+  code { font-size:8pt; background:#f1f5f9; padding:1px 4px; border-radius:3px; }
+  .corr { border:1px solid var(--line); border-radius:8px; padding:9px 12px; margin-bottom:8px; break-inside:avoid; }
+  .just { margin-top:3px; }
+  .diff { margin-top:6px; font-size:8.5pt; border-left:none; }
+  .diff .old { background:#fef2f2; border:1px solid #fecaca; border-radius:5px 5px 0 0; padding:4px 8px; color:#7f1d1d; text-decoration:line-through; }
+  .diff .new { background:#f0fdf4; border:1px solid #bbf7d0; border-top:none; border-radius:0 0 5px 5px; padding:4px 8px; color:#14532d; }
+  .src { margin-top:5px; font-size:8pt; color:var(--soft); }
+  .src a { color:var(--navy); }
+  table { width:100%; border-collapse:collapse; }
+  td { border-bottom:1px solid var(--line); padding:6px 8px 6px 0; vertical-align:top; }
+  td:first-child { width:24%; }
+  footer { margin-top:20px; font-size:7.5pt; color:var(--soft); }
+  @page { margin:12mm 10mm; }
+</style></head><body>
+<header>
+  <div class="eyebrow">RAPPORT DE VALIDATION · 23/07/2026</div>
+  <h1>Validation sourcée des corrigés signalés</h1>
+  <p class="lead">Les 166 points réglementaires marqués « À CONFIRMER » à la rédaction ont été vérifiés
+  un par un contre les sources officielles (Légifrance, service-public, textes en vigueur en 2026),
+  chaque correction proposée étant re-vérifiée par un contrôle contradictoire indépendant avant
+  application. Les corrections retenues sont déjà appliquées dans la banque de questions.</p>
+  <div class="stats">
+    <div class="stat"><b>166</b><span>points vérifiés</span></div>
+    <div class="stat"><b>86</b><span>confirmés exacts</span></div>
+    <div class="stat"><b>35</b><span>corrigés en base</span></div>
+    <div class="stat"><b>45</b><span>arbitrages formateur</span></div>
+  </div>
+</header>
+
+<h2>1. Corrections appliquées dans la banque de questions (35)</h2>
+
+  <article class="corr">
+    <div class="meta">Attestation de capacité professionnelle — véhicules ≤ 3,5 t · <code>mft-2026:moduleC:qr:2</code></div>
+    <div class="just">Les plafonds 23 EUR/kg et 750 EUR/colis sont ceux de l'ancien contrat type abrogé. Le contrat type général en vigueur (décret 2017-461, applicable depuis le 1er mai 2017) fixe à l'article 22.1, pour les envois de moins de 3 tonnes, 33 EUR par kg de poids brut de marchandise manquante ou avariée dans la limite de 1 000 EUR par colis ; l'article 2.1 assimile expressément la palette cerclée ou filmée par le donneur d'ordre à un colis. Indemnité sur la palette de 80 kg : min(80 x 33 = 2 640 ; 1 000) = 1 000 EUR.</div>
+    
+    <div class="diff">
+      <div class="old">la limite usuelle est de 23 euros par kilogramme de poids brut endommagé, sans pouvoir dépasser un plafond par colis</div>
+      <div class="new">la limite est de 33 euros par kilogramme de poids brut de marchandise manquante ou avariée, sans pouvoir dépasser 1 000 euros par colis perdu, incomplet ou avarié (article 22.1 du contrat type, décret 2017-461)</div>
+    </div>
+    <div class="diff">
+      <div class="old">Sur la palette de 80 kg : 80 x 23 = 1 840 euros, montant ramené au plafond par colis applicable si la palette est traitée comme un colis.</div>
+      <div class="new">Sur la palette de 80 kg : 80 x 33 = 2 640 euros, montant ramené à 1 000 euros, la palette cerclée ou filmée constituant un colis au sens de l'article 2.1 du contrat type. L'indemnité est donc plafonnée à 1 000 euros.</div>
+    </div>
+    <div class="src">Source : <a href="https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000034330431">legifrance.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Attestation de capacité professionnelle — véhicules ≤ 3,5 t · <code>mft-2026:moduleD:qr23</code></div>
+    <div class="just">Le barème IR applicable en 2026 aux revenus 2025 (LF 2026 promulguée le 19/02/2026, tranches revalorisées de 0,9 %) est : 0 % jusqu'à 11 600 EUR, 11 % jusqu'à 29 579 EUR, 30 % jusqu'à 84 577 EUR (service-public.gouv.fr, actualité A18045). Recalcul : environ 2 104 EUR par part soit environ 4 208 EUR pour le foyer ; environ 198 EUR sur les seuls 25 000 EUR ; coût marginal du bénéfice environ 4 010 EUR. Les chiffres du corrigé (2 165 / 4 330 / 220 / 4 100) reposaient sur le barème 2025. IS 15 % jusqu'à 42 500 EUR confirmé.</div>
+    
+    <div class="diff">
+      <div class="old">impôt d'environ 2 165 € par part, soit environ 4 330 € pour le foyer</div>
+      <div class="new">impôt d'environ 2 100 € par part, soit environ 4 200 € pour le foyer (barème 2026 applicable aux revenus 2025, tranches revalorisées de 0,9 %)</div>
+    </div>
+    <div class="diff">
+      <div class="old">l'IR supplémentaire généré par les 35 000 € de BIC est d'environ 4 100 € (le foyer sans ce bénéfice, sur les seuls 25 000 €, ne paierait qu'environ 220 €)</div>
+      <div class="new">l'IR supplémentaire généré par les 35 000 € de BIC est d'environ 4 000 € (le foyer sans ce bénéfice, sur les seuls 25 000 €, ne paierait qu'environ 200 €)</div>
+    </div>
+    <div class="diff">
+      <div class="old">le coût marginal du bénéfice est d'environ 4 100 €</div>
+      <div class="new">le coût marginal du bénéfice est d'environ 4 000 €</div>
+    </div>
+    <div class="src">Source : <a href="https://www.service-public.gouv.fr/particuliers/actualites/A18045">service-public.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Attestation de capacité professionnelle — véhicules ≤ 3,5 t · <code>mft-2026:moduleD:qr25</code></div>
+    <div class="just">Le seuil de franchise en base pour les prestations de services en vigueur en 2026 est de 37 500 EUR (seuil majoré 41 250 EUR), fixé par la LF 2025 ; le projet de seuil unique à 25 000 EUR a été définitivement abandonné (loi 2025-1044 du 3 novembre 2025) et la LF 2026 n'a pas modifié ces seuils (fiche F21746 entreprendre.service-public). Le montant de 36 800 EUR repris de l'énoncé est le seuil 2023-2024, daté. La CA12 et les acomptes semestriels de juillet (55 %) et décembre (40 %) restent exacts, le RSI TVA étant maintenu en 2026.</div>
+    
+    <div class="diff">
+      <div class="old">très supérieur au seuil de la franchise en base de TVA (36 800 € pour les services, énoncé)</div>
+      <div class="new">très supérieur au seuil de la franchise en base de TVA applicable aux prestations de services (37 500 € en 2026, seuil majoré 41 250 € ; l'énoncé cite l'ancien seuil de 36 800 €)</div>
+    </div>
+    <div class="src">Source : <a href="https://entreprendre.service-public.gouv.fr/vosdroits/F21746">entreprendre.service-public.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Attestation de capacité professionnelle — véhicules ≤ 3,5 t · <code>mft-2026:moduleE:qr13</code></div>
+    <div class="just">Vérifié : le règlement intérieur doit être établi dans les 12 mois suivant le franchissement du seuil de 50 salariés (art. L. 1311-2 du code du travail, modifié par la loi PACTE). Sanctions confirmées : pénalité jusqu'à 1 % de la masse salariale pour l'index égalité (déjà exact dans le corrigé) et délit d'entrave au CSE puni de 7 500 euros d'amende (art. L. 2317-1). Les remplacements injectent ces valeurs précises demandées par la note.</div>
+    
+    <div class="diff">
+      <div class="old">3. Règlement intérieur obligatoire : à établir dans un délai déterminé après le franchissement du seuil (procédure de consultation du CSE et dépôt).</div>
+      <div class="new">3. Règlement intérieur obligatoire : à établir dans les 12 mois suivant le franchissement du seuil de 50 salariés (article L. 1311-2 du code du travail ; procédure de consultation du CSE et dépôt).</div>
+    </div>
+    <div class="diff">
+      <div class="old">avec des délais de mise en conformité propres (règlement intérieur)</div>
+      <div class="new">avec des délais de mise en conformité propres (12 mois pour établir le règlement intérieur)</div>
+    </div>
+    <div class="diff">
+      <div class="old">délit d'entrave pour le CSE (amende pénale)</div>
+      <div class="new">délit d'entrave pour le CSE (amende de 7 500 euros, portée à un an d'emprisonnement et 7 500 euros d'amende en cas d'entrave à sa constitution)</div>
+    </div>
+    <div class="src">Source : <a href="https://code.travail.gouv.fr/code-du-travail/l1311-2">code.travail.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Attestation de capacité professionnelle — véhicules ≤ 3,5 t · <code>mft-2026:moduleF:qr6</code></div>
+    <div class="just">Aucun texte n'acte l'exclusion des Crit'Air 2 à Paris en 2027 : la ZFE de la Métropole du Grand Paris en est à l'interdiction des Crit'Air 3, 4, 5 et non classés (Crit'Air 3 depuis le 1er janvier 2025, contrôles pédagogiques jusque fin 2026) et aucune date n'est fixée pour les Crit'Air 2. La suppression des ZFE votée dans la loi de simplification (avril 2026) a été censurée par le Conseil constitutionnel (mai 2026), les ZFE restant en vigueur. Le corrigé est reformulé pour présenter 2027 comme l'hypothèse de l'énoncé.</div>
+    
+    <div class="diff">
+      <div class="old">La ZFE exclut la vignette Crit'Air 2 : sans action, ces véhicules perdent l'accès à Paris. Construire un rétroplanning aligné sur l'échéance annoncée (2027) avec des jalons d'investissement.</div>
+      <div class="new">La ZFE métropolitaine interdit à ce jour les vignettes Crit'Air 3, 4, 5 et non classés (avec une période pédagogique sans verbalisation jusque fin 2026) ; aucune date n'est encore actée pour l'exclusion des Crit'Air 2, plusieurs fois reportée. Sans action, ces véhicules perdraient l'accès à Paris à l'échéance retenue par l'énoncé (2027) : construire un rétroplanning aligné sur cette hypothèse, à actualiser au fil des annonces officielles, avec des jalons d'investissement.</div>
+    </div>
+    <div class="src">Source : <a href="https://www.metropolegrandparis.fr/fr/la-zone-faibles-emissions-metropolitaine">metropolegrandparis.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Attestation de capacité professionnelle — véhicules ≤ 3,5 t · <code>mft-2026:moduleF:qr7</code></div>
+    <div class="just">Sanctions vérifiées au code des transports en vigueur : l'employeur est puni d'une amende de 4e classe prononcée autant de fois qu'il y a de conducteurs concernés (art. R. 3315-7) ; le conducteur est puni d'une amende de 3e classe s'il ne peut présenter immédiatement un justificatif de qualification valide, portée à la 4e classe à défaut de présentation sous 5 jours (art. R. 3315-8). Montants forfaitaires 68 et 135 euros confirmés par la DREAL Centre-Val de Loire. Les remplacements injectent ces valeurs demandées par la note.</div>
+    
+    <div class="diff">
+      <div class="old">Sanctions pour le conducteur : contravention et risque d'immobilisation du véhicule.</div>
+      <div class="new">Sanctions pour le conducteur : contravention de 3e classe (amende forfaitaire de 68 euros) s'il ne peut présenter immédiatement un justificatif de qualification en cours de validité, portée à la 4e classe à défaut de présentation sous 5 jours, et risque d'immobilisation du véhicule.</div>
+    </div>
+    <div class="diff">
+      <div class="old">le fait de laisser conduire un salarié sans qualification valide expose la personne morale et le dirigeant à une amende nettement plus élevée que celle du conducteur</div>
+      <div class="new">le fait de laisser conduire un salarié sans qualification valide expose l'employeur à une amende de 4e classe (135 euros forfaitaires, 750 euros au maximum), prononcée autant de fois qu'il y a de conducteurs concernés (article R. 3315-7 du code des transports) et pouvant être quintuplée pour la personne morale, donc nettement plus élevée que celle du conducteur</div>
+    </div>
+    <div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000033450511">legifrance.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Capacité de transport &gt; 3,5 t — Préparation à l'examen national · <code>CAPA-LOURD-D-QC-02</code></div>
+    <div class="just">La taxe à l'essieu n'a pas été supprimée : réformée en 2021 (transfert à la DGFiP, annualisation) puis codifiée au code des impositions sur les biens et services, elle subsiste sous le nom de taxe annuelle sur les véhicules lourds de transport de marchandises, déclarée et payée avec la TVA (échéance au 26 janvier 2026), toujours due à partir de 12 tonnes de PTAC/PTRA. Le seuil de 12 tonnes du corrigé est exact ; la mention d'une suppression au 1er juillet 2021 est fausse et corrigée.</div>
+    
+    <div class="diff">
+      <div class="old">était due pour les véhicules et ensembles de véhicules dont le poids total autorisé en charge (PTAC ou PTRA pour un ensemble) était égal ou supérieur à 12 tonnes.</div>
+      <div class="new">est due pour les véhicules et ensembles de véhicules dont le poids total autorisé en charge (PTAC ou PTRA pour un ensemble) est égal ou supérieur à 12 tonnes.</div>
+    </div>
+    <div class="diff">
+      <div class="old">Rappel : cette taxe frappait les poids lourds les plus susceptibles de dégrader la voirie</div>
+      <div class="new">Rappel : cette taxe frappe les poids lourds les plus susceptibles de dégrader la voirie</div>
+    </div>
+    <div class="diff">
+      <div class="old">À noter que la taxe à l'essieu a été supprimée en France à compter du 1er juillet 2021 ; la réponse « 12 tonnes » correspond au seuil historiquement retenu par le référentiel et reste la réponse attendue tant que le support de formation n'a pas été actualisé.</div>
+      <div class="new">À noter que la taxe à l'essieu n'a pas été supprimée : réformée en 2021, elle est devenue la taxe annuelle sur les véhicules lourds de transport de marchandises, gérée par la DGFiP et déclarée avec la TVA (code des impositions sur les biens et services) ; le seuil de 12 tonnes reste inchangé et demeure la réponse attendue.</div>
+    </div>
+    <div class="diff">
+      <div class="old">La suppression du dispositif depuis le 1er juillet 2021 ne pénalise pas le candidat mais doit être signalée.</div>
+      <div class="new">La mention de la réforme du dispositif (devenu la taxe annuelle sur les véhicules lourds de transport de marchandises, déclarée à la DGFiP avec la TVA) est valorisée mais le seuil de 12 tonnes suffit.</div>
+    </div>
+    <div class="src">Source : <a href="https://entreprendre.service-public.gouv.fr/actualites/A17077">entreprendre.service-public.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Capacité de transport &gt; 3,5 t — Préparation à l'examen national · <code>CAPA-LOURD-G-QC-01</code></div>
+    <div class="just">La condition principale (au moins 5 essieux pour circuler à 44 t, art. R312-4) est exacte. En revanche, l'article R312-5 du Code de la route fixe la limite de l'essieu le plus chargé à 13 t en règle générale mais l'abaisse à 12 t pour un véhicule articulé, un train double ou un ensemble circulant à plus de 40 tonnes, ce qui est précisément le cas d'un ensemble à 44 t : citer 13 t dans ce contexte est inexact.</div>
+    
+    <div class="diff">
+      <div class="old">respecter les charges maximales par essieu (notamment 13 t sur un essieu isolé / essieu moteur)</div>
+      <div class="new">respecter les charges maximales par essieu (13 t en règle générale, limite abaissée à 12 t pour l'essieu le plus chargé d'un ensemble circulant à plus de 40 tonnes, art. R. 312-5 du Code de la route)</div>
+    </div>
+    <div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043893478">legifrance.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Enseignant de la Conduite et de la Sécurité Routière · <code>ECSR-M3-QC-08</code></div>
+    <div class="just">Le dispositif est confirmé : des sessions spécialisées de l'épreuve théorique générale existent pour les candidats dyslexiques, dysphasiques et dyspraxiques (questions lues à voix haute par l'examinateur, temps de réponse géré, relecture possible), sur justificatif (reconnaissance MDPH, aménagements d'examen de l'Éducation nationale ou certificat médical de moins de 6 mois). Le TDAH seul ne figure pas dans les cas ouvrant droit à ces sessions. Le bloc À CONFIRMER est remplacé par la précision vérifiée.</div>
+    
+    <div class="diff">
+      <div class="old">[À CONFIRMER: modalités officielles d'aménagement de l'épreuve théorique générale (code) pour candidats DYS ou TDAH — épreuve en version « dys » à la lecture des questions oralisée / temps majoré, justificatifs médicaux à fournir. Vérifier les conditions exactes en vigueur auprès de la réglementation ECSR / du dispositif d'examen avant de les présenter comme certaines.]</div>
+      <div class="new">Précision réglementaire : pour l'épreuve théorique générale (code), les candidats dyslexiques, dysphasiques ou dyspraxiques peuvent passer l'examen lors de sessions spécialisées organisées par l'administration : les questions sont lues à voix haute par l'examinateur, qui gère le temps de réponse et peut relire une question à la demande. Justificatifs admis : reconnaissance de handicap ou de qualité de travailleur handicapé délivrée par la MDPH mentionnant le trouble, attestation d'aménagements d'examen obtenus dans le cadre scolaire, ou certificat médical de moins de 6 mois attestant un trouble spécifique du langage, de la lecture ou de la coordination. Le TDAH seul ne figure pas parmi les troubles ouvrant droit à ces sessions spécialisées.</div>
+    </div>
+    <div class="src">Source : <a href="https://www.oise.gouv.fr/Demarches/Permis-de-conduire/Education-routiere-votre-parcours-du-permis-de-conduire/Le-permis-de-conduire2/Les-examens-theoriques/Examen-du-code-de-la-route-seances-specifiques">oise.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Enseignant de la Conduite et de la Sécurité Routière · <code>ECSR-M3-QC-10</code></div>
+    <div class="just">Le cadre est confirmé : l'arrêté du 28 mars 2022 (refonte) fixe la liste des affections médicales incompatibles ou compatibles avec ou sans aménagements ou restrictions ; le candidat ou conducteur concerné doit déclarer l'affection et solliciter l'avis d'un médecin agréé par le préfet (cabinet ou commission médicale). Le bloc À CONFIRMER est remplacé par la référence vérifiée ; le corps du corrigé et le barème sont exacts.</div>
+    
+    <div class="diff">
+      <div class="old">[À CONFIRMER: cadre réglementaire précis du contrôle médical de l'aptitude à la conduite — liste des affections médicales incompatibles ou compatibles avec la conduite (arrêté en vigueur), recours au médecin agréé par la préfecture, obligations exactes de l'élève/candidat. Vérifier les références en vigueur avant de les présenter comme certaines.]</div>
+      <div class="new">Référence réglementaire : l'arrêté du 28 mars 2022 fixe la liste des affections médicales incompatibles ou compatibles, avec ou sans aménagements ou restrictions, avec l'obtention, le renouvellement ou le maintien du permis de conduire. Le candidat ou le conducteur concerné par une affection listée doit la déclarer et solliciter l'avis d'un médecin agréé par le préfet (consultation en cabinet ou commission médicale), qui se prononce sur l'aptitude à la conduite, le cas échéant avec restrictions ou aménagements.</div>
+    </div>
+    <div class="src">Source : <a href="https://www.legifrance.gouv.fr/loda/id/JORFTEXT000045464094">legifrance.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Enseignant de la Conduite et de la Sécurité Routière · <code>ECSR-M4-QC-09</code></div>
+    <div class="just">L'arrêté du 19 février 2010 modifié prévoit une phase de conduite autonome d'une durée globale d'environ cinq minutes, exercice pouvant être fractionné, consistant à suivre un itinéraire ou à se rendre vers une destination définie par l'expert. Le chiffre officiel étant établi, la formulation vague « plusieurs minutes » est précisée ; le reste du corrigé (fléchage, navigation, consignes mémorisées) est conforme.</div>
+    
+    <div class="diff">
+      <div class="old">le candidat doit, pendant plusieurs minutes, rejoindre une destination ou suivre un itinéraire</div>
+      <div class="new">le candidat doit, pendant environ cinq minutes (exercice pouvant être fractionné), rejoindre une destination ou suivre un itinéraire</div>
+    </div>
+    <div class="src">Source : <a href="https://www.legifrance.gouv.fr/loda/id/JORFTEXT000021897924">legifrance.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Exploitant en Régulation du Transport de Voyageurs · <code>ERTV-M4-QC-07</code></div>
+    <div class="just">L'art. 8 §6 bis du règl. (CE) 561/2006 (introduit par le règl. CE 1073/2009) impose, après la dérogation 12 jours, soit deux repos hebdomadaires normaux, soit un repos hebdomadaire normal plus un repos hebdomadaire réduit d'au moins 24 h avec compensation : la formule « un ou deux repos hebdomadaires normaux » était imprécise. Conditions renforcées confirmées pour la conduite entre 22 h et 6 h : véhicule à double équipage ou durée de conduite visée à l'art. 7 ramenée à 3 h ; précision ajoutée au corrigé.</div>
+    
+    <div class="diff">
+      <div class="old">qu'un ou deux repos hebdomadaires normaux (compensation) sont planifiés et pris au retour</div>
+      <div class="new">que deux repos hebdomadaires normaux, ou un repos hebdomadaire normal suivi d'un repos hebdomadaire réduit d'au moins 24 heures avec compensation, sont planifiés et pris au retour</div>
+    </div>
+    <div class="diff">
+      <div class="old">que les conditions renforcées liées à la conduite de nuit sont satisfaites</div>
+      <div class="new">que les conditions renforcées liées à la conduite de nuit sont satisfaites (en cas de conduite entre 22 heures et 6 heures : véhicule à double équipage, ou durée de conduite visée à l'article 7 ramenée à 3 heures)</div>
+    </div>
+    <div class="src">Source : <a href="https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:02006R0561-20200820">eur-lex.europa.eu</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Exploitant en Régulation du Transport de Voyageurs · <code>ERTV-M4-QC-10</code></div>
+    <div class="just">Les maxima d'amplitude en voyageurs sont fixés par la partie réglementaire du code des transports issue du décret 2003-1242 : 12 h en règle générale (art. R. 3312-9), 13 h pour les services réguliers prolongeable à 14 h et 14 h pour les services occasionnels (art. R. 3312-28), la CCN et les accords de branche ne faisant que compléter ou abaisser ces plafonds. Le renvoi au seul « code du travail » plus CCN était donc inexact sur le point même de la question ; les valeurs 12 h/13 h évoquées en note sont confirmées.</div>
+    
+    <div class="diff">
+      <div class="old">le code du travail et surtout la convention collective nationale des transports routiers et le ou les accords de branche propres au transport de voyageurs</div>
+      <div class="new">la partie réglementaire du code des transports (articles R. 3312-9 et R. 3312-28, issus du décret no 2003-1242), complétée par la convention collective nationale des transports routiers et le ou les accords de branche propres au transport de voyageurs</div>
+    </div>
+    <div class="diff">
+      <div class="old">maxima à chercher dans le code du travail et la convention collective / accords de branche transport de voyageurs</div>
+      <div class="new">maxima à chercher dans le code des transports (partie réglementaire) et la convention collective / accords de branche transport de voyageurs</div>
+    </div>
+    <div class="diff">
+      <div class="old">1 pt pour situer les maxima dans le code du travail et la convention collective / accords de branche voyageurs</div>
+      <div class="new">1 pt pour situer les maxima dans le code des transports (partie réglementaire) et la convention collective / accords de branche voyageurs</div>
+    </div>
+    <div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043651204">legifrance.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Exploitant en Régulation du Transport de Voyageurs · <code>ERTV-M5-QC-06</code></div>
+    <div class="just">Les équipements cités (plancher bas/rampe ou kneeling, emplacement UFR avec ancrage, annonces sonores et visuelles) correspondent aux exigences d'accessibilité du matériel roulant issues de la loi 2005-102 et du décret 2006-138. Seule l'incohérence arithmétique interne du barème est corrigée : à 0,67 point par équipement, 1 réponse vaut 0,7 et 2 réponses 1,3, et non 0,5 et 1,5.</div>
+    
+    <div class="diff">
+      <div class="old">Soit 1 réponse = 0,5 ; 2 réponses = 1,5 ; 3 réponses = 2.</div>
+      <div class="new">Soit 1 réponse = 0,7 ; 2 réponses = 1,3 ; 3 réponses = 2.</div>
+    </div>
+    <div class="src">Source : <a href="https://www.legifrance.gouv.fr/affichTexte.do?cidTexte=JORFTEXT000000266164">legifrance.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Exploitant en Régulation du Transport de Voyageurs · <code>ERTV-M5-QC-07</code></div>
+    <div class="just">Marteaux brise-vitre, issues de secours (fenêtres et portes de secours, trappes d'évacuation) et éclairage/balisage sont bien des équipements exigés par l'arrêté du 2 juillet 1982 relatif aux transports en commun de personnes, qui prévoit aussi extincteurs et trousse de secours : le contenu est exact. Seule l'incohérence arithmétique interne du barème est corrigée : à 0,67 point par équipement, 1 réponse vaut 0,7 et 2 réponses 1,3, et non 0,5 et 1,5.</div>
+    
+    <div class="diff">
+      <div class="old">dans la limite de trois (3 réponses justes = 2/2). 1 réponse = 0,5 ; 2 = 1,5 ; 3 = 2.</div>
+      <div class="new">dans la limite de trois (3 réponses justes = 2/2). 1 réponse = 0,7 ; 2 = 1,3 ; 3 = 2.</div>
+    </div>
+    <div class="src">Source : <a href="https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000470037">legifrance.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">FIMO Marchandises &amp; FCO obligatoire · <code>FIMO-M0-QC-01</code></div>
+    <div class="just">La durée de 140 heures est confirmée, mais l'article 2 de l'arrêté du 3 janvier 2008 (texte en vigueur, Légifrance) dispose que la FIMO est « composée de quatre thèmes » (annexe I : perfectionnement à la conduite rationnelle axée sur les règles de sécurité ; application des réglementations ; santé, sécurité routière et sécurité environnementale ; service, logistique). Le corrigé regroupait ces contenus en trois domaines issus de la directive 2003/59/CE, ce qui ne répond pas au décompte attendu.</div>
+    
+    <div class="diff">
+      <div class="old">le programme de la FIMO est structuré autour des grands domaines de connaissances fixés par la directive 2003/59/CE et sa transposition française, à savoir :</div>
+      <div class="new">le programme de la FIMO est composé de quatre thèmes, fixés par l'arrêté du 3 janvier 2008 (transposition de la directive 2003/59/CE), à savoir :</div>
+    </div>
+    <div class="diff">
+      <div class="old">et la santé, la sécurité routière et environnementale, le service et la logistique (gestes et postures, prévention des risques)</div>
+      <div class="new">la santé, la sécurité routière et la sécurité environnementale (gestes et postures, prévention des risques), et le service et la logistique</div>
+    </div>
+    <div class="diff">
+      <div class="old">Ces domaines sont eux-mêmes déclinés en thèmes dans le support de formation.</div>
+      <div class="new">Chacun de ces quatre thèmes est décliné en objectifs détaillés dans le support de formation.</div>
+    </div>
+    <div class="diff">
+      <div class="old">b. Nombre de thèmes couverts (conforme au découpage du référentiel) : 1 point.</div>
+      <div class="new">b. Nombre de thèmes couverts = quatre thèmes (arrêté du 3 janvier 2008) : 1 point.</div>
+    </div>
+    <div class="src">Source : <a href="https://www.legifrance.gouv.fr/loda/id/JORFTEXT000018008166">legifrance.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">FIMO Marchandises &amp; FCO obligatoire · <code>FIMO-M0-QC-06</code></div>
+    <div class="just">Le principe (nouvelle période décomptée depuis la date d'échéance de la qualification précédente) est exact, mais le délai d'anticipation n'est plus de 6 mois : depuis le décret n° 2021-1482 du 12 novembre 2021, l'article R3314-12 du code des transports (en vigueur depuis le 1er février 2022) permet d'achever la FCO par anticipation dans l'année qui précède l'échéance.</div>
+    
+    <div class="diff">
+      <div class="old">Nuance : lorsque la FCO est réalisée dans les 6 mois qui précèdent l'échéance, la nouvelle période de 5 ans est décomptée à partir de la date d'échéance de la qualification précédente</div>
+      <div class="new">Nuance : lorsque la FCO est achevée par anticipation dans l'année qui précède l'échéance (article R. 3314-12 du code des transports), la nouvelle période de 5 ans est décomptée à partir de la date d'échéance de la qualification précédente</div>
+    </div>
+    <div class="diff">
+      <div class="old">dont 0,5 pt bonus admis pour la nuance des 6 mois d'anticipation, sans dépasser 2</div>
+      <div class="new">dont 0,5 pt bonus admis pour la nuance de l'anticipation possible dans l'année qui précède l'échéance, sans dépasser 2</div>
+    </div>
+    <div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000044326226">legifrance.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">FIMO Marchandises &amp; FCO obligatoire · <code>FIMO-M0-QC-10</code></div>
+    <div class="just">L'article R. 3314-15 du code des transports (en vigueur) vise les véhicules transportant du matériel, de l'équipement ou des machines destinés à être utilisés dans l'exercice du métier de leur conducteur, à condition que la conduite ne constitue pas son activité principale. Le corrigé écrivait « marchandises » au lieu de « machines » ; le critère activité principale est confirmé (interprétation DREAL : conduite &gt; 50 % = activité principale).</div>
+    
+    <div class="diff">
+      <div class="old">transportant du matériel, des équipements ou des marchandises qu'ils utilisent dans l'exercice de leur propre métier</div>
+      <div class="new">transportant du matériel, des équipements ou des machines qu'ils utilisent dans l'exercice de leur propre métier</div>
+    </div>
+    <div class="diff">
+      <div class="old">transport de matériel/marchandises utilisés dans l'exercice de son propre métier</div>
+      <div class="new">transport de matériel/équipements/machines utilisés dans l'exercice de son propre métier</div>
+    </div>
+    <div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000033450461 ; https://www.auvergne-rhone-alpes.developpement-durable.gouv.fr/IMG/pdf/exemptions_fimo-fco_document-public_v1_25092023.pdf">legifrance.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">FIMO Marchandises &amp; FCO obligatoire · <code>FIMO-T3-QC-05</code></div>
+    <div class="just">La vitesse d'élimination de 0,10 à 0,15 g/L/h est confirmée par la Sécurité routière (0,15 g/L/h homme, 0,10 g/L/h femme). En revanche, le seuil de 0,2 g/L (art. R. 234-1 du Code de la route) ne s'applique qu'aux conducteurs de véhicules de transport en commun de personnes et aux permis probatoires : un conducteur poids lourd marchandises (public FIMO Marchandises) reste soumis au seuil général de 0,5 g/L.</div>
+    
+    <div class="diff">
+      <div class="old">Rappel du seuil applicable au transport routier : 0,2 g/L de sang (régime « quasi zéro » pour les conducteurs professionnels), contre 0,5 g/L pour le régime général.</div>
+      <div class="new">Rappel des seuils applicables : 0,5 g/L de sang pour le régime général, qui vaut aussi pour les conducteurs de poids lourds de marchandises ; le seuil abaissé à 0,2 g/L (article R. 234-1 du Code de la route) ne concerne que les conducteurs de véhicules de transport en commun de personnes et les titulaires d'un permis probatoire.</div>
+    </div>
+    <div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038954545">legifrance.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises · <code>import:d33c7a85-0a81-4708-b38e-e06f8f02ec90#Ch01_Exercice_1.1.pdf:mp5pgrox:q1</code></div>
+    <div class="just">Le seuil énoncé est daté : depuis le 21 mai 2022 (règlement UE 2020/1055, paquet mobilité), la licence communautaire est aussi exigée pour les véhicules de plus de 2,5 t et jusqu'à 3,5 t utilisés en transport international dans l'EEE ; la licence de transport intérieur ne couvre que le transport national avec des véhicules n'excédant pas 3,5 t (ecologie.gouv.fr). Le point MECA-CONCEPT est éditorial (tiers payeur désigné ou coquille) mais la conclusion « port payé » tient dans les deux lectures.</div>
+    
+    <div class="diff">
+      <div class="old">licence communautaire pour les véhicules de plus de 3,5 t (transport intérieur et international), licence de transport intérieur pour les véhicules n'excédant pas 3,5 t</div>
+      <div class="new">licence communautaire pour les véhicules de plus de 3,5 t (transport intérieur et international) et, depuis le 21 mai 2022, pour les véhicules de plus de 2,5 t utilisés en transport international ; licence de transport intérieur pour les véhicules n'excédant pas 3,5 t utilisés uniquement en transport national</div>
+    </div>
+    <div class="src">Source : <a href="https://www.ecologie.gouv.fr/politiques-publiques/acces-exercice-profession-transporteur-marchandises">ecologie.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises · <code>import:fe74f583-5eef-461c-8c13-8dfe00dea7e4#Ch01_Exercice_1.2.pdf:mp7fi23j:q1</code></div>
+    <div class="just">Il n'existe plus de contrat type « messagerie » : les articles D. 3222-1 à D. 3222-7 du Code des transports n'en listent aucun, et le contrat type général (décret n° 2017-461, annexe II) couvre tous les envois sans contrat type spécifique, avec des dispositions propres aux envois de moins de 3 tonnes. Le contrat type température dirigée existe bien en vigueur (marchandises périssables sous température dirigée, annexe V, art. D. 3222-5, issu du décret n° 2016-1550) : la dénomination abrégée du corrigé est acceptable.</div>
+    
+    <div class="diff">
+      <div class="old">Réglementation : contrat type « messagerie », dans le cadre du Code de commerce et du Code des transports ; règlement CE 561/2006 et règlement UE 165/2014 pour le conducteur.</div>
+      <div class="new">Réglementation : contrat type général (décret 2017-461, annexe II de la partie 3 réglementaire du Code des transports), qui comporte des dispositions propres aux envois de moins de 3 tonnes (il n'existe plus de contrat type « messagerie » distinct), dans le cadre du Code de commerce et du Code des transports ; règlement CE 561/2006 et règlement UE 165/2014 pour le conducteur.</div>
+    </div>
+    <div class="diff">
+      <div class="old">messagerie / messagerie express = 0,20 ; contrat type messagerie = 0,20</div>
+      <div class="new">messagerie / messagerie express = 0,20 ; contrat type général, dispositions applicables aux envois de moins de 3 tonnes (« contrat type messagerie » toléré comme dénomination usuelle) = 0,20</div>
+    </div>
+    <div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000023086525/LEGISCTA000033453074/2020-05-01">legifrance.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises · <code>mft-2026-gotrm-ccp1-qr-v2:ch01:ex1.1</code></div>
+    <div class="just">Même constat que l'exercice source : depuis le 21 mai 2022 (règlement UE 2020/1055), la licence communautaire est exigée aussi pour les véhicules de plus de 2,5 t et jusqu'à 3,5 t en transport international dans l'EEE ; la licence de transport intérieur ne vaut que pour le transport national avec des véhicules n'excédant pas 3,5 t (ecologie.gouv.fr). Les montants de capacité financière cités (9 000/5 000 et 1 800/900 euros) restent exacts. Le point MECA-CONCEPT est éditorial ; la conclusion « port payé » tient dans les deux lectures.</div>
+    
+    <div class="diff">
+      <div class="old">licence communautaire pour les véhicules de plus de 3,5 t, licence de transport intérieur pour les véhicules n'excédant pas 3,5 t</div>
+      <div class="new">licence communautaire pour les véhicules de plus de 3,5 t et, depuis le 21 mai 2022, pour les véhicules de plus de 2,5 t utilisés en transport international ; licence de transport intérieur pour les véhicules n'excédant pas 3,5 t utilisés uniquement en transport national</div>
+    </div>
+    <div class="src">Source : <a href="https://www.ecologie.gouv.fr/politiques-publiques/acces-exercice-profession-transporteur-marchandises">ecologie.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises · <code>mft-2026-gotrm-ccp1-qr-v2:ch01:ex1.2</code></div>
+    <div class="just">Le contrat type « messagerie » n'existe plus : aucun ne figure aux articles D. 3222-1 à D. 3222-7 du Code des transports ; les envois de détail relèvent du contrat type général (décret n° 2017-461, annexe II), qui prévoit des dispositions propres aux envois de moins de 3 tonnes. Le contrat type température dirigée est bien en vigueur (marchandises périssables sous température dirigée, annexe V, art. D. 3222-5, décret n° 2016-1550) : la dénomination abrégée du corrigé est acceptable telle quelle.</div>
+    
+    <div class="diff">
+      <div class="old">Réglementation : contrat type « messagerie », dans le cadre du Code de commerce et du Code des transports ; règlements CE 561/2006 et UE 165/2014 pour le conducteur.</div>
+      <div class="new">Réglementation : contrat type général (décret 2017-461, annexe II de la partie 3 réglementaire du Code des transports), qui comporte des dispositions propres aux envois de moins de 3 tonnes (il n'existe plus de contrat type « messagerie » distinct), dans le cadre du Code de commerce et du Code des transports ; règlements CE 561/2006 et UE 165/2014 pour le conducteur.</div>
+    </div>
+    <div class="diff">
+      <div class="old">messagerie / messagerie express = 0,60 ; contrat type messagerie = 0,60</div>
+      <div class="new">messagerie / messagerie express = 0,60 ; contrat type général, dispositions applicables aux envois de moins de 3 tonnes (« contrat type messagerie » toléré comme dénomination usuelle) = 0,60</div>
+    </div>
+    <div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000023086525/LEGISCTA000033453074/2020-05-01">legifrance.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises · <code>mft-2026-gotrm-ccp1-qr-v2:ch04:ex4.10</code></div>
+    <div class="just">L'article L3242-3 du code des transports (en vigueur depuis le 1er janvier 2017) punit d'une amende de 15 000 euros la méconnaissance, par le cocontractant du transporteur routier, des obligations résultant des articles L3222-1 et L3222-2 (indexation gazole). Le montant de 15 000 euros et la référence sont donc confirmés : la réserve du corrigé peut être remplacée par la citation exacte de l'article.</div>
+    
+    <div class="diff">
+      <div class="old">est sanctionné par une amende prévue par le code des transports (montant de l'ordre de 15 000 euros). [À CONFIRMER : montant exact de l'amende et référence précise de l'article de sanction — ne pas énoncer le chiffre comme certain devant les stagiaires sans vérification du texte en vigueur.]</div>
+      <div class="new">est sanctionné par une amende de 15 000 euros prévue par l'article L.3242-3 du code des transports : est punie de cette amende la méconnaissance, par le cocontractant du transporteur routier, des obligations résultant pour lui des articles L.3222-1 et L.3222-2.</div>
+    </div>
+    <div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000023083734">legifrance.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises · <code>mft-2026-gotrm-ccp1-qr-v2:ch04:ex4.6</code></div>
+    <div class="just">La correction 0,40 ml (palette 80x120) et 0,50 ml (palette 100x120) est confirmee : largeur utile 2,40 m, 33 europalettes et 26 palettes 100x120 au sol sur 13,60 m (sources professionnelles concordantes). En revanche, 1 500 kg/ml n'est pas l'equivalence usuelle du marche : DSV applique 1 750 kg/LDM, OpenClassrooms cite 1 760 kg/ml, l'usage courant pour le non gerbable est 1 800 kg/ml et l'exercice 4.9 du meme cours retient 1 790 kg/ml. La formulation est corrigee vers la fourchette verifiee 1 750-1 800 kg/ml, la grille de l'annexe restant la reference.</div>
+    
+    <div class="diff">
+      <div class="old">L'équivalence usuelle du marché est 1 ml = 1 500 kg, mais c'est la valeur de la grille de l'annexe qui fait foi.</div>
+      <div class="new">L'équivalence usuelle du marché se situe entre 1 750 et 1 800 kg par mètre linéaire pour les marchandises non gerbables, mais c'est la valeur de la grille de l'annexe qui fait foi.</div>
+    </div>
+    <div class="diff">
+      <div class="old">La valeur de 1 500 kg/ml doit être remplacée par celle de l'annexe si elle diffère.</div>
+      <div class="new">La valeur indicative de 1 750 à 1 800 kg/ml doit être remplacée par celle de l'annexe si elle diffère.</div>
+    </div>
+    <div class="src">Source : <a href="https://www.dsv.com/fr-fr/aide/faq/poids-et-volume-de-vos-envois/calculer-poids-et-volume-envois-routiers">dsv.com</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises · <code>mft-2026-gotrm-ccp1-qr-v2:ch11:ex11.3</code></div>
+    <div class="just">Texte en vigueur de l'article L.133-3 du code de commerce (version applicable en 2026, Légifrance) : « dans les trois jours, non compris les jours fériés, qui suivent celui de cette réception » ; les dimanches n'y figurent pas et le dimanche n'est pas un jour férié légal (art. L.3133-1 C. trav.). Réception le vendredi 28/03 : échéance le lundi 31/03 et non le mardi 01/04. La tolérance du barème (toute date correctement justifiée) est maintenue.</div>
+    
+    <div class="diff">
+      <div class="old">dans les trois jours suivant celui de la réception, non compris les dimanches et les jours fériés</div>
+      <div class="new">dans les trois jours suivant celui de la réception, non compris les jours fériés</div>
+    </div>
+    <div class="diff">
+      <div class="old">Le délai court à compter du lendemain ; en excluant le dimanche 30/03, les trois jours utiles conduisent à un envoi de la lettre recommandée au plus tard le mardi 01/04</div>
+      <div class="new">Le délai court à compter du lendemain ; le dimanche n'étant pas un jour férié au sens du texte, les trois jours utiles (samedi 29/03, dimanche 30/03, lundi 31/03) conduisent à un envoi de la lettre recommandée au plus tard le lundi 31/03</div>
+    </div>
+    <div class="diff">
+      <div class="old">délai de trois jours suivant la réception, non compris les dimanches et jours fériés, fondement de l'article L.133-3 du Code de commerce</div>
+      <div class="new">délai de trois jours suivant la réception, non compris les jours fériés, fondement de l'article L.133-3 du Code de commerce</div>
+    </div>
+    <div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000021486442">legifrance.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises · <code>mft-2026-gotrm-ccp1-qr-v2:ch12:ex12.4</code></div>
+    <div class="just">Le point annexe reste éditorial, mais harmonisation faite sur L.133-3 : le texte en vigueur exclut uniquement les jours fériés, pas les dimanches (Légifrance). La suppression des délais 48 h et 5 jours est validée : aucun délai réglementaire d'accusé de réception n'existe et la déclaration de sinistre relève du contrat d'assurance (plancher de 5 jours ouvrés, art. L.113-2 C. assur.) ; les délais légaux conservés (3 jours L.133-3, prescription annale L.133-6) sont exacts.</div>
+    
+    <div class="diff">
+      <div class="old">puis confirmation par LRAR dans les 3 jours, non compris les dimanches et jours fériés (article L.133-3 du Code de commerce)</div>
+      <div class="new">puis confirmation par LRAR dans les 3 jours, non compris les jours fériés (article L.133-3 du Code de commerce)</div>
+    </div>
+    <div class="diff">
+      <div class="old">(réserves sur la LV, LRAR sous 3 jours hors dimanches et fériés, art. L.133-3 ; prescription annale art. L.133-6 ; présomption de responsabilité art. L.133-1)</div>
+      <div class="new">(réserves sur la LV, LRAR sous 3 jours hors jours fériés, art. L.133-3 ; prescription annale art. L.133-6 ; présomption de responsabilité art. L.133-1)</div>
+    </div>
+    <div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000021486442">legifrance.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises · <code>mft-2026-gotrm-ccp1-qr-v2:ch14:ex14.2</code></div>
+    <div class="just">Grille officielle Crit'Air des véhicules lourds (annexe de l'arrêté du 21 juin 2016 modifié), diesel : Euro VI = Crit'Air 2, Euro V = 3, Euro IV = 4, Euro III = 5 ; VUL diesel : Euro 5 et 6 = 2, Euro 4 = 3, Euro 3 = 4. Le corrigé décalait la grille d'un cran ; conséquence : seul TRR-01 est autorisé en ZFE (et TRR-01 + TRR-02 sous l'hypothèse VUL). La règle ZFE du Grand Paris est confirmée pour 2026 : interdiction des Crit'Air 3, 4, 5 et non classés depuis le 01/01/2025, poids lourds concernés tous les jours de 8 h à 20 h, période pédagogique (contrôles informatifs) jusqu'au 31/12/2026.</div>
+    
+    <div class="diff">
+      <div class="old">- TRR-01 (FF-514-DD), Euro 6/VI : Crit'Air 1</div>
+      <div class="new">- TRR-01 (FF-514-DD), Euro 6/VI : Crit'Air 2</div>
+    </div>
+    <div class="diff">
+      <div class="old">- TRR-02 (HS-189-YG), Euro 5/V : Crit'Air 2</div>
+      <div class="new">- TRR-02 (HS-189-YG), Euro 5/V : Crit'Air 3</div>
+    </div>
+    <div class="diff">
+      <div class="old">- TRR-03 (DD-461-VV), Euro 4/IV : Crit'Air 3</div>
+      <div class="new">- TRR-03 (DD-461-VV), Euro 4/IV : Crit'Air 4</div>
+    </div>
+    <div class="diff">
+      <div class="old">- TRR-04 (FM-698-ZZ), Euro 3/III : Crit'Air 4</div>
+      <div class="new">- TRR-04 (FM-698-ZZ), Euro 3/III : Crit'Air 5</div>
+    </div>
+    <div class="diff">
+      <div class="old">pour un VUL diesel, Euro 6 = Crit'Air 2, Euro 5 et Euro 4 = Crit'Air 3, Euro 3 = Crit'Air 4</div>
+      <div class="new">pour un VUL diesel, Euro 5 et Euro 6 = Crit'Air 2, Euro 4 = Crit'Air 3, Euro 3 = Crit'Air 4</div>
+    </div>
+    <div class="diff">
+      <div class="old">- TRR-01 (Euro 6, Crit'Air 1) : AUTORISÉ</div>
+      <div class="new">- TRR-01 (Euro 6, Crit'Air 2) : AUTORISÉ</div>
+    </div>
+    <div class="diff">
+      <div class="old">- TRR-02 (Euro 5, Crit'Air 2) : AUTORISÉ</div>
+      <div class="new">- TRR-02 (Euro 5, Crit'Air 3) : NON AUTORISÉ</div>
+    </div>
+    <div class="diff">
+      <div class="old">- TRR-03 (Euro 4, Crit'Air 3) : NON AUTORISÉ</div>
+      <div class="new">- TRR-03 (Euro 4, Crit'Air 4) : NON AUTORISÉ</div>
+    </div>
+    <div class="diff">
+      <div class="old">- TRR-04 (Euro 3, Crit'Air 4) : NON AUTORISÉ</div>
+      <div class="new">- TRR-04 (Euro 3, Crit'Air 5) : NON AUTORISÉ</div>
+    </div>
+    <div class="diff">
+      <div class="old">Le gestionnaire affecte donc en priorité TRR-01 et TRR-02 aux tournées Paris intra-muros.</div>
+      <div class="new">Le gestionnaire affecte donc en priorité TRR-01 aux tournées Paris intra-muros.</div>
+    </div>
+    <div class="diff">
+      <div class="old">concentrer TRR-01 et TRR-02 sur les livraisons en ZFE et basculer TRR-03 et TRR-04 sur les trafics hors ZFE</div>
+      <div class="new">concentrer TRR-01 sur les livraisons en ZFE et basculer TRR-02, TRR-03 et TRR-04 sur les trafics hors ZFE</div>
+    </div>
+    <div class="diff">
+      <div class="old">(TRR-01 Crit'Air 1 ; TRR-02 Crit'Air 2 ; TRR-03 Crit'Air 3 ; TRR-04 Crit'Air 4)</div>
+      <div class="new">(TRR-01 Crit'Air 2 ; TRR-02 Crit'Air 3 ; TRR-03 Crit'Air 4 ; TRR-04 Crit'Air 5)</div>
+    </div>
+    <div class="diff">
+      <div class="old">accepter la grille VUL (Euro 6 = Crit'Air 2, Euro 5 et Euro 4 = Crit'Air 3, Euro 3 = Crit'Air 4)</div>
+      <div class="new">accepter la grille VUL (Euro 5 et Euro 6 = Crit'Air 2, Euro 4 = Crit'Air 3, Euro 3 = Crit'Air 4)</div>
+    </div>
+    <div class="diff">
+      <div class="old">noter la cohérence de l'application (seul TRR-01 autorisé) plutôt que le résultat</div>
+      <div class="new">noter la cohérence de l'application (TRR-01 et TRR-02 autorisés) plutôt que le résultat</div>
+    </div>
+    <div class="src">Source : <a href="https://www.legifrance.gouv.fr/loda/id/JORFTEXT000032749723">legifrance.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises · <code>mft-2026-gotrm-ccp1-qr-v2:ch15:ex15.2</code></div>
+    <div class="just">L'article L. 3452-6 du code des transports punit bien d'un an d'emprisonnement et de 15 000 euros d'amende le cabotage irrégulier par une entreprise non établie en France, et la carence de 4 jours du règlement (UE) 2020/1055 s'applique bien au même véhicule. En revanche, le donneur d'ordre relève de l'article L. 3452-8 (version en vigueur) : 15 000 euros d'amende seulement, sans peine d'emprisonnement, avec interdiction possible d'opérations de transport pendant un an au plus.</div>
+    
+    <div class="diff">
+      <div class="old">celui qui, sciemment, recourt à un transporteur en situation de cabotage illégal encourt les mêmes peines que le transporteur (un an d'emprisonnement et 15 000 euros d'amende).</div>
+      <div class="new">l'entreprise qui fait réaliser des services de cabotage irréguliers alors qu'elle savait ou aurait dû raisonnablement savoir que leur exécution enfreignait la réglementation encourt une amende de 15 000 euros, sans peine d'emprisonnement (article L. 3452-8 du code des transports), le tribunal pouvant en outre lui interdire de faire effectuer des opérations de transport sur le territoire national pendant un an au plus.</div>
+    </div>
+    <div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000044200919 (L3452-8) ; https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000031020915 (L3452-6)">legifrance.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Préparation aux examens Taxi et VTC · <code>TAXI-M1-QC-04</code></div>
+    <div class="just">La loi n° 2016-1920 du 29 décembre 2016 a bien créé l'examen commun T3P confié aux chambres de métiers et de l'artisanat. En revanche, l'interdiction du recours au statut LOTI avec des véhicules de moins de dix places vise précisément les agglomérations de plus de 100 000 habitants, et non toute zone urbaine, le statut LOTI restant possible ailleurs.</div>
+    
+    <div class="diff">
+      <div class="old">La suppression du recours au statut LOTI pour le transport de personnes de moins de dix places en zone urbaine.</div>
+      <div class="new">La suppression du recours au statut LOTI pour le transport de personnes avec des véhicules de moins de dix places dans les agglomérations de plus de 100 000 habitants.</div>
+    </div>
+    <div class="src">Source : <a href="https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000033734510">legifrance.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Préparation aux examens Taxi et VTC · <code>TAXI-M2-QC-06</code></div>
+    <div class="just">Le site officiel du registre REVTC (art. R3122-1 code des transports) exige : justificatif d'immatriculation de l'entreprise, attestation d'assurance RC professionnelle, carte grise de chaque véhicule, carte professionnelle des conducteurs, et un justificatif de capacité financière prenant la forme d'une garantie financière de 1 500 euros par véhicule uniquement si l'exploitant n'est ni propriétaire ni locataire de longue durée (plus de 6 mois). La présentation de la garantie financière comme exigence générale de solvabilité était inexacte.</div>
+    
+    <div class="diff">
+      <div class="old">c. Un justificatif de la garantie (capacité) financière de l'exploitant, destinée à garantir la solvabilité de l'entreprise vis-à-vis de son activité de transport.</div>
+      <div class="new">c. Un justificatif de capacité financière relatif à chaque véhicule : preuve de la propriété du véhicule ou contrat de location de longue durée (plus de six mois) ou, à défaut, attestation d'une garantie financière de 1 500 euros par véhicule.</div>
+    </div>
+    <div class="src">Source : <a href="https://registre-vtc.developpement-durable.gouv.fr/public/aide/informations-generales">registre-vtc.developpement-durable.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Préparation aux examens Taxi et VTC · <code>TAXI-M2-QC-07</code></div>
+    <div class="just">Le seuil de 25 euros TTC est confirmé (art. 3 de l'arrêté n° 83-50/A du 3 octobre 1983, fiche DGCCRF), mais la base citée était erronée : la note taxi relève de cet arrêté et de l'arrêté du 6 novembre 2015 en vigueur (celui du 10 septembre 2010 est abrogé). Mentions imprimées obligatoires : date, heures de début et fin, nom du prestataire, immatriculation, adresse de réclamation, montants ; le nom du client et les lieux de départ et d'arrivée ne figurent qu'à sa demande ; double conservé 2 ans.</div>
+    
+    <div class="diff">
+      <div class="old">La réglementation sur l'information du consommateur en matière de prix (arrêté du 3 décembre 1987 et réglementation propre aux tarifs des courses de taxi) impose au chauffeur de délivrer une note dès lors que le prix de la course atteint ou dépasse un seuil fixé (seuil général de 25 euros TTC).</div>
+      <div class="new">La réglementation sur l'information du consommateur en matière de prix (arrêté n° 83-50/A du 3 octobre 1983 relatif à la publicité des prix des services, complété pour les taxis par l'arrêté du 6 novembre 2015) impose au chauffeur de délivrer une note dès lors que le prix de la course atteint ou dépasse un seuil fixé (seuil général de 25 euros TTC).</div>
+    </div>
+    <div class="diff">
+      <div class="old">et comporter les mentions obligatoires : la date de rédaction, le nom et l'adresse de l'exploitant (prestataire), la date et l'heure (ou heures de début et de fin) de la course, le lieu de départ et d'arrivée, la somme totale à payer toutes taxes comprises, et, s'il le demande, le nom du client.</div>
+      <div class="new">et comporter les mentions obligatoires : la date de rédaction, le nom ou la dénomination sociale du prestataire, le numéro d'immatriculation du véhicule, les heures de début et de fin de la course, l'adresse à laquelle peut être adressée une réclamation et les montants (course minimum et prix toutes taxes comprises) ; à la demande du client s'y ajoutent son nom ainsi que le lieu de départ et le lieu d'arrivée de la course.</div>
+    </div>
+    <div class="src">Source : <a href="https://www.legifrance.gouv.fr/loda/id/JORFTEXT000031445057">legifrance.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Préparation aux examens Taxi et VTC · <code>TAXI-M2-QC-08</code></div>
+    <div class="just">L'arrêté du 26 mars 2015 (en vigueur, modifié en dernier lieu en décembre 2023) fixe bien des conditions de portes, de dimensions minimales et de puissance minimale, mais son article 2 en dispense les véhicules hybrides et électriques : l'exemple d'une citadine hybride trop courte, trop étroite ou pas assez puissante est donc erroné. La liste des critères cités (places, dimensions, portes, puissance, ancienneté) reste exacte et le corrigé ne donne aucun chiffre.</div>
+    
+    <div class="diff">
+      <div class="old">Une motorisation hybride ou un modèle récent ne garantit aucun de ces critères (un modèle compact ou une citadine hybride peut être trop court, trop étroit ou insuffisamment puissant).</div>
+      <div class="new">Un modèle récent ne garantit aucun de ces critères ; quant aux véhicules hybrides et électriques, l'arrêté du 26 mars 2015 les dispense de certaines de ces conditions (dimensions et puissance notamment), dispense dont l'étendue exacte doit elle aussi être vérifiée dans le texte à jour, les autres exigences (nombre de places en particulier) restant applicables.</div>
+    </div>
+    <div class="src">Source : <a href="https://www.legifrance.gouv.fr/loda/id/JORFTEXT000030429911/">legifrance.gouv.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Préparation aux examens Taxi et VTC · <code>TAXI-M2-QC-10</code></div>
+    <div class="just">La décision n° 2015-468/469/472 QPC du 22 mai 2015 du Conseil constitutionnel a déclaré contraire à la Constitution l'article L3122-2 du code des transports, qui interdisait certains modes de tarification aux VTC : la règle des deux modes de fixation seulement admis est donc datée. Restent exacts le caractère opposable du prix annoncé à la réservation, l'obligation d'information préalable sur le prix (code de la consommation) et la réservation du taximètre aux seuls taxis (art. R3121-1).</div>
+    
+    <div class="diff">
+      <div class="old">b. L'interdiction d'un calcul horokilométrique en temps réel de type taximètre.</div>
+      <div class="new">b. L'interdiction du taximètre et l'encadrement du calcul au réel.</div>
+    </div>
+    <div class="diff">
+      <div class="old">Or le VTC ne peut pas être équipé d'un taximètre ni facturer selon un dispositif horokilométrique mesurant en direct le temps d'immobilisation. Deux modes de fixation seulement sont admis : un prix forfaitaire déterminé lors de la réservation, ou un prix fondé sur la durée et la distance à condition que le client en ait été informé au préalable de manière claire.</div>
+      <div class="new">Or le VTC ne peut pas être équipé d'un taximètre, équipement réservé aux taxis. Depuis la censure de l'article L. 3122-2 du code des transports par le Conseil constitutionnel (décision du 22 mai 2015), la tarification VTC est libre dans ses modalités, mais le mode de fixation du prix doit être porté à la connaissance du client avant la course : soit un prix forfaitaire déterminé lors de la réservation, soit un prix fondé sur la durée et la distance dont le client a été informé au préalable de manière claire.</div>
+    </div>
+    <div class="diff">
+      <div class="old">l'obligation d'information préalable sur le prix, et l'interdiction du procédé de comptage horokilométrique réservé aux taxis.</div>
+      <div class="new">l'obligation d'information préalable sur le prix, et l'exigence que tout calcul fondé sur la durée réelle ait été annoncé avant la course, le comptage au taximètre restant réservé aux taxis.</div>
+    </div>
+    <div class="diff">
+      <div class="old">b. Interdiction du taximètre / du calcul horokilométrique en temps réel pour le VTC et rappel des deux modes admis (forfait ou durée-distance annoncés) : 1 pt.</div>
+      <div class="new">b. Interdiction du taximètre pour le VTC et exigence d'un mode de tarification annoncé au préalable (forfait à la réservation ou durée-distance communiqués avant la course) : 1 pt.</div>
+    </div>
+    <div class="src">Source : <a href="https://www.conseil-constitutionnel.fr/actualites/communique/decision-n-2015-468469472-qpc-du-22-mai-2015-communique-de-presse">conseil-constitutionnel.fr</a></div>
+  </article>
+  <article class="corr">
+    <div class="meta">Préparation aux examens Taxi et VTC · <code>TAXI-M3-QC-08</code></div>
+    <div class="just">Les deux durées sont confirmées : 6 ans pour les livres, registres, documents et pièces sur lesquels s'exerce le contrôle de l'administration fiscale (article L102 B du livre des procédures fiscales) et 10 ans pour les documents comptables et pièces justificatives (article L123-22 du code de commerce). Le marqueur éditorial résiduel du corrigé est remplacé par la formulation vérifiée.</div>
+    
+    <div class="diff">
+      <div class="old">Ces documents doivent être conservés pendant le délai légal de conservation des pièces comptables et justificatifs (indicativement 6 ans au titre du droit de reprise fiscal). [À CONFIRMER: durée exacte de conservation applicable (6 ans au sens de l'article L102 B du LPF pour les pièces justificatives ; 10 ans pour les documents comptables au sens du Code de commerce)].</div>
+      <div class="new">Ces documents doivent être conservés pendant le délai légal : 6 ans au titre du contrôle fiscal (article L102 B du livre des procédures fiscales) et, pour les documents comptables et pièces justificatives, 10 ans au titre de l'article L123-22 du code de commerce.</div>
+    </div>
+    <div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000041471233/">legifrance.gouv.fr</a></div>
+  </article>
+
+<h2>2. Données confirmées exactes (86)</h2>
+<table>
+  <tr><td><div class="meta">Attestation de capacité professionnelle — véhicules ≤ 3,5 t</div><code>mft-2026:moduleC:qr:1</code></td>
+  <td>L'intitulé licence de transport intérieur (LTI) est bien celui du régime léger : elle est délivrée aux entreprises exploitant des véhicules n'excédant pas 3,5 t (ministère de la Transition écologique, rubrique accès à la profession). Le délai d'instruction constaté par la DREAL est de l'ordre de 1 à 3 mois après dossier complet (maximum réglementaire de 3 mois prorogeable 1 mois, art. 11 du règlement CE 1071/2009), ce qui correspond à la formulation du corrigé (quelques semaines à quelques mois).<div class="src">Source : <a href="https://www.ecologie.gouv.fr/politiques-publiques/acces-exercice-profession-transporteur-marchandises">ecologie.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Attestation de capacité professionnelle — véhicules ≤ 3,5 t</div><code>mft-2026:moduleE:qr15</code></td>
+  <td>En paie réelle, la CSG (2,4 %) et la CRDS (0,5 %) non déductibles sont bien réintégrées dans le net imposable, qui excède donc le net à payer. Mais l'énoncé simplifié (taux salarial unique de 22 %, sans détail CSG) ne fournit pas les éléments de ce calcul, et le corrigé qualifie explicitement sa méthode d'approche simplifiée d'examen. L'incertitude signalée est donc sans objet dans ce cadre : le corrigé est cohérent tel quel.<div class="src">Source : <a href="https://www.service-public.gouv.fr/particuliers/vosdroits/F2971">service-public.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Attestation de capacité professionnelle — véhicules ≤ 3,5 t</div><code>mft-2026:moduleE:qr9</code></td>
+  <td>Vérifié : pour un ouvrier relevant de la CCN transports routiers (IDCC 16) ayant 2 ans d'ancienneté ou plus, le préavis en cas de licenciement est de 2 mois (identique au minimum légal de l'article L. 1234-1), la grille conventionnelle ne prévoyant pas de durée supérieure pour les ouvriers. Le corrigé (2 mois, soit 5 200 euros pour 7 ans d'ancienneté) est exact.<div class="src">Source : <a href="https://code.travail.gouv.fr/contribution/16-quelle-est-la-duree-de-preavis-en-cas-de-licenciement">code.travail.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Attestation de capacité professionnelle — véhicules ≤ 3,5 t</div><code>mft-2026:moduleF:qr3</code></td>
+  <td>Vérifié sur l'ADR en vigueur (ADR 2025) : UN 1300, succédané d'essence de térébenthine, existe en classe 3 aux deux groupes d'emballage II et III selon le point d'éclair. GE III relève de la catégorie de transport 3 (seuil 1.1.3.6 de 1 000) et GE II de la catégorie 2 (seuil 333). 200 L restent sous les deux seuils : la conclusion d'exemption partielle du 1.1.3.6 et la double hypothèse présentées par le corrigé sont exactes.<div class="src">Source : <a href="https://adrdangerousgoods.com/eng/substances/search/un/1300">adrdangerousgoods.com</a></div></td></tr>
+  <tr><td><div class="meta">Capacité de transport &gt; 3,5 t — Préparation à l'examen national</div><code>CAPA-LOURD-D-QC-07</code></td>
+  <td>La loi de finances pour 2025 a reporté la suppression de la CVAE à 2030 (taux maximal gelé à 0,28 % pour 2026 et 2027, puis 0,19 % en 2028 et 0,09 % en 2029) et la loi de finances pour 2026 n'a pas anticipé cette suppression. En juillet 2026, la CVAE existe donc toujours et la CET se compose bien de la CFE et de la CVAE.<div class="src">Source : <a href="https://entreprendre.service-public.gouv.fr/actualites/A18078">entreprendre.service-public.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Capacité de transport &gt; 3,5 t — Préparation à l'examen national</div><code>CAPA-LOURD-D-QC-09</code></td>
+  <td>La fiche officielle sur l'IS (vérifiée le 17 février 2026) confirme le taux réduit de 15 % sur la part des bénéfices allant jusqu'à 42 500 €, le taux normal de 25 % au-delà, et les conditions CA &lt;= 10 M€ et capital entièrement libéré détenu à au moins 75 % par des personnes physiques. L'amendement du PLF 2026 visant à porter le plafond à 100 000 € n'a pas été retenu dans la loi promulguée.<div class="src">Source : <a href="https://entreprendre.service-public.gouv.fr/vosdroits/F23575">entreprendre.service-public.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Capacité de transport &gt; 3,5 t — Préparation à l'examen national</div><code>CAPA-LOURD-E-QC-04</code></td>
+  <td>La répartition du corrigé est conforme à la formule trinôme du CNR : terme kilométrique CK (carburant, pneumatiques, entretien), terme journalier CJ (coût de détention du véhicule et coûts de structure, inducteur le jour) et terme horaire CC (salaire et charges du personnel de conduite, inducteur l'heure). Aucune inversion des inducteurs km/jour/heure n'est constatée par rapport à la convention de référence.<div class="src">Source : <a href="https://www.cnr.fr/formule-trinome">cnr.fr</a></div></td></tr>
+  <tr><td><div class="meta">Enseignant de la Conduite et de la Sécurité Routière</div><code>ECSR-M2-QC-06</code></td>
+  <td>Le minimum légal de 20 h de formation pratique en catégorie B (13 h en boîte automatique) est exact et en vigueur. La moyenne nationale constatée pour obtenir le permis est d'environ 35 heures selon la communication officielle (Sécurité routière, questions parlementaires), ce qui rend la formulation prudente « de l'ordre de 30 à 35 heures » cohérente et diffusable.<div class="src">Source : <a href="https://www.securite-routiere.gouv.fr/les-differents-permis-de-conduire/permis-auto-categorie-b/passer-son-permis-b">securite-routiere.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Enseignant de la Conduite et de la Sécurité Routière</div><code>ECSR-M2-QC-07</code></td>
+  <td>Les conditions de la phase accompagnée AAC sont confirmées : durée minimale de 1 an, au moins 3 000 km parcourus avec l'accompagnateur, deux rendez-vous pédagogiques obligatoires, AFFI délivrée après validation de la formation initiale. L'épreuve pratique est ouverte dès 17 ans depuis le 1er janvier 2024, et le corrigé, qui mentionne seulement « l'âge requis » sans chiffre, reste exact.<div class="src">Source : <a href="https://www.service-public.fr/particuliers/vosdroits/F2825">service-public.fr</a></div></td></tr>
+  <tr><td><div class="meta">Enseignant de la Conduite et de la Sécurité Routière</div><code>ECSR-M2-QC-09</code></td>
+  <td>Toutes les valeurs sont exactes et en vigueur selon service-public.gouv.fr : capital initial de 6 points, période probatoire de 3 ans (2 ans en AAC) avec montée progressive jusqu'à 12 points, formation complémentaire post-permis d'1 jour (7 heures) à suivre entre le 6e et le 12e mois réduisant la période probatoire d'un an (3 à 2 ans) en l'absence d'infraction, et stage de sensibilisation permettant de récupérer jusqu'à 4 points.<div class="src">Source : <a href="https://www.service-public.gouv.fr/particuliers/vosdroits/F2390">service-public.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Enseignant de la Conduite et de la Sécurité Routière</div><code>ECSR-M4-QC-06</code></td>
+  <td>Conforme à la grille en vigueur (annexe de l'arrêté du 19 février 2010 modifié) : la mention E (faute éliminatoire) entraîne l'échec quel que soit le total de points (seuil de 20 sur 31 par ailleurs), et les deux exemples cités (franchissement d'un feu rouge ou refus de priorité, intervention de l'examinateur sur les commandes) figurent bien parmi les fautes éliminatoires.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/loda/id/JORFTEXT000021897924">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Enseignant de la Conduite et de la Sécurité Routière</div><code>ECSR-M4-QC-08</code></td>
+  <td>La formulation prudente du corrigé est exacte : le label « qualité des formations au sein des écoles de conduite » (arrêté du 26 février 2018 modifié) impose de tenir à disposition du public un bilan annuel incluant les taux de réussite (l'administration fournit le taux de réussite en 1re présentation sur demande), et la certification qualité (Qualiopi ou label équivalent) est requise pour les financements publics dont le CPF.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036658564">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Enseignant de la Conduite et de la Sécurité Routière</div><code>ECSR-M6-QC-06</code></td>
+  <td>L'arrêté du 22 décembre 2015 relatif aux conditions de délivrance du titre professionnel confirme la distinction : l'entretien technique complète la mise en situation professionnelle sur les compétences mobilisées, tandis que l'entretien final permet au jury de vérifier la maîtrise de l'ensemble des compétences et la compréhension globale du métier. La fiche RNCP41862 (ECSR) liste bien ces deux entretiens parmi les modalités d'évaluation.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/loda/id/JORFTEXT000031733810">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Exploitant en Régulation du Transport de Voyageurs</div><code>ERTV-M1-QC-04</code></td>
+  <td>La voie par expérience correspond à la gestion continue d'une entreprise de transport public routier pendant les 10 années précédant le 4 décembre 2009 (art. 9 du règlement CE 1071/2009, mis en oeuvre par l'arrêté du 28 décembre 2011 relatif à la délivrance des attestations de capacité), dispositif transitoire de fait fermé aux nouveaux candidats : la formulation prudente du corrigé (durée non chiffrée, dispositif restrictif) est donc exacte. Examen écrit annuel géré par la DREAL et montants 9 000/5 000 euros également confirmés.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/loda/id/LEGITEXT000025114864/">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Exploitant en Régulation du Transport de Voyageurs</div><code>ERTV-M1-QC-08</code></td>
+  <td>L'article L. 3111-7 du code des transports confirme que les transports scolaires sont des services réguliers publics dont la région est responsable de l'organisation et du fonctionnement, sauf à l'intérieur des ressorts territoriaux des AOM (anciens périmètres de transports urbains existant au 1er septembre 1984) où l'AOM exerce cette responsabilité ; la délégation à des autorités organisatrices de second rang est prévue par le même code (L. 3111-9). Le corrigé est conforme au droit en vigueur.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000039787225/">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Exploitant en Régulation du Transport de Voyageurs</div><code>ERTV-M1-QC-09</code></td>
+  <td>L'article R. 3113-31 du code des transports confirme les montants cités par le corrigé pour les véhicules de plus de 9 places : 9 000 euros pour le premier véhicule et 5 000 euros pour chacun des suivants. Pour les véhicules n'excédant pas 9 places, l'exigence vérifiée est de 1 500 euros pour chaque véhicule (et non 1 500 + 900 comme évoqué dans la note), montant que le corrigé ne cite prudemment pas : le corrigé est exact tel quel.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000023086525/LEGISCTA000033449833/">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Exploitant en Régulation du Transport de Voyageurs</div><code>ERTV-M3-QC-10</code></td>
+  <td>Aucun texte national n'impose une validation préalable de l'AO avant diffusion d'une information de perturbation : ces modalités relèvent du contrat de service public conclu entre l'AO et l'exploitant (règl. CE 1370/2007, contrats de service public de transport de voyageurs). Le corrigé renvoie précisément aux clauses de la convention sans affirmer de règle générale : l'incertitude signalée est sans objet.<div class="src">Source : <a href="https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32007R1370">eur-lex.europa.eu</a></div></td></tr>
+  <tr><td><div class="meta">Exploitant en Régulation du Transport de Voyageurs</div><code>ERTV-M4-QC-03</code></td>
+  <td>Le code des transports fixe l'amplitude du personnel roulant à 12 h en règle générale (art. R. 3312-9), portée à 13 h pour les services réguliers interurbains (prolongeable à 14 h dans les conditions de l'art. R. 3312-11) et à 14 h pour les services occasionnels (art. R. 3312-28, ex-décret 2003-1242). La formulation prudente du corrigé (« de l'ordre de 12 h, avec des possibilités d'extension encadrées »), donnée comme simple ordre de grandeur non noté, est donc exacte.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000023086525/LEGISCTA000033453099/">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Exploitant en Régulation du Transport de Voyageurs</div><code>ERTV-M4-QC-06</code></td>
+  <td>Les trois temps annexes cités correspondent à la définition du temps de travail des personnels mobiles (directive 2002/15/CE, art. 3, transposée pour les conducteurs de transport de personnes) : conduite, nettoyage et entretien technique, assistance aux passagers, formalités administratives, et périodes où le conducteur reste à disposition sans pouvoir vaquer librement à ses occupations. La distinction avec les coupures et pauses non travaillées est également conforme.<div class="src">Source : <a href="https://www.ecologie.gouv.fr/politiques-publiques/temps-travail-conducteurs-routiers-transport-personnes">ecologie.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Exploitant en Régulation du Transport de Voyageurs</div><code>ERTV-M4-QC-08</code></td>
+  <td>Le contrat de « conducteur en périodes scolaires » (CPS) est bien défini par l'accord du 24 septembre 2004 attaché à la CCN des transports routiers, modifié notamment par l'accord du 1er décembre 2020 (garantie annuelle minimale de 600 h, ou 550 h pour les véhicules de moins de 10 places, temps partiel calé sur les périodes scolaires). Les leviers d'organisation cités (mutualisation des services, polyvalence, CPS, annualisation, sous-traitance) sont conformes aux pratiques et textes de branche.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/conv_coll/id/KALITEXT000043511013/">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Exploitant en Régulation du Transport de Voyageurs</div><code>ERTV-M4-QC-09</code></td>
+  <td>Le raisonnement est conforme aux obligations de l'employeur de transport : les DREAL rappellent l'obligation de vérifier la validité des permis des conducteurs des catégories C et D avant affectation, les contrôles en entreprise (DREAL, inspection du travail) portent sur ces justificatifs, et l'employeur engage sa responsabilité s'il affecte un conducteur sans titre valide. Aucune valeur chiffrée n'était à vérifier ; pas d'erreur factuelle relevée.<div class="src">Source : <a href="https://www.centre-val-de-loire.developpement-durable.gouv.fr/controle-de-la-validite-des-permis-de-conduire-des-a2924.html">centre-val-de-loire.developpement-durable.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Exploitant en Régulation du Transport de Voyageurs</div><code>ERTV-M5-QC-01</code></td>
+  <td>Le bilan d'accidentologie ANATEEP confirme que le point d'arrêt concentre la mortalité du transport scolaire (deux tués sur trois), lors de la montée/descente et de la traversée de la chaussée par l'enfant masqué par le car, et non pendant le roulage. Le corrigé est conforme aux données d'accidentologie de référence.<div class="src">Source : <a href="https://www.anateep.fr/actus-transport-scolaire/infos-2025/bilan-daccidentologie-du-transport-denfants-2024-un-transport-sur-malgre-une-hausse-des-accidents">anateep.fr</a></div></td></tr>
+  <tr><td><div class="meta">Exploitant en Régulation du Transport de Voyageurs</div><code>ERTV-M5-QC-02</code></td>
+  <td>Aucune donnée réglementaire chiffrée en jeu : le corrigé reprend la doctrine standard de communication de crise (porte-parole unique désigné par la direction, messages factuels et empathiques, aucune déclaration sur les causes ou responsabilités tant que l'enquête n'a pas conclu), conforme aux références professionnelles du secteur. L'incertitude signalée est sans objet.<div class="src">Source : <a href="https://www.previnfo.net/sections/outils-qhse/outils-en-management-qhse-br/la-communication-de-crise-37.html">previnfo.net</a></div></td></tr>
+  <tr><td><div class="meta">Exploitant en Régulation du Transport de Voyageurs</div><code>ERTV-M5-QC-03</code></td>
+  <td>Le processus décrit (réception/enregistrement avec accusé de réception, analyse, réponse, suivi/clôture avec capitalisation) correspond au cadre de référence ISO 10002 sur le traitement des réclamations clients ; aucune donnée réglementaire fausse, le découpage en quatre étapes est un choix pédagogique cohérent avec ce référentiel.<div class="src">Source : <a href="https://qualiblog.fr/principes-generaux-de-la-qualite/traitement-des-reclamations-clients/">qualiblog.fr</a></div></td></tr>
+  <tr><td><div class="meta">Exploitant en Régulation du Transport de Voyageurs</div><code>ERTV-M5-QC-04</code></td>
+  <td>L'article 76 de l'arrêté du 2 juillet 1982 relatif aux transports en commun de personnes impose le signal « transport d'enfants » à l'avant et à l'arrière (à au moins 60 cm du sol, de façon apparente, fond rétroréfléchissant) et exige qu'il soit amovible ou occultable et retiré ou occulté lorsque le véhicule n'est pas utilisé au transport en commun d'enfants. Les modalités d'apposition et de retrait décrites dans le corrigé sont conformes à ce texte en vigueur.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000020753845/">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Exploitant en Régulation du Transport de Voyageurs</div><code>ERTV-M5-QC-05</code></td>
+  <td>Le refus de fourniture d'un service fondé sur le handicap constitue une discrimination pénalement réprimée par les articles 225-1 et 225-2 du code pénal (3 ans d'emprisonnement et 45 000 euros d'amende), ce qui valide la qualification de délit et le risque juridique cités ; le Défenseur des droits a déjà retenu cette qualification pour des refus de transport de personnes en fauteuil.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000033975382">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Exploitant en Régulation du Transport de Voyageurs</div><code>ERTV-M5-QC-08</code></td>
+  <td>L'obligation de rendre compte fidèlement est bien réelle : l'article L3131-5 du code de la commande publique impose au concessionnaire un rapport annuel (comptes et analyse de la qualité du service) permettant à l'autorité concédante d'apprécier l'exécution du service public, pièces justificatives tenues à sa disposition dans le cadre de son droit de contrôle. Un reporting falsifié est donc un manquement contractuel sanctionnable indépendamment du niveau réel de performance, comme l'affirme le corrigé.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000037705023">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Exploitant en Régulation du Transport de Voyageurs</div><code>ERTV-M5-QC-09</code></td>
+  <td>L'arrêté du 2 juillet 1982 (art. 60 ter) impose bien une liste nominative des passagers établie et communiquée au transporteur par l'organisateur, présente à bord et présentable à tout contrôle, avec coordonnées d'une personne à contacter pour chaque enfant en transport en commun d'enfants. Les arguments sécurité/secours/responsabilité du corrigé sont cohérents avec cette obligation préalable au départ.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000020813146">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Exploitant en Régulation du Transport de Voyageurs</div><code>ERTV-M5-QC-10</code></td>
+  <td>Réponse managériale sans donnée réglementaire chiffrée à vérifier ; les mécanismes cités (indicateurs de qualité suivis en continu, reporting à l'autorité organisatrice, pénalités contractuelles) correspondent aux pratiques des contrats de service public de transport organisés par les AO (code des transports, art. L1221-1 et s. ; suivi ponctualité/régularité type AQST). L'incertitude signalée est sans objet.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/id/LEGISCTA000023085957/">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Exploitant en Régulation du Transport de Voyageurs</div><code>ERTV-M6-QC-01</code></td>
+  <td>Le texte consolidé en vigueur du règlement (CE) 561/2006 confirme les deux critères : champ d'application aux véhicules de plus de 9 personnes conducteur compris (art. 2) et exclusion des services réguliers de voyageurs dont le parcours de ligne ne dépasse pas 50 km (art. 3 a), ces derniers relevant des règles nationales. La dérogation des 12 jours (art. 8 §6 bis) vaut bien pour un service occasionnel international unique.<div class="src">Source : <a href="https://eur-lex.europa.eu/legal-content/FR/TXT/HTML/?uri=CELEX:02006R0561-20240522">eur-lex.europa.eu</a></div></td></tr>
+  <tr><td><div class="meta">Exploitant en Régulation du Transport de Voyageurs</div><code>ERTV-M6-QC-02</code></td>
+  <td>L'article R234-1 du code de la route en vigueur fixe pour les conducteurs de véhicules de transport en commun le seuil abaissé de 0,20 g/L de sang (0,10 mg/L d'air expiré), contre 0,5 g/L en régime général. Un contrôle à 0,3 g/L place donc bien le conducteur en infraction et lui interdit de prendre le volant, quel que soit le service assuré.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038954545">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Exploitant en Régulation du Transport de Voyageurs</div><code>ERTV-M6-QC-03</code></td>
+  <td>Les définitions du corrigé correspondent au vocabulaire consacré de l'exploitation voyageurs : le graphicage construit les tableaux de marche des véhicules (courses, horaires, battements, services voiture) et l'habillage affecte les services agents (conducteurs) sur ces courses dans le respect des règles de temps de travail. Aucune inversion ni erreur de contenu.<div class="src">Source : <a href="https://fr.wikipedia.org/wiki/Graphicage_(transport)">fr.wikipedia.org</a></div></td></tr>
+  <tr><td><div class="meta">Exploitant en Régulation du Transport de Voyageurs</div><code>ERTV-M6-QC-05</code></td>
+  <td>Les vérifications listées sont exactes et en vigueur : permis D valide avec aptitude médicale périodique, qualification initiale (FIMO voyageurs) puis FCO tous les 5 ans matérialisées par la carte de qualification de conducteur (arrêté du 18 janvier 2022), carte de conducteur tachygraphe personnelle, et respect préalable des temps de conduite/repos du règlement (CE) 561/2006.<div class="src">Source : <a href="https://www.centre-val-de-loire.developpement-durable.gouv.fr/l-obligation-d-une-formation-initiale-et-de-a658.html">centre-val-de-loire.developpement-durable.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">FIMO Marchandises &amp; FCO obligatoire</div><code>FIMO-M0-QC-02</code></td>
+  <td>L'article R3314-10 du code des transports impose une formation continue obligatoire tous les cinq ans, et l'article R3314-11 fixe sa durée à 35 heures (5 jours consécutifs ou séquences de 7 heures minimum). Durée et périodicité du corrigé sont exactes.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/id/LEGISCTA000033450447">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">FIMO Marchandises &amp; FCO obligatoire</div><code>FIMO-M0-QC-03</code></td>
+  <td>L'obligation de qualification (chapitre R3314 du code des transports) vise les conducteurs de véhicules exigeant un permis des catégories C1, C1E, C ou CE, soit un PTAC supérieur à 3,5 tonnes ; ce seuil est repris par les pages DREAL et ecologie.gouv.fr sur la formation des conducteurs.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000023086525/LEGISCTA000033450425/">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">FIMO Marchandises &amp; FCO obligatoire</div><code>FIMO-M0-QC-04</code></td>
+  <td>L'annexe de l'arrêté du 26 février 2008 modifié (version en vigueur au 26 juillet 2025) liste bien côté marchandises : CAP conducteur routier marchandises, CAP conducteur livreur de marchandises (CLM), bac pro conducteur routier de marchandises, BEP conduite et services dans le transport routier, et les titres professionnels CTRM sur porteur et sur tous véhicules. Tous les exemples du corrigé y figurent.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000051968342">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">FIMO Marchandises &amp; FCO obligatoire</div><code>FIMO-M0-QC-05</code></td>
+  <td>L'article R3314-8 du code des transports prévoit pour le conducteur déjà qualifié dans un secteur une formation complémentaire dite passerelle de 35 heures avant tout changement de secteur (voyageurs vers marchandises ou inversement) ; la durée de 35 heures est confirmée par les pages DREAL.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000023086525/LEGISCTA000033450425/">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">FIMO Marchandises &amp; FCO obligatoire</div><code>FIMO-M0-QC-07</code></td>
+  <td>Les trois titres personnels du corrigé correspondent aux obligations en vigueur : permis de conduire (code de la route), carte de qualification de conducteur à présenter à toute réquisition (article R3314-28 du code des transports et arrêté du 18 janvier 2022) et carte de conducteur du chronotachygraphe (règlement UE n° 165/2014).<div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000023086525/LEGISCTA000033450425/">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">FIMO Marchandises &amp; FCO obligatoire</div><code>FIMO-M0-QC-08</code></td>
+  <td>L'article R3314-11 du code des transports prévoit que le conducteur qui a interrompu son activité et ne justifie plus d'une FCO à jour doit suivre une formation continue (35 h) avant la reprise de son activité ; aucun texte n'impose de repasser la qualification initiale (FIMO), qui reste acquise.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/id/LEGISCTA000033450447">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">FIMO Marchandises &amp; FCO obligatoire</div><code>FIMO-M0-QC-09</code></td>
+  <td>Le code des transports fixe à 18 ans l'âge de conduite en catégories C/CE pour le titulaire de la qualification initiale longue (article R3314-4) et à 21 ans pour le titulaire de la seule qualification initiale accélérée FIMO 140 h (article R3314-6), la catégorie C1 restant accessible à 18 ans ; c'est cohérent avec le permis C à 21 ans hors formation professionnelle (securite-routiere.gouv.fr) et la directive 2003/59/CE refondue (UE) 2022/2561.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000023086525/LEGISCTA000033450425/">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">FIMO Marchandises &amp; FCO obligatoire</div><code>FIMO-M5-QC-03</code></td>
+  <td>Les trois valeurs sont réglementairement exactes : FCO à suivre tous les 5 ans et CQC valable 5 ans (renouvelée à chaque FCO, sources DREAL et ChronoServices, émetteur officiel), carte de conducteur tachygraphe valable 5 ans au maximum (règlement (UE) n° 165/2014, art. 26). La variante permis groupe lourd (renouvellement quinquennal avec visite médicale) est déjà admise par le barème, donc l'incertitude sur l'intitulé du support est couverte.<div class="src">Source : <a href="https://www.centre-val-de-loire.developpement-durable.gouv.fr/l-obligation-d-une-formation-initiale-et-de-a658.html ; https://www.chronoservices.fr/fr/carte-de-qualification-de-conducteur.html">centre-val-de-loire.developpement-durable.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">FIMO Marchandises &amp; FCO obligatoire</div><code>FIMO-T1-QC-05</code></td>
+  <td>Les moteurs diesel de poids lourds modernes délivrent leur couple maximal sur une plage basse d'environ 1 000 à 1 500 tr/min (ex. Volvo FH16 : couple maxi de 1 050 à 1 400 tr/min ; presse spécialisée : plateau de couple large, croisière conseillée vers 1 300-1 500 tr/min). Le corrigé annonce explicitement une valeur « typique » qui varie selon le moteur : l'ordre de grandeur est exact et l'incertitude signalée est sans objet.<div class="src">Source : <a href="https://fr.wikipedia.org/wiki/Volvo_FH16 ; https://www.transportroutier.ca/nouvelles/comprendre-le-groupe-motopropulseur-du-camion-et-ameliorer-les-economies-de-carburant-par-la-formation-a-la-conduite/">fr.wikipedia.org</a></div></td></tr>
+  <tr><td><div class="meta">FIMO Marchandises &amp; FCO obligatoire</div><code>FIMO-T1-QC-06</code></td>
+  <td>Doctrine constante des références de formation à la conduite : l'ABS empêche le blocage des roues et préserve l'adhérence directionnelle (possibilité de braquer et d'éviter un obstacle pendant le freinage d'urgence), mais ne réduit pas la distance de freinage et peut même l'allonger sur surfaces meubles (gravier, neige). Le corrigé est conforme sur les deux volets.<div class="src">Source : <a href="https://www.ornikar.com/code/cours/mecanique-vehicule/freins/abs ; https://www.codeenpoche.fr/cours-de-code/la-securite-du-passager-et-du-vehicule/abs/">ornikar.com</a></div></td></tr>
+  <tr><td><div class="meta">FIMO Marchandises &amp; FCO obligatoire</div><code>FIMO-T1-QC-07</code></td>
+  <td>La règle énoncée est bien la règle usuelle enseignée en conduite PL et reprise par les guides officiels : aborder la descente à vitesse réduite avant la pente, engager le même rapport (ou proche) que celui de la montée et utiliser frein moteur et ralentisseurs comme moyen principal, le frein de service en appoint pour éviter le fading (guide officiel des camions du MTO : « même rapport en descendant une longue pente qu'en la montant »). Aucun libellé réglementaire français ne fixe la formule ; celle du corrigé correspond à la mnémonique standard.<div class="src">Source : <a href="http://www.mto.gov.on.ca/french/trucks/handbook/section2-6-0.shtml ; https://fr.wikipedia.org/wiki/Frein_moteur">mto.gov.on.ca</a></div></td></tr>
+  <tr><td><div class="meta">FIMO Marchandises &amp; FCO obligatoire</div><code>FIMO-T1-QC-08</code></td>
+  <td>La norme EN 12195-1 (reprise par le code de bonnes pratiques international IRU et les recommandations européennes d'arrimage) retient bien 0,8 g vers l'avant (0,5 g latéral et arrière), soit environ 8 tonnes-force pour une charge de 10 t. Le corrigé cite correctement cette valeur tout en mentionnant l'arrondi pédagogique « jusqu'à son propre poids », et le barème accepte les deux réponses.<div class="src">Source : <a href="https://www.iru.org/sites/default/files/2016-01/fr-safe-load-securing-8th.pdf">iru.org</a></div></td></tr>
+  <tr><td><div class="meta">FIMO Marchandises &amp; FCO obligatoire</div><code>FIMO-T1-QC-09</code></td>
+  <td>Mécanisme technique avéré et documenté : en décélération rapport engagé, les roues entraînent le moteur et le calculateur coupe l'injection (coupure d'injection en décélération, brevetée et généralisée sur les moteurs à gestion électronique), d'où une consommation instantanée nulle ; au ralenti ou au point mort, le moteur doit au contraire être alimenté pour continuer à tourner. Le corrigé et la consigne d'éco-conduite associée sont exacts.<div class="src">Source : <a href="https://www.motointegrator.fr/blog/affichage-de-la-consommation-instantanee-comment-ca-marche/ ; https://patents.google.com/patent/EP0127510A1/fr">motointegrator.fr</a></div></td></tr>
+  <tr><td><div class="meta">FIMO Marchandises &amp; FCO obligatoire</div><code>FIMO-T3-QC-01</code></td>
+  <td>La Sécurité routière recommande officiellement une pause avec sieste de 15 à 20 minutes dès les premiers signes de somnolence, précisément pour éviter l'entrée en sommeil profond. La fourchette 15-20 minutes du corrigé et du barème correspond exactement à la recommandation en vigueur ; aucun référentiel n'impose la valeur unique de 20 minutes.<div class="src">Source : <a href="https://www.securite-routiere.gouv.fr/dangers-de-la-route/la-fatigue-et-la-conduite">securite-routiere.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">FIMO Marchandises &amp; FCO obligatoire</div><code>FIMO-T3-QC-06</code></td>
+  <td>Les trois EPI cités correspondent aux équipements de référence du conducteur routier hors cabine : gilet haute visibilité (obligatoire dès la sortie du véhicule sur la chaussée ou ses abords, art. R416-19 du Code de la route, norme EN ISO 20471), chaussures de sécurité et gants de manutention, conformément aux préconisations de prévention du secteur transport-logistique. Les réponses alternatives listées (casque, lunettes, protection auditive) sont également des EPI valables.<div class="src">Source : <a href="https://www.officiel-prevention.com/dossier/protections-individuelles/haute-visibilite/vetements-de-signalisation-a-haute-visibilite">officiel-prevention.com</a></div></td></tr>
+  <tr><td><div class="meta">FIMO Marchandises &amp; FCO obligatoire</div><code>FIMO-T3-QC-07</code></td>
+  <td>Les éléments cités correspondent à la doctrine assurantielle établie : le constat signé par les deux conducteurs vaut preuve (aveu extrajudiciaire des circonstances) et le recto ne peut plus être modifié après signature ; la valeur probante repose sur les signatures conjointes, la concordance des circonstances cochées, le croquis et l'absence de rature. Aucune inexactitude relevée.<div class="src">Source : <a href="https://mobiliteclub.fr/actualites/legislation/signer-le-constat-amiable-est-ce-obligatoire/">mobiliteclub.fr</a></div></td></tr>
+  <tr><td><div class="meta">FIMO Marchandises &amp; FCO obligatoire</div><code>FIMO-T3-QC-08</code></td>
+  <td>Les moments cités correspondent au dispositif officiel britannique de prévention des intrusions (clandestine entrant civil penalty scheme) : la checklist de sûreté véhicule doit être renseignée au chargement, après chaque arrêt et avant l'entrée dans la zone de contrôle frontalière (ferry, tunnel). Le corrigé est conforme à ces exigences en vigueur pour les liaisons transmanche.<div class="src">Source : <a href="https://www.gov.uk/government/publications/vehicle-security-checklist-road-transport-companies-and-drivers">gov.uk</a></div></td></tr>
+  <tr><td><div class="meta">FIMO Marchandises &amp; FCO obligatoire</div><code>FIMO-T3-QC-09</code></td>
+  <td>Le raisonnement du corrigé est exact : une mention du type « je ne vous avais pas vu » constitue une reconnaissance de responsabilité portée sur un document qui, une fois signé par les deux parties, vaut aveu extrajudiciaire des circonstances et est opposable dans la détermination des torts par les assureurs. Le conseil constant des assureurs et juristes est de décrire les faits sans s'excuser ni reconnaître sa faute.<div class="src">Source : <a href="https://www.simonnetavocat.fr/suis-je-oblige-de-faire-un-constat-amiable-en-cas-daccident-de-la-route/">simonnetavocat.fr</a></div></td></tr>
+  <tr><td><div class="meta">FIMO Marchandises &amp; FCO obligatoire</div><code>FIMO-T3-QC-10</code></td>
+  <td>Les consignes du corrigé correspondent à la doctrine officielle de sûreté (rapport public sur l'immigration clandestine dans les transports et guidance gov.uk pour les conducteurs) : ne pas recourir à la force ni confronter les personnes, ne pas poursuivre le trajet avec elles à bord, alerter immédiatement les forces de l'ordre (17/112) et son exploitation, sécuriser le véhicule en attendant leur intervention. Aucune inexactitude relevée.<div class="src">Source : <a href="https://www.gov.uk/government/publications/preventing-clandestine-entrants/guidance-on-preventing-clandestine-entry-english-accessible">gov.uk</a></div></td></tr>
+  <tr><td><div class="meta">FIMO Marchandises &amp; FCO obligatoire</div><code>FIMO-T4-QC-01</code></td>
+  <td>Le corrigé est conforme au droit en vigueur : en cas d'avarie ou de manquant apparent, seules des réserves précises, motivées, écrites et datées sur le document de livraison au moment de la réception contradictoire préservent le recours contre le transporteur, la réception sans réserve suivie du silence de 3 jours éteignant l'action (article L. 133-3 du Code de commerce). Le contrôle contradictoire avant signature est bien le geste préventif attendu.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000021486442">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">FIMO Marchandises &amp; FCO obligatoire</div><code>FIMO-T4-QC-02</code></td>
+  <td>Terminologie exacte : le contrat type sous-traitance (décret n° 2019-695 du 1er juillet 2019, annexe du Code des transports) désigne bien comme « sous-traitant » le transporteur public qui exécute le déplacement confié par un opérateur de transport (donneur d'ordre), lequel reste tenu envers son client. Le vocabulaire affréteur / affrété correspond à l'usage professionnel courant et n'est pas contredit par les textes.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/eli/decret/2019/7/1/TRAT1821970D/jo/texte">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">FIMO Marchandises &amp; FCO obligatoire</div><code>FIMO-T4-QC-03</code></td>
+  <td>Contenu comportemental sans donnée réglementaire chiffrée : les éléments cités (tenue, hygiène et comportement, propreté du véhicule, ponctualité, consignes du site) sont non controversés et correspondent à l'objectif du programme officiel FIMO/FCO marchandises (arrêté du 3 janvier 2008 modifié) sur le comportement contribuant à la valorisation de l'image de marque de l'entreprise et à la qualité de service. Rien à corriger.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/affichTexte.do?cidTexte=JORFTEXT000018008166">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">FIMO Marchandises &amp; FCO obligatoire</div><code>FIMO-T4-QC-04</code></td>
+  <td>Exact : le contrat type général (décret n° 2017-461, annexe II de la partie 3 réglementaire du Code des transports) prévoit que dès la prise de possession de l'envoi le destinataire « en donne décharge au transporteur en datant et signant le document de transport ». L'émargement est donc bien la preuve de la livraison ; sans lui le transporteur ne peut pas prouver la remise et sa responsabilité reste engagée, comme l'indique le corrigé.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000034330431">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch02:ex2.1</code></td>
+  <td>Les denrées surgelées à -18 °C exigent un engin frigorifique renforcé de classe C (FRC) au titre de l'accord ATP et de l'arrêté du 27 novembre 2020 relatif au transport des denrées périssables sous température dirigée. La formulation du corrigé (engin frigorifique renforcé maintenant -18 °C ou moins) est donc exacte telle quelle ; si le concepteur veut chiffrer la classe, c'est FRC.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000042602409">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch02:ex2.2</code></td>
+  <td>L'article R312-11 du code de la route limite le train double à 18,75 m : un ensemble tracteur + deux semi-remorques de 13,60 m avec dolly dépasse largement cette longueur et n'est pas admis en circulation générale, comme l'indique le corrigé. Le plafonnement de la charge au PTRA du tracteur (44 t, plafond national à 5 essieux, R312-4) est le raisonnement standard ; l'hypothèse EMS n'a pas de base réglementaire en circulation générale en France.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000045025481">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch02:ex2.4bis</code></td>
+  <td>L'arrêté du 4 mai 2006 relatif aux transports exceptionnels, toujours en vigueur, classe un convoi de 3,20 m de large en 2e catégorie (largeur supérieure à 3 m et inférieure ou égale à 4 m), avec accompagnement obligatoire au-delà de 3 m. Le corrigé, qui n'exige ni catégorie ni nombre de véhicules d'accompagnement et renvoie au classement du convoi, est exact et prudent ; la tolérance 33/34 palettes est un choix de barème sans enjeu réglementaire.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/loda/id/LEGITEXT000006053685">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch03:ex3.3</code></td>
+  <td>En juillet 2026, la directive 96/53/CE limite toujours à 40 t le trafic international intracommunautaire (hors dérogations intermodales et zéro émission), les 44 t restant une tolérance nationale (France, Belgique) : confirmé par réponse ministérielle à une question du Sénat de 2026, la révision de la directive n'étant pas adoptée. Avec une tare d'ensemble de 15 à 16 t, la charge utile de 24 à 26 t et la nécessité de deux voyages pour 35 t sont exactes ; la dénomination citerne silo est un choix technique déjà neutralisé par le barème.<div class="src">Source : <a href="https://www.senat.fr/questions/base/2026/qSEQ260308150.html">senat.fr</a></div></td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch05:ex5.3</code></td>
+  <td>Le taux normal de TVA en France métropolitaine est toujours de 20 % en 2026 et le délai de paiement de 30 jours à compter de la date d'émission de la facture est bien le plafond légal propre au transport routier de marchandises (art. L.441-11 II du code de commerce, vérifié sur Légifrance). La réserve sur le gabarit exact du modèle d'e-mail de l'annexe est éditoriale et sans incidence sur ces valeurs.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043750788">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch05:ex5.4</code></td>
+  <td>Le taux de TVA de 20 % (taux normal métropole) est confirmé en vigueur en 2026 (economie.gouv.fr). La facturation de la livraison sur rendez-vous est fondée : le tarif « Livraison sur rendez-vous : 35,00 € HT » figure explicitement dans les données fournies de l'énoncé pour ce dossier (absent du dossier ALPINA 5.3), ce qui en fait une prestation à facturer ; l'arithmétique 2 x 52,13 + 35,00 = 139,26 euros HT est exacte. Le gabarit du modèle d'e-mail en annexe reste un point éditorial sans incidence.<div class="src">Source : <a href="https://www.economie.gouv.fr/entreprises-ce-que-vous-devez-savoir-sur-la-tva">economie.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch05:ex5.5</code></td>
+  <td>L'interprétation retenue est correcte : une marge exprimée « sur le prix de vente client » correspond à la définition usuelle du taux de marque (marge / prix de vente HT), donc marge &gt;= 12 % du PV implique coût d'affrètement &lt;= PV x 0,88, et non PV / 1,12 (qui correspondrait à un taux de marge sur coût d'achat). La formulation littérale de la consigne interne tranche l'ambiguïté. L'absence des annexes (grille, sous-traitants) reste un point éditorial, le corrigé étant assumé méthodologique.<div class="src">Source : <a href="https://www.legalstart.fr/fiches-pratiques/comptabilite-entreprise/taux-de-marque/">legalstart.fr</a></div></td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch07:ex7.1</code></td>
+  <td>La formulation sur l'assurance est exacte : depuis le 1er avril 2024, carte verte et vignette sont supprimées en France, le contrôle passant par le Fichier des véhicules assurés, l'assureur remettant un Mémo véhicule assuré et la carte internationale restant délivrée pour l'étranger (service-public.fr, A17230). Ne pas chiffrer les amendes est un parti pédagogique sans risque, et la mention prudente du détachement est compatible avec l'exemption des transports bilatéraux de la directive 2020/1057.<div class="src">Source : <a href="https://www.service-public.fr/particuliers/actualites/A17230">service-public.fr</a></div></td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch14:ex14.1</code></td>
+  <td>Décret n° 2011-1336 du 24 octobre 2011 confirmé sur Légifrance ; ses dispositions sont entrées en vigueur le 1er octobre 2013 (arrêté du 10 avril 2012 pris pour l'application de son article 14). Le dispositif, codifié aux articles D.1431-1 et suivants du code des transports et étendu du CO2 à l'ensemble des gaz à effet de serre (art. L.1431-3), reste fondé sur ce décret : la réponse attendue par l'énoncé (décret 2011-1336, entrée en vigueur au 1er octobre 2013) est exacte pour la session 2026, et le corrigé mentionne déjà l'extension GES.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/affichTexte.do?categorieLien=id&amp;cidTexte=JORFTEXT000024710173">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch15:ex15.1</code></td>
+  <td>Le transport France-Maroc relève bien d'autorisations bilatérales contingentées prévues par l'accord franco-marocain (contingent d'autorisations relevé en avril 2025), le Maroc étant partie à la convention TIR, d'où la pertinence du carnet TIR selon l'itinéraire. Côté Royaume-Uni, le GVMS reste en service et la déclaration sommaire d'entrée (ENS) est exigée pour les imports en Grande-Bretagne depuis le 31 janvier 2025 ; la Suisse applique la convention de transit commun (NCTS, T1/T2). Les intitulés du corrigé sont à jour.<div class="src">Source : <a href="https://www.paca.developpement-durable.gouv.fr/je-demande-une-autorisation-pour-le-transport-a12571.html ; https://www.gov.uk/guidance/goods-vehicle-movement-service-service-availability-and-issues">paca.developpement-durable.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch15:ex15.3</code></td>
+  <td>En DAP, le donneur d'ordre du transport est le vendeur français, preneur assujetti établi en France : la TVA française à 20 % s'applique (article 259, 1° du CGI transposant l'article 44 de la directive 2006/112/CE), et l'hypothèse alternative d'autoliquidation est correctement traitée. L'information GES repose bien sur l'article L. 1431-3 du code des transports, exprimée en CO2e sur le périmètre du puits à la roue avec valeurs de niveau 1 par défaut, comme confirmé par le ministère. La lecture de la marge en dedans (PV = CR/0,90) est conforme au libellé de l'énoncé.<div class="src">Source : <a href="https://www.ecologie.gouv.fr/politiques-publiques/information-ges-prestations-transport">ecologie.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Préparation à l'examen national Commissionnaire de transport</div><code>COMM-M2-QC-01</code></td>
+  <td>Le plafond fret de la Convention de Montréal (art. 22-3) est de 26 DTS/kg depuis le 28 décembre 2024 (révision quinquennale OACI), après 22 DTS/kg applicable depuis le 28 décembre 2019. Le corrigé n'affirme aucun chiffre et se limite à une limitation par kilogramme sauf déclaration spéciale d'intérêt, ce qui reste exact en 2026 ; l'incertitude signalée est donc sans incidence.<div class="src">Source : <a href="https://otc-cta.gc.ca/fra/limites-responsabilite-pour-passagers-et-marchandises">otc-cta.gc.ca</a></div></td></tr>
+  <tr><td><div class="meta">Préparation aux examens Taxi et VTC</div><code>TAXI-M1-QC-01</code></td>
+  <td>Le T3P (transport public particulier de personnes) recouvre bien, avec des véhicules de moins de dix places conducteur compris, les taxis, les VTC et les véhicules motorisés à deux ou trois roues, conformément à la présentation du ministère chargé des transports. Le ministère y adjoint désormais les cycles à pédalage assisté, hors périmètre de l'examen taxi-VTC visé ici, ce que le corrigé délimite correctement.<div class="src">Source : <a href="https://www.ecologie.gouv.fr/politiques-publiques/taxi-vtc-vmdtr-cpa-reglementation-transports-publics-particuliers-personnes">ecologie.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Préparation aux examens Taxi et VTC</div><code>TAXI-M1-QC-02</code></td>
+  <td>La carte professionnelle T3P est délivrée par le préfet du département, la préfecture de police étant compétente pour Paris et les départements de la petite couronne (Hauts-de-Seine, Seine-Saint-Denis, Val-de-Marne). La carte porte la mention taxi ou VTC selon l'épreuve spécifique réussie, ce qui conditionne l'activité exercée.<div class="src">Source : <a href="https://entreprendre.service-public.gouv.fr/vosdroits/R58665">entreprendre.service-public.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Préparation aux examens Taxi et VTC</div><code>TAXI-M1-QC-03</code></td>
+  <td>L'obligation de réservation préalable des VTC (articles L. 3122-1 et L. 3122-9 du code des transports) et l'interdiction de prendre en charge un client sur la voie publique sans réservation, la maraude étant réservée aux taxis (article L. 3120-2 II), sont confirmées par la fiche thématique du ministère chargé des transports de juillet 2025.<div class="src">Source : <a href="https://www.ecologie.gouv.fr/sites/default/files/documents/20250825_fiche_th%C3%A9matique_L3120-2_et_L3122-9.pdf">ecologie.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Préparation aux examens Taxi et VTC</div><code>TAXI-M1-QC-05</code></td>
+  <td>Le tronc commun des épreuves d'admissibilité de l'examen T3P organisé par les CMA comprend bien cinq matières : réglementation du T3P, gestion, sécurité routière, français et anglais, l'épreuve spécifique taxi ou VTC s'y ajoutant hors tronc commun. La liste du corrigé est conforme au règlement d'examen en vigueur.<div class="src">Source : <a href="https://www.haute-loire.gouv.fr/Demarches/Professions-reglementees/Transports-Taxi.-VTC-et-VMDTR-T3P/Examen-de-taxi-VTC-VMDTR">haute-loire.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Préparation aux examens Taxi et VTC</div><code>TAXI-M1-QC-08</code></td>
+  <td>L'arrêté du 6 avril 2017 (en vigueur) définit l'épreuve d'admission comme une mise en situation pratique de réalisation d'une course de taxi ou d'une mission VTC, avec une conduite en circulation d'au moins 20 minutes, notée sur 20 (admis à partir de 12/20) sur la conduite en sécurité et souplesse, le respect du code de la route, la relation client et la facturation, réservée aux candidats déclarés admissibles. La description générale du corrigé, sans chiffre inventé, est conforme.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/loda/id/JORFTEXT000034379046/">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Préparation aux examens Taxi et VTC</div><code>TAXI-M1-QC-10</code></td>
+  <td>L'article L3124-12 du code des transports punit la prise en charge sans réservation préalable hors autorisation d'un an d'emprisonnement et 15 000 euros d'amende, avec peines complémentaires de suspension du permis (jusqu'à 5 ans) et d'immobilisation ou confiscation du véhicule ; le retrait temporaire ou définitif de la carte professionnelle est par ailleurs possible à titre administratif. Les deux sanctions citées et le risque d'emprisonnement sont exacts.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047053344">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Préparation aux examens Taxi et VTC</div><code>TAXI-M2-QC-09</code></td>
+  <td>L'article L3121-11 du code des transports réserve l'arrêt, le stationnement et la circulation en quête de clients au ressort de l'autorisation de stationnement ; hors de ce ressort, la prise en charge n'est possible que sur réservation préalable, dont le conducteur doit pouvoir justifier en cas de contrôle. Le raisonnement du corrigé (refus du hélage dans la commune B, exception de la réservation préalable) est exact.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000031008451">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Préparation aux examens Taxi et VTC</div><code>TAXI-M4-QC-04</code></td>
+  <td>Seuils vérifiés en vigueur (juillet 2026) : contravention à partir de 0,5 g/L de sang soit 0,25 mg/L d'air expiré, délit à partir de 0,8 g/L soit 0,40 mg/L, et seuil abaissé à 0,2 g/L (0,10 mg/L) pour le permis probatoire et les conducteurs de transport en commun. Les taxis/VTC (véhicules de moins de 10 places) ne relèvent pas du transport en commun : le corrigé, qui réserve le 0,2 g/L au seul permis probatoire, est exact tel quel.<div class="src">Source : <a href="https://www.securite-routiere.gouv.fr/reglementation-liee-aux-risques/reglementation-de-lalcool-au-volant">securite-routiere.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Préparation aux examens Taxi et VTC</div><code>TAXI-M5-QC-06</code></td>
+  <td>Aucune donnée réglementaire en jeu : le point signalé porte sur des formulations en anglais. Les phrases proposées (annonce des travaux et du détour, réassurance sur l'impact) sont grammaticalement correctes, polies et adaptées au niveau A2 exigé par l'épreuve d'anglais de l'examen T3P (arrêté du 6 avril 2017). Rien à corriger.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/loda/id/JORFTEXT000034379046/">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Préparation aux examens Taxi et VTC</div><code>TAXI-M5-QC-07</code></td>
+  <td>Point signalé purement linguistique : la question alternative (motorway / city centre) et l'information d'aide à la décision (temps, trafic, péage) sont en anglais correct, courtois et conforme au niveau A2 du CECRL visé par l'épreuve d'anglais de l'examen taxi/VTC (arrêté du 6 avril 2017). Aucune valeur réglementaire à vérifier.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/loda/id/JORFTEXT000034379046/">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Préparation aux examens Taxi et VTC</div><code>TAXI-M5-QC-08</code></td>
+  <td>Aucune donnée réglementaire en jeu : le message type (formule d'appel, annonce de l'objet oublié, conservation et proposition de restitution) est en français professionnel correct, avec vouvoiement, et correspond aux compétences d'expression écrite évaluées à l'examen T3P (arrêté du 6 avril 2017). La bonne pratique de conserver l'objet et de convenir d'une remise est sans objection.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/loda/id/JORFTEXT000034379046/">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Préparation aux examens Taxi et VTC</div><code>TAXI-M5-QC-09</code></td>
+  <td>Point signalé purement linguistique : les deux questions (terminal/compagnie aérienne puis départs/arrivées) sont en anglais correct et ciblent bien les informations indispensables à une dépose aéroport ; niveau conforme au A2 exigé par l'épreuve d'anglais de l'examen taxi/VTC (arrêté du 6 avril 2017). Aucune donnée réglementaire à corriger.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/loda/id/JORFTEXT000034379046/">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Préparation aux examens Taxi et VTC</div><code>TAXI-M6-QC-04</code></td>
+  <td>L'incertitude signalée est sans objet : le corrigé présente lui-même 20-30 min et 10-15 km/h comme une estimation professionnelle non garantie, et le calcul temps = distance / vitesse est exact (5 km à 10-15 km/h = 20 à 30 min). L'ordre de grandeur est corroboré par la Ville de Paris : vitesse moyenne de circulation intra-muros mesurée à 10,4 km/h en 2024, cohérente avec une vitesse commerciale de 10-15 km/h en hypercentre à l'heure de pointe.<div class="src">Source : <a href="https://www.paris.fr/pages/le-bilan-des-deplacement-a-paris-en-2024-31371">paris.fr</a></div></td></tr>
+  <tr><td><div class="meta">Préparation aux examens Taxi et VTC</div><code>TAXI-M8-QC-06</code></td>
+  <td>Les comparatifs 2025-2026 confirment une commission de 25 % TTC chez Uber (plateforme largement majoritaire), environ 19-20 % chez Bolt et 20 % chez FreeNow ; la formulation prudente du corrigé (souvent de l'ordre de 20 à 30 %) reste un ordre de grandeur recevable, les taux effectifs avec frais de service pouvant dépasser le taux nominal. La tarification libre du VTC et la fidélisation en direct sont exactes (economie.gouv.fr).<div class="src">Source : <a href="https://clf-formation.fr/de-10-a-25-comment-fonctionnent-vraiment-les-commissions-des-plateformes-vtc-en-2025/">clf-formation.fr</a></div></td></tr>
+  <tr><td><div class="meta">Préparation aux examens Taxi et VTC</div><code>TAXI-M8-QC-07</code></td>
+  <td>Le corrigé ne contient que des bonnes pratiques professionnelles qualitatives, cohérentes avec le cadre VTC en vigueur : prix et conditions (dont temps d'attente) librement convenus et portés à la connaissance du client avant la course, la tarification VTC étant libre. Aucune donnée chiffrée ou réglementaire contestable.<div class="src">Source : <a href="https://www.economie.gouv.fr/particuliers/mes-droits-conso/gerer-un-litige/utilisateur-de-vtc-quels-sont-vos-droits">economie.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Préparation aux examens Taxi et VTC</div><code>TAXI-M8-QC-08</code></td>
+  <td>L'URSSAF confirme que le micro-entrepreneur déclare son chiffre d'affaires brut encaissé, sans déduire aucune charge ni commission : pour une course payée 100 euros dont 10 euros de commission plateforme, c'est 100 euros qui doivent être déclarés. La sous-déclaration expose bien à une régularisation avec pénalités en cas de contrôle.<div class="src">Source : <a href="https://www.autoentrepreneur.urssaf.fr/portail/accueil/une-question/toutes-les-fiches-pratiques/determiner-mon-chiffre-daffaires.html">autoentrepreneur.urssaf.fr</a></div></td></tr>
+  <tr><td><div class="meta">Préparation aux examens Taxi et VTC</div><code>TAXI-M8-QC-09</code></td>
+  <td>Le corrigé, volontairement qualitatif, est exact et même en deçà du droit en vigueur : la prise en charge sans réservation préalable viole l'article L3120-2 du code des transports, délit puni par l'article L3124-12 (version en vigueur depuis le 27 juin 2026, loi n° 2026-534 du 25 juin 2026) de 3 ans d'emprisonnement et 45 000 euros d'amende, avec peines complémentaires possibles (suspension du permis jusqu'à 5 ans, immobilisation du véhicule jusqu'à 1 an, confiscation). Le retrait ou la suspension de la carte professionnelle par le préfet est également encouru, comme l'indique le corrigé.<div class="src">Source : <a href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047053344">legifrance.gouv.fr</a></div></td></tr>
+  <tr><td><div class="meta">Préparation aux examens Taxi et VTC</div><code>TAXI-M8-QC-10</code></td>
+  <td>Les trois arguments reposent sur des règles vérifiées : la tarification VTC est libre avec un prix porté à la connaissance du client et validé avant la course (forfait, pas de compteur horokilométrique réservé au taxi), et le VTC travaille exclusivement sur réservation préalable, ce qui permet la planification de transferts récurrents. Les éléments de service et de facturation entreprise sont des arguments commerciaux qualitatifs sans erreur factuelle.<div class="src">Source : <a href="https://www.economie.gouv.fr/particuliers/mes-droits-conso/gerer-un-litige/utilisateur-de-vtc-quels-sont-vos-droits">economie.gouv.fr</a></div></td></tr></table>
+
+<h2>3. Restent à l'arbitrage du formateur (45)</h2>
+<p class="lead" style="margin-bottom:6px">Principalement des choix pédagogiques : énoncés à clarifier,
+conventions de calcul propres à la grille de correction, annexes à fournir. Détail opérationnel dans
+le dossier « relecture-corriges-formateur ».</p>
+<table>
+  <tr><td><div class="meta">Attestation de capacité professionnelle — véhicules ≤ 3,5 t</div><code>mft-2026:moduleD:qr10</code></td>
+  <td>Point éditorial : le bilan simplifié 2025 de MG TRANS annoncé en annexe est absent de l'énoncé stocké, ce qui empêche tout chiffrage du FRNG, du BFR et de la TN. Les définitions et formules du corrigé (FRNG = ressources stables moins actif immobilisé ; BFR = actif circulant d'exploitation moins dettes d'exploitation ; TN = FRNG moins BFR = trésorerie active moins passive) sont les définitions standard et n'appellent pas de correction ; il faut fournir l'annexe ou réécrire l'énoncé.</td></tr>
+  <tr><td><div class="meta">Attestation de capacité professionnelle — véhicules ≤ 3,5 t</div><code>mft-2026:moduleD:qr11</code></td>
+  <td>Choix pédagogique, pas de norme opposable : la convention brut = net / (1 - 0,21) découle directement des données de l'énoncé (charges salariales 21 %) et donne bien 2 177,22 EUR/mois ; l'ordre de grandeur est réaliste (part salariale réelle d'environ 21 à 23 % du brut). Le classement de l'assurance marchandises et des frais de déplacement en charges fixes est une convention de correction sans effet sur le coût de revient total de 54 842,88 EUR ; seule la grille du formateur peut trancher la ventilation attendue.</td></tr>
+  <tr><td><div class="meta">Attestation de capacité professionnelle — véhicules ≤ 3,5 t</div><code>mft-2026:moduleD:qr12</code></td>
+  <td>Donnée manquante dans l'énoncé : sans prix de vente au km ni coût variable au km, la marge sur coût variable unitaire est indéterminable et aucun kilométrage minimum chiffré ne peut être calculé ; le CRKM de 0,92 EUR/km est un coût complet inutilisable seul. La démarche du corrigé (nouveau seuil = charges fixes majorées / marge sur coût variable par km, soit 38 000 km + 35 000 EUR / MCV unitaire) est la méthode standard du seuil de rentabilité. Il faut compléter l'énoncé pour permettre le chiffrage.</td></tr>
+  <tr><td><div class="meta">Attestation de capacité professionnelle — véhicules ≤ 3,5 t</div><code>mft-2026:moduleD:qr8</code></td>
+  <td>Point éditorial : l'incohérence interne de l'énoncé est avérée (avec CF 30 000 EUR et CV 0,30 EUR/km, le CRKM à 60 000 km ressort à 0,80 EUR/km et non 0,95 EUR/km), mais aucune source externe ne peut trancher l'intention (0,95 = tarif de vente actuel, coût incluant d'autres charges, ou erreur de chiffre). Les calculs du corrigé à partir des CF/CV fournies (CRKM 0,675 EUR/km à 80 000 km, marge 0,205 EUR/km, décision d'accepter) sont arithmétiquement exacts. À arbitrer par le formateur.</td></tr>
+  <tr><td><div class="meta">Attestation de capacité professionnelle — véhicules ≤ 3,5 t</div><code>mft-2026:moduleE:qr4</code></td>
+  <td>La CCN transports routiers (IDCC 16) ne prévoit pas de prime de 1 % : pour les ouvriers, il s'agit d'une majoration des rémunérations conventionnelles garanties de 2 % après 2 ans (puis 4, 6 et 8 % à 5, 10 et 15 ans), assise sur le taux conventionnel du coefficient et non sur le salaire réel. Le 1 % de l'énoncé est un paramètre pédagogique sans base conventionnelle : choix éditorial à trancher (modifier l'énoncé vers 2 % sur taux conventionnel, ou assumer la simplification que le corrigé signale déjà).</td></tr>
+  <tr><td><div class="meta">Enseignant de la Conduite et de la Sécurité Routière</div><code>ECSR-M4-QC-03</code></td>
+  <td>Aucun texte officiel ni référentiel public (REMC, programmes TP ECSR) ne fixe un déroulé canonique en « cinq temps » avec ces intitulés : la séquence proposée est pédagogiquement cohérente mais son libellé exact relève du support de cours interne du module M4. Point éditorial à aligner sur le cours de référence, pas de donnée réglementaire à trancher.</td></tr>
+  <tr><td><div class="meta">Enseignant de la Conduite et de la Sécurité Routière</div><code>ECSR-M5-QC-02</code></td>
+  <td>La logique en trois phases (émergence des représentations, apport et confrontation d'éléments objectifs, élaboration de solutions par le groupe) se retrouve dans les programmes TP ECSR publiés, mais aucun texte officiel ne fixe une dénomination canonique des « trois temps » : le libellé et l'ordre attendus relèvent du support de cours interne du module M5. Point éditorial à recaler sur le cours de référence.</td></tr>
+  <tr><td><div class="meta">Enseignant de la Conduite et de la Sécurité Routière</div><code>ECSR-M6-QC-01</code></td>
+  <td>Le libellé officiel du CCP1 est « Former des apprenants conducteurs par des actions individuelles et collectives, dans le respect des cadres réglementaires en vigueur » (fiches RNCP35329 et RNCP41862, cette dernière active depuis le 29/04/2026 ; arrêté du 26 janvier 2021). Le CCP2 du corrigé est exact mot pour mot, le nombre de CCP (2) et la délivrance au nom du ministère du Travail sont confirmés. Attention : le RNCP 40990 cité dans la note correspond au titre GOTRM, la fiche ECSR en vigueur est RNCP41862. [Contre-vérification : correction non confirmée : Fond confirmé mot pour mot (RNCP41862, France Compétences, effet 29/04/2026, ministère du Travail). Dégradé car « ancien » n'est pas un extrait exact : « d’un » (apostrophe courbe) vs « d'un » (droite) en base de production, vérifié par SQL. Le remplacement exact échouerait. Re-soumettre avec apostrophe droite.]</td></tr>
+  <tr><td><div class="meta">Enseignant de la Conduite et de la Sécurité Routière</div><code>ECSR-M6-QC-03</code></td>
+  <td>Aucun texte officiel (référentiel de certification du titre, arrêté du 22 décembre 2015, fiche RNCP41862) ne définit une liste normée de « trois marqueurs pédagogiques » pour la séance individuelle. La triade objectif opérationnel / méthode active / évaluation formative est cohérente avec le REMC, mais le libellé exact relève du support de cours M6, invérifiable par une source externe. Point éditorial à caler sur le support.</td></tr>
+  <tr><td><div class="meta">Enseignant de la Conduite et de la Sécurité Routière</div><code>ECSR-M6-QC-05</code></td>
+  <td>Le bloc CCP2 (RNCP41862) vise bien des actions de sensibilisation adaptées au public et orientées vers l'adoption de comportements sûrs, ce qui rend la paire proposée plausible, mais aucun texte officiel ne fixe une liste de « deux exigences » distinguant sensibilisation et exposé. Le découpage retenu est un choix pédagogique du support M6, non tranchable par une source externe.</td></tr>
+  <tr><td><div class="meta">Exploitant en Régulation du Transport de Voyageurs</div><code>ERTV-M1-QC-03</code></td>
+  <td>Pour un service occasionnel national, le document de contrôle exigé à bord est le billet collectif (arrêté du 28 décembre 2011 relatif aux titres administratifs et aux documents de contrôle, transport public routier de personnes) ; la feuille de route n'est exigée que pour les services occasionnels internationaux (règlement CE 1073/2009). L'énoncé ne précisant pas le caractère international, le corrigé est complété pour couvrir les deux cas. [Contre-vérification : correction non confirmée : Fond confirmé (arrêté 28/12/2011, Légifrance : billet collectif = national, feuille de route = international, CE 1073/2009). Remplacement « corrige » exact, mais l'« ancien » du barème contient « d’assurance » (apostrophe courbe) vs apostrophe droite en base (vérifié par SQL) : application partielle. Corriger l'apostrophe puis appliquer.]</td></tr>
+  <tr><td><div class="meta">Exploitant en Régulation du Transport de Voyageurs</div><code>ERTV-M2-QC-02</code></td>
+  <td>La littérature de référence sur le graphicage et l'habillage désigne l'enchaînement des courses d'un même véhicule par « service voiture » (le mot « roulement » désigne plus classiquement le roulement des conducteurs), mais les termes coexistent dans la profession et le barème les accepte tous. Le terme canonique attendu dépend du support interne du Module 2, invérifiable par recherche web : arbitrage formateur requis.</td></tr>
+  <tr><td><div class="meta">Exploitant en Régulation du Transport de Voyageurs</div><code>ERTV-M6-QC-04</code></td>
+  <td>La primauté de la sécurité des personnes et l'obligation d'information des voyageurs en cas de perturbation (règlement UE 181/2011) sont incontestables, mais la hiérarchie précise à trois niveaux (sécurité puis correspondance puis régularité) est une doctrine d'exploitation propre aux supports de cours, non fixée par un texte officiel. Point pédagogique à valider par le formateur contre son référentiel.</td></tr>
+  <tr><td><div class="meta">FIMO Marchandises &amp; FCO obligatoire</div><code>FIMO-M5-QC-05</code></td>
+  <td>Le contenu du corrigé est juridiquement exact : lettre de voiture renseignée et contrôlée à l'enlèvement (réserves au chargement) puis signature/émargement du destinataire valant preuve de livraison, conformément au contrat type général (décret n° 2017-461, art. 21-22 de l'annexe) et à la CMR. En revanche, l'intitulé exact des « deux réflexes documentaires » attendu par le support FIMO-M5 est un choix éditorial interne que la recherche web ne peut pas trancher.</td></tr>
+  <tr><td><div class="meta">FIMO Marchandises &amp; FCO obligatoire</div><code>FIMO-T4-QC-05</code></td>
+  <td>Point éditorial : la trame écouter / reformuler / proposer / conclure est une version standard en relation client, mais aucun texte officiel (Code des transports, programme FIMO de l'arrêté du 3 janvier 2008) ne fixe l'intitulé des « quatre temps ». L'alignement avec le support pédagogique du centre ne peut pas être tranché par une recherche documentaire ; à valider par le formateur référent.</td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch02:ex2.3</code></td>
+  <td>Les deux points signalés sont éditoriaux : la largeur utile absente de l'énoncé et le choix de la convention de calcul des mètres linéaires (rangée : 9,20 ml, ou surface/largeur : 8,43 ml) relèvent d'une harmonisation pédagogique du chapitre, pas d'une norme vérifiable. Le barème tolère déjà les deux méthodes ; les valeurs accessoires citées (largeur hors tout 2,55 m, 2,60 m en frigorifique, art. R312-10 code de la route) sont exactes.</td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch02:ex2.6</code></td>
+  <td>La capacité de référence d'une semi de 13,60 m (34 palettes par calcul strict 13,60/0,40, ou 33 en usage professionnel) est une convention de cours à fixer par le concepteur : aucune norme réglementaire ne tranche, et le barème accepte déjà les deux réponses justifiées. Les compléments d'énoncé demandés (poids, non-gerbabilité, largeur utile) sont également éditoriaux. La seule donnée réglementaire citée (44 t à 5 essieux en national, R312-4) est exacte.</td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch04:ex4.1</code></td>
+  <td>Le point signalé est purement éditorial : les données chiffrées de l'annexe (kilométrage, jours, charges, CA) sont absentes de la base et doivent être réinjectées depuis le PDF d'origine avant de repasser needs_review à false, ce qu'aucune recherche réglementaire ne peut trancher. Les formules du corrigé méthodologique sont standard et la mention de la taxe annuelle sur l'utilisation des véhicules lourds (ex-taxe à l'essieu, codifiée au CIBS) est correcte et sans montant.</td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch04:ex4.2</code></td>
+  <td>Les valeurs derivees sont exactes (110 000/220 = 500 km/j ; 784 x 220 = 172 480 EUR ; 784/500 = 1,568 EUR/km) et les formules de seuil de rentabilite du corrige (SR = charges fixes / taux de MCV, CAC = CF/t, MCV = CA - CV) sont conformes aux references. Le point signale, l'absence de l'annexe des charges du POR 85, est une donnee manquante de l'enonce que la recherche web ne peut pas combler : les resultats chiffres doivent etre completes par le formateur depuis l'annexe d'origine.</td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch04:ex4.3</code></td>
+  <td>Le traitement de la marge de 7 % du prix de vente est correct : une marge exprimee en pourcentage du prix de vente est un taux de marque, d'ou PV = cout de revient / (1 - 0,07) = CR / 0,93, et non CR x 1,07 (definition confirmee par Bpifrance Creation : taux de marque = marge / prix de vente HT). Les formules de rentabilite sont conformes. Le point bloquant signale, l'annexe chiffree du porteur 19 t absente de la base, est une donnee manquante non resoluble par recherche : les resultats chiffres restent a completer par le formateur.</td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch04:ex4.4</code></td>
+  <td>La demarche du corrige est conforme aux references (masse salariale majoree de l'absenteisme, formes trinome/binome/monome, SR = CF / MCV, CAC = CF / taux de MCV, point mort) et le retrait de la mention non sourcee de 47 semaines est prudent : le nombre de semaines d'exploitation est une donnee d'annexe, non normalisee. Le point signale, l'annexe 1 des conditions d'exploitation absente de la base, est une donnee manquante de l'enonce que la recherche ne peut pas combler ; a completer par le formateur.</td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch04:ex4.5</code></td>
+  <td>La regle du payant-pour decrite (comparaison du prix au poids taxable reel avec le prix au poids plancher de la tranche superieure, facturation du montant le plus favorable au client) est conforme a l'usage professionnel documente pour les tarifs degressifs de messagerie ; les regles 250 kg/m3, primaute du poids reel et arrondi au kg superieur sont donnees par l'enonce lui-meme. Le point signale, les prix HT dependant de la grille MATO en annexe image non lisible, est une donnee manquante a renseigner par le formateur.</td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch04:ex4.7</code></td>
+  <td>Les points verifiables sont exacts : la terminologie rectifiee est correcte (taux de marge = marge / cout ; taux de marque = marge / prix de vente, d'ou PV = CR / (1 - taux)) et toutes les durees du reglement CE 561/2006 citees sont conformes (4 h 30 puis pause de 45 min fractionnable 15 puis 30 min, 9 h portees a 10 h deux fois par semaine, 56 h hebdomadaires, 90 h sur deux semaines, repos journalier de 11 h reductible a 9 h trois fois). Le point restant, l'absence totale des donnees chiffrees d'ATLANTIC FRET SERVICES en base, est une donnee manquante a recuperer aupres du formateur.</td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch04:ex4.8</code></td>
+  <td>Les elements reglementaires du corrige sont confirmes en vigueur : TVA au taux normal de 20 % sur le transport interieur de marchandises (art. 278 CGI), indexation gazole obligatoire prevue aux articles L. 3222-1 et L. 3222-2 du code des transports, et 44 t maximum pour les ensembles de plus de 4 essieux en transport national (art. R. 312-4 du code de la route). Le point signale, la grille tarifaire TRANSGO et la liste des commandes en annexe image non lisible, est une donnee manquante : le corrige chiffre doit etre complete par le formateur.</td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch04:ex4.9</code></td>
+  <td>Tous les calculs du corrige ont ete reverifies et sont exacts : 0,80 x 1,20 x 2,23 = 2,1408 m3 ; x 22 = 47,0976 m3 ; x 330 = 15 542 kg ; 22 x 0,40 = 8,80 ml ; x 1 790 = 15 752 kg ; poids taxable arrondi 15 800 kg, le poids metrique dominant dans les deux hypotheses de hauteur (regle du poids le plus eleve conforme a l'usage professionnel). Les points signales restants sont non resolubles par recherche : la grille tarifaire (Q7) et le payant-pour chiffre (Q8) dependent de l'annexe image absente, et l'ambiguite de l'enonce sur la hauteur (palette comprise vs + 0,15 m) est editoriale.</td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch05:ex5.1</code></td>
+  <td>Les points signalés sont purement éditoriaux : le prix du transport principal figure dans l'annexe de l'exercice 4.8 (à reporter par le formateur) et l'harmonisation TECHNIBOIS/TECHNOBOIS ainsi que la coquille d'adresse relèvent de la relecture de l'énoncé. Les ancrages réglementaires du corrigé sont par ailleurs exacts : indexation gazole L.3222-1/L.3222-2 du code des transports et paiement à 30 jours à compter de l'émission de la facture (art. L.441-11 du code de commerce, en vigueur).</td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch06:ex6.1</code></td>
+  <td>La capacité de 33 palettes EUR au sol pour une semi-remorque standard de 13,60 m (3 rangées de 11) est confirmée par les références professionnelles du secteur, et l'absence de grue sur SREM-03 est cohérente avec l'énoncé qui n'en mentionne aucune. En revanche, le rattachement de la mention « REPOS JOURNALIER jusqu'à 14h » à Martin LACHAUD et le sens exact de la colonne FCO (échéance ou date de la dernière FCO suivie) dépendent de la mise en page de l'annexe d'origine, non disponible : la recherche ne permet pas de trancher.</td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch06:ex6.4</code></td>
+  <td>Les points signalés sont éditoriaux : les six annexes SUPRAMA ne sont pas en base et l'intitulé de la question 1 est tronqué, ce que seule la restauration du sujet original peut résoudre. Les ancrages du corrigé sont par ailleurs exacts et en vigueur : 16,50 m ensemble articulé et 18,75 m train routier (art. R.312-11 et R.312-10 du code de la route), largeur 2,55 m portée à 2,60 m pour les parois épaisses à température dirigée, 44 t sur 5 essieux (art. R.312-4), seuils du règlement CE 561/2006 correctement cités.</td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch07:ex7.3</code></td>
+  <td>Le point signalé est éditorial : la lettre de voiture de l'annexe n'est pas disponible en base, donc la ventilation exacte Présente/Manquante des 12 mentions ne peut être établie que sur le document réel avant publication. Le cadre juridique de repli existe si le formateur souhaite citer une référence : l'arrêté du 9 novembre 1999 relatif aux documents de transport devant se trouver à bord des véhicules de transport routier de marchandises fixe les mentions de la lettre de voiture (vérifié sur Légifrance).</td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch08:ex8.1</code></td>
+  <td>Point editorial : l'annexe 2 (puits de commandes, absences, indisponibilites) est indispensable pour etablir les affectations chiffrees et n'est pas accessible ; la recherche ne peut s'y substituer. Les seuils RSE cites (4 h 30 / 45 min fractionnable 15 + 30, 9 h portable a 10 h deux fois par semaine, 56 h, 90 h sur deux semaines, 11 h reductible a 9 h, 45 h reductible a 24 h avec compensation) sont confirmes conformes au reglement CE 561/2006 en vigueur en 2026, verifies sur le site du ministere charge des transports.</td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch08:ex8.2</code></td>
+  <td>Les deux sous-points verifiables sont exacts : (a) la limite de 12 h de temps de service quotidien du personnel roulant marchandises releve du droit national (decret 83-40 codifie au code des transports), confirmee par le ministere charge des transports, non du reglement CE 561/2006 ; (b) une semi-remorque standard de 13,60 m charge bien 33 palettes europe au sol (ordre de grandeur indicatif correct). En revanche, les horaires d'arrivee et le temps de service total exigent l'annexe des distances/temps, absente de l'enonce stocke : point editorial non tranchable ici.</td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch08:ex8.3</code></td>
+  <td>Point editorial : la liste des offres de fret et le credit de conduite deja consomme par LACHAUD figurent dans une annexe absente de l'enonce stocke ; l'offre a retenir et les valeurs numeriques ne peuvent pas etre completees par la recherche. Les contraintes reglementaires citees dans la methode (conduite continue 4 h 30 puis interruption 45 min fractionnable 15 + 30, conduite journaliere 9 h portable a 10 h deux fois par semaine) sont confirmees conformes au reglement CE 561/2006 en vigueur.</td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch09:ex9.1</code></td>
+  <td>Point editorial : l'incoherence de l'enonce est averee (un retour au depot le mardi est impossible apres un aller de 1 045 km acheve le mardi a 13 h 52) et seul l'auteur peut trancher entre reformulation et maintien de la lecture aller simple du corrige, sans incidence sur les quatre questions. Les calculs recontroles sont exacts (1 045 / 68 = 15,3676 h = 15 h 22 ; 612 + 433 km ; repos de 11 h acheve avant la fin de la periode de 24 h) et les seuils cites sont conformes au reglement CE 561/2006 en vigueur.</td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch09:ex9.2</code></td>
+  <td>Point editorial : le releve hebdomadaire d'activites de Nicolas DURAND est absent de l'enonce stocke ; la liste nominative des infractions et les ecarts chiffres ne peuvent pas etre etablis, et la repartition des 2 pts de Q1 depend du nombre reel d'infractions. Les grilles du corrige sont exactes : seuils conformes au reglement CE 561/2006 (dont compensation du repos hebdomadaire reduit avant la fin de la troisieme semaine et debut du repos hebdomadaire au plus tard apres six periodes de 24 h), consignes internes fideles a l'annexe 1 presente dans l'enonce.</td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch09:ex9.3</code></td>
+  <td>Point editorial : le tableau hebdomadaire des activites et le total de conduite de la semaine precedente sont absents de l'enonce stocke ; les questions 2 a 4 ne peuvent donc pas etre chiffrees, et la question 4 reste indeterminable sans la semaine N-1. Les seuils et definitions cites dans le corrige sont confirmes conformes au reglement CE 561/2006 en vigueur : 56 h hebdomadaires, 90 h sur deux semaines consecutives, semaine du lundi 00 h 00 au dimanche 24 h 00, et le calcul de controle 90 - 56 = 34 h est exact.</td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch09:ex9.4</code></td>
+  <td>Le sous-point ADR est confirme exact tel que redige : la formation de base ADR couvre les classes 2 a 9 hors classe 7 (donc la classe 8, corrosifs), les classes 1 et 7 relevant de specialisations completant un certificat de base (article 16 de l'arrete TMD du 29 mai 2009, renvoyant aux 8.2.1 et 8.2.2 de l'ADR) ; un certificat classe 7 seul ne couvre pas la classe 8. En revanche, l'incoherence des millesimes codes (controle au 18/03/20AA, FCO suivie en octobre 20AC, posterieure) est un point editorial que seul l'auteur peut lever.</td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch10:ex10.1</code></td>
+  <td>Point editorial : l'incoherence geographique est averee, Voiron (38) etant a environ 200 a 250 km par la route de Clermont-Ferrand selon les distanciers courants, soit plus de 3 h a 68 km/h, incompatible avec les 15 min du distancier de l'enonce ; seul l'auteur peut verifier le distancier de reference de l'epreuve ou corriger l'enonce. Le corrige applique litteralement les donnees fournies (238 km a 68 km/h + 2 x 15 min d'approche) sans erreur de calcul induite, et la conclusion de conformite RSE resterait inchangee dans l'autre lecture signalee.</td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch11:ex11.2</code></td>
+  <td>Point purement éditorial : le tableau du programme de tournée doit être réintégré dans l'énoncé, ce que la recherche documentaire ne peut pas trancher. Au passage, les valeurs du règlement CE 561/2006 citées par le corrigé (4 h 30 de conduite continue, pause de 45 min fractionnable en 15 + 30, 9 h de conduite journalière, repos journalier de 11 h) sont exactes.</td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch13:ex13.1</code></td>
+  <td>Aucun texte officiel ne fixe de seuils d'alerte pour ces KPI (ponctualité, km à vide, litiges, remplissage, utilisation du parc) : ce sont des conventions de gestion professionnelles. Le choix des seuils et leur éventuel remplacement par la grille d'objectifs de l'annexe est un arbitrage pédagogique non tranchable par la recherche ; la précaution déjà inscrite dans le corrigé et le barème est adaptée. Les calculs, eux, sont déjà revérifiés par le rédacteur.</td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch13:ex13.2</code></td>
+  <td>Points signalés éditoriaux : montants de l'annexe absents de la base, convention 360/365 jours (360 est l'usage dominant en analyse financière, à ajuster sur la consigne de l'annexe) et énoncé tronqué sur la question 4 ; rien n'est tranchable par la recherche. Vérifié au passage : le plafond de 30 jours à compter de la date d'émission de la facture propre au transport routier de marchandises (art. L.441-11 C. com., issu de la loi Gayssot) cité en commentaire est exact.</td></tr>
+  <tr><td><div class="meta">Gestionnaire des Opérations de Transport Routier de Marchandises</div><code>mft-2026-gotrm-ccp1-qr-v2:ch13:ex13.3</code></td>
+  <td>Points purement éditoriaux : les montants du bilan 20AA et du compte de résultat 20AB ainsi que la structure imposée du tableau figurent dans l'annexe non lisible en base. Les formules FRNG, BFR, TN et la cascade VA, EBE, REX, RCAI, CAF du corrigé sont conformes au plan comptable général, mais aucun résultat chiffré ni l'anomalie ne peuvent être validés sans l'annexe.</td></tr>
+  <tr><td><div class="meta">Préparation à l'examen national Commissionnaire de transport</div><code>COMM-M3-QC-03</code></td>
+  <td>Les critères cités (nature de la marchandise, délai, coût, distance/géographie, sûreté/réglementation) correspondent aux critères usuels du choix modal dans les références professionnelles, mais le point à confirmer porte sur l'intitulé exact des cinq items du support interne du module M3, invérifiable par recherche web. Point éditorial d'alignement pédagogique, sans erreur factuelle détectée dans la formulation actuelle.</td></tr>
+  <tr><td><div class="meta">Préparation aux examens Taxi et VTC</div><code>TAXI-M5-QC-10</code></td>
+  <td>L'arrêté du 6 avril 2017 définit l'épreuve de français de l'examen T3P comme 3 questions à réponse courte (2 pts chacune) + 7 QCM, avec retrait d'un point au-delà de 5 fautes d'orthographe ; il ne codifie aucun bonus explicite pour une réponse en phrase complète. Le postulat de la question (la phrase complète rapporte plus de points) relève du conseil pédagogique des centres d'examen, non d'une règle vérifiable dans les textes officiels : point éditorial à trancher par le formateur.</td></tr>
+  <tr><td><div class="meta">Préparation aux examens Taxi et VTC</div><code>TAXI-M8-QC-02</code></td>
+  <td>Le point signalé (0,67 pt par mention, arrondi de grille plafonné à 2 pts) est un choix de barème interne, arithmétiquement cohérent (3 mentions = 2 pts) mais qu'aucune source externe ne peut trancher : il doit être validé par le concepteur, comme le note l'indique. Sur le fond, les mentions citées (identité de l'exploitant, description de la prestation, prix TTC, validité, date, identité du client) correspondent bien aux mentions usuelles d'un devis selon entreprendre.service-public.gouv.fr.</td></tr>
+  <tr><td><div class="meta">Préparation aux examens Taxi et VTC</div><code>TAXI-M8-QC-03</code></td>
+  <td>Le point signalé est un choix de grille de notation interne, sans référence réglementaire vérifiable. L'arithmétique est cohérente (2 pts / 3 types = 0,667 arrondi à 0,67 ; 2 types = 1,33 ; plafond exact à 2 pts), mais la valeur unitaire arrondie relève d'une décision pédagogique à valider par le formateur.</td></tr></table>
+
+<footer>MA FORMATION TRANSPORT · Validation des corrigés · méthode : recherche officielle + contre-vérification contradictoire · données : livraison/validation-corriges.json</footer>
+</body></html>
