@@ -13,6 +13,7 @@ import {
   ArrowLeft,
   Crown,
   GraduationCap,
+  FileText,
 } from "lucide-react";
 
 export default async function SuperAdminLayout({
@@ -79,6 +80,11 @@ export default async function SuperAdminLayout({
           <NavLink href="/super-admin/permissions" icon={ShieldCheck} label="Permissions" />
           <NavLink href="/super-admin/audit" icon={Activity} label="Journal d'audit" />
           <NavLink href="/super-admin/settings" icon={Settings} label="Configuration" />
+
+          <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/45 px-3 mt-5 mb-2">
+            Génération de documents
+          </div>
+          <NavLink href="/super-admin/convocations" icon={FileText} label="Convocations PDF" />
 
           <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/45 px-3 mt-5 mb-2">
             Pilotage admin (raccourcis)

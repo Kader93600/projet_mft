@@ -31,6 +31,9 @@ export default defineConfig({
       "**/playwright-report/**",
       "**/storybook-static/**",
       "**/*.stories.*",
+      // Skills Claude installés localement (tests node:test hors périmètre)
+      "**/.claude/**",
+      "**/.agents/**",
     ],
     coverage: {
       provider: "v8",
