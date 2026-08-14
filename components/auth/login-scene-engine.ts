@@ -648,6 +648,9 @@ export function initLoginScene(canvas: HTMLCanvasElement): LoginSceneApi {
   function frame(t) {
     if (destroyed) return;
     raf = requestAnimationFrame(frame);
+    // Canvas encore sans dimensions (onglet caché, display:none) :
+    // resize() n'a pas pu initialiser le trafic, on attend le layout.
+    if (!W || !H || !nearOrder) { lastT = t; return; }
     const dt = Math.min(0.05, (t - lastT) / 1000 || 0.016);
     lastT = t; worldT += dt;
     ptr.sx = lerp(ptr.sx, ptr.x, 0.05); ptr.sy = lerp(ptr.sy, ptr.y, 0.05);
@@ -913,6 +916,7 @@ export function initLoginScene(canvas: HTMLCanvasElement): LoginSceneApi {
   function drawStill() {
     /* Mode animations réduites : plan fixe (convoi arrêté sous les
        lampadaires, phares allumés), redessiné aux changements d'état. */
+    if (!W || !H || !nearOrder) return;
     speed = 1; groundOff = 0;
     near.length = 0; nearIdx = 0; spawnNear(W * 0.40); near[0].vNow = 0;
     if (!mobile) { nearIdx = 2; spawnNear(W * 0.40 - F.taxi.L * S - 130); near[1] && (near[1].vNow = 0); }

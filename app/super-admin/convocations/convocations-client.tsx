@@ -8,6 +8,7 @@
 
 import * as React from "react";
 import { GraduationCap, Users2, Layers, History } from "lucide-react";
+import { ToastProvider } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import type { ConvocationPayload, ConvocationRow } from "@/lib/convocations";
 import type { LieuRow } from "./actions";
@@ -52,6 +53,9 @@ export function ConvocationsClient({
   }
 
   return (
+    // Le layout super-admin ne fournit pas de ToastProvider (contrairement
+    // au shell /admin) : on le monte ici pour les useToast() du module.
+    <ToastProvider>
     <div className="space-y-5">
       <div role="tablist" aria-label="Sections des convocations"
         className="flex flex-wrap gap-1 rounded-2xl border border-navy-100 bg-white p-1 shadow-sm">
@@ -109,5 +113,6 @@ export function ConvocationsClient({
         />
       )}
     </div>
+    </ToastProvider>
   );
 }
