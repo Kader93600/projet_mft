@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
-import { createClient } from "@/lib/supabase/server";
+import { getRequestProfile, getRequestUser } from "@/lib/supabase/server";
 import { SessionTracker } from "@/components/session-tracker";
 import { DailyCheckin } from "@/components/gamification/daily-checkin";
 import { PwaInstallPrompt } from "@/components/pwa/install-prompt";
@@ -18,16 +18,12 @@ export async function AuthLayout({
   children: React.ReactNode;
   requireAdmin?: boolean;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getRequestUser/getRequestProfile sont mémoïsés par requête : les pages
+  // enfants et les helpers (tuteur, gamification) réutilisent ces résultats
+  // sans refaire d'appel réseau vers Supabase.
+  const user = await getRequestUser();
   if (!user) redirect("/login");
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
+  const profile = await getRequestProfile();
   if (!profile) redirect("/login");
   // requireAdmin autorise admin ET super_admin (cohérent avec requireAdmin() côté actions).
   if (requireAdmin && !isStaff(profile.role)) redirect("/dashboard");

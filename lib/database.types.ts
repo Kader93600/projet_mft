@@ -1,6 +1,6 @@
 // =====================================================================
 // lib/database.types.ts — Types du schéma public Supabase
-// Généré le 2026-06-02 par scripts/introspect-schema.mjs (introspection live).
+// Généré le 2026-08-19 par scripts/introspect-schema.mjs (introspection live).
 // NE PAS éditer à la main — régénérer avec : node scripts/introspect-schema.mjs
 // =====================================================================
 
@@ -66,6 +66,29 @@ export interface Database {
           {
             foreignKeyName: "accessibility_requests_referent_id_fkey";
             columns: ["referent_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      achievements_recompute_queue: {
+        Row: {
+          user_id: string;
+          queued_at: string;
+        };
+        Insert: {
+          user_id?: string;
+          queued_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          queued_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "achievements_recompute_queue_user_id_fkey";
+            columns: ["user_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
@@ -768,6 +791,39 @@ export interface Database {
           },
         ];
       };
+      consent_events: {
+        Row: {
+          id: string;
+          visitor_id: string | null;
+          user_id: string | null;
+          choices: Json;
+          policy_version: string;
+          ip_address: string | null;
+          user_agent: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          visitor_id?: string | null;
+          user_id?: string | null;
+          choices: Json;
+          policy_version?: string;
+          ip_address?: string | null;
+          user_agent?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          visitor_id?: string | null;
+          user_id?: string | null;
+          choices?: Json;
+          policy_version?: string;
+          ip_address?: string | null;
+          user_agent?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       conversation_participants: {
         Row: {
           conversation_id: string;
@@ -861,6 +917,129 @@ export interface Database {
             columns: ["group_id"];
             isOneToOne: false;
             referencedRelation: "groups";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      convocation_locations: {
+        Row: {
+          id: string;
+          name: string;
+          address: string;
+          postal_code: string;
+          city: string;
+          room: string | null;
+          floor: string | null;
+          access_info: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          address: string;
+          postal_code: string;
+          city: string;
+          room?: string | null;
+          floor?: string | null;
+          access_info?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          address?: string;
+          postal_code?: string;
+          city?: string;
+          room?: string | null;
+          floor?: string | null;
+          access_info?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "convocation_locations_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      convocations: {
+        Row: {
+          id: string;
+          kind: string;
+          status: string;
+          reference: string;
+          payload: Json;
+          template: string;
+          file_name: string;
+          related_user_id: string | null;
+          formation_id: string | null;
+          session_label: string | null;
+          exam_date: string | null;
+          batch_id: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          kind: string;
+          status?: string;
+          reference: string;
+          payload: Json;
+          template?: string;
+          file_name: string;
+          related_user_id?: string | null;
+          formation_id?: string | null;
+          session_label?: string | null;
+          exam_date?: string | null;
+          batch_id?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          kind?: string;
+          status?: string;
+          reference?: string;
+          payload?: Json;
+          template?: string;
+          file_name?: string;
+          related_user_id?: string | null;
+          formation_id?: string | null;
+          session_label?: string | null;
+          exam_date?: string | null;
+          batch_id?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "convocations_related_user_id_fkey";
+            columns: ["related_user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "convocations_formation_id_fkey";
+            columns: ["formation_id"];
+            isOneToOne: false;
+            referencedRelation: "formations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "convocations_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
         ];
@@ -3084,6 +3263,8 @@ export interface Database {
           leaderboard_opt_out: boolean;
           mandatory_signature_at: string | null;
           locale: string;
+          first_name: string | null;
+          last_name: string | null;
         };
         Insert: {
           id?: string;
@@ -3123,6 +3304,8 @@ export interface Database {
           leaderboard_opt_out?: boolean;
           mandatory_signature_at?: string | null;
           locale?: string;
+          first_name?: string | null;
+          last_name?: string | null;
         };
         Update: {
           id?: string;
@@ -3162,6 +3345,8 @@ export interface Database {
           leaderboard_opt_out?: boolean;
           mandatory_signature_at?: string | null;
           locale?: string;
+          first_name?: string | null;
+          last_name?: string | null;
         };
         Relationships: [
           {
@@ -3833,6 +4018,24 @@ export interface Database {
           },
         ];
       };
+      rate_limit_hits: {
+        Row: {
+          key: string;
+          window_start: string;
+          count: number;
+        };
+        Insert: {
+          key?: string;
+          window_start?: string;
+          count?: number;
+        };
+        Update: {
+          key?: string;
+          window_start?: string;
+          count?: number;
+        };
+        Relationships: [];
+      };
       referral_codes: {
         Row: {
           user_id: string;
@@ -3932,6 +4135,24 @@ export interface Database {
             referencedColumns: ["id"];
           },
         ];
+      };
+      retention_purge_runs: {
+        Row: {
+          id: string;
+          ran_at: string;
+          summary: Json;
+        };
+        Insert: {
+          id?: string;
+          ran_at?: string;
+          summary: Json;
+        };
+        Update: {
+          id?: string;
+          ran_at?: string;
+          summary?: Json;
+        };
+        Relationships: [];
       };
       satisfaction_surveys: {
         Row: {
@@ -4124,6 +4345,27 @@ export interface Database {
             referencedColumns: ["id"];
           },
         ];
+      };
+      stripe_events: {
+        Row: {
+          event_id: string;
+          session_id: string | null;
+          type: string;
+          received_at: string;
+        };
+        Insert: {
+          event_id?: string;
+          session_id?: string | null;
+          type: string;
+          received_at?: string;
+        };
+        Update: {
+          event_id?: string;
+          session_id?: string | null;
+          type?: string;
+          received_at?: string;
+        };
+        Relationships: [];
       };
       student_documents: {
         Row: {

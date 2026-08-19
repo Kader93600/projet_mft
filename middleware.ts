@@ -236,5 +236,8 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.).*)"],
+  // /api/session/ping est exclu : la route vérifie elle-même l'utilisateur
+  // (getUser) ; le passage par le middleware doublait cet appel Auth sur un
+  // trafic de fond émis toutes les 75 s par chaque utilisateur actif.
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/session/ping|.*\\.).*)"],
 };

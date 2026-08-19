@@ -3,9 +3,10 @@ import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
 /**
- * Composant invisible qui envoie un ping au serveur toutes les 30 secondes
+ * Composant invisible qui envoie un ping au serveur toutes les 75 secondes
  * tant que l'utilisateur est actif. Arrête de pinger après 5 min d'inactivité
- * (ou quand l'onglet est caché).
+ * (ou quand l'onglet est caché). Les fenêtres de continuité côté SQL
+ * (ping_session 5 min, ping_lesson_view 3 min) tolèrent cet intervalle.
  *
  * Détecte automatiquement si on est sur une page leçon (/modules/slug/lecons/id)
  * pour mesurer aussi le temps passé par leçon.
@@ -42,9 +43,11 @@ export function SessionTracker({ lessonId }: { lessonId?: string }) {
       });
     }
 
-    // Premier ping immédiat puis toutes les 30s
+    // Premier ping immédiat puis toutes les 75 s. L'intervalle est un
+    // compromis charge/précision : à 1000 utilisateurs actifs, 30 s
+    // généraient ~100 appels Supabase/s de trafic de fond.
     ping();
-    intervalRef.current = setInterval(ping, 30_000);
+    intervalRef.current = setInterval(ping, 75_000);
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);

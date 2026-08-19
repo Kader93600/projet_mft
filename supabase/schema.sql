@@ -1,6 +1,6 @@
 -- =====================================================================
 -- supabase/schema.sql — BASELINE CONSOLIDÉ (source de vérité des tables)
--- Généré le 2026-06-02 par scripts/introspect-schema.mjs
+-- Généré le 2026-08-19 par scripts/introspect-schema.mjs
 -- via introspection du schéma public déployé (PostgREST OpenAPI).
 --
 -- ⚠️  Régénérer avec :  node scripts/introspect-schema.mjs
@@ -13,7 +13,7 @@
 --   • FONCTIONS / TRIGGERS / RLS / INDEX / CHECK : voir les migrations
 --     horodatées dans supabase/*.sql (index : supabase/MIGRATIONS_INDEX.md).
 --
--- Tables : 96
+-- Tables : 103
 -- =====================================================================
 
 create extension if not exists "uuid-ossp";
@@ -33,6 +33,13 @@ create table if not exists public.accessibility_requests (
   updated_at timestamp with time zone default now() not null,
   resolved_at timestamp with time zone,
   primary key (id)
+);
+
+-- ─────────────────────────────────────────────────────────────────────
+create table if not exists public.achievements_recompute_queue (
+  user_id uuid,  -- FK → profiles.id
+  queued_at timestamp with time zone default now() not null,
+  primary key (user_id)
 );
 
 -- ─────────────────────────────────────────────────────────────────────
@@ -252,6 +259,19 @@ create table if not exists public.coaching_sessions (
 );
 
 -- ─────────────────────────────────────────────────────────────────────
+create table if not exists public.consent_events (
+  id uuid default gen_random_uuid(),
+  visitor_id text,
+  user_id uuid,
+  choices jsonb not null,
+  policy_version text default 'v1' not null,
+  ip_address text,
+  user_agent text,
+  created_at timestamp with time zone default now() not null,
+  primary key (id)
+);
+
+-- ─────────────────────────────────────────────────────────────────────
 create table if not exists public.conversation_participants (
   conversation_id uuid,  -- FK → conversations.id
   user_id uuid,
@@ -279,6 +299,41 @@ create table if not exists public.conversations (
   created_by uuid,
   archived_at timestamp with time zone,
   class_writable boolean default false not null,
+  primary key (id)
+);
+
+-- ─────────────────────────────────────────────────────────────────────
+create table if not exists public.convocation_locations (
+  id uuid default extensions.uuid_generate_v4(),
+  name text not null,
+  address text not null,
+  postal_code text not null,
+  city text not null,
+  room text,
+  floor text,
+  access_info text,
+  created_by uuid,  -- FK → profiles.id
+  created_at timestamp with time zone default now() not null,
+  primary key (id)
+);
+
+-- ─────────────────────────────────────────────────────────────────────
+create table if not exists public.convocations (
+  id uuid default extensions.uuid_generate_v4(),
+  kind text not null,
+  status text default 'brouillon' not null,
+  reference text not null,
+  payload jsonb not null,
+  template text default 'moderne' not null,
+  file_name text not null,
+  related_user_id uuid,  -- FK → profiles.id
+  formation_id uuid,  -- FK → formations.id
+  session_label text,
+  exam_date date,
+  batch_id uuid,
+  created_by uuid,  -- FK → profiles.id
+  created_at timestamp with time zone default now() not null,
+  updated_at timestamp with time zone default now() not null,
   primary key (id)
 );
 
@@ -982,6 +1037,8 @@ create table if not exists public.profiles (
   leaderboard_opt_out boolean default false not null,
   mandatory_signature_at timestamp with time zone,
   locale text default 'fr' not null,
+  first_name text,
+  last_name text,
   primary key (id)
 );
 
@@ -1163,6 +1220,14 @@ create table if not exists public.quizzes (
 );
 
 -- ─────────────────────────────────────────────────────────────────────
+create table if not exists public.rate_limit_hits (
+  key text,
+  window_start timestamp with time zone,
+  count integer default 1 not null,
+  primary key (key, window_start)
+);
+
+-- ─────────────────────────────────────────────────────────────────────
 create table if not exists public.referral_codes (
   user_id uuid,  -- FK → profiles.id
   code text not null,
@@ -1184,6 +1249,14 @@ create table if not exists public.referrals (
   rewarded_by uuid,  -- FK → profiles.id
   rejection_reason text,
   created_at timestamp with time zone default now() not null,
+  primary key (id)
+);
+
+-- ─────────────────────────────────────────────────────────────────────
+create table if not exists public.retention_purge_runs (
+  id uuid default gen_random_uuid(),
+  ran_at timestamp with time zone default now() not null,
+  summary jsonb not null,
   primary key (id)
 );
 
@@ -1242,6 +1315,15 @@ create table if not exists public.session_enrollments (
   cancelled_at timestamp with time zone,
   cancellation_reason text,
   primary key (session_id, user_id)
+);
+
+-- ─────────────────────────────────────────────────────────────────────
+create table if not exists public.stripe_events (
+  event_id text,
+  session_id text,
+  "type" text not null,
+  received_at timestamp with time zone default now() not null,
+  primary key (event_id)
 );
 
 -- ─────────────────────────────────────────────────────────────────────

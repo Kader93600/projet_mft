@@ -1,8 +1,8 @@
 # Index des migrations Supabase
 
-> Généré le 2026-07-13 par `scripts/gen-migrations-index.mjs`.
+> Généré le 2026-08-19 par `scripts/gen-migrations-index.mjs`.
 > La structure des **tables** fait foi dans `supabase/schema.sql` (baseline introspecté).
-> Ce fichier documente l'historique : **195 migrations** (vues, fonctions, RLS, triggers, données).
+> Ce fichier documente l'historique : **212 migrations** (vues, fonctions, RLS, triggers, données).
 
 ## ⚠️ Provisioning d'une base neuve
 1. Jouer les migrations horodatées dans l'ordre chronologique ci-dessous.
@@ -11,7 +11,7 @@
 
 ---
 
-## Migrations horodatées (54)
+## Migrations horodatées (71)
 
 | Fichier | Description |
 |---|---|
@@ -68,7 +68,24 @@
 | `2026_05_30_fix_qcm_is_correct_key.sql` | Correctif — QCM sans bonne réponse + champs de réponse vides en édition. |
 | `2026_05_30_profiles_first_last_name.sql` | Profiles : Prénom / Nom séparés (en plus de full_name). |
 | `2026_06_02_acquisition_click_ids.sql` | Marketing acquisition — Phase 0 : capture des click-IDs publicitaires |
+| `2026_07_13_consent_audit_log.sql` | JOURNAL DE PREUVE DE CONSENTEMENT — 13/07/2026 (conformité CNIL) |
+| `2026_07_13_consolidate_permissive_policies.sql` | CONSOLIDATION DES POLICIES PERMISSIVES — 13/07/2026 (audit perf) |
+| `2026_07_13_corriges_qr_capa_leger.sql` | CORRIGÉS QR — CAPACITÉ LÉGÈRE (≤ 3,5 t) — 13/07/2026 |
+| `2026_07_13_data_retention_purge.sql` | PURGE AUTOMATIQUE (RGPD, minimisation) — 13/07/2026 |
+| `2026_07_13_drop_unused_indexes.sql` | NETTOYAGE DES INDEX INUTILISÉS — 13/07/2026 (quick win audit perf) |
+| `2026_07_13_perf_rls_and_fk_indexes.sql` | PERFORMANCE BASE — 13/07/2026 (audit perf, advisors Supabase) |
+| `2026_07_13_pin_function_search_path.sql` | DURCISSEMENT SÉCURITÉ — search_path des fonctions (13/07/2026) |
 | `2026_07_13_security_consent_and_view_grants.sql` | CORRECTIFS SÉCURITÉ (audit 13/07/2026) — 2 points |
+| `2026_07_14_corriges_qr_6formations.sql` | CORRIGÉS QR + ACTIVATION — 6 formations — 14/07/2026 |
+| `2026_07_14_corriges_qr_gotrm.sql` | CORRIGÉS QR — GOTRM (RNCP 40990, CCP1) — 14/07/2026 |
+| `2026_07_14_views_security_invoker.sql` | FERMETURE DU DERNIER TROU DE SÉCURITÉ — 14/07/2026 |
+| `2026_07_21_quiz_scoring_server.sql` | 2026-07-21 — QUIZ-03 : fermeture des écritures client sur les scores |
+| `2026_07_21_rate_limit.sql` | 2026-07-21 — SEC-RL : rate limiting partagé (backend Postgres) |
+| `2026_07_21_security_rpc_hardening.sql` | 2026-07-21 — Durcissement des RPC sensibles (audit pré-livraison) |
+| `2026_07_21_stripe_idempotency.sql` | 2026-07-21 — PAY-01 : idempotence du webhook Stripe |
+| `2026_07_22_fix_profiles_policy_recursion.sql` | 2026-07-22 — HOTFIX : récursion infinie de policy sur profiles |
+| `2026_08_14_convocations.sql` | 2026-08-14 — Module « Convocations PDF » (candidats + jurys) |
+| `2026_08_20_gamification_async.sql` | Gamification asynchrone — tenue en charge des examens |
 
 ## Fichiers thématiques / contenu (141)
 

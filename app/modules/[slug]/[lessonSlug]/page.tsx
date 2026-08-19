@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import {
+  createClient,
+  getRequestProfile,
+  getRequestUser,
+} from "@/lib/supabase/server";
 import { renderMarkdown } from "@/lib/markdown";
 import { LessonContent } from "@/lib/lesson-blocks";
 import { ProtectedContent } from "@/components/lesson/protected-content";
@@ -32,46 +36,57 @@ export default async function LessonPage(
 ) {
   const params = await props.params;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
-  // Détecte staff pour choisir le client de lecture. Students passent
-  // en service_role (bypass RLS qui bloque silencieusement, cf. cas
-  // BOUCHOUCHA). Sécurité conservée par le gate enrollment + filtres
-  // user.id côté code.
-  let isStaff = false;
-  if (user) {
-    const { data: meRole } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-    isStaff =
-      meRole?.role === "admin" ||
-      meRole?.role === "super_admin" ||
-      meRole?.role === "trainer";
-  }
+  // Vague 1 — user + profil sont mémoïsés par requête (déjà chargés par
+  // AuthLayout : coût réseau nul ici) ; le module part en parallèle.
+  const [user, profile, moduleRes] = await Promise.all([
+    getRequestUser(),
+    getRequestProfile(),
+    supabase.from("modules").select("*").eq("slug", params.slug).single(),
+  ]);
+  const { data: module } = moduleRes;
+  if (!module) notFound();
+
+  // Détecte staff pour le gate d'accès. Sécurité conservée par le gate
+  // enrollment + filtres user.id côté code.
+  const isStaff =
+    profile?.role === "admin" ||
+    profile?.role === "super_admin" ||
+    profile?.role === "trainer";
   // Client session : RLS scopées réparées (bug récursion corrigé).
   const reader = supabase;
 
-  const { data: module } = await reader
-    .from("modules")
-    .select("*")
-    .eq("slug", params.slug)
-    .single();
-  if (!module) notFound();
+  // Vague 2 — toutes les lectures dépendant du module, indépendantes
+  // entre elles : leçon courante, sommaire du module, formation,
+  // inscriptions (gate student). Avant : 10 allers-retours en série.
+  const [lessonRes, lessonsRes, formationSlug, enrollmentsRes] =
+    await Promise.all([
+      reader
+        .from("lessons")
+        .select("*")
+        .eq("module_id", module.id)
+        .eq("slug", params.lessonSlug)
+        .single(),
+      reader
+        .from("lessons")
+        .select("id, slug, title, order")
+        .eq("module_id", module.id)
+        .order("order"),
+      resolveFormationFromModule(module.id),
+      user && !isStaff
+        ? reader
+            .from("enrollments")
+            .select("formation_id")
+            .eq("user_id", user.id)
+            .not("formation_id", "is", null)
+            .neq("status", "refuse")
+            .neq("status", "abandon")
+        : Promise.resolve({ data: null }),
+    ]);
 
   // Gate enrollment pour students (staff = libre)
   if (user && !isStaff) {
-    const { data: enrollments } = await reader
-      .from("enrollments")
-      .select("formation_id")
-      .eq("user_id", user.id)
-      .not("formation_id", "is", null)
-      .neq("status", "refuse")
-      .neq("status", "abandon");
-    const enrolledIds = (enrollments ?? [])
+    const enrolledIds = ((enrollmentsRes.data ?? []) as any[])
       .map((e: any) => e.formation_id as string)
       .filter(Boolean);
     if (enrolledIds.length === 0) notFound();
@@ -84,53 +99,46 @@ export default async function LessonPage(
     if (!count) notFound();
   }
 
-  const { data: lesson } = await reader
-    .from("lessons")
-    .select("*")
-    .eq("module_id", module.id)
-    .eq("slug", params.lessonSlug)
-    .single();
+  const lesson = lessonRes.data;
   if (!lesson) notFound();
 
-  const { data: lessons } = await reader
-    .from("lessons")
-    .select("id, slug, title, order")
-    .eq("module_id", module.id)
-    .order("order");
-  const idx = lessons?.findIndex((l) => l.id === lesson.id) ?? -1;
+  const lessons = lessonsRes.data;
+  const idx = lessons?.findIndex((l: any) => l.id === lesson.id) ?? -1;
   const prev = idx > 0 ? lessons?.[idx - 1] : null;
   const next = idx >= 0 && lessons && idx < lessons.length - 1 ? lessons[idx + 1] : null;
 
+  // Vague 3 — progression : les deux lectures sont indépendantes.
+  // moduleDoneOthers déclenche la célébration « Module validé » quand
+  // on termine la dernière leçon.
   let completed = false;
-  if (user) {
-    const { data } = await reader
-      .from("lesson_progress")
-      .select("completed")
-      .eq("user_id", user.id)
-      .eq("lesson_id", lesson.id)
-      .maybeSingle();
-    completed = !!data?.completed;
-  }
-
-  // Leçons du module déjà terminées (hors leçon courante) → permet de
-  // déclencher la célébration « Module validé » quand on termine la dernière.
   let moduleDoneOthers = 0;
-  if (user && lessons && lessons.length) {
-    const ids = lessons.map((l) => l.id);
-    const { data: doneRows } = await reader
-      .from("lesson_progress")
-      .select("lesson_id")
-      .eq("user_id", user.id)
-      .eq("completed", true)
-      .in("lesson_id", ids);
-    const doneSet = new Set((doneRows ?? []).map((r: any) => r.lesson_id));
+  if (user) {
+    const ids = (lessons ?? []).map((l: any) => l.id);
+    const [progRes, doneRes] = await Promise.all([
+      reader
+        .from("lesson_progress")
+        .select("completed")
+        .eq("user_id", user.id)
+        .eq("lesson_id", lesson.id)
+        .maybeSingle(),
+      ids.length
+        ? reader
+            .from("lesson_progress")
+            .select("lesson_id")
+            .eq("user_id", user.id)
+            .eq("completed", true)
+            .in("lesson_id", ids)
+        : Promise.resolve({ data: [] }),
+    ]);
+    completed = !!progRes.data?.completed;
+    const doneSet = new Set(
+      ((doneRes.data ?? []) as any[]).map((r: any) => r.lesson_id)
+    );
     moduleDoneOthers = ids.filter(
-      (id) => id !== lesson.id && doneSet.has(id)
+      (id: string) => id !== lesson.id && doneSet.has(id)
     ).length;
   }
 
-  // Résolution formation pour identification visuelle
-  const formationSlug = await resolveFormationFromModule(module.id);
   const readingMin = estimateReadingTime(lesson.content_md);
 
   return (

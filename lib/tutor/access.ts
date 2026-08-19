@@ -19,16 +19,12 @@
 //   if (!access.allowed) return <TutorUpsell pack={access.pack} />;
 // =====================================================================
 
-import { createClient } from "@/lib/supabase/server";
+import {
+  createClient,
+  getRequestProfile,
+  getRequestUser,
+} from "@/lib/supabase/server";
 import type { PackSlug } from "@/lib/packs";
-import type { Tables } from "@/lib/database.types";
-
-/** profiles(role, current_formation_slug) — `current_formation_slug` n'est pas
- *  présent dans le schéma introspecté : le type reflète le `select` tel qu'il
- *  est écrit (si la colonne manque, la requête renvoie `null`). */
-type TutorProfileRow = Pick<Tables<"profiles">, "role"> & {
-  current_formation_slug: string | null;
-};
 
 export interface TutorAccess {
   allowed: boolean;
@@ -46,22 +42,16 @@ export interface TutorAccess {
 export async function getTutorAccess(
   formationSlug?: string | null
 ): Promise<TutorAccess> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Mémoïsé par requête : aucun appel réseau supplémentaire quand
+  // AuthLayout (ou une page) a déjà chargé user + profil.
+  const user = await getRequestUser();
   if (!user) {
     return { allowed: false, pack: null, reason: "Non authentifié" };
   }
 
   // Override admin/super_admin : peut accéder à l'IA pour tester ou
   // assister un stagiaire qui n'a pas le pack Premium.
-  const { data: profileData } = await supabase
-    .from("profiles")
-    .select("role, current_formation_slug")
-    .eq("id", user.id)
-    .maybeSingle();
-  const profile = (profileData ?? null) as TutorProfileRow | null;
+  const profile = await getRequestProfile();
 
   const role = profile?.role;
   if (role === "admin" || role === "super_admin" || role === "trainer") {
@@ -77,6 +67,7 @@ export async function getTutorAccess(
     };
   }
 
+  const supabase = await createClient();
   const { data: packData } = await supabase
     .rpc("user_pack_for_formation", {
       p_user_id: user.id,
